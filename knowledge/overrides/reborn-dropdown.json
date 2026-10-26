@@ -16,6 +16,9 @@
     "仅 web 端可用。",
     "菜单项二选一：options 数组（{ label, value, disabled?, icon? }）或 content 插槽内的 RebornDoption（value / disabled），插槽优先；旧版的 command / divided / splitButton / size / color 已移除。",
     "trigger 默认 click，hover 移动端不支持；hide-on-select 默认 true 选择后自动收起。",
-    "placement 取值与 reborn-tooltip 一致，为 12 向 kebab 写法（bottom / bottom-start / right-start 等），靠近视口边缘会自动翻转；portal 默认 true 浮层传送到 body。"
+    "placement 取值与 reborn-tooltip 一致，为 12 向 kebab 写法（bottom / bottom-start / right-start 等），靠近视口边缘会自动翻转；portal 默认 true 浮层传送到 body。",
+    "popup-offset 未传时无箭头为 4、show-arrow 时为 12：箭头伸出面板约 8.5px，自定义 popup-offset 小于 9 时箭头尖端会压到触发器上。",
+    "单层菜单用 options 平铺；树形（分组 + 多级子菜单）必须改用 content 插槽嵌套 RebornDgroup / RebornDsubmenu，options 不支持 children；最外层的 placement 与 show-arrow 只作用于第一层面板，子菜单按 RebornDsubmenu 自己的 placement（默认 right-start）弹出且不带箭头。",
+    "popupVisible 默认 undefined；未绑定时本地关闭起步，显式 false/undefined/null 按关闭处理，切换受控会取消旧悬停延迟，update:popupVisible 不吞此前相同值。"
   ]
 }

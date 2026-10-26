@@ -11,6 +11,7 @@
   "pitfalls": [
     "仅 web 端可用。",
     "shadowColor 默认 black，暗色模式下需切换为浅色（示例中根据 useColorMode 动态传入）。",
-    "默认渲染为 span，可用 as prop 改为其他 HTML 标签。"
+    "默认渲染为 span，可用 as prop 改为其他 HTML 标签。",
+    "text 显式指定阴影文字；不传时在渲染期间提取默认插槽的文本，组件节点内部文字不参与提取，复杂正文应传 text。"
   ]
 }

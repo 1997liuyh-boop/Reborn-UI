@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ResultIcon } from '@/components/reborn-result/reborn-result.config'
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornInput from '@/components/reborn-input/RebornInput.vue'
@@ -11,14 +11,14 @@ import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 
 // ─── 演练场状态（默认值与 Web 端 Playground 一致） ───────────────
 
-const currentIcon = ref<ResultIcon>('success')
-const title = ref('提交成功')
-const subTitle = ref('订单已创建，我们会在 24 小时内完成审核。')
-const showIcon = ref(true)
-const showExtra = ref(true)
+const currentIcon = shallowRef<ResultIcon>('success')
+const title = shallowRef('提交成功')
+const subTitle = shallowRef('订单已创建，我们会在 24 小时内完成审核。')
+const showIcon = shallowRef(true)
+const showExtra = shallowRef(true)
 
 /** 操作区点击回显，让预览「有回应」 */
-const lastAction = ref('')
+const lastAction = shallowRef('')
 function onAction(name: string) {
   lastAction.value = name
 }
@@ -46,9 +46,10 @@ const ICON_SAMPLE: Record<string, { title: string, subTitle: string }> = {
     <!-- 演练场 -->
     <RebornCard title="自定义" custom-class="space-y-4">
       <RebornResult
+        v-if="showExtra"
         :icon="showIcon ? currentIcon : null" :title="title" :sub-title="subTitle"
       >
-        <template v-if="showExtra" #extra>
+        <template #extra>
           <ReButton color="neutral" variant="outlined" size="md" @tap="onAction('返回首页')">
             返回首页
           </ReButton>
@@ -57,6 +58,7 @@ const ICON_SAMPLE: Record<string, { title: string, subTitle: string }> = {
           </ReButton>
         </template>
       </RebornResult>
+      <RebornResult v-else :icon="showIcon ? currentIcon : null" :title="title" :sub-title="subTitle" />
 
       <text class="text-24 text-gray-6">最近点击：{{ lastAction || '（无）' }}；组件不派发事件，回显来自插槽里按钮自己的 tap。</text>
 
@@ -104,7 +106,7 @@ const ICON_SAMPLE: Record<string, { title: string, subTitle: string }> = {
       </text>
       <view v-for="i in resultIcons" :key="i" class="flex flex-col gap-2">
         <text class="text-24 text-gray-6 font-mono">icon="{{ i }}"</text>
-        <RebornResult :icon="i" :title="ICON_SAMPLE[i]!.title" :sub-title="ICON_SAMPLE[i]!.subTitle" />
+        <RebornResult :icon="i" :title="ICON_SAMPLE[i]?.title ?? ''" :sub-title="ICON_SAMPLE[i]?.subTitle ?? ''" />
       </view>
     </RebornCard>
 

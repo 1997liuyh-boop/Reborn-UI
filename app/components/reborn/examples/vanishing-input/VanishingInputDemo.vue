@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { shallowRef } from "vue";
 const placeholders = [
   "为什么我的代码总是坏掉？",
   "undefined 到底是什么意思？",
@@ -6,7 +7,7 @@ const placeholders = [
   "我比编译器聪明吗？",
   "循环会不会转晕？",
 ];
-const text = ref("");
+const text = shallowRef("");
 </script>
 
 <template>

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { onClickOutside } from "@vueuse/core";
+import type { ComponentPublicInstance } from "vue";
+import { onClickOutside, useEventListener } from "@vueuse/core";
 import { AnimatePresence, Motion } from "motion-v";
-import { inject, onMounted, onUnmounted, ref, watch } from "vue";
+import { inject, onBeforeUnmount, shallowRef, useTemplateRef, watch } from "vue";
+import { useGlobalScrollLock } from "~/composables/useGlobalScrollLock";
 import { CarouselKey } from "./AppleCarouselContext";
 
 interface Card {
@@ -20,37 +22,32 @@ const props = withDefaults(defineProps<Props>(), {
   layout: false,
 });
 
-const open = ref(false);
-const containerRef = ref<HTMLDivElement | null>(null);
+const open = shallowRef(false);
+const containerRef = useTemplateRef<ComponentPublicInstance>("containerRef");
 const carouselContext = inject(CarouselKey);
 
 if (!carouselContext) {
   throw new Error("Card must be used within a Carousel");
 }
 
-const { onCardClose, currentIndex } = carouselContext;
+const { onCardClose } = carouselContext;
 
-function handleKeyDown(event: KeyboardEvent) {
-  if (event.key === "Escape") {
+// 只在本卡片打开时响应 Esc；不传目标时默认监听 window，服务端渲染安全，卸载时自动移除
+useEventListener("keydown", (event: KeyboardEvent) => {
+  if (open.value && event.key === "Escape") {
     handleClose();
   }
-}
-
-onMounted(() => {
-  window.addEventListener("keydown", handleKeyDown);
 });
 
-onUnmounted(() => {
-  window.removeEventListener("keydown", handleKeyDown);
+// 打开时锁定页面滚动：与其他浮层共用引用计数锁，卸载时一并释放，不直接改 body.style
+const scrollLock = useGlobalScrollLock();
+
+watch(open, (value) => {
+  if (value) scrollLock.acquire();
+  else scrollLock.release();
 });
 
-watch(open, (newVal) => {
-  if (newVal) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "auto";
-  }
-});
+onBeforeUnmount(() => scrollLock.release());
 
 onClickOutside(containerRef, () => handleClose());
 
@@ -58,14 +55,17 @@ function handleOpen() {
   open.value = true;
 }
 
+// 关闭幂等：未打开时不再通知轮播滚动
 function handleClose() {
+  if (!open.value) return;
   open.value = false;
   onCardClose(props.index);
 }
 </script>
 
 <template>
-  <Teleport to="body">
+  <!-- Nuxt 的服务端渲染只支持传送到 #teleports，传送到 body 会水合失败 -->
+  <Teleport to="#teleports">
     <AnimatePresence>
       <div
         v-if="open"
@@ -128,7 +128,7 @@ function handleClose() {
     />
     <div class="relative z-40 p-8">
       <Motion
-        :layout-id="layout ? `category-${card.category}` : undefined"
+        :layout-id="layout ? `category-${card.title}` : undefined"
         class="text-left font-sans text-sm font-medium text-white md:text-base"
       >
         {{ card.category }}

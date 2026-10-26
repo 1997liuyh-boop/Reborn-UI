@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground, UAvatar } from "#components";
+import { computed, shallowRef } from "vue";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { chipColors, chipPositions, chipSizes, chipVariants } from "~/components/reborn/ui/reborn-chip/reborn-chip.config";
 import RebornChip from "~/components/reborn/ui/reborn-chip/RebornChip.vue";
 
@@ -26,7 +29,7 @@ const defaultState: Record<string, any> = {
   show: true,
 };
 
-const state = ref<Record<string, any>>({ ...defaultState });
+const state = shallowRef<Record<string, any>>({ ...defaultState });
 
 /** 重置演练场配置 */
 function resetState() {
@@ -114,7 +117,7 @@ const chipCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 显隐控制演示：组件内部不会改写 show，由外部按钮切换 */
-const hasUnread = ref(true);
+const hasUnread = shallowRef(true);
 </script>
 
 <template>
@@ -125,7 +128,7 @@ const hasUnread = ref(true);
       :code="chipCode"
       component-name="RebornChip"
       title="交互演练场"
-      description="调节左侧参数，实时查看角标在不同变体、语义色、尺寸与吸附位置下的表现。"
+      description="调节上方参数，实时查看角标在不同变体、语义色、尺寸与吸附位置下的表现。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -158,8 +161,15 @@ const hasUnread = ref(true);
 
     <DemoSection title="基础用法">
       <template #description>
-        把宿主元素放进默认插槽，角标默认吸附在右上角。不传 <code>variant</code> 时按 <code>text</code> 自动选择：传了文本是
-        <code>textDot</code> 计数角标，不传是 <code>solid</code> 纯圆点。
+        把宿主元素放进默认插槽，角标默认吸附在右上角。不传
+        <code>variant</code>
+        时按
+        <code>text</code>
+        自动选择：传了文本是
+        <code>textDot</code>
+        计数角标，不传是
+        <code>solid</code>
+        纯圆点。
       </template>
       <DemoBlock layout="row" align="center" class="gap-10">
         <RebornChip text="9">
@@ -184,9 +194,13 @@ const hasUnread = ref(true);
 
     <DemoSection title="变体：圆点、圆环与文字角标">
       <template #description>
-        <code>variant</code> 有四种取值：<code>solid</code> 实心圆点、<code>outline</code> 空心圆环只表达「有状态」；
-        <code>textDot</code> 实心、<code>textOutline</code> 描边两种会渲染 <code>text</code>。描边类变体垫了纸面色底，
-        宿主内容不会透过圆环空洞或衬在文字下面。
+        <code>variant</code>
+        有四种取值：<code>solid</code>
+        实心圆点、<code>outline</code>
+        空心圆环只表达「有状态」；<code>textDot</code>
+        实心、<code>textOutline</code>
+        描边两种会渲染
+        <code>text</code>。描边类变体垫了纸面色底，宿主内容不会透过圆环空洞或衬在文字下面。
       </template>
       <DemoBlock layout="row" align="end" class="gap-10">
         <div v-for="v in chipVariants" :key="v" class="flex flex-col items-center gap-4">
@@ -200,8 +214,16 @@ const hasUnread = ref(true);
 
     <DemoSection title="颜色：7 种语义色">
       <template #description>
-        <code>color</code> 统一取色阶的 6 阶：<code>solid</code> / <code>textDot</code> 用作底色，<code>outline</code> /
-        <code>textOutline</code> 用作描边与文字色，默认 <code>primary</code>。按提醒的紧急程度选色，例如未读与告警用 <code>error</code>。
+        <code>color</code>
+        统一取色阶的 6 阶：<code>solid</code>
+        /
+        <code>textDot</code>
+        用作底色，<code>outline</code>
+        /
+        <code>textOutline</code>
+        用作描边与文字色，默认
+        <code>primary</code>。按提醒的紧急程度选色，例如未读与告警用
+        <code>error</code>。
       </template>
       <DemoBlock layout="stack">
         <div class="w-full overflow-x-auto">
@@ -223,8 +245,15 @@ const hasUnread = ref(true);
 
     <DemoSection title="尺寸：三档">
       <template #description>
-        <code>size</code> 只有 <code>sm</code> / <code>md</code> / <code>lg</code> 三档，具体像素随变体不同：圆点直径 4 / 5 / 6px，圆环外径 8 / 12 /
-        16px，文字角标高 16 / 20 / 24px、字号比高度小 4px。文字超过一个字符时角标横向撑成胶囊，高度不变。
+        <code>size</code>
+        只有
+        <code>sm</code>
+        /
+        <code>md</code>
+        /
+        <code>lg</code>
+        三档，具体像素随变体不同：圆点直径 4 / 5 / 6px，圆环外径 8 / 12 / 16px，文字角标高 16 / 20 / 24px、字号比高度小
+        4px。文字超过一个字符时角标横向撑成胶囊，高度不变。
       </template>
       <DemoBlock layout="stack">
         <div class="w-full overflow-x-auto">
@@ -246,7 +275,9 @@ const hasUnread = ref(true);
 
     <DemoSection title="位置与内嵌：position 与 inset">
       <template #description>
-        <code>position</code> 选择四角之一；默认角标中心压在宿主角上（向外平移半个自身），<code>inset</code> 取消平移，让角标整个落在宿主内部。
+        <code>position</code>
+        选择四角之一；默认角标中心压在宿主角上（向外平移半个自身），<code>inset</code>
+        取消平移，让角标整个落在宿主内部。
       </template>
       <DemoBlock layout="row" align="center" class="gap-10">
         <div v-for="p in chipPositions" :key="p" class="flex flex-col items-center gap-3">
@@ -267,7 +298,10 @@ const hasUnread = ref(true);
 
     <DemoSection title="显隐控制：v-model:show">
       <template #description>
-        <code>show</code> 为 <code>false</code> 时不渲染角标节点，宿主内容不受影响；组件自身没有关闭交互，显隐完全由外部赋值驱动。
+        <code>show</code>
+        为
+        <code>false</code>
+        时不渲染角标节点，宿主内容不受影响；组件自身没有关闭交互，显隐完全由外部赋值驱动。
       </template>
       <DemoBlock layout="row" align="center" class="gap-10">
         <RebornChip v-model:show="hasUnread" text="3" color="error">
@@ -276,19 +310,27 @@ const hasUnread = ref(true);
           </div>
         </RebornChip>
         <RebornButton size="sm" color="neutral" variant="outlined" @click="hasUnread = !hasUnread">
-          {{ hasUnread ? '标为已读' : '模拟新消息' }}
+          {{ hasUnread ? "标为已读" : "模拟新消息" }}
         </RebornButton>
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="组合场景：在线状态、未读圆点与促销标" description="角标叠在头像、图标按钮与操作按钮上，分别表达在线状态、有未读和活动标记。">
+    <DemoSection
+      title="组合场景：在线状态、未读圆点与促销标"
+      description="角标叠在头像、图标按钮与操作按钮上，分别表达在线状态、有未读和活动标记。"
+    >
       <DemoBlock layout="row" align="center" class="gap-10">
         <div class="flex flex-col items-center gap-3">
           <!-- 头像在线状态：inset 让圆环嵌入圆形边缘内部 -->
           <RebornChip variant="outline" color="success" size="md" inset position="bottom-right">
             <UAvatar src="https://github.com/benjamincanac.png" size="xl" />
           </RebornChip>
-          <span class="text-dimmed text-xs font-medium">在线状态 · <code>outline</code> + <code>inset</code></span>
+          <span class="text-dimmed text-xs font-medium">
+            在线状态 ·
+            <code>outline</code>
+            +
+            <code>inset</code>
+          </span>
         </div>
 
         <div class="flex flex-col items-center gap-3">
@@ -300,14 +342,20 @@ const hasUnread = ref(true);
               </template>
             </RebornButton>
           </RebornChip>
-          <span class="text-dimmed text-xs font-medium">未读圆点 · <code>solid</code></span>
+          <span class="text-dimmed text-xs font-medium">
+            未读圆点 ·
+            <code>solid</code>
+          </span>
         </div>
 
         <div class="flex flex-col items-center gap-3">
           <RebornChip variant="textOutline" color="warning" text="SALE" size="sm">
             <RebornButton label="立即解锁" color="neutral" variant="filled" />
           </RebornChip>
-          <span class="text-dimmed text-xs font-medium">按钮促销标 · <code>textOutline</code></span>
+          <span class="text-dimmed text-xs font-medium">
+            按钮促销标 ·
+            <code>textOutline</code>
+          </span>
         </div>
       </DemoBlock>
     </DemoSection>

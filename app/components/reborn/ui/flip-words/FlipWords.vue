@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, shallowRef, watch } from "vue";
 
 interface Props {
   words: string[];
@@ -12,32 +12,41 @@ const props = withDefaults(defineProps<Props>(), {
   class: "",
 });
 
-defineEmits(["animationStart", "animationComplete"]);
+defineEmits<{
+  /** 新单词进场动画结束时触发 */
+  animationStart: [];
+  /** 旧单词离场动画结束时触发 */
+  animationComplete: [];
+}>();
 
-const currentWord = ref(props.words[0]);
-const isVisible = ref(true);
-const timeoutId = ref<number | null>(null);
+const currentWord = shallowRef(props.words[0] ?? "");
+const isVisible = shallowRef(true);
+// 两个定时器句柄都保存下来，卸载时一并取消，避免卸载后仍切换单词
+let timeoutId: ReturnType<typeof setTimeout> | null = null;
+let swapTimer: ReturnType<typeof setTimeout> | null = null;
 
 function startAnimation() {
   isVisible.value = false;
 
-  setTimeout(() => {
+  swapTimer = setTimeout(() => {
+    swapTimer = null;
     const currentIndex = props.words.indexOf(currentWord.value);
-    const nextWord = props.words[currentIndex + 1] || props.words[0];
+    const nextWord = props.words[currentIndex + 1] || props.words[0] || "";
     currentWord.value = nextWord;
     isVisible.value = true;
   }, 600);
 }
 
 const splitWords = computed(() => {
-  return currentWord.value.split(" ")?.map((word) => ({
+  return currentWord.value.split(" ")?.map(word => ({
     word,
     letters: word.split(""),
   }));
 });
 
 function startTimeout() {
-  timeoutId.value = window.setTimeout(() => {
+  timeoutId = setTimeout(() => {
+    timeoutId = null;
     startAnimation();
   }, props.duration);
 }
@@ -47,9 +56,8 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (timeoutId.value) {
-    clearTimeout(timeoutId.value);
-  }
+  if (timeoutId) clearTimeout(timeoutId);
+  if (swapTimer) clearTimeout(swapTimer);
 });
 
 watch(isVisible, (newValue) => {
@@ -61,19 +69,31 @@ watch(isVisible, (newValue) => {
 
 <template>
   <div class="relative inline-block px-2">
-    <Transition @after-enter="$emit('animationStart')" @after-leave="$emit('animationComplete')">
-      <div v-show="isVisible" class="relative z-10 inline-block text-left text-neutral-900 dark:text-neutral-100"
-        :class="[props.class]">
-        <template v-for="(wordObj, wordIndex) in splitWords" :key="wordObj.word + wordIndex">
-          <span class="inline-block whitespace-nowrap opacity-0" :style="{
-            animation: `fadeInWord 0.3s ease forwards`,
-            animationDelay: `${wordIndex * 0.3}s`,
-          }">
-            <span v-for="(letter, letterIndex) in wordObj.letters" :key="wordObj.word + letterIndex"
-              class="inline-block opacity-0" :style="{
-                animation: `fadeInLetter 0.2s ease forwards`,
-                animationDelay: `${wordIndex * 0.3 + letterIndex * 0.05}s`,
-              }">
+    <!-- 显式命名过渡，类名与 keyframes 都带 flip-words- 前缀并放在 scoped 样式里，不影响应用里其他未命名的 Transition -->
+    <Transition
+      name="flip-words"
+      @after-enter="$emit('animationStart')"
+      @after-leave="$emit('animationComplete')"
+    >
+      <div
+        v-show="isVisible"
+        class="relative z-10 inline-block text-left text-neutral-900 dark:text-neutral-100"
+        :class="[props.class]"
+      >
+        <template
+          v-for="(wordObj, wordIndex) in splitWords"
+          :key="wordObj.word + wordIndex"
+        >
+          <span
+            class="flip-words-word inline-block whitespace-nowrap opacity-0"
+            :style="{ animationDelay: `${wordIndex * 0.3}s` }"
+          >
+            <span
+              v-for="(letter, letterIndex) in wordObj.letters"
+              :key="wordObj.word + letterIndex"
+              class="flip-words-letter inline-block opacity-0"
+              :style="{ animationDelay: `${wordIndex * 0.3 + letterIndex * 0.05}s` }"
+            >
               {{ letter }}
             </span>
             <span class="inline-block">&nbsp;</span>
@@ -84,8 +104,16 @@ watch(isVisible, (newValue) => {
   </div>
 </template>
 
-<style>
-@keyframes fadeInWord {
+<style scoped>
+.flip-words-word {
+  animation: flip-words-fade-in 0.3s ease forwards;
+}
+
+.flip-words-letter {
+  animation: flip-words-fade-in 0.2s ease forwards;
+}
+
+@keyframes flip-words-fade-in {
   0% {
     opacity: 0;
     transform: translateY(10px);
@@ -99,29 +127,15 @@ watch(isVisible, (newValue) => {
   }
 }
 
-@keyframes fadeInLetter {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-    filter: blur(8px);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
+.flip-words-enter-active {
+  animation: flip-words-enter 0.6s ease-in-out forwards;
 }
 
-.v-enter-active {
-  animation: enterWord 0.6s ease-in-out forwards;
+.flip-words-leave-active {
+  animation: flip-words-leave 0.6s ease-in-out forwards;
 }
 
-.v-leave-active {
-  animation: leaveWord 0.6s ease-in-out forwards;
-}
-
-@keyframes enterWord {
+@keyframes flip-words-enter {
   0% {
     opacity: 0;
     transform: translateY(10px);
@@ -133,7 +147,7 @@ watch(isVisible, (newValue) => {
   }
 }
 
-@keyframes leaveWord {
+@keyframes flip-words-leave {
   0% {
     opacity: 1;
     transform: scale(1);

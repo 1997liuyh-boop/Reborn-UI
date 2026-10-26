@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { motion } from "motion-v";
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, shallowRef, watch } from "vue";
 
 interface Props {
   text: string;
@@ -26,9 +26,18 @@ const props = withDefaults(defineProps<Props>(), {
   ],
 });
 
-const currentColors = ref(props.colors);
-const count = ref(0);
-const lastHidden = ref(0);
+// 颜色数组每次整体替换，不就地修改
+const currentColors = shallowRef([...props.colors]);
+const count = shallowRef(0);
+const lastHidden = shallowRef(0);
+
+// 父组件换了色板时立即生效，不必等下一次洗牌
+watch(
+  () => props.colors,
+  (colors) => {
+    currentColors.value = [...colors];
+  },
+);
 
 let intervalId: undefined | NodeJS.Timeout;
 onMounted(() => {
@@ -52,37 +61,33 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <motion.span
-    v-for="(char, index) in props.text"
-    :key="`${char}-${count}-${index}`"
-    :initial="{
-      y: 0,
-      opacity: 0.2,
-      color: props.startColor,
-      scale: 1,
-      filter: 'blur(5px)',
-    }"
-    :transition="{
-      duration: props.duration,
-      delay: index * 0.05,
-    }"
-    :animate="{
-      y: [0, -3, 0],
-      opacity: [1, 0.8, 1],
-      scale: [1, 1.01, 1],
-      filter: ['blur(0px)', 'blur(5px)', 'blur(0px)'],
-      color: currentColors[index % currentColors.length],
-    }"
-    :exit="{
-      y: -3,
-      opacity: 1,
-      scale: 1,
-      filter: 'blur(5px)',
-      color: props.startColor,
-    }"
-  >
-    {{ char }}
-  </motion.span>
+  <!-- 单一根节点：父组件传入的 class / style / 事件落在这一层；行内 span 不打断所在段落 -->
+  <span>
+    <motion.span
+      v-for="(char, index) in props.text"
+      :key="`${char}-${count}-${index}`"
+      :initial="{
+        y: 0,
+        opacity: 0.2,
+        color: props.startColor,
+        scale: 1,
+        filter: 'blur(5px)',
+      }"
+      :transition="{
+        duration: props.duration,
+        delay: index * 0.05,
+      }"
+      :animate="{
+        y: [0, -3, 0],
+        opacity: [1, 0.8, 1],
+        scale: [1, 1.01, 1],
+        filter: ['blur(0px)', 'blur(5px)', 'blur(0px)'],
+        color: currentColors[index % currentColors.length],
+      }"
+    >
+      {{ char }}
+    </motion.span>
+  </span>
 </template>
 
 <style scoped></style>

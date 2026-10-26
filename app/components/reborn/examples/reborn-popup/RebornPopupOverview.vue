@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from '#components';
+
 /**
  * 总览卡片缩略：手机屏下半截，遮罩压暗页面，底部弹出带拖拽条、标题与关闭按钮的分享面板
  *

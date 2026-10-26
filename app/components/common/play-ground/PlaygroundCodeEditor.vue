@@ -1,7 +1,3 @@
-<template>
-    <div ref="host" class="playground-editor h-full min-h-0 w-full overflow-hidden" />
-</template>
-
 <script setup lang="ts">
 /**
  * Playground 代码编辑器(CodeMirror 6)
@@ -42,7 +38,7 @@ const emit = defineEmits<{
     (e: "format"): void;
 }>();
 
-const host = ref<HTMLElement>();
+const host = useTemplateRef<HTMLElement>('host');
 const colorMode = useColorMode();
 
 let view: EditorView | null = null;
@@ -199,6 +195,12 @@ onUnmounted(() => {
     view = null;
 });
 </script>
+
+<template>
+    <div ref="host" class="playground-editor h-full min-h-0 w-full overflow-hidden" />
+</template>
+
+
 
 <style scoped>
 /* CodeMirror 挂载节点占满编辑列 */

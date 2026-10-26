@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { badgeColors, badgeSizes, badgeVariants } from './reborn-badge.config';
-import { computed } from 'vue'
+import { computed, getCurrentInstance, onBeforeUpdate, shallowRef } from 'vue'
 import { useFormInject } from '~/composables/useFieldGroup'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
@@ -17,6 +17,7 @@ const props = withDefaults(defineProps<BadgeProps>(), {
     gap: false
 })
 
+// update:show / update:checked 由下方的 defineModel 声明，这里不再重复
 const emit = defineEmits<{
     close: [payload: MouseEvent]
     click: [payload: MouseEvent]
@@ -93,15 +94,58 @@ export interface BadgeSlots {
     close: (props: { ui: any; close: (e: MouseEvent) => void }) => any
 }
 
-const show = defineModel<boolean>('show', { default: true })
-/** 可选中模式的选中态：默认 false，未传 v-model:checked 时走内部非受控状态 */
-const checked = defineModel<boolean>('checked', { default: false })
+/**
+ * 是否显示（v-model:show）与可选中模式的选中态（v-model:checked），未传时走内部非受控状态。
+ * defineModel 只负责声明属性与 update 事件，读写都不经它的本地缓存：只传值时 useModel 会改写缓存；非受控时写进去的值
+ * 还会成为受控后「同值不派发」的去重基准，吞掉父级要收的事件。读取按严格受控取父级原始值，写入直接派发事件。
+ */
+defineModel<boolean>('show', { default: undefined })
+defineModel<boolean>('checked', { default: undefined })
+const instance = getCurrentInstance()!
+/** 父级是否在 vnode 上写了该属性：据此区分「未绑定」与「显式绑定 undefined」 */
+function isBound(name: 'show' | 'checked') {
+    return Object.hasOwn(instance.vnode.props ?? {}, name)
+}
+/** 受控判定只存布尔结果：shallowRef 写入相同的值不触发依赖，show / checked 只在受控状态真的变化时重算 */
+const showBound = shallowRef(isBound('show'))
+const checkedBound = shallowRef(isBound('checked'))
+onBeforeUpdate(() => {
+    showBound.value = isBound('show')
+    checkedBound.value = isBound('checked')
+})
+const localShow = shallowRef(true)
+const localChecked = shallowRef(false)
+/** 严格受控：绑定时只认父值（显式 undefined / null 按隐藏），父级不回写就保持；未绑定时由本地状态承载 */
+const show = computed({
+    get: () => showBound.value ? !!instance.props.show : localShow.value,
+    set: (value: boolean) => {
+        if (!showBound.value) localShow.value = value
+        instance.emit('update:show', value)
+    }
+})
+const checked = computed({
+    get: () => checkedBound.value ? !!instance.props.checked : localChecked.value,
+    set: (value: boolean) => {
+        if (!checkedBound.value) localChecked.value = value
+        instance.emit('update:checked', value)
+    }
+})
 
 const { orientation, size: fieldGroupSize } = useFormInject(props)
 
 /** 数字零是有效内容；纯图标时不渲染空标签，避免额外间距。 */
 const hasLabel = computed(() => props.label !== undefined && props.label !== null && props.label !== '')
-const hasContent = computed(() => !!slots.default || hasLabel.value)
+/**
+ * 默认插槽是否存在：插槽不是响应式的，computed 读 slots 只会停在首次结果上。
+ * setup 时取初值（服务端渲染也能拿到），每次更新前再同步一次；
+ * 在 onBeforeUpdate 里写状态不会多一轮渲染。模板里的结构判断直接读 $slots。
+ */
+const hasDefaultSlot = shallowRef(!!slots.default)
+onBeforeUpdate(() => {
+    hasDefaultSlot.value = !!slots.default
+})
+/** 只参与样式变体（square）计算 */
+const hasContent = computed(() => hasDefaultSlot.value || hasLabel.value)
 
 const uiOverrides = computed(() => props.ui || {})
 const ui = computed(() => {
@@ -118,7 +162,8 @@ const ui = computed(() => {
         fieldGroup: orientation.value
     })
     return {
-        root: (opts?: any) => styles.root({ class: cn(opts?.class, uiOverrides.value.root, props.class) }),
+        // class 只落在徽标主体（base）上，与 UniApp 的 customClass 一致；外层动画容器要加类用 ui.root
+        root: (opts?: any) => styles.root({ class: cn(opts?.class, uiOverrides.value.root) }),
         base: (opts?: any) => styles.base({ class: cn(opts?.class, uiOverrides.value.base, props.class) }),
         label: (opts?: any) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
         leadingIcon: (opts?: any) => styles.leadingIcon({ class: cn(opts?.class, uiOverrides.value.leadingIcon) }),
@@ -157,10 +202,10 @@ const handleClose = async (e: MouseEvent) => {
 
 <template>
   <RebornTransition :show="show" name="badge-custom" :duration="200" :class="ui.root()" custom-class="inline-flex">
-    <component :is="props.as" :class="ui.base({ class: props.class })" @click="handleClick">
+    <component :is="props.as" :class="ui.base()" @click="handleClick">
       <slot name="leading" :ui="ui" />
 
-      <span v-if="hasContent" :class="ui.label()">
+      <span v-if="$slots.default || hasLabel" :class="ui.label()">
         <slot :ui="ui">
           <span v-if="hasLabel">
             {{ label }}

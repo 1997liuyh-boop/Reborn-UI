@@ -3,7 +3,7 @@ import type {
     SlideVerifyColor,
     SlideVerifySize,
 } from '@/components/reborn-slide-verify/reborn-slide-verify.config'
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
@@ -16,25 +16,30 @@ import {
 import RebornSlideVerify from '@/components/reborn-slide-verify/RebornSlideVerify.vue'
 
 const basicRef = ref<InstanceType<typeof RebornSlideVerify> | null>(null)
-const basicVerified = ref(false)
-const customVerified = ref(false)
-const slotVerified = ref(false)
-const thresholdSliderValue = ref(70)
-const currentColor = ref<SlideVerifyColor>('primary')
-const currentSize = ref<SlideVerifySize>('md')
-const isDisabled = ref(false)
-const isLoading = ref(false)
-const splitText = ref(true)
-const showFailText = ref(true)
-const isSquare = ref(false)
-const widthPercent = ref(100)
+const basicVerified = shallowRef(false)
+const customVerified = shallowRef(false)
+const slotVerified = shallowRef(false)
+const thresholdSliderValue = shallowRef(70)
+const currentColor = shallowRef<SlideVerifyColor>('primary')
+const currentSize = shallowRef<SlideVerifySize>('md')
+const isDisabled = shallowRef(false)
+const isLoading = shallowRef(false)
+const splitText = shallowRef(true)
+const showFailText = shallowRef(true)
+const isSquare = shallowRef(false)
+const widthPercent = shallowRef(100)
 const currentWidth = computed(() => widthPercent.value === 100 ? '' : `${widthPercent.value}%`)
 const logs = ref<string[]>(['等待滑动验证'])
 const statusTextClass = 'text-24 text-gray-5 dark:text-gray-3'
 const colorDotBaseClass = 'size-6 rounded-full shadow-sm transition-transform'
 
+/** 事件记录最多保留的条数，长时间操作也不会让列表无限增长 */
+const maxLogCount = 6
+
+/** 新记录插到最前，超出上限的旧记录丢弃 */
 function addLog(text: string) {
     logs.value.unshift(`${new Date().toLocaleTimeString()} ${text}`)
+    if (logs.value.length > maxLogCount) logs.value.splice(maxLogCount)
 }
 
 function handleSuccess(name: string) {
@@ -215,5 +220,6 @@ function getShieldIcon(verified: boolean) {
                 </template>
             </RebornSlideVerify>
         </RebornCard>
+    <RebornCard title="事件记录（最近 6 条）"><text class="block whitespace-pre-line text-[24rpx] text-gray-500">{{ logs.join('\n') }}</text></RebornCard>
     </RebornPage>
 </template>

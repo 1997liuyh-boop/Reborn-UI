@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Motion } from "motion-v";
+import { computed } from "vue";
 
 interface LetterPullupProps {
   class?: string;
@@ -9,7 +10,8 @@ interface LetterPullupProps {
 
 const props = defineProps<LetterPullupProps>();
 
-const letters = props.words.split("");
+// words 变化后跟随更新
+const letters = computed(() => props.words.split(""));
 
 const pullupVariant = {
   initial: { y: 100, opacity: 0 },
@@ -21,10 +23,15 @@ const pullupVariant = {
 </script>
 
 <template>
-  <div class="flex justify-center">
+  <!-- 以 words 作 key：文字变化时整体重放进场动画 -->
+  <div
+    :key="props.words"
+    class="flex justify-center"
+  >
+    <!-- 文本里常有重复字母与空格，用下标作 key -->
     <div
       v-for="(letter, index) in letters"
-      :key="letter"
+      :key="index"
     >
       <Motion
         as="h1"

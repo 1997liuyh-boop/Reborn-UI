@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T03:23:03.903Z",
+  "generatedAt": "2026-10-26T04:26:47.109Z",
   "components": [
     {
       "id": "animate-grid",
@@ -392,7 +392,7 @@
     {
       "id": "halo-search",
       "title": "光晕搜索框",
-      "description": "用于视觉展示的发光光环搜索输入框组件，无取值 API。",
+      "description": "发光光环搜索输入框：悬停与聚焦时光环旋转，支持 v-model 绑定关键词与回车 search 事件。",
       "category": "form",
       "tags": [
         "css",
@@ -816,8 +816,11 @@
       "description": "用于展示当前页面层级路径并可逐级返回的面包屑导航组件，支持手写条目与 routes 数据驱动两种用法，双端可用。",
       "category": "navigation",
       "tags": [
+        "css",
+        "tailwind",
         "navigation",
-        "breadcrumb"
+        "breadcrumb",
+        "uniapp"
       ],
       "platforms": [
         "web",
@@ -957,7 +960,11 @@
       "title": "取色器",
       "description": "用于弹出面板选取颜色并以 v-model 绑定色值字符串的取色器组件，双端可用。",
       "category": "form",
-      "tags": [],
+      "tags": [
+        "vue",
+        "reborn-color-picker",
+        "uniapp"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -978,7 +985,10 @@
       "title": "Menu 右键菜单",
       "description": "用于在目标区域右键、点击、悬浮或划词后弹出操作面板的上下文菜单组件，仅 web 端。",
       "category": "navigation",
-      "tags": [],
+      "tags": [
+        "vue",
+        "reborn-context-menu"
+      ],
       "platforms": [
         "web"
       ]
@@ -1004,7 +1014,10 @@
       "title": "卡券 Coupon",
       "description": "用于渲染缺口、撕线、邮票等形态优惠券外观的卡券组件，仅 web 端。",
       "category": "misc",
-      "tags": [],
+      "tags": [
+        "vue",
+        "reborn-coupon"
+      ],
       "platforms": [
         "web"
       ]
@@ -1101,7 +1114,11 @@
       "title": "Draggable 拖拽排序",
       "description": "用于列表项拖拽排序并同步 v-model 数据顺序的容器组件，双端可用。",
       "category": "misc",
-      "tags": [],
+      "tags": [
+        "拖拽",
+        "排序",
+        "列表"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -1169,7 +1186,11 @@
       "title": "悬浮按钮 (Fab)",
       "description": "用于固定位置悬浮操作入口的按钮组件，支持拖拽吸边与展开动作面板，双端可用。",
       "category": "navigation",
-      "tags": [],
+      "tags": [
+        "vue",
+        "reborn-fab",
+        "uniapp"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -1216,7 +1237,11 @@
       "title": "Form 表单",
       "description": "用于组织表单项并基于 zod schema 校验数据的表单容器组件，双端可用。",
       "category": "form",
-      "tags": [],
+      "tags": [
+        "vue",
+        "reborn-form",
+        "uniapp"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -1242,7 +1267,10 @@
       "title": "标题",
       "description": "用于站点顶部导航的响应式头部组件，移动端可切换为弹窗菜单。",
       "category": "navigation",
-      "tags": [],
+      "tags": [
+        "vue",
+        "reborn-header"
+      ],
       "platforms": [
         "web"
       ]
@@ -1333,7 +1361,7 @@
     {
       "id": "reborn-loading",
       "title": "Loading 加载器",
-      "description": "用于给元素或整页添加加载遮罩的组件，提供 v-loading 指令与 useLoading 服务式调用。",
+      "description": "用于给元素或整页添加加载遮罩的组件，提供 v-loading 指令与 showLoading 服务式调用。",
       "category": "misc",
       "tags": [],
       "platforms": [
@@ -1426,7 +1454,11 @@
       "title": "Overlay 遮罩",
       "description": "用于弹层背后的全屏或局部遮罩组件，支持点击关闭与滚动锁定。",
       "category": "misc",
-      "tags": [],
+      "tags": [
+        "overlay",
+        "modal",
+        "uniapp"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -1466,7 +1498,11 @@
       "title": "Pagination 分页",
       "description": "用于数据列表分页切换的分页组件，支持布局组合、简洁模式、页码折叠与完整插槽定制。",
       "category": "navigation",
-      "tags": [],
+      "tags": [
+        "vue",
+        "reborn-pagination",
+        "uniapp"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -1620,7 +1656,10 @@
       "title": "RootPortal 根门户",
       "description": "用于把子节点渲染到页面根节点、脱离当前层级关系的双端传送组件。",
       "category": "misc",
-      "tags": [],
+      "tags": [
+        "portal",
+        "overlay"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -1722,7 +1761,11 @@
       "title": "滑块验证",
       "description": "用于人机校验的滑块验证组件，向右拖动超过阈值即通过，支持失败回弹与自动重置。",
       "category": "misc",
-      "tags": [],
+      "tags": [
+        "uniapp",
+        "form",
+        "verification"
+      ],
       "platforms": [
         "uniapp"
       ]
@@ -1866,7 +1909,7 @@
     {
       "id": "reborn-tabs",
       "title": "Tabs 标签页",
-      "description": "双端标签页：RebornTabs + RebornTabPane 组合，key 驱动切换，7 种类型 × 4 种尺寸，支持可编辑、懒加载与滚动定位。",
+      "description": "双端标签页：RebornTabs + RebornTabPane 组合，paneKey 驱动切换，7 种类型 × 4 种尺寸，支持可编辑、懒加载与滚动定位。",
       "category": "navigation",
       "tags": [
         "css",
@@ -1973,7 +2016,10 @@
       "title": "Transfer 穿梭框",
       "description": "用于在双列列表间移动条目的穿梭框组件，支持搜索过滤、全选、单向模式、撤回、分页、虚拟滚动，以及头部、条目、底部与操作按钮插槽。",
       "category": "misc",
-      "tags": [],
+      "tags": [
+        "vue",
+        "reborn-transfer"
+      ],
       "platforms": [
         "web"
       ]
@@ -2071,7 +2117,8 @@
       "category": "data-display",
       "tags": [
         "data",
-        "watermark"
+        "watermark",
+        "uniapp"
       ],
       "platforms": [
         "web",
@@ -2183,7 +2230,7 @@
     },
     {
       "id": "shader-toy",
-      "title": "Shader Toy Viewer",
+      "title": "ShaderToy 着色器",
       "description": "用于在浏览器中渲染 ShaderToy GLSL 片段着色器的 WebGL 组件。",
       "category": "misc",
       "tags": [

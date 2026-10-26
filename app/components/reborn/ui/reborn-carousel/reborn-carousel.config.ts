@@ -139,14 +139,15 @@ export default {
     direction: {
       // 水平方向：水平滚动，水平排列
       horizontal: {
-        viewport: "overflow-x-auto overflow-y-hidden",
+        // 吸附方式写在类名上（服务端首屏也有）；拖拽与程序转场期间由组件直接写行内 scroll-snap-type: none 暂停
+        viewport: "overflow-x-auto overflow-y-hidden snap-x snap-mandatory",
         track: "flex-row",
         slide: "h-full",
       },
       // 垂直方向：垂直滚动，垂直排列
       vertical: {
         wrapper: "flex flex-row items-center",
-        viewport: "overflow-y-auto overflow-x-hidden",
+        viewport: "overflow-y-auto overflow-x-hidden snap-y snap-mandatory",
         track: "flex-col",
         slide: "w-full",
         arrowGroup: "inset-x-auto inset-y-4 left-1/2 top-4 -translate-x-1/2 translate-y-0 flex-col",

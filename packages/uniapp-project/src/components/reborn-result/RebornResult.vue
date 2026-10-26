@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ResultIcon, ResultUI } from './reborn-result.config'
-import { computed, useSlots } from 'vue'
+import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import { RESULT_ICON_COLOR, RESULT_ICON_NAME, resultTheme } from './reborn-result.config'
 
@@ -44,17 +44,6 @@ export interface ResultProps {
   ui?: ResultUI
 }
 
-const slots = useSlots()
-
-/**
- * 三段都按需渲染：没内容的段直接不出现在节点树里，
- * 这样段间的 48rpx 间距不会因为空段变成 96rpx。
- */
-const showIcon = computed(() => props.icon !== null || !!slots.icon)
-const showContent = computed(
-  () => !!props.title || !!props.subTitle || !!slots.title || !!slots['sub-title'],
-)
-
 /** icon 为 null 时底板不着色，交给 icon 插槽自己决定样式 */
 const styles = computed(() =>
   resultTheme({
@@ -79,27 +68,27 @@ const ui = computed(() => {
 
 <template>
   <view :class="ui.root()">
-    <view v-if="showIcon" :class="ui.icon()">
+    <view v-if="props.icon !== null || $slots.icon" :class="ui.icon()">
       <slot name="icon">
         <!-- 字形类名单独挂，不并进 ui.iconGlyph：两个 i-lucide-* 叠在一起会同时画出两层遮罩 -->
         <view v-if="props.icon" :class="[ui.iconGlyph(), RESULT_ICON_NAME[props.icon]]" />
       </slot>
     </view>
 
-    <view v-if="showContent" :class="ui.content()">
-      <view v-if="props.title || slots.title" :class="ui.title()">
+    <view v-if="props.title || props.subTitle || $slots.title || $slots['sub-title']" :class="ui.content()">
+      <view v-if="props.title || $slots.title" :class="ui.title()">
         <slot name="title">
           {{ props.title }}
         </slot>
       </view>
-      <view v-if="props.subTitle || slots['sub-title']" :class="ui.subTitle()">
+      <view v-if="props.subTitle || $slots['sub-title']" :class="ui.subTitle()">
         <slot name="sub-title">
           {{ props.subTitle }}
         </slot>
       </view>
     </view>
 
-    <view v-if="slots.extra" :class="ui.extra()">
+    <view v-if="$slots.extra" :class="ui.extra()">
       <slot name="extra" />
     </view>
   </view>

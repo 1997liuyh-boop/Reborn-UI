@@ -2,13 +2,12 @@
 /**
  * 总览卡片缩略：展开状态的下拉菜单
  *
- * 关闭 portal 让面板就地渲染在触发按钮下方，不挂到 body 上；
- * 面板是 absolute 定位，外层留出高度并把触发器放在上部，避免面板被卡片裁切。
- * 显隐写成受控且丢弃关闭请求：否则点页面任意处都会触发外部点击，把缩略图收起。
+ * 主题面板静态渲染，不创建浮层定位器或全局监听。
  */
 import type { DropdownOption } from '~/components/reborn/ui/reborn-dropdown/reborn-dropdown.config'
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'
-import RebornDropdown from '~/components/reborn/ui/reborn-dropdown/RebornDropdown.vue'
+import { dropdownTheme } from '~/components/reborn/ui/reborn-dropdown/reborn-dropdown.config'
+const styles = dropdownTheme()
 
 const options: DropdownOption[] = [
   { label: '编辑', value: 'edit', icon: 'lucide:pencil' },
@@ -16,18 +15,11 @@ const options: DropdownOption[] = [
   { label: '删除', value: 'delete', icon: 'lucide:trash-2' },
 ]
 
-/** 缩略图常驻展开，忽略组件发出的显隐变更 */
-function keepOpen() {}
 </script>
 
 <template>
   <div class="flex h-[160px] w-[160px] items-start justify-center">
-    <RebornDropdown
-      :popup-visible="true"
-      :options="options"
-      :portal="false"
-      @update:popup-visible="keepOpen"
-    >
+    <div class="flex flex-col items-center gap-1">
       <RebornButton
         size="sm"
         variant="outlined"
@@ -38,6 +30,14 @@ function keepOpen() {}
           class="size-4"
         />
       </RebornButton>
-    </RebornDropdown>
+      <div :class="styles.panel()" class="w-32 rounded-md border border-gray-3 bg-gray-1 shadow-md">
+        <div :class="styles.list()">
+          <div v-for="option in options" :key="option.label" :class="styles.item()">
+            <Icon v-if="option.icon" :name="option.icon" :class="styles.itemIcon()" />
+            <span :class="styles.itemLabel()">{{ option.label }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

@@ -2,7 +2,7 @@
 import type { CSSProperties } from "vue";
 import type { DepthImageUI } from "./reborn-depth-image.config";
 import type { DepthRenderer } from "./reborn-depth-image.utils";
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from "vue";
 import { cn } from "~/lib/utils";
 import { depthImageTheme } from "./reborn-depth-image.config";
 import { createDepthRenderer } from "./reborn-depth-image.utils";
@@ -90,12 +90,12 @@ const emit = defineEmits<{
   fallback: [reason: DepthImageFallbackReason];
 }>();
 
-const rootRef = ref<HTMLElement | null>(null);
-const canvasRef = ref<HTMLCanvasElement | null>(null);
-const probeRef = ref<HTMLElement | null>(null);
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
+const canvasRef = useTemplateRef<HTMLCanvasElement>("canvasRef");
+const probeRef = useTemplateRef<HTMLElement>("probeRef");
 /** 画布是否已接管显示；为 false 时显示静态图 */
-const active = ref(false);
-const canvasStyle = ref<CSSProperties>({});
+const active = shallowRef(false);
+const canvasStyle = shallowRef<CSSProperties>({});
 
 /** 对齐方式 → 横纵向偏移比例（与 object-position 的百分比含义一致） */
 const ALIGN: Record<DepthImagePosition, [number, number]> = {
@@ -398,11 +398,19 @@ const ui = computed(() => {
 <template>
   <div ref="rootRef" :class="ui.root()">
     <img
-      :src="props.src" :alt="props.alt" :class="ui.image()" :style="{ objectPosition, opacity: active ? 0 : undefined }"
+      :src="props.src"
+      :alt="props.alt"
+      :class="ui.image()"
+      :style="{ objectPosition, opacity: active ? 0 : undefined }"
       draggable="false"
     >
     <canvas v-show="active" ref="canvasRef" aria-hidden="true" :class="ui.canvas()" :style="canvasStyle" />
     <!-- 颜色探针：只用来让浏览器解析 lightColor 里的 CSS 变量 -->
-    <span ref="probeRef" aria-hidden="true" class="pointer-events-none absolute size-0 overflow-hidden" :style="{ color: props.lightColor }" />
+    <span
+      ref="probeRef"
+      aria-hidden="true"
+      class="pointer-events-none absolute size-0 overflow-hidden"
+      :style="{ color: props.lightColor }"
+    />
   </div>
 </template>

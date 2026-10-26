@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, shallowRef } from 'vue';
 import {
   LoadingColors,
   LoadingTypes,
@@ -6,7 +7,7 @@ import {
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
+const state = shallowRef<Record<string, any>>({
   type: "ring",
   color: "primary",
   size: "40px",

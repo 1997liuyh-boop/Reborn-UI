@@ -1,15 +1,18 @@
-import { createApp, defineComponent, h, ref } from 'vue';
-import type { Component } from 'vue';
 import type { ClassValue } from 'tailwind-variants';
-import { cn } from '~/lib/utils';
-import RebornLoadingMask from '~/components/reborn/ui/reborn-loading/RebornLoadingMask.vue';
-import { LOADING_MASK_DURATION } from '~/components/reborn/ui/reborn-loading/reborn-loading-mask.config';
+import type { Component } from 'vue';
 import type { LoadingTypes } from '~/components/reborn/ui/reborn-loading/reborn-loading.config';
+import { createApp, defineComponent, effectScope, h, ref, shallowRef } from 'vue';
+import { LOADING_MASK_DURATION } from '~/components/reborn/ui/reborn-loading/reborn-loading-mask.config';
+import RebornLoadingMask from '~/components/reborn/ui/reborn-loading/RebornLoadingMask.vue';
+import { cn } from '~/lib/utils';
 import { useGlobalScrollLock } from './useGlobalScrollLock';
 
 /**
- * useLoading —— 服务式加载遮罩（对应 Element Plus 的 ElLoading.service）
- * v-loading 指令（app/directives/loading.ts）与本 hook 共享同一套底层创建 / 销毁逻辑（createLoading）。
+ * showLoading —— 服务式加载遮罩（对应 Element Plus 的 ElLoading.service）
+ * v-loading 指令（app/directives/loading.ts）与本函数共享同一套底层创建 / 销毁逻辑（createLoading）。
+ *
+ * 它是命令式动作，不是组合式函数：遮罩不随调用方组件卸载而关闭，必须由调用方 close()。
+ * 因此不以 use 开头，避免被当成「在 setup 里调用、随组件清理」的组合式函数使用。
  */
 
 /** 加载图标类型（与 RebornLoading 的 type 对齐） */
@@ -46,7 +49,7 @@ export type LoadingPatchOptions = Partial<
   Pick<LoadingOptions, 'text' | 'type' | 'color' | 'size' | 'background' | 'customClass' | 'zIndex' | 'lock'>
 >;
 
-/** useLoading 返回的实例 */
+/** showLoading 返回的实例 */
 export interface LoadingInstance {
   /** 关闭遮罩（等淡出过渡结束后卸载） */
   close: () => void;
@@ -131,7 +134,7 @@ export function createLoading(options: LoadingOptions = {}): LoadingHandle {
     if (resolved) {
       target = resolved;
     } else {
-      console.warn(`[useLoading] 未找到目标元素：${String(options.target)}，已回退到 document.body`);
+      console.warn(`[showLoading] 未找到目标元素：${String(options.target)}，已回退到 document.body`);
     }
   }
 
@@ -198,7 +201,9 @@ export function createLoading(options: LoadingOptions = {}): LoadingHandle {
   // ---- 滚动锁 ----
   // 全屏：复用全局引用计数锁（与 RebornOverlay 同一个计数器，避免两套锁互相踩踏）
   // 局部：为目标元素加 overflow:hidden（记录原内联值，还原时恢复）
-  const scrollLock = useGlobalScrollLock();
+  // 遮罩由 close / destroy 显式释放，不能跟着调用时恰好活跃的作用域（如某个组件的 setup、指令钩子）一起释放，
+  // 所以在独立作用域里取锁凭据
+  const scrollLock = effectScope(true).run(() => useGlobalScrollLock())!;
   let lockEnabled = options.lock === true;
   let restoreOverflow: (() => void) | null = null;
   let lockReleaseTimer: ReturnType<typeof setTimeout> | null = null;
@@ -240,7 +245,7 @@ export function createLoading(options: LoadingOptions = {}): LoadingHandle {
 
   // ---- 响应式渲染 ----
   const defaultZIndex = options.zIndex ?? (fullscreen ? 3000 : 2000);
-  const visible = ref(true);
+  const visible = shallowRef(true);
   const maskProps = ref<MaskVisualProps>({
     text: options.text,
     type: options.type,
@@ -403,15 +408,15 @@ function toInstance(handle: LoadingHandle): LoadingInstance {
 }
 
 /**
- * 服务式加载遮罩
+ * 服务式加载遮罩：调用即显示，返回的实例用来更新与关闭
  *
  * ```ts
- * const loading = useLoading({ text: '加载中...' }) // 未指定 target 时默认全屏
+ * const loading = showLoading({ text: '加载中...' }) // 未指定 target 时默认全屏
  * loading.setText('即将完成')
  * loading.close()
  * ```
  */
-export function useLoading(options: LoadingOptions = {}): LoadingInstance {
+export function showLoading(options: LoadingOptions = {}): LoadingInstance {
   // SSR 安全：服务端返回空实现
   if (typeof document === 'undefined') return toInstance({ ...noopHandle });
 
@@ -426,7 +431,7 @@ export function useLoading(options: LoadingOptions = {}): LoadingInstance {
   if (!fullscreen) return toInstance(handle);
 
   // ⚠️ 根因：close() 后实例要等约 200ms 淡出才销毁，期间 closed 仍为 false；
-  // 此时再调用全屏 useLoading() 会拿到这个正在关闭的实例，淡出结束后遮罩随之消失
+  // 此时再调用全屏 showLoading() 会拿到这个正在关闭的实例，淡出结束后遮罩随之消失
   // ✅ 修复：close() 时立即让出单例位置，旧实例继续淡出并自行销毁，下一次调用创建新实例
   const singleton: FullscreenSingleton = {
     handle,

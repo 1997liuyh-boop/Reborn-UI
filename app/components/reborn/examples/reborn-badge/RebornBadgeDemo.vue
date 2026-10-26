@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, ref } from "vue";
-import {
-  badgeColors,
-  badgeSizes,
-  badgeVariants,
-} from "~/components/reborn/ui/reborn-badge/reborn-badge.config";
+import { computed, ref, shallowRef } from "vue";
+import { badgeColors, badgeSizes, badgeVariants } from "~/components/reborn/ui/reborn-badge/reborn-badge.config";
 import RebornBadge from "~/components/reborn/ui/reborn-badge/RebornBadge.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
@@ -91,7 +87,7 @@ const checkTags = ref(
 );
 
 /** 最近一次 change 事件回显 */
-const lastChanged = ref("");
+const lastChanged = shallowRef("");
 
 function handleCheckChange(index: number, checked: boolean) {
   const item = checkTags.value[index];
@@ -99,7 +95,7 @@ function handleCheckChange(index: number, checked: boolean) {
 }
 
 /** 最近一次关闭事件，替代 console 输出 */
-const lastClosed = ref("");
+const lastClosed = shallowRef("");
 
 function handleClose(label: string) {
   lastClosed.value = label;
@@ -109,32 +105,43 @@ function handleClose(label: string) {
  * 关闭前的异步校验：返回 false 可阻止本次关闭
  */
 function beforeCloseVerify(): Promise<boolean> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // eslint-disable-next-line no-alert -- 演示关闭前确认，只有用户操作时触发
-      resolve(window.confirm("确定要删除这个标签吗？"));
-    }, 500);
-  });
+  // eslint-disable-next-line no-alert -- 演示关闭前确认，只有用户操作时触发
+  return Promise.resolve(window.confirm("确定要删除这个标签吗？"));
 }
 </script>
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground
-      v-model="state" :controls="controls" :code="badgeCode" component-name="RebornBadge" title="交互演练场"
+      v-model="state"
+      :controls="controls"
+      :code="badgeCode"
+      component-name="RebornBadge"
+      title="交互演练场"
       description="组合色彩、风格与尺寸；勾选「可关闭」后点击叉号会通过 v-model:show 收起徽标。"
     >
       <RebornBadge
-        v-model:show="state.show" :label="state.label" :color="state.color" :variant="state.variant"
-        :size="state.size" :closable="state.closable" :square="state.square" :round="state.round" :circle="state.circle"
+        v-model:show="state.show"
+        :label="state.label"
+        :color="state.color"
+        :variant="state.variant"
+        :size="state.size"
+        :closable="state.closable"
+        :square="state.square"
+        :round="state.round"
+        :circle="state.circle"
       />
     </Playground>
 
-    <DemoSection title="变体矩阵" description="四种视觉风格 × 七种预设色彩，filled 用于强调，outlined 与 subtle 更适合密集列表。">
+    <DemoSection
+      title="变体矩阵"
+      description="四种视觉风格 × 七种预设色彩，filled 用于强调，outlined 与 subtle 更适合密集列表。"
+    >
       <DemoBlock layout="stack">
         <div v-for="v in badgeVariants" :key="v" class="flex flex-col gap-2">
           <span class="text-dimmed text-xs font-medium">
-            {{ v }} · <code>variant</code>
+            {{ v }} ·
+            <code>variant</code>
           </span>
           <div class="flex flex-wrap items-center gap-3">
             <RebornBadge v-for="c in badgeColors" :key="c" :variant="v" :color="c" size="sm" :label="c" />
@@ -143,17 +150,25 @@ function beforeCloseVerify(): Promise<boolean> {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="形状" description="round 为胶囊，circle 为固定等宽高的圆形；同时开启时 circle 优先，颜色仍由 variant 与 color 决定。">
+    <DemoSection
+      title="形状"
+      description="round 为胶囊，circle 为固定等宽高的圆形；同时开启时 circle 优先，颜色仍由 variant 与 color 决定。"
+    >
       <DemoBlock layout="row" align="center">
         <RebornBadge v-for="v in badgeVariants" :key="v" :variant="v" color="primary" round :label="v" />
         <RebornBadge color="success" variant="soft" round closable label="可关闭胶囊" />
-        <RebornBadge v-for="v in badgeVariants" :key="`circle-${ v}`" :variant="v" circle :label="8" />
+        <RebornBadge v-for="v in badgeVariants" :key="`circle-${v}`" :variant="v" circle :label="8" />
         <RebornBadge v-for="s in badgeSizes" :key="s" :size="s" variant="outlined" round circle :label="0" />
-        <RebornBadge variant="soft" circle aria-label="收藏"><template #leading="{ ui }"><Icon name="lucide:star" :class="ui.leadingIcon()" /></template></RebornBadge>
+        <RebornBadge variant="soft" circle aria-label="收藏">
+          <template #leading="{ ui }"><Icon name="lucide:star" :class="ui.leadingIcon()" /></template>
+        </RebornBadge>
       </DemoBlock>
     </DemoSection>
 
-    <DemoNote>圆形适合单个图标或短数字；长文本或关闭按钮请使用普通形状或 <code>round</code>，避免内容裁切。</DemoNote>
+    <DemoNote>
+      圆形适合单个图标或短数字；长文本或关闭按钮请使用普通形状或
+      <code>round</code>，避免内容裁切。
+    </DemoNote>
 
     <DemoSection
       title="可选中标签"
@@ -161,8 +176,13 @@ function beforeCloseVerify(): Promise<boolean> {
     >
       <DemoBlock layout="row" align="center">
         <RebornBadge
-          v-for="(item, index) in checkTags" :key="item.label" v-model:checked="item.checked" check
-          :variant="item.variant" color="primary" :label="`${item.variant} · ${item.label}`"
+          v-for="(item, index) in checkTags"
+          :key="item.label"
+          v-model:checked="item.checked"
+          check
+          :variant="item.variant"
+          color="primary"
+          :label="`${item.variant} · ${item.label}`"
           @change="handleCheckChange(index, $event)"
         />
         <RebornBadge check disabled variant="soft" color="primary" label="disabled" />
@@ -172,11 +192,18 @@ function beforeCloseVerify(): Promise<boolean> {
         <template v-if="lastChanged">
           最近变更：<code>{{ lastChanged }}</code>
         </template>
-        <template v-else> 点击任意标签即可在此看到 <code>change</code> 事件回显。 </template>
+        <template v-else>
+          点击任意标签即可在此看到
+          <code>change</code>
+          事件回显。
+        </template>
       </DemoNote>
     </DemoSection>
 
-    <DemoSection title="图标集成" description="leading 与 trailing 插槽用于放置图标；配合 square 可做成纯图标的方形徽标。">
+    <DemoSection
+      title="图标集成"
+      description="leading 与 trailing 插槽用于放置图标；配合 square 可做成纯图标的方形徽标。"
+    >
       <DemoBlock layout="row" align="center">
         <RebornBadge color="primary" variant="soft">
           <template #leading>
@@ -207,7 +234,10 @@ function beforeCloseVerify(): Promise<boolean> {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="关闭交互" description="closable 开启内置关闭按钮；before-close 返回 false 或 Promise<false> 可拦截本次关闭。">
+    <DemoSection
+      title="关闭交互"
+      description="closable 开启内置关闭按钮；before-close 返回 false 或 Promise<false> 可拦截本次关闭。"
+    >
       <DemoBlock layout="row" align="center">
         <RebornBadge color="info" variant="soft" label="可关闭标签" closable @close="handleClose('可关闭标签')" />
 
@@ -224,7 +254,11 @@ function beforeCloseVerify(): Promise<boolean> {
         </RebornBadge>
 
         <RebornBadge
-          color="success" variant="filled" label="异步确认关闭" closable :before-close="beforeCloseVerify"
+          color="success"
+          variant="filled"
+          label="异步确认关闭"
+          closable
+          :before-close="beforeCloseVerify"
           @close="handleClose('异步确认关闭')"
         />
       </DemoBlock>
@@ -233,11 +267,18 @@ function beforeCloseVerify(): Promise<boolean> {
         <template v-if="lastClosed">
           最近关闭：<code>{{ lastClosed }}</code>
         </template>
-        <template v-else> 关闭任意一个徽标即可在此看到 <code>close</code> 事件回显。 </template>
+        <template v-else>
+          关闭任意一个徽标即可在此看到
+          <code>close</code>
+          事件回显。
+        </template>
       </DemoNote>
     </DemoSection>
 
-    <DemoSection title="插槽扩展" description="leading 插槽可承载头像、等级角标等任意结构，配合 ui 与 class 微调内边距。">
+    <DemoSection
+      title="插槽扩展"
+      description="leading 插槽可承载头像、等级角标等任意结构，配合 ui 与 class 微调内边距。"
+    >
       <DemoBlock layout="row" align="center">
         <RebornBadge color="neutral" variant="outlined" class="px-1 py-0">
           <template #leading>
@@ -251,7 +292,11 @@ function beforeCloseVerify(): Promise<boolean> {
         </RebornBadge>
 
         <RebornBadge
-          color="neutral" variant="outlined" label="新品・未开封" size="lg" class="pl-0"
+          color="neutral"
+          variant="outlined"
+          label="新品・未开封"
+          size="lg"
+          class="pl-0"
           :ui="{ label: 'text-sm' }"
         >
           <template #leading>

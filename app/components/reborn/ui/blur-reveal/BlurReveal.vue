@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import type { VNode } from "vue";
 import { Motion } from "motion-v";
-import { onMounted, ref, useSlots, watchEffect } from "vue";
+import { Comment, Fragment } from "vue";
 
 interface Props {
   duration?: number;
@@ -17,19 +18,26 @@ const props = withDefaults(defineProps<Props>(), {
   yOffset: 20,
 });
 
-const container = ref(null);
-const childElements = ref([]);
-const slots = useSlots();
+defineSlots<{
+  /** 需要逐个模糊显现的内容，每个顶层节点各自做一次动画 */
+  default?: () => VNode[];
+}>();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const children = ref<any>([]);
-
-onMounted(() => {
-  // This will reactively capture all content provided in the default slot
-  watchEffect(() => {
-    children.value = slots.default ? slots.default() : [];
-  });
-});
+/**
+ * 展平插槽返回的节点：v-for 等会产生 Fragment，注释节点（v-if 占位）不参与动画。
+ * 只在渲染期间（模板里）调用插槽，插槽内容变化时随父组件重渲染同步更新
+ */
+function flattenNodes(nodes: VNode[]): VNode[] {
+  const result: VNode[] = [];
+  for (const node of nodes) {
+    if (node.type === Fragment && Array.isArray(node.children)) {
+      result.push(...flattenNodes(node.children as VNode[]));
+    } else if (node.type !== Comment) {
+      result.push(node);
+    }
+  }
+  return result;
+}
 
 function getInitial() {
   return {
@@ -49,14 +57,10 @@ function getAnimate() {
 </script>
 
 <template>
-  <div
-    ref="container"
-    :class="props.class"
-  >
+  <div :class="props.class">
     <Motion
-      v-for="(child, index) in children"
+      v-for="(child, index) in flattenNodes($slots.default?.() ?? [])"
       :key="index"
-      ref="childElements"
       as="div"
       :initial="getInitial()"
       :while-in-view="getAnimate()"

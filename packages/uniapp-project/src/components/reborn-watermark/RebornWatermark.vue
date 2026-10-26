@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, nextTick } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-watermark.config'
@@ -47,7 +47,12 @@ const ui = computed(() => {
   }
 })
 
-const watermarkBase64 = ref('')
+const watermarkBase64 = shallowRef('')
+const { proxy } = getCurrentInstance()!
+let drawVersion = 0
+let disposed = false
+let mounted = false
+let exportTimer: ReturnType<typeof setTimeout> | undefined
 const canvasId = `watermark-canvas-${Math.random().toString(36).slice(2)}`
 
 const finalFont = computed(() => ({
@@ -66,66 +71,74 @@ const finalOffset = computed(() => {
   return [props.gap[0] / 2, props.gap[1] / 2]
 })
 
-function drawWatermark() {
-  const { width, height, rotate, gap, image, content } = props
+/** 只比较绘制输入的实际值，避免父级内联对象引起重复导出。 */
+const drawKey = computed(() => JSON.stringify([
+  props.width, props.height, props.rotate, props.image, props.content, props.gap, finalFont.value,
+]))
+
+async function drawWatermark() {
+  const version = ++drawVersion
+  clearTimeout(exportTimer)
+  await nextTick()
+  if (!mounted || disposed || version !== drawVersion) return
+  const { width, height, rotate, image, content } = props
+  const gap = [...props.gap]
+  const font = { ...finalFont.value }
   const canvasWidth = gap[0] + width
   const canvasHeight = gap[1] + height
-  
-  const ctx = uni.createCanvasContext(canvasId)
+  let imagePath = image
+  if (image) {
+    // 小程序画布需使用本地图片路径，加载失败时回退文字。
+    imagePath = await new Promise<string>(resolve => uni.getImageInfo({
+      src: image,
+      success: result => resolve(result.path),
+      fail: () => resolve(''),
+    }))
+    if (disposed || version !== drawVersion) return
+  }
+  const ctx = uni.createCanvasContext(canvasId, proxy)
   if (!ctx) return
-
-  // Move to center for rotation
   ctx.translate(canvasWidth / 2, canvasHeight / 2)
   ctx.rotate((rotate * Math.PI) / 180)
-  
-  if (image) {
-    ctx.drawImage(image, -width / 2, -height / 2, width, height)
-    ctx.draw(false, () => {
-      uni.canvasToTempFilePath({
-        canvasId,
-        success: (res) => {
-          watermarkBase64.value = res.tempFilePath
-        }
-      })
-    })
+  if (imagePath) {
+    ctx.drawImage(imagePath, -width / 2, -height / 2, width, height)
   } else {
-    const { color, fontSize, fontWeight, fontFamily, fontStyle, textAlign, textBaseline } = finalFont.value
-    ctx.setFillStyle(color)
-    ctx.setFontSize(typeof fontSize === 'number' ? fontSize : parseInt(String(fontSize)))
-    // UniApp canvas doesn't support full font string as well as web, so we set fontSize/fillStyle
-    ctx.setTextAlign(textAlign as any)
-    ctx.setTextBaseline(textBaseline as any)
-    
+    const fontSize = Number.parseInt(String(font.fontSize)) || 16
+    ctx.setFillStyle(font.color)
+    ctx.setFontSize(fontSize)
+    // 原生 canvas 分别设置字号、颜色与对齐方式。
+    ctx.setTextAlign(font.textAlign as any)
+    ctx.setTextBaseline(font.textBaseline as any)
     const contents = Array.isArray(content) ? content : [content]
-    const lineHeight = typeof fontSize === 'number' ? fontSize + 4 : 20
-    
     contents.forEach((item, index) => {
-      ctx.fillText(item, 0, index * lineHeight - (contents.length * lineHeight) / 2)
-    })
-    
-    ctx.draw(false, () => {
-      setTimeout(() => {
-        uni.canvasToTempFilePath({
-          canvasId,
-          destWidth: canvasWidth * 2,
-          destHeight: canvasHeight * 2,
-          success: (res) => {
-            watermarkBase64.value = res.tempFilePath
-          }
-        })
-      }, 50)
+      ctx.fillText(item, 0, index * (fontSize + 4) - contents.length * (fontSize + 4) / 2)
     })
   }
+  ctx.draw(false, () => {
+    if (disposed || version !== drawVersion) return
+    exportTimer = setTimeout(() => {
+      if (disposed || version !== drawVersion) return
+      uni.canvasToTempFilePath({
+        canvasId,
+        destWidth: canvasWidth * 2,
+        destHeight: canvasHeight * 2,
+        success: result => {
+          if (!disposed && version === drawVersion) watermarkBase64.value = result.tempFilePath
+        },
+        fail: error => {
+          if (!disposed && version === drawVersion) console.warn('[RebornWatermark] 水印导出失败', error)
+        },
+      }, proxy)
+    }, 50)
+  })
 }
 
-watch(() => [props.content, props.image, props.font, props.gap, props.rotate], () => {
-  drawWatermark()
-}, { deep: true })
-
-onMounted(() => {
-  nextTick(() => {
-    drawWatermark()
-  })
+watch(drawKey, () => { if (mounted) drawWatermark() }, { flush: 'post' })
+onMounted(() => { mounted = true; drawWatermark() })
+onBeforeUnmount(() => {
+  disposed = true
+  drawVersion++
+  clearTimeout(exportTimer)
 })
 
 const watermarkStyle = computed(() => {
@@ -141,9 +154,9 @@ const watermarkStyle = computed(() => {
 </script>
 
 <template>
-  <view :class="ui.root()">
+  <view :class="ui.root({ class: props.customClass })">
     <slot />
-    <!-- Hidden canvas for watermark generation -->
+    <!-- 隐藏画布仅用于生成水印图片。 -->
     <canvas 
       :canvas-id="canvasId" 
       :style="{ width: (gap[0] + width) + 'px', height: (gap[1] + height) + 'px', position: 'absolute', left: '-9999px', top: '-9999px' }" 

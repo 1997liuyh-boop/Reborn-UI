@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { FloatingPoint } from "~/lib/floating";
 import type { Placement } from "~/lib/placement";
-import { computed, getCurrentInstance, onDeactivated, onMounted, onUnmounted, ref, watch } from "vue";
+import { defaultWindow, useEventListener } from "@vueuse/core";
+import { computed, getCurrentInstance, onBeforeUpdate, onDeactivated, onUnmounted, shallowRef, useTemplateRef, watch } from "vue";
 import { useFloatingDismiss } from "~/composables/useFloatingDismiss";
 import { useFloatingHost } from "~/composables/useFloatingHost";
 import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
@@ -27,12 +28,15 @@ const props = withDefaults(defineProps<PopoverProps>(), {
   placement: undefined,
   sideOffset: undefined,
   content: undefined,
+  // 含 Boolean 的属性必须显式给 undefined，否则未传会被强转成 false，「未传」与「传了 false」无法区分
+  defaultOpen: undefined,
 });
 
-const emit = defineEmits<{
-  /** 显隐状态变化时触发，参数为最新的 open 值（对应 v-model:open） */
-  (e: "update:open", v: boolean): void;
-}>();
+/**
+ * 受控显隐（v-model:open），变化时派发 update:open。
+ * 未传保持 undefined，由 internalOpen 走非受控逻辑；含 Boolean 的模型必须显式给 undefined 默认值。
+ */
+defineModel<boolean>("open", { default: undefined });
 
 /** 旧的定位对象写法，等价于 placement + sideOffset，仅为兼容保留 */
 export interface PopoverContentProps {
@@ -73,7 +77,7 @@ export interface PopoverProps {
   dismissible?: boolean;
   /** 页面或触发器所在容器滚动时是否关闭气泡；关闭后气泡跟随触发器移动 */
   closeOnScroll?: boolean;
-  open?: boolean;
+  /** 非受控模式的初始显隐；同时传了 v-model:open 时以 open 为准 */
   defaultOpen?: boolean;
   modal?: boolean;
   openDelay?: number;
@@ -92,27 +96,41 @@ export interface PopoverProps {
   }>;
 }
 
-const appProperties = getCurrentInstance()?.appContext.config.globalProperties;
-const internalOpen = ref(props.defaultOpen ?? props.open ?? false);
+const instance = getCurrentInstance()!;
+const appProperties = instance.appContext.config.globalProperties;
+/** 父级是否在 vnode 上写了 open：写了就由父级持有显隐 */
+function isOpenBound() {
+  return Object.hasOwn(instance.vnode.props ?? {}, "open");
+}
+/** 显隐归属只存布尔结果，变化才触发依赖 */
+const openBound = shallowRef(isOpenBound());
+onBeforeUpdate(() => {
+  openBound.value = isOpenBound();
+});
+/** 实际显隐：初值取 open，其次 defaultOpen */
+const internalOpen = shallowRef((instance.props.open as boolean | undefined) ?? props.defaultOpen ?? false);
 
-watch(
-  () => props.open,
-  (v) => {
-    if (v !== undefined) internalOpen.value = v;
-  },
-);
+/**
+ * 父级传入的 open 变化时同步。读父级原始值而不是 defineModel 的本地缓存：只传 :open 不接更新事件时
+ * useModel 会改写本地缓存，读它就成了「只读绑定点了照样变」。显式 undefined 不覆盖当前显隐（与 UniApp 端的差异见文档）。
+ */
+watch(() => instance.props.open as boolean | undefined, (v) => {
+  if (v !== undefined) internalOpen.value = v;
+});
 
 const open = computed({
   get: () => internalOpen.value,
   set: (value) => {
-    internalOpen.value = value;
-    emit("update:open", value);
+    // 显隐归父级时只派发 update:open，等父级回写再同步；父级不回写（只传值或拒收）就保持父值，与 UniApp 端一致
+    // 直接派发而不写 defineModel：非受控时写进它本地缓存的值会成为受控后「同值不派发」的去重基准
+    if (!openBound.value) internalOpen.value = value;
+    instance.emit("update:open", value);
   },
 });
 
-const wrapperRef = ref<HTMLElement>();
-const triggerRef = ref<HTMLElement>();
-const contentRefComponent = ref<any>();
+const wrapperRef = useTemplateRef<HTMLElement>("wrapperRef");
+const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
+const contentRefComponent = useTemplateRef<{ el?: HTMLElement }>("contentRefComponent");
 const contentRef = computed(() => contentRefComponent.value?.el as HTMLElement | undefined);
 
 let hoverCount = 0;
@@ -191,15 +209,15 @@ const placementInfo = computed(() => {
  */
 const ARROW_INSET = 17;
 
-const style = ref<Record<string, string>>({
+const style = shallowRef<Record<string, string>>({
   left: "0px",
   top: "0px",
 });
 
-const resolvedSide = ref<PopoverSide>(placementInfo.value.side);
-const resolvedAlign = ref<PopoverAlign>(placementInfo.value.align);
+const resolvedSide = shallowRef<PopoverSide>(placementInfo.value.side);
+const resolvedAlign = shallowRef<PopoverAlign>(placementInfo.value.align);
 
-const arrowPosition = ref({
+const arrowPosition = shallowRef({
   x: "50%",
   y: "50%",
 });
@@ -319,15 +337,15 @@ watch(
   { immediate: true },
 );
 
-// 不关闭的滚动（closeOnScroll 关掉、或滚动的是与触发器无关的容器）仍要让气泡跟着触发器重新定位
-onMounted(() => {
-  window.addEventListener("resize", updatePosition);
-  window.addEventListener("scroll", updatePosition, true);
-});
+/**
+ * 不关闭的滚动（closeOnScroll 关掉、或滚动的是与触发器无关的容器）仍要让气泡跟着触发器重新定位。
+ * 监听目标随打开状态切换：关闭时返回 undefined 不注册，避免每个实例常驻捕获阶段的全局滚动监听。
+ */
+const openWindow = () => (open.value ? defaultWindow : undefined);
+useEventListener(openWindow, "resize", updatePosition, { passive: true });
+useEventListener(openWindow, "scroll", updatePosition, { capture: true, passive: true });
 
 onUnmounted(() => {
-  window.removeEventListener("resize", updatePosition);
-  window.removeEventListener("scroll", updatePosition, true);
   if (hoverTimer) clearTimeout(hoverTimer);
   if (resizeObserver) resizeObserver.disconnect();
 });

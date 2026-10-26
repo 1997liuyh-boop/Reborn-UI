@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { shallowRef } from 'vue';
+
 /**
  * 总览卡片缩略：四条待办组成的可排序列表，第二条正被拖起
  *
@@ -6,7 +8,7 @@
  */
 
 /** 待办列表，color 为优先级圆点颜色 */
-const tasks = ref([
+const tasks = shallowRef([
   { id: 1, name: '整理需求文档', color: 'bg-error' },
   { id: 2, name: '评审交互稿', color: 'bg-warning' },
   { id: 3, name: '联调登录接口', color: 'bg-primary' },

@@ -186,7 +186,7 @@ async function beforeClose(done: (cancel?: boolean) => void) {
 
 ### 嵌套抽屉
 
-后打开的抽屉自动提高层级，ESC 与焦点循环仅作用于最上层；滚动锁按实例计数。
+后打开的抽屉自动提高层级，ESC 与焦点循环仅作用于最上层；滚动锁按实例计数。抽屉与 `RebornDialog` 共用同一个弹层栈，对话框里打开的抽屉（或反过来）同样按打开顺序分配层级、只让最上层响应 ESC。
 
 | 行为 | 规则 | 典型用途 |
 | --- | --- | --- |
@@ -209,7 +209,7 @@ async function beforeClose(done: (cancel?: boolean) => void) {
 
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
-| `modelValue` | `boolean` | `false` | 显隐状态，支持 `v-model` |
+| `modelValue` | `boolean` | `undefined` | 显隐状态，支持 `v-model`；缺省关闭，显式空值按关闭处理 |
 | `appendTo` | `string \| HTMLElement` | - | 挂载节点；优先于 `appendToBody`，最终默认 body |
 | `appendToBody` | `boolean` | `true` | 不传 `appendTo` 时是否传送到 body |
 | `lockScroll` | `boolean` | `true` | 从打开到退场结束锁定 body，独立于 modal |
@@ -240,11 +240,13 @@ async function beforeClose(done: (cancel?: boolean) => void) {
 | `opened` | - | 打开动画完成 |
 | `close` | - | 延迟结束，开始关闭 |
 | `closed` | - | 关闭动画完成 |
-| `open-auto-focus` | - | 打开时自动聚焦内容后触发 |
-| `close-auto-focus` | - | 退场后执行焦点归还流程；非顶层关闭不抢占焦点 |
-| `resize-start` | `size: number` | 开始调整，当前像素尺寸 |
+| `openAutoFocus` | - | 打开时自动聚焦内容后触发 |
+| `closeAutoFocus` | - | 退场后执行焦点归还流程；非顶层关闭不抢占焦点 |
+| `resizeStart` | `size: number` | 开始调整，当前像素尺寸 |
 | `resize` | `size: number` | 调整中，最新像素尺寸 |
-| `resize-end` | `size: number` | 调整结束，最终像素尺寸 |
+| `resizeEnd` | `size: number` | 调整结束，最终像素尺寸 |
+
+事件名在脚本中按 camelCase 声明，模板里照常写作 `@open-auto-focus`、`@resize-end` 等 kebab-case 形式。
 
 ### Slots
 
@@ -264,7 +266,7 @@ async function beforeClose(done: (cancel?: boolean) => void) {
 | 名称 | 类型 | 描述 |
 | --- | --- | --- |
 | `close` | `() => void` | 请求关闭，经过 beforeClose |
-| `panel` | `HTMLElement \| undefined` | 面板节点，首次打开后可用 |
+| `panel` | `HTMLElement \| null` | 面板节点，首次打开后可用；只读，不能写入 |
 
 ### 自定义样式（ui）
 
@@ -286,6 +288,7 @@ async function beforeClose(done: (cancel?: boolean) => void) {
 
 ## 注意事项
 
+- **显式模型由父级决定展示。** `false`、`undefined`、`null` 都关闭抽屉；用户关闭会发送 `update:modelValue`，父级拒收时不会改成本地关闭。
 - **关闭回调语义与常见抽屉库不同。** 本组件按约定以 `done(false)` 放行，`done()` / `done(true)` 取消；迁移时必须修改已有回调。
 - **默认不显示头部。** `withHeader=false` 时所有头部插槽均不渲染；仍可通过遮罩、ESC、默认插槽或页脚的 `close` 关闭。
 - **程序控制可以绕过关闭拦截。** 直接将 `v-model` 设为 false 不执行 beforeClose；需要拦截请调用插槽或实例的 `close()`。
@@ -294,5 +297,5 @@ async function beforeClose(done: (cancel?: boolean) => void) {
 - **正文由浮层滚动条滚动。** 原生滚动条在 Windows 等平台会常驻显示，正文改用 RebornScrollbar；`ui.body` 作用在滚动层里的内容节点上，高度随内容增长。需要正文固定为可视高度、由内部列表自行滚动（如聊天消息贴底）时，给 body 加 `h-full overflow-hidden`。
 - **穿透不等于解锁滚动。** modal=false 且 modalPenetrable=true 才允许穿透；要滚动背景还需 lockScroll=false。
 - **旧 Web Popup 已迁移。** 将组件与目录改为 reborn-drawer，position 改 direction，showHeader 改 withHeader，handleClose() 改 close()；ui.closeBtn 改 ui.close。旧 header 只替换标题的场景改用 title 插槽。center 改用 reborn-dialog；旧别名、安全区与手势 API 不属于 Web Drawer。
-- **自动层级与焦点管理针对 Drawer 实例。** 自定义容器仍受 CSS 层叠规则影响；其他类型的全局浮层不在 Drawer 栈中，嵌套交互需单独验证。
+- **自动层级与焦点管理只覆盖 Drawer 与 Dialog。** 两者共用弹层栈；自定义容器仍受 CSS 层叠规则影响，其他类型的全局浮层（如 Popover、图片预览）不在栈中，嵌套交互需单独验证。
 - **关闭时一并收起内部浮层。** 抽屉里展开着的下拉类组件（Select、Cascader、DatePicker、TimePicker、TreeSelect、Dropdown）、Popover / Popconfirm / ColorPicker 与 Tooltip 会在抽屉开始关闭的同时收起，不会留在页面上；重开抽屉时也是收起状态。

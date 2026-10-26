@@ -1,7 +1,10 @@
 <script setup lang="ts">
-defineProps({
-  translate: Number,
-});
+interface Props {
+  /** 纵向位移，单位 px */
+  translate?: number;
+}
+
+defineProps<Props>();
 </script>
 
 <template>

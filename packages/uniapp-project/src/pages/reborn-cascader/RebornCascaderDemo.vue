@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import type { CascaderOption } from '@/components/reborn-cascader/reborn-cascader.config'
+import { onUnload } from '@dcloudio/uni-app'
+import { ref, shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 
@@ -11,12 +13,13 @@ import RebornCascader from '@/components/reborn-cascader/RebornCascader.vue'
 import { CascaderSizes, CascaderColors } from '@/components/reborn-cascader/reborn-cascader.config'
 
 
-const currentSize = ref(CascaderSizes[0])
-const currentColor = ref(CascaderColors[0])
+const currentSize = shallowRef(CascaderSizes[0])
+const currentColor = shallowRef(CascaderColors[0])
 
 const value1 = ref<any[]>([])
 const value2 = ref<any[]>(['110000', '110101'])
 const value3 = ref<any[]>([])
+const heightValue = ref<(string | number)[]>([])
 
 const options = [
     {
@@ -64,13 +67,13 @@ const options = [
     }
 ]
 
-const cascaderRef = ref<any>(null)
+const cascaderRef = ref<InstanceType<typeof RebornCascader> | null>(null)
 const openExternal = () => {
     cascaderRef.value?.open()
 }
 
-const onChange = (val: any) => {
-    console.log('Change:', val)
+const onChange = (val: unknown) => {
+    uni.showToast({ title: `已选：${JSON.stringify(val)}`, icon: 'none' })
 }
 
 const valueMultiple = ref<(string | number)[][]>([])
@@ -80,11 +83,12 @@ const valueLeaf = ref<(string | number)[]>([])
 const valueStrict = ref<(string | number)[]>([])
 const valueStrictMultiple = ref<(string | number)[][]>([])
 
-const cunt = ref(0)
-const lazyLoad = (node: any, resolve: any) => {
+const loadTimers = new Set<ReturnType<typeof setTimeout>>()
+onUnload(() => loadTimers.forEach(timer => clearTimeout(timer)))
+const lazyLoad = (node: CascaderOption, resolve: (children: CascaderOption[]) => void) => {
     const { value, isRoot } = node
-    setTimeout(() => {
-        cunt.value++
+    const timer = setTimeout(() => {
+        loadTimers.delete(timer)
         if (isRoot) {
             resolve([
                 { label: '北京市', value: '110000' },
@@ -93,12 +97,15 @@ const lazyLoad = (node: any, resolve: any) => {
             ])
             return
         }
+        // 模拟接口用路径层级决定叶子，同一节点不受其他加载请求影响。
+        const leaf = String(value).split('-').length >= 2
         const children = [
-            { label: `动态节点 ${value}-1`, value: `${value}-1`, leaf: cunt.value >= 8 ? true : false },
-            { label: `动态节点 ${value}-2`, value: `${value}-2`, leaf: cunt.value >= 9 ? true : false },
+            { label: `动态节点 ${value}-1`, value: `${value}-1`, leaf },
+            { label: `动态节点 ${value}-2`, value: `${value}-2`, leaf },
         ]
         resolve(children)
     }, 1000)
+    loadTimers.add(timer)
 }
 </script>
 
@@ -189,7 +196,7 @@ const lazyLoad = (node: any, resolve: any) => {
         </RebornCard>
 
         <RebornCard title="自定义高度">
-            <RebornCascader v-model="value1" :options="options" :height="400" placeholder="较矮的选择页" />
+            <RebornCascader v-model="heightValue" :options="options" :height="400" placeholder="较矮的选择页" />
         </RebornCard>
     </RebornPage>
 </template>

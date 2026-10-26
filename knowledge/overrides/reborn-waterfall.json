@@ -12,6 +12,7 @@
     "platforms 仅 uniapp 端提供。",
     "props 中没有数据字段，数据须通过 ref 调用 append 等实例方法写入，而非模板传入。",
     "nodeKey 默认 'id'，条目须有唯一标识，否则 remove / update 无法定位。",
-    "gutter 单位为 px；组件无文档页，知识条目事实较少，细节以源码 RebornWaterfall.vue 为准。"
+    "gutter 单位为 px；组件无文档页，知识条目事实较少，细节以源码 RebornWaterfall.vue 为准。",
+    "连续append串行分列，Promise在本批分列后完成；clear和卸载使在途旧批次失效。"
   ]
 }

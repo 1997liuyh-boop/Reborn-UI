@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, provide, ref, watch } from "vue";
+import { useMediaQuery } from "@vueuse/core";
+import { onMounted, provide, shallowRef, useTemplateRef, watch } from "vue";
 import { CarouselKey } from "./AppleCarouselContext";
 
 interface Props {
@@ -10,10 +11,12 @@ const props = withDefaults(defineProps<Props>(), {
   initialScroll: 0,
 });
 
-const carouselRef = ref<HTMLDivElement | null>(null);
-const canScrollLeft = ref(false);
-const canScrollRight = ref(true);
-const currentIndex = ref(0);
+const carouselRef = useTemplateRef<HTMLDivElement>("carouselRef");
+const canScrollLeft = shallowRef(false);
+const canScrollRight = shallowRef(true);
+
+// 窗口宽度变化时同步更新；服务端渲染时为 false
+const isMobile = useMediaQuery("(max-width: 767px)");
 
 onMounted(() => {
   if (carouselRef.value) {
@@ -54,24 +57,19 @@ function scrollRight() {
 
 function handleCardClose(index: number) {
   if (carouselRef.value) {
-    const cardWidth = isMobile.value ? 230 : 384; // (md:w-96)
+    // 卡片宽度对应 w-56 / md:w-96
+    const cardWidth = isMobile.value ? 230 : 384;
     const gap = isMobile.value ? 4 : 8;
     const scrollPosition = (cardWidth + gap) * (index + 1);
     carouselRef.value.scrollTo({
       left: scrollPosition,
       behavior: "smooth",
     });
-    currentIndex.value = index;
   }
 }
 
-const isMobile = computed(() => {
-  return window && window.innerWidth < 768;
-});
-
 provide(CarouselKey, {
   onCardClose: handleCardClose,
-  currentIndex,
 });
 </script>
 

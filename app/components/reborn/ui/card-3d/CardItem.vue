@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { useMouseState } from "~/composables/useMouseState";
+import { useTemplateRef, watch } from "vue";
+import { useCard3DContext } from "./useMouseState";
 
 interface Props {
   as?: string;
@@ -25,11 +26,11 @@ const {
   ...props
 } = defineProps<Props>();
 
-const refElement = ref<HTMLElement | null>(null);
+const refElement = useTemplateRef<HTMLElement>("refElement");
 
-const mouseState = inject("use3DCardMouseState") as ReturnType<typeof useMouseState>;
+const mouseState = useCard3DContext();
 
-function handleAnimation(isMouseEntered: Readonly<Ref<boolean, boolean>>) {
+function handleAnimation(isMouseEntered: boolean) {
   if (!refElement.value) return;
 
   if (isMouseEntered) {

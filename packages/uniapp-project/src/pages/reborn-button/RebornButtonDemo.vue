@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornColorPicker from '@/components/reborn-color-picker/RebornColorPicker.vue'
@@ -11,13 +11,13 @@ import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 
 // 演练场状态
-const demoVariant = ref<(typeof buttonVariants)[number]>('filled')
-const demoColor = ref<(typeof buttonColors)[number]>('primary')
-const demoSize = ref<(typeof buttonSizes)[number]>('md')
-const demoLoading = ref(false)
-const demoDisabled = ref(false)
-const demoLabel = ref('Reborn UI')
-const customButtonColor = ref('#6366f1')
+const demoVariant = shallowRef<(typeof buttonVariants)[number]>('filled')
+const demoColor = shallowRef<(typeof buttonColors)[number]>('primary')
+const demoSize = shallowRef<(typeof buttonSizes)[number]>('md')
+const demoLoading = shallowRef(false)
+const demoDisabled = shallowRef(false)
+const demoLabel = 'Reborn UI'
+const customButtonColor = shallowRef('#6366f1')
 
 // 选项映射
 const variantOptions = (buttonVariants as unknown as string[]).map(v => ({ label: v.charAt(0).toUpperCase() + v.slice(1), value: v as (typeof buttonVariants)[number] }))

@@ -18,7 +18,7 @@ after(async () => { await Promise.all([real, runtime].map(file => unlink(file).c
 for (const [output, stub] of [[real, false], [runtime, true]] as const) {
   await build({
     entryPoints: [resolve('app/components/reborn/ui/reborn-table/RebornTable.vue')], outfile: output,
-    bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app') },
+    bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app'), '@': resolve('app') },
     plugins: [{ name: 'table-test', setup(builder) {
       builder.onLoad({ filter: /\.css$/ }, () => ({ contents: '', loader: 'js' }));
       builder.onLoad({ filter: /\.vue$/ }, async ({ path }) => {
@@ -37,10 +37,41 @@ const RuntimeTable = (await import(pathToFileURL(runtime).href)).default;
 const Column = defineComponent({ name: 'RebornTableColumn', setup: () => () => null });
 const data = [{ id: 1, name: '甲', amount: 20 }, { id: 2, name: '乙', amount: 10 }];
 const columns = [{ prop: 'name', label: '姓名' }, { prop: 'amount', label: '金额', sortable: true }];
+
+/** 此套件验证表格与真实分页器的集成；分页输入只替代数值模型、禁用与选项契约，不宣称覆盖完整控件交互。 */
+const PaginationNumberStub = defineComponent({
+  name: 'PaginationNumberContractStub',
+  props: ['modelValue', 'disabled', 'min', 'max'],
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    return () => h('input', {
+      type: 'number', value: props.modelValue, disabled: props.disabled, min: props.min, max: props.max,
+      onInput: (event: Event) => emit('update:modelValue', Number((event.target as HTMLInputElement).value)),
+    });
+  },
+});
+const PaginationSelectStub = defineComponent({
+  name: 'PaginationSelectContractStub',
+  props: ['modelValue', 'disabled', 'options'],
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    return () => h('select', {
+      value: props.modelValue, disabled: props.disabled,
+      onChange: (event: Event) => emit('update:modelValue', Number((event.target as HTMLSelectElement).value)),
+    }, props.options?.map((option: { value: number; label: string }) => h('option', { value: option.value }, option.label)));
+  },
+});
+
 async function render(props: Record<string, unknown> = {}, slots = {}) {
   const app = createSSRApp({ render: () => h(Table, { data, columns, ...props }, slots) });
   app.component('Icon', { render: () => h('svg') });
-  return renderToString(app);
+  app.component('RebornInputNumber', PaginationNumberStub);
+  app.component('RebornSelect', PaginationSelectStub);
+  const warnings: string[] = [];
+  app.config.warnHandler = message => warnings.push(message);
+  const html = await renderToString(app);
+  assert.deepEqual(warnings, [], 'SSR 组件必须明确注册，不能忽略未解析组件告警');
+  return html;
 }
 
 it('真实依赖 SSR 输出语义表格，三档高度使用原生刻度且转义 HTML', async () => {
@@ -54,6 +85,13 @@ it('真实依赖 SSR 输出语义表格，三档高度使用原生刻度且转�
     assert.match(html, />0<\/div>/);
     assert.doesNotMatch(html, /<script>/);
   }
+});
+
+it('表格分页集成明确控件模型契约，不输出未解析组件', async () => {
+  const html = await render({ pagination: { layout: 'prev,pager,next,jumper,sizes' }, pageSize: 1 });
+  assert.doesNotMatch(html, /<RebornInputNumber|<RebornSelect/i);
+  assert.match(html, /type="number"/);
+  assert.match(html, /<select/);
 });
 
 it('声明列首屏支持分组及作用域插槽，配置式 columns 优先', async () => {
@@ -161,8 +199,8 @@ it('自定义索引接收组件已叠加的分页偏移，业务回调不需再�
 });
 
 it('空状态、加载、合并与合计使用有效列数并允许插槽覆盖', async () => {
-  assert.match(await render({ data: [] }, { empty: () => '没有匹配结果' }), /colspan="2"[^>]*>没有匹配结果/);
-  assert.match(await render({ loading: true }, { loading: () => '正在查询' }), /role="status"[^>]*>正在查询/);
+  assert.match(await render({ data: [] }, { empty: () => '没有匹配结果' }), /colspan="2"[^>]*>(?:<!--.*?-->)*没有匹配结果/);
+  assert.match(await render({ loading: true }, { loading: () => '正在查询' }), /role="status"[^>]*>(?:<!--.*?-->)*正在查询/);
   const html = await render({ showSummary: true, spanMethod: ({ columnIndex }: { columnIndex: number }) => columnIndex === 0 ? [1, 2] : [0, 0] });
   assert.match(html, /colspan="2"/);
   assert.match(html, /<tfoot/);
@@ -216,7 +254,7 @@ const renderer = createRenderer<Element, Element>({
   remove(node) { if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1); },
 });
 function flatten(node: Element): Element[] { return [node, ...node.children.flatMap(flatten)]; }
-function mount(initial: Record<string, unknown> = {}, declared = false) {
+function mount(initial: Record<string, unknown> = {}, declared = false, slotFactory?: () => Record<string, (...args: any[]) => any>) {
   const props = reactive({ data, columns: declared ? undefined : columns, ...initial });
   const selected = ref<(string | number)[]>([]);
   const exposed = ref<TableExpose>();
@@ -225,7 +263,7 @@ function mount(initial: Record<string, unknown> = {}, declared = false) {
   const app = renderer.createApp(defineComponent({ setup: () => () => h(RuntimeTable, {
     ...props, ref: exposed, selectedKeys: selected.value, 'onUpdate:selectedKeys': (keys: (string | number)[]) => { selected.value = keys; },
     onSelectionChange: (...args: unknown[]) => events.push(args),
-  }, declared ? { default: () => props.data.map(row => h(Column, { prop: 'name', columnKey: String(row.id), label: row.name })) } : {}) }));
+  }, slotFactory?.() ?? (declared ? { default: () => props.data.map(row => h(Column, { prop: 'name', columnKey: String(row.id), label: row.name })) } : {})) }));
   app.mount(root);
   return { props, selected, exposed, events, nodes: () => flatten(root), stop: () => app.unmount() };
 }
@@ -423,4 +461,113 @@ it('当前行使用品牌色二阶，切换当前行时不会被条纹和悬停�
   assert.match(rows()[0]!.props.class, /(?:^| )bg-brand-2(?: |$)/);
   assert.doesNotMatch(rows()[1]!.props.class, /bg-brand-2/);
   t.stop();
+});
+
+it('勾选一行只重新渲染该行单元格，外部渲染依赖仍可独立更新', async () => {
+  const calls = new Map<number, number>();
+  const external = ref('初始');
+  const t = mount({ columns: [{ type: 'selection' }, { prop: 'name', cellRender: ({ row }: { row: typeof data[0] }) => {
+    calls.set(row.id, (calls.get(row.id) ?? 0) + 1);
+    return `${external.value}:${row.name}`;
+  } }] });
+  try {
+    calls.clear();
+    t.exposed.value!.toggleRowSelection(data[0], true);
+    await nextTick();
+    assert.equal(calls.get(1), 1);
+    assert.equal(calls.get(2) ?? 0, 0, '未变化的行不执行单元格渲染');
+    calls.clear();
+    external.value = '更新';
+    await nextTick();
+    assert.equal(calls.get(1), 1);
+    assert.equal(calls.get(2), 1, '外部依赖由每行自己追踪，不被缓存吞掉');
+  } finally { t.stop(); }
+});
+
+it('同字段的两列在移除与替换时使用独立 VNode key', async () => {
+  const t = mount({ columns: [{ prop: 'name', label: '第一列' }, { prop: 'name', label: '第二列' }] });
+  try {
+    t.props.columns = [{ prop: 'name', label: '保留列' }];
+    await nextTick();
+    assert.equal(t.nodes().filter(node => node.type === 'th').length, 1);
+    assert.equal(t.nodes().filter(node => node.type === 'td').length, 2);
+  } finally { t.stop(); }
+});
+
+it('条件 empty/cell 插槽增删与闭包整体替换会同步内容', async () => {
+  const mode = ref(0);
+  const t = mount({ data: [] }, false, () => mode.value ? { empty: () => mode.value === 1 ? '新空状态' : '替换空状态', cell: () => `插槽${mode.value}` } : {});
+  try {
+    mode.value = 1;
+    await nextTick();
+    assert.ok(t.nodes().some(node => node.text === '新空状态'));
+    mode.value = 2;
+    await nextTick();
+    assert.ok(t.nodes().some(node => node.text === '替换空状态'));
+    t.props.data = data;
+    await nextTick();
+    assert.ok(t.nodes().some(node => node.text === '插槽2'));
+    mode.value = 0;
+    await nextTick();
+    assert.ok(t.nodes().some(node => node.text === '甲'));
+    assert.ok(!t.nodes().some(node => node.text.startsWith('插槽')));
+  } finally { t.stop(); }
+});
+
+it('受控选择同时提供具名插槽时，勾选一行仍只重新渲染该行', async () => {
+  const calls = new Map<number, number>();
+  const selected = ref<(string | number)[]>([]);
+  const exposed = ref<TableExpose>();
+  const showEmpty = ref(true);
+  const cellColumns = [{ type: 'selection' }, { prop: 'name', cellRender: ({ row }: { row: typeof data[0] }) => {
+    calls.set(row.id, (calls.get(row.id) ?? 0) + 1);
+    return row.name;
+  } }];
+  // 运行时编译模板，父级走优化补丁路径；#empty、#footer 都是编译期稳定插槽
+  const Parent = defineComponent({
+    components: { RuntimeTable },
+    setup: () => ({ data, cellColumns, selected, exposed, showEmpty }),
+    template: `
+      <RuntimeTable ref="exposed" v-model:selected-keys="selected" :data="data" :columns="cellColumns">
+        <template #empty>空</template>
+        <template #footer="{ selection }">已选 {{ selection.length }}</template>
+      </RuntimeTable>`,
+  });
+  const root = element('root');
+  const app = renderer.createApp(Parent);
+  app.mount(root);
+  try {
+    calls.clear();
+    exposed.value!.toggleRowSelection(data[0], true);
+    await nextTick();
+    assert.deepEqual(selected.value, [1]);
+    assert.equal(calls.get(1), 1);
+    assert.equal(calls.get(2) ?? 0, 0, '稳定插槽不应让未变化的行重新执行单元格渲染');
+    assert.ok(flatten(root).some(node => node.text.includes('已选 1')), '插槽内容随状态更新');
+  } finally { app.unmount(); }
+});
+
+it('v-if 动态插槽增删时整表同步插槽内容', async () => {
+  const showCell = ref(false);
+  const Parent = defineComponent({
+    components: { RuntimeTable },
+    setup: () => ({ data, columns, showCell }),
+    template: `
+      <RuntimeTable :data="data" :columns="columns">
+        <template v-if="showCell" #cell="{ row }">插槽:{{ row.name }}</template>
+      </RuntimeTable>`,
+  });
+  const root = element('root');
+  const app = renderer.createApp(Parent);
+  app.mount(root);
+  try {
+    assert.ok(!flatten(root).some(node => node.text.startsWith('插槽:')));
+    showCell.value = true;
+    await nextTick();
+    assert.ok(flatten(root).some(node => node.text === '插槽:甲'));
+    assert.ok(flatten(root).some(node => node.text === '插槽:乙'));
+    showCell.value = false;
+    await nextTick();
+    assert.ok(!flatten(root).some(node => node.text.startsWith('插槽:')));
+  } finally { app.unmount(); }
 });

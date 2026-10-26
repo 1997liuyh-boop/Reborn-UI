@@ -2,8 +2,8 @@
 /**
  * 总览卡片缩略：默认分隔符的三级面包屑
  */
-import RebornBreadcrumb from '~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumb.vue'
-import RebornBreadcrumbItem from '~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumbItem.vue'
+import RebornBreadcrumb from "~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumb.vue";
+import RebornBreadcrumbItem from "~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumbItem.vue";
 </script>
 
 <template>

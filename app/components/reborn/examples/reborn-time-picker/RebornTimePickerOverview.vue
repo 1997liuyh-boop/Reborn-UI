@@ -5,13 +5,13 @@
  * 真实下拉面板传送到 body 且只能点击展开；面板每列是 3 组循环选项（时 72 项、分秒各 180 项）的滚动列表，
  * 滚出可视区的选项会被计入卡片的溢出测量。缩略图用时间面板的主题样式静态画出每列三行，外框沿用下拉浮层样式。
  */
-import { ref } from 'vue'
+import { shallowRef } from "vue";
 import theme from '~/components/reborn/ui/reborn-time-picker/reborn-time-panel.config'
 import RebornTimePicker from '~/components/reborn/ui/reborn-time-picker/RebornTimePicker.vue'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
 
-const time = ref('14:30:00')
+const time = shallowRef('14:30:00')
 
 const styles = tv(theme)({ variant: 'filled', color: 'primary' })
 

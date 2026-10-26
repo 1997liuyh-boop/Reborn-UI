@@ -6,11 +6,11 @@
  * 因此这里不给它套任何容器，只用描边标出「原本会占位的区域」。
  */
 
-/** 记录最近一次拖拽结束后的落点，替代 console 输出 */
-const lastAction = ref("暂无");
+/** 原生指针事件只回显抬起，不冒充组件拖拽完成事件 */
+const lastAction = shallowRef("暂无");
 
-function handleDrag() {
-  lastAction.value = "拖拽结束，已自动吸附到最近的一侧边缘";
+function handlePointerUp(snapping: boolean) {
+  lastAction.value = snapping ? "默认吸附示例：指针抬起" : "关闭吸附示例：指针抬起";
 }
 </script>
 
@@ -31,12 +31,20 @@ function handleDrag() {
       </DemoBlock>
     </DemoSection>
 
+    <!-- 默认吸附与关闭吸附分别演示；pointerup 只描述原生指针操作 -->
+    <RebornAffix :left="20" :bottom="180" :size="48" @pointerup="handlePointerUp(true)">
+      <div class="bg-primary flex size-12 cursor-move items-center justify-center rounded-full text-white transition-transform active:scale-95">
+        <Icon name="lucide:magnet" class="size-5" />
+      </div>
+    </RebornAffix>
+
     <!-- 可拖拽：关闭吸附后可停在任意位置 -->
     <RebornAffix
       :left="100"
       :bottom="100"
+      :size="48"
       :no-snapping="true"
-      @pointerup="handleDrag"
+      @pointerup="handlePointerUp(false)"
     >
       <div class="bg-primary flex size-12 cursor-move items-center justify-center rounded-full text-white transition-transform active:scale-95">
         <Icon

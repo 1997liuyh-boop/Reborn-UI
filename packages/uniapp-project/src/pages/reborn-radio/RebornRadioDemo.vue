@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import { radioColors } from '@/components/reborn-radio/reborn-radio.config'
@@ -14,20 +14,20 @@ const fruits = [
   { value: 'grape', label: '葡萄' },
 ]
 
-const selectedFruit = ref('apple')
-const selectedMode = ref('day')
-const selectedAlign = ref('center')
-const selectedVariant = ref('apple')
-const selectedColor = ref('primary')
-const selectedCity = ref('北京')
-const selectedPay = ref('wechat')
-const selectedPlan = ref('basic')
-const selectedDisabled = ref('2')
+const selectedFruit = shallowRef('apple')
+const selectedMode = shallowRef('day')
+const selectedAlign = shallowRef('center')
+const selectedVariant = shallowRef('apple')
+const selectedColor = shallowRef('primary')
+const selectedCity = shallowRef('北京')
+const selectedPay = shallowRef('wechat')
+const selectedPlan = shallowRef('basic')
+const selectedDisabled = shallowRef('2')
 /** 整组禁用演示的绑定值 */
-const disabledGroupValue = ref('banana')
+const disabledGroupValue = shallowRef('banana')
 
 /** 非受控用法的最新值，仅由 change 事件回填展示 */
-const uncontrolledValue = ref('banana')
+const uncontrolledValue = shallowRef('banana')
 
 /** options 混合数组：字符串简写与对象写法可以混用，对象写法支持 disabled */
 const cityOptions = ['北京', '上海', '广州', { label: '深圳（禁用）', value: '深圳', disabled: true }]
@@ -44,7 +44,7 @@ const shippingOptions = [
   { code: 'pickup', name: '门店自提', fee: 0 },
   { code: 'same-day', name: '同城急送', fee: 20, closed: true },
 ]
-const selectedShipping = ref('express')
+const selectedShipping = shallowRef('express')
 
 const plans = [
   { value: 'basic', label: '基础版', desc: '适合个人开发者' },

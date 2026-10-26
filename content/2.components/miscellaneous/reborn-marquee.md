@@ -31,7 +31,7 @@ badge: New
 | 键名           | 说明                                                                                                                                        |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `root`         | 根容器。默认 `relative flex overflow-hidden`，`--duration` / `--gap` 两个 CSS 变量定义在这里，横向时补 `w-full`，纵向时改 `flex-col`。改这里可调整整体尺寸、圆角与滚动速度。 |
-| `content`      | 内容轨道，按 `repeat` 次数重复渲染，动画（`animate-marquee` / `animate-marquee-vertical`）作用在它身上。`pauseOnHover` 的暂停类也叠加在这里。 |
+| `content`      | 内容轨道，按 `repeat` 次数重复渲染，动画（`animate-marquee` / `animate-marquee-vertical`）作用在它身上。`pauseOnHover` 的暂停类也叠加在这里，只响应根容器自身的具名分组 `group/marquee`，放进带 `group` 的卡片里不会被卡片悬停误触发；覆盖 `root` 时不要去掉这个分组类。 |
 | `overlayStart` | 起始端渐隐遮罩（横向为左侧、纵向为顶部）。仅 `overlay` 为 `true` 时渲染，默认宽/高 `24`、`pointer-events-none` 不拦截交互；换底色时需连同 `from-*` / `via-*` 一起覆盖。 |
 | `overlayEnd`   | 结束端渐隐遮罩（横向为右侧、纵向为底部），其余同 `overlayStart`。                                                                             |
 

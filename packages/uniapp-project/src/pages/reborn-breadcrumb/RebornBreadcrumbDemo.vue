@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { BreadcrumbDroplistItem, BreadcrumbRoute } from '@/components/reborn-breadcrumb'
-import { computed, ref } from 'vue'
+import { computed, shallowRef } from 'vue'
 import { RebornBreadcrumb, RebornBreadcrumbItem } from '@/components/reborn-breadcrumb'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
@@ -19,9 +19,9 @@ const defaultState = {
   maxCount: 0,
 }
 
-const separator = ref(defaultState.separator)
-const separatorIcon = ref(defaultState.separatorIcon)
-const maxCount = ref(defaultState.maxCount)
+const separator = shallowRef(defaultState.separator)
+const separatorIcon = shallowRef(defaultState.separatorIcon)
+const maxCount = shallowRef(defaultState.maxCount)
 
 /** 可选文本分隔符 */
 const separatorOptions = ['/', '>', '»', '·']
@@ -81,7 +81,7 @@ const droplist: BreadcrumbDroplistItem[] = [
 
 const customDroplist = ['自定义项 1', '自定义项 2', '自定义项 3']
 
-const lastSelected = ref('')
+const lastSelected = shallowRef('')
 
 function onSelect(item: BreadcrumbDroplistItem) {
   lastSelected.value = item.label

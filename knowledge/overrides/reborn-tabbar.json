@@ -13,6 +13,7 @@
     "platforms 仅 uniapp 端提供。",
     "子项 RebornTabbarTrigger 必须放在 RebornTabbar 默认插槽内；title / name / icon / inactive / disabled / imageSize 是子项的 props（知识条目中与父组件 props 合并展示）。",
     "fixed 默认 false，需要吸底须显式开启；safeAreaInsetBottom 默认 false。",
-    "v-model 绑定当前激活项（number 或 string，与子项 name 对应），切换触发 change。"
+    "v-model 绑定当前激活项（number 或 string，与子项 name 对应），切换触发 change。",
+    "动态列表的每个 RebornTabbarTrigger 都须传 order 下标；整组均为有限数值时按 order 排序，同值保留相对次序，混传或 NaN/Infinity 整组忽略。缺省时 H5 跟随 VNode 顺序，MP 保留当前登记次序。name 缺省时使用排序后索引，视觉位置、选中与 drop 指示球保持同序。"
   ]
 }

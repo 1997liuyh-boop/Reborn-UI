@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { onPageScroll } from '@dcloudio/uni-app'
+import { computed, ref, shallowRef } from 'vue'
 import { backTopColors, backTopSizes } from '@/components/reborn-back-top/reborn-back-top.config'
 import RebornBackTop from '@/components/reborn-back-top/RebornBackTop.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
@@ -6,25 +8,19 @@ import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornSticky from '@/components/reborn-sticky/RebornSticky.vue'
 
 const items = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`)
-const scrollTop = ref(0)
+const scrollTop = shallowRef(0)
 
-const color = ref<typeof backTopColors[number]>('primary')
-const size = ref<typeof backTopSizes[number]>('md')
+const color = shallowRef<typeof backTopColors[number]>('primary')
+const size = shallowRef<typeof backTopSizes[number]>('md')
 
 /** 吸顶区块上方标题与占位高度（与 RebornSticky sticky-trigger-lead 对齐） */
 const stickySectionLead = 32
 
 const colorStickyRef = ref<InstanceType<typeof RebornSticky> | null>(null)
-const isColorSticky = ref(false)
+const isColorSticky = computed(() => colorStickyRef.value?.isSticky ?? false)
 
 const sizeStickyRef = ref<InstanceType<typeof RebornSticky> | null>(null)
-const isSizeSticky = ref(false)
-
-watchEffect(() => {
-  scrollTop.value
-  isColorSticky.value = Boolean(unref((colorStickyRef.value as { isSticky?: unknown } | null)?.isSticky))
-  isSizeSticky.value = Boolean(unref((sizeStickyRef.value as { isSticky?: unknown } | null)?.isSticky))
-})
+const isSizeSticky = computed(() => sizeStickyRef.value?.isSticky ?? false)
 
 onPageScroll((e) => {
   scrollTop.value = e.scrollTop

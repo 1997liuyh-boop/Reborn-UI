@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { BreadcrumbDroplistItem, BreadcrumbRoute, BreadcrumbUI } from './reborn-breadcrumb.config'
-import { computed, provide, reactive, ref } from 'vue'
+import { computed, onMounted, watch } from 'vue'
+import { useChildren } from '@/composables/useChildren'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme, { BREADCRUMB_INJECTION_KEY } from './reborn-breadcrumb.config'
@@ -34,32 +35,12 @@ const emit = defineEmits<{
   (e: 'select', item: BreadcrumbDroplistItem, index: number): void
 }>()
 
-// --- 条目注册表 ---
-/**
- * 根因：默认插槽的条目由使用者书写，父组件拿不到条目数量与顺序，
- * 无法判断首尾、也无法实现 max-count 折叠。
- * 方案：子条目在 setup 阶段登记自己，数组下标即渲染顺序。
- */
-const itemIds = ref<number[]>([])
-let idSeed = 0
-
-function registerItem() {
-  const id = ++idSeed
-  itemIds.value = [...itemIds.value, id]
-  return id
-}
-
-function unregisterItem(id: number) {
-  itemIds.value = itemIds.value.filter(item => item !== id)
-}
-
-function indexOfItem(id: number) {
-  return itemIds.value.indexOf(id)
-}
+// 子项顺序以实际 vnode 树为准，中间插入/删除后重新排序。
+const { children, linkChildren } = useChildren(BREADCRUMB_INJECTION_KEY)
 
 // --- max-count 折叠 ---
 /** 条目总数：routes 模式取数据长度，插槽模式取注册数量 */
-const total = computed(() => (props.routes?.length ? props.routes.length : itemIds.value.length))
+const total = computed(() => (props.routes?.length ? props.routes.length : children.length))
 
 /** 折叠区间 [start, end)，落在区间内的条目隐藏；保留首项与末尾 maxCount - 1 项 */
 const collapseRange = computed(() => {
@@ -121,20 +102,36 @@ const ui = computed(() => {
   }
 })
 
-const context = reactive({
+const context = {
   separator: computed(() => props.separator),
   separatorIcon: computed(() => props.separatorIcon),
   collapsing: isCollapsing,
   ui: computed(() => props.ui || {}),
-  registerItem,
-  unregisterItem,
-  indexOfItem,
+  indexOfItemUid: (uid: number) => children.findIndex(child => child.$.uid === uid),
   isItemCollapsed,
   isItemFirst,
   isItemLast
-})
+}
 
-provide(BREADCRUMB_INJECTION_KEY, context)
+linkChildren(context)
+
+// #ifndef H5
+// 小程序没有 VNode 树可供排序：挂载后新增、且没有逐项传 order 的条目只能按登记顺序追加到末尾，
+// 中间插入会让首尾分隔符与折叠区间错位。开发态提示一次，避免漏传 order 时静默复现。
+// uni 构建会把 process.env.NODE_ENV 替换成常量；UniApp 工程只引入了 @dcloudio/types，这里补一个仅类型的最小声明
+declare const process: { env: { NODE_ENV?: string } }
+if (process.env.NODE_ENV !== 'production') {
+  let mounted = false
+  let warned = false
+  onMounted(() => { mounted = true })
+  watch(() => children.length, (length, previous) => {
+    if (!mounted || warned || length <= previous || props.routes?.length) return
+    if (children.every(child => Number.isFinite(child.$.props.order))) return
+    warned = true
+    console.warn('[RebornBreadcrumb] 小程序端插槽模式下挂载后新增了条目，但并非每个 RebornBreadcrumbItem 都传了 order：新条目只会追加到末尾，中间插入时首尾分隔符与折叠会错位。请为动态条目逐项传入 :order（见文档「两端差异对照」），或改用 routes。')
+  })
+}
+// #endif
 </script>
 
 <template>
@@ -161,16 +158,22 @@ provide(BREADCRUMB_INJECTION_KEY, context)
     <template v-if="props.routes?.length">
       <RebornBreadcrumbItem
         v-for="(route, index) in props.routes"
-        :key="`${route.label}-${index}`"
+        :key="index"
+        :order="index"
         :to="hrefOf(index)"
         :droplist="route.children"
-        @select="(item: BreadcrumbDroplistItem) => emit('select', item, index)"
+        @select="(item) => emit('select', item, index)"
       >
         <slot name="item-render" :route="route" :routes="props.routes" :paths="pathsOf(index)">
           <text>{{ route.label }}</text>
         </slot>
-        <template v-if="$slots.separator" #separator>
-          <slot name="separator" />
+        <!-- 无条件转发并在这一层兜底：小程序编译器把转发的具名插槽一律记为已传入，
+             子条目的 $slots.separator 恒为真，靠子条目自己的后备内容会让分隔符消失 -->
+        <template #separator>
+          <slot name="separator">
+            <view v-if="props.separatorIcon" :class="props.separatorIcon" />
+            <text v-else>{{ props.separator }}</text>
+          </slot>
         </template>
       </RebornBreadcrumbItem>
     </template>

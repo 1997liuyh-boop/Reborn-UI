@@ -10,7 +10,7 @@ const createDocsSchema = () =>
   z.object({
     // 描述是 Agent 选型与 llms.txt 的第一依据，必填；组件页应遵循知识库描述规范（≤60 字），此处上限放宽以兼容指南类页面
     description: z.string().min(4).max(120),
-    // 组件分类：侧栏与总览按「系列 → 分类」分组，取值见 useComponentsCatalog 的 CATEGORY_ORDER，目录只决定 URL
+    // 组件分类：侧栏与总览按「系列 → 分类」分组，取值见 app/utils/componentsCatalog.ts 的 CATEGORY_ORDER，目录只决定 URL
     category: z.string(),
     tags: z.array(z.string()),
     badge: z.enum(["New", "Updated"]).optional(),

@@ -7,6 +7,67 @@ navigation: false
 ## 2026 年 10 月
 
 ::reborn-timeline{:ui='{"content":"[&>ul]:my-0"}'}
+:::reborn-timeline-item{timestamp="2026-10-26" color="error" placement="top"}
+
+- 新增 **Splitter**（Web）：`change` 事件在拖拽松手、折叠 / 展开或父级改写 `size` 后派发一次，载荷为全部面板尺寸与拖拽条下标，拖拽过程中与尺寸未变时不派发；`limit` 事件在拖拽中某个面板进入 `min` / `max` 边界时派发一次，停在边界上不重复。`collapse` 事件追加第二个参数，表示操作后是否折叠。
+- 修复 **Sticky**（双端）：放在按内容收缩宽度的容器里（如 `items-start` 的 flex 列）时，吸顶后宽度不再塌成 0；吸附期间占位容器保留吸附前的宽度，父容器变窄时跟着收窄。Web 端侧栏折叠等只平移占位容器的布局变化后，吸顶内容也会重新对齐。
+- 修复 **Affix**（双端）：吸边改按悬浮块中心判断左右；Web 端视口宽度改读 `documentElement.clientWidth`，页面有纵向滚动条时右侧吸边不再贴进滚动条下面，左右间距一致；UniApp 端改用窗口宽高定位。窗口尺寸变化（含 H5 地址栏收起、软键盘、横竖屏）时，未拖动过的悬浮块按 `left` / `right` / `top` / `bottom` 重新锚定，拖动过的只夹回可视范围，开启吸附时贴回原侧边缘。
+- 调整 **Anchor**（Web）：`type="default"` 的轨道线由 `gray-2` 调为 `gray-3`，放进填充面板时不再与底色重合，`default` 与 `underline` 可以区分；滚动补间移到 `app/lib/scroll-tween.ts`，CLI 单独安装锚点不再连带整套菜单。
+- 调整 **ContextMenu**（Web）：带描述的菜单项里，标签与描述之间留出 4px 间距。
+- 修复 **Dropdown**（Web）：显示箭头时尖端不再压进触发器（左右方向最明显，向上展开时还会和按钮里的下拉图标叠成两个箭头）：带箭头的默认间距由 8px 改为 12px，`popupOffset` 显式传值时不受影响。
+- 修复 **SelectTrigger**（Web）：展开时触发器在同一次渲染里被挤动，浮层与箭头首帧就贴住新位置，不再等入场动画结束才归位；Select、Cascader、DatePicker、TimePicker、TreeSelect、Dropdown 共用。开启 `arrow` 且未传 `offset` 时间距默认取 12px（Cascader 经 `triggerProps` 开箭头时生效）。
+- 修复 **TextRevealCard**（Web）：星点层补上漏掉的 `Motion` 导入，星点恢复渲染；随机位置改为挂载后生成，服务端与客户端首帧一致。
+- 破坏 **Anchor / Breadcrumb / Menu**（Web）：导出的注入键 `ANCHOR_INJECTION_KEY`、`BREADCRUMB_INJECTION_KEY`、`MENU_INJECTION_KEY` 由字符串改为类型化 Symbol，按字符串 `inject('reborn-anchor')` 注入会拿到 `undefined`，需改为导入这些常量。
+- 破坏 **Cascader / CascaderPanel / Checkbox / CheckboxGroup**（Web）：改为严格受控。只传 `:model-value`（Cascader 还包括 `:input-value`、`:popup-visible`）而不接更新事件时，交互只派发事件、显示保持父值，不再点击后接管为内部状态；需要「给初值、之后组件自管」请改用 `defaultValue` / `defaultChecked` / `defaultInputValue` / `defaultPopupVisible`。Checkbox 在父级拒收时原生 input 也对齐回父值。
+- 破坏 **Popover / Popconfirm**（Web）：传入 `open` 后，点击触发器、点击外部、滚动关闭与 `close()` 只派发 `update:open`，不再先改内部显隐；父级不接事件或拒收时气泡保持父值，与 UniApp 端一致。
+- 破坏 **Tabs**（Web）：未写 `pane-key` 时的默认编号改为插槽书写位置（`v-if` 隐藏的面板仍占一位），嵌套在 `v-for` / `<template>` 里的面板默认编号由数字下标改为「外层-内层」字符串；依赖默认数字编号的 `v-for` 面板请显式传 `pane-key`。前面的面板被隐藏或列表增删时，后面面板不再被错位复用，默认插槽里的普通元素不再多出 `panekey` 属性，根节点恢复为单个元素。
+- 破坏 **Timeline**（Web）：`items` 里未声明的字段不再透传到每个 `li` 上，借 `items` 透传任意属性的写法失效；根节点恢复为单个 `ol`。
+- 破坏 **Collapse / Sticky**（Web）：布局动画登记的注入键 `LAYOUT_ANIMATION_KEY` 从 `reborn-collapse.config.ts` 移到 `~/composables/useLayoutAnimation`，改用 `provideLayoutAnimation` / `useLayoutAnimationRegistration` 登记，直接导入旧位置的扩展代码需改导入路径。
+- 调整 **Splitter**（Web）：面板识别只认 `RebornSplitterPanel`（含全局异步注册的包装器），默认插槽里的其他组件不再被分配尺寸；面板外包了元素或组件时降级为普通容器并在开发环境警告，不再抛错。调整过尺寸后再增删面板，相邻面板补偿后的尺寸会发出 `update:size`。
+- 调整 **SearchBox**（Web）：`history` 不再有默认值 `[]`，以是否为 `undefined` 判断父级是否绑定；未绑定时历史写入本地存储，不再发出 `update:history`。
+- 调整 **受控模型**（Web）：IInput、Compare、BalanceSlider、Alert、Drawer、Fab、Header 的受控判定改用共享的 `useRawProp` / `useControlledModel`（`app/composables`，CLI 随组件分发），不再各自读取 `vnode.props`；对外行为不变。
+- 调整 **Collapse**（Web）：受控时已处于目标状态再调用 `show()` / `hide()` 不再重复派发 `update:modelValue`。
+- 调整 **TextReveal**（Web）：只有插槽文字或 `duration` / `delay` / `stagger` 变化时才重播入场动画，与文字无关的父级重渲染不再触发重播；类名变化时就地重新换行。
+- 调整 **Meteors**（Web）：根节点由 `display: contents` 改为铺满定位父容器的 `absolute inset-0` 层（`pointer-events-none`），透传到根上的 `style` 作用到整层流星；`class` 仍加在每颗流星上。
+- 调整 **DatePickerPanel**（Web）：未传绑定值与 `defaultValue` 时，服务端首帧主内容区隐藏，挂载后定位到本月再显示，不再露出「1970 年 1 月」；悬停范围预览不再重复调用 `disabledMethod`。年 / 月 / 季度网格合并为 `DatePickerUnitGrid`，对外行为不变。
+- 修复 **Cascader**（Web）：`loadMore` 写成内联箭头函数、`fieldNames` 写成内联对象时，父级重渲染不再清空已加载的下级。
+- 修复 **Form**（Web）：字段名本身含连字符（如 `user-name`）时，校验结果能对应回该字段。
+- 修复 **Pagination**（Web）：改每页条数导致当前页越界时，`current-change` 与 `update:modelValue` 只派发一次。
+- 修复 **Breadcrumb**（Web）：运行时解析得到的条目（站内 Playground、`resolveComponent`）与单根包装组件里的条目，`max-count` 折叠与 `order` 排序恢复生效。
+- 修复 **Menu**（Web）：插槽模式开启 `ellipsis` 后，选中项回写等自身更新不再把折叠重置后重新切分，「更多」子菜单不再卸载重挂。
+- 修复 **Carousel**（Web）：越界的 `initialSlide` / `v-model`（含 loop 下的 -1）在服务端首屏与客户端首帧即按张数钳制。
+- 修复 **Marquee**（Web）：悬停暂停只响应跑马灯自身，放进带 `group` 类的卡片里不再被卡片悬停误触发。
+- 修复 **Select**（Web）：远程搜索叠加父级拒收时，原已选项的文本与标签不再消失。
+- 修复 **Dialog / Drawer**（Web）：服务端渲染初始打开的对话框不再进入共用弹层栈，服务端内存不再随请求增长，`z-index` 与客户端水合一致。
+- 修复 **Dropdown**（Web）：`options` 中有重复的原始值、数字值与对象项下标相同，或数字和同字面量字符串并存时，选项 key 不再重复。
+- 修复 **Tree**（Web）：开启 `autoExpandParent` 时，父组件写回与上次内部写入相同的展开集合不再被误判而跳过父链补全。
+- 修复 **MultiStepLoader**（Web）：首屏 `loading` 为 `true` 时，步骤计时与 `action` 改为客户端挂载后才开始，服务端渲染不再执行一遍 `action`。
+- 修复 **ContainerTextFlip**（Web）：替换 `words` 后立即重测外框宽度；新数组更短时下标夹回范围内。
+- 修复 **Coupon**（Web）：服务端首屏的缺口 / 锯齿遮罩恢复生效。
+- 修复 **Table**（Web）：绑定 `v-model:selected-keys` 且提供具名插槽时，勾选一行只重绘该行。
+- 修复 **TimePicker**（Web）：整面板禁用时选中项恢复高亮。
+- 修复 **ContextMenu**（Web）：展开期间滚动重新定位复用 `useFloatingDismiss` 的滚动监听，不再重复登记。
+- 修复 **RadioGroup**（UniApp）：父级把绑定值置回 `undefined` 时回到 `defaultValue`，与 Web 端一致。
+- 修复 **CheckboxGroup / RadioGroup**（UniApp）：微信小程序 options 模式下选项恢复显示勾选框 / 单选框。
+- 修复 **Checkbox**（UniApp）：独立使用时 `v-model` 初值为 `null` 按未选中处理，不再渲染报错。
+- 修复 **Form**（UniApp）：字段名含连字符时不再被当成嵌套路径而跳过校验。
+- 修复 **Select**（UniApp）：弹层打开期间父级替换 `options` 数组时，不再把未确认的滚轮位置拉回已提交值。
+- 修复 **Rate**（UniApp）：半星快速点按的结果不再取决于手速；越界的 `v-model` 夹取到 `0 ~ count`，与 Web 端一致。
+- 修复 **Popover**（UniApp）：打开后测量期间被快速关闭或方位变化打断时，不再丢失 `open` / `change(true)` 事件。
+- 修复 **NoticeBar**（UniApp）：小程序端垂直轮播恢复入场动画；切换 `disabled` 不再把轮播重置到第一条。
+- 修复 **Breadcrumb**（UniApp）：微信小程序 routes 模式下分隔符恢复显示。
+- 修复 **Draggable**（UniApp）：H5 默认长按模式下手指落在列表上可正常滚动页面，项内按钮可点击；只有长按进入拖拽后才拦截滚动。
+- 修复 **Collapse**（UniApp）：展开动画结束后面板不再塌成 0 高；`ui.content` 默认类由 `absolute top-0 left-0 w-full` 改为 `w-full flow-root`，自定义了 `ui.content` 定位的需留意；闭合态挂载不再闪动。
+- 修复 **Popup**（UniApp）：微信小程序上只传 `title` 时弹层标题恢复显示（Select / Cascader / DatePicker 的弹层标题一并恢复）。
+- 修复 **Toast**（UniApp）：tabBar 页面来回切换后，消息不再只渲染在已隐藏的页面里；每个页面的 `<RebornToast />` 各自渲染同一份队列。
+- 修复 **Sticky**（UniApp）：吸顶状态切换后的内部重测只刷新宽高，临界位置附近不再来回闪动。
+- 修复 **UniApp 兼容性**：表单控件与 Alert、Badge、Chip、Collapse、Overlay、Popup、Popover、Fab、SlideVerify 等不再使用 `Object.hasOwn`，Toast 不再使用 `Array.prototype.at`，iOS 15.4 以下的小程序 / WebView 不会在 setup 阶段报错。
+- 修复 **useDarkMode**（UniApp）：存储里没有主题记录时按宿主主题取初值，不写存储、不改 `<html>` 的类名；使用方自己管理暗色时，首次渲染 PickerView 不再把 `dark` 类去掉。
+- 文档站：Dropdown 演练场新增「菜单结构」，可在基础平铺（`options`）与树形多级菜单（content 插槽）之间切换。
+- 文档站：交互演练场改为上下布局，控件在上、预览在下，分组标题独占一行，组内一行四个控件，默认显示两行，其余收进「展开全部参数」；同一行的控件按行对齐，标签折行不再错位。卡片源码抽取补上展开运算符引用的声明（如 `{ ...defaultState }`）；未选择过主题色的访客不再收到 `Set-Cookie`。
+
+:::
+
 :::reborn-timeline-item{timestamp="2026-10-23" color="error" placement="top"}
 
 - 破坏 **DatePicker**（UniApp）：`reborn-select-date` 改名为 `reborn-date-picker`，组件名改为 `RebornDatePicker`，导入路径改为 `components/reborn-date-picker/RebornDatePicker.vue`，类型 `SelectDateShortcut` 改名为 `DatePickerShortcut`；`labelFormat` 改名为 `format`，与 Web 端同名同义，其余参数与事件不变。
@@ -24,7 +85,196 @@ navigation: false
 - 调整 **DatePicker**（Web）：`arrowAnimation` 默认改为 `false`，展开时日历图标不再旋转。
 - 调整 **Calendar**（Web）：悬停任意日期以及选中的日期，显示与有事项日期相同的浅底与顶边。
 - 修复 **Steps**（Web）：`lineType="dashed"` 的连接线先清零四边宽度，未引入 Tailwind preflight 时不再出现浏览器默认的 3px 边框。
-- 文档：组合式函数一节新增 `useLoading`、`useGlobalScrollLock` 两页，其余各页按源码校对；该节页面加入像素拼图背景。
+- 文档：组合式函数一节新增 `showLoading`、`useGlobalScrollLock` 两页，其余各页按源码校对；该节页面加入像素拼图背景。
+
+- 破坏 **布尔模型**（双端）：Alert 的 `show`、Badge 的 `show` / `checked`、Collapse 的 `modelValue`、Chip 的 `show`、Fab 与 Overlay 的 `modelValue` 声明默认统一为 `undefined`。未绑定时保留组件原本初值；显式 `false` / `null` / `undefined` 按关闭或未选中处理，不能再用空值表示“未绑定”。Fab 的 `active` 只初始化未绑定模型，初始化不再派发更新；需要展开请给模型真实初值。
+- 修复 **受控模型**（Web）：IInput、BalanceSlider、Compare、Alert、Badge、Collapse、Chip、Fab、Drawer、Dropdown、Header、Overlay 在本地交互后重新绑定空模型，正确读取父级值；父级拒收时保持父值，重复提交相同目标仍派发原 `update:*` 事件。动态增加或移除 camelCase / kebab-case 模型绑定均重新判断归属，Header 的旧异步拦截、Dropdown / Fab 的旧悬停任务不能覆盖新状态。
+- 修复 **受控模型**（UniApp H5 / 小程序）：Alert、Badge、Collapse、Chip、Fab、Overlay 以及 Popover 的 `open`、Popup 的 `modelValue`、SignatureLandscape 的 `show`、SlideVerify 的 `modelValue` 均以显式父模型为准；父级拒收后不自行切换显示，重复请求仍发更新，移除绑定恢复本地状态。Popover 的 `defaultOpen` 只初始化未绑定状态，显式空值不能再借用默认展开。小程序即使模型属性缓存变化没有触发子组件更新，也能在原生更新完成后接管；兄弟实例、多个模型与祖先插槽彼此隔离。
+- 破坏 **Tabs / TabPane**（双端）：业务选择改用新增的 `paneKey`（模板 `pane-key`），不再读取 Vue `key` 作为模型值；旧 `:key="item.id"` 业务写法须补 `:pane-key="item.id"`，Vue `key` 继续保留实例身份。新增 `order`；动态小程序面板还须逐项传 `:order="index"`，静态未传 `paneKey` 仍自动编号，数字 `0` 与字符串值均保留。上下文改用类型化 Symbol，扩展组件须导入配置文件公开的注入键。
+- 调整 **TabPane / BreadcrumbItem**（双端）、**TabbarTrigger**（仅 UniApp H5 / 小程序）：新增的 `order` 仅在整组均为有限数值时按升序生效，同值保持相对次序；混传、缺项、`NaN` / `Infinity` 整组回退。小程序动态项必须全部传入序位，静态缺省保持登记次序；H5 / Web 缺省沿用 VNode / 插槽顺序。Breadcrumb 的 `routes` 自动传下标；Tabbar 模型仍用 `name` 或排序后索引。
+- 修复 **Tabs / Breadcrumb**（双端）与 **Tabbar**（UniApp）：动态头部或中间插入、删除、重排后，同步首尾、激活索引与折叠；Web Breadcrumb 服务端首屏即得到折叠结果。Web Tabs 拖拽后保留本地头部顺序，仅父级真正改写完整有效的业务值 / `order` 映射时重新接管，普通标题更新不复位。UniApp Tabbar 的视觉顺序、索引点击与指示球测量一致，同数量换序也重新测量。
+- 调整 **SlideVerify**（UniApp）：`defaultVerified` 仅初始化未绑定模型；显式 `false` / `null` / `undefined` 优先，不被默认 `true` 覆盖。初始化不派发 `update:modelValue`、交互 `change` 或表单校验；通过验证仍发送本次实际成功载荷。
+- 修复 **Form**（双端）：清除或重置会使旧异步校验失效；整表校验与字段校验并发时等待较新的最终结果。解析拒绝或校验异常不会返回假成功，字段提示“校验未完成，请重试”，无登记字段时也返回失败；UniApp 重置每次复制快照，保留 `Date` / `undefined`，动态 `FormItem.prop` 随路径更新。
+- 破坏 **Form**（UniApp）：删除从未生效的 `hideRequiredAsterisk`、`requireAsteriskPosition`、`statusIcon`、`validateOnRuleChange`，移除这些表单级参数；`FormItem.requireAsteriskPosition` 继续有效。
+- 破坏 **ColorPicker / ColorPickerPanel**（UniApp）：`onChange` 改为 `change`，监听从 `@on-change` 迁移到 `@change`，不保留别名；仅用户提交或手势结束派发，外部赋值不派发。输入草稿在失焦 / 确认时提交，拖动仍实时更新模型。
+- 破坏 **Draggable**（UniApp）：`ui.base` 拆为 `ui.root` / `ui.item`，不保留别名；根样式迁到 `root`，条目样式迁到 `item`。回传元素保留原始对象或原始值，不再注入 `uid` 或复制；父级原地增删同步显示，快速松手使过期测量失效，只有拖拽中阻止页面滚动，非 H5 通过 WXS 更新拖动样式。
+- 修复 **UniApp 组件**：Cascader / DatePicker 未绑定模型时保留选择，DatePicker 文本随格式与分隔符刷新；Cascader 丢弃旧懒加载结果，Collapse 展开后内容增长不被裁切，Fab 点击动作不再双发，BackTop 隐藏时不再命中。Badge / Chip / Checkbox / Input 恢复 H5 属性透传，动态插槽随更新生效；Affix 拖动阻止页面滚动并响应定位变化，Footer 卸载释放偏移，Image 换图重置状态并使用小程序可用的错误图标，Input 清除触发字段校验。
+- 调整 **二维码演示**（UniApp）：移除从未影响导出的 500 / 750 / 1000 像素尺寸选择；`toPng()` 仍不接受尺寸参数，演示导出固定为 600 × 600 像素。恢复六个配置页签，颜色确认后提交，三个编辑弹窗各自保存草稿；码点 / 外框 / 内点只接受各自选项集合的值，Logo 开关只接收布尔值。
+- 修复 **Textarea / Input**（UniApp）：Textarea 默认恢复可编辑，`readonly` 与表单禁用切换后正确更新原生禁用态；Input 根样式支持字符串、对象与数组，父级后续替换仍生效。SwiperAction 演示补齐列表索引，删除操作读取正确条目。
+- 调整 **组件与演示写法**：统一具名 Props 接口、类型化事件、模型声明与静态模板引用，原始值使用浅引用，移除模板中的 TypeScript 断言；需要深层编辑的数据保留响应性。缓存可复用的样式和计算，定时、监听与异步任务随组件或作用域结束清理。
+- 修复 **Web 演示**：Lens 的 Rays / Beams SVG 引用使用各实例实际标识；Steps 显式导入 `defineComponent`；TimePicker 选择或清空后，父模型、控件与代码展示同步，复制的代码补齐 `RebornTimePicker` 导入。
+- 修复 **IInput**（Web）：受控 `undefined` / `null` 清空显示，不再回显旧交互副本；未绑定时保留 `defaultValue` 初值和本地输入。
+- 调整 **BalanceSlider / Compare**（Web）：受控模型显式空值将显示比例复位到 `initialValue` / `initialSliderPercentage`，不主动回写父模型；与非受控本地值分开。
+- 修复 **MultiStepLoader**（Web）：全屏层实际传送到专用 `#teleports`，摆脱 transform 祖先的包含块；宿主须提供目标并在 SSR 时注入对应传送内容。删除原生按钮无效 size 属性。
+- 破坏 **AnimatedList**（Web）：列表改由 `items` 传入、在 `item` 作用域插槽（`{ item, index }`）中渲染，不再读取默认插槽；修复卸载后轮播仍无限运行、静态子组件写法列表为空、离场动画不生效。
+- 调整 **BalanceSlider**（Web）：新增 `v-model`（`modelValue`，0-100 的数字），未绑定时仍以 `initialValue` 为初值；去掉写死的 `id="track"`。
+- 破坏 **HaloSearch**（Web）：除 `class` 外的透传属性（含 `style`、原生事件）改落到内部输入框，原先落在外层容器；新增 `v-model` 绑定关键词与回车派发的 `search` 事件。内部 id 选择器改为 class，多实例不再产生重复 id。
+- 修复 **ColorPicker**（Web）：`hideDefaultSwatches` 不再连自定义色板一起隐藏；HEX 与数字通道输入框在输入中途不再被改写，`value-change` 只在输入合法时触发；`type` 变化后同步到面板；对比度区域的 AA / AAA 标记改用 RebornBadge 渲染（原先引用了不存在的 `UiBadge`）。
+- 调整 **Compare**（Web）：新增 `percentage` prop，可用 `v-model:percentage` 双向绑定滑块位置（此前只派发 `update:percentage`，写 `v-model:percentage` 时值会落到根元素上）；`initialSliderPercentage` 改为未绑定时的初值，修改后立即复位。卸载后不再派发 `update:percentage`。
+- 调整 **ColorPicker**（Web）：`open` 改由 `defineModel` 实现，导出的 `ColorPickerProps` 类型不再包含 `open`（运行时 prop 与 `v-model:open` 用法不变）。
+- 破坏 **FileUpload**（Web）：事件 `onChange` 改名为 `change`，监听由 `@on-change` 改为 `@change`；回调参数改为文件列表的副本，修改它不再影响组件内部列表。
+- 修复 **HyperText**（Web）：`animateOnLoad` 为 `false` 时不再在挂载时自动播放（此前无论取值都会播放一次），服务端渲染不再启动定时器。
+- 破坏 **iPhone15ProMockup**（Web）：`src` 恢复为屏幕图片地址（此前任意值都只显示写死的站内 UniApp 页面）；嵌入页面改用新增的 `iframeSrc`。屏幕圆角裁剪路径改为按实例生成 id，多个模型同页不再冲突。
+- 破坏 **Lens**（Web）：`hover-update` 事件移除，悬停状态改用 `v-model:hovering`（事件 `update:hovering`）；挂载时不再主动派发一次 `false`。镜头离场的缩小淡出动画开始生效（原写的 `leave` 不是 motion-v 的属性）。
+- 修复 **RebornCheckbox / RebornCheckboxGroup**（Web）：显式 undefined/null 清空选择，不回落旧内部值；组上下文改类型化 Symbol 和只读状态。
+- 调整 **RebornCheckbox**（Web）：class/style 落 label，其他原生属性落 input，并随父级更新；indeterminate 直接绑定 DOM 属性。
+- 修复 **RebornCascader / RebornCascaderPanel**（Web）：显式空模型清空选择，恢复 style/id/aria/data 透传与焦点事件入口。
+- 调整 **RebornCascader / RebornCascaderPanel**（Web）：懒加载结果保存在内部缓存，不写业务 options，支持冻结对象；配置或数据换引用时旧回调失效。
+- 修复 **RebornCascader**（Web）：搜索支持虚拟窗口；结果变化同步真实滚动归零，虚拟行高与步长一致，占位层保持总高；关闭/清空取消旧搜索防抖。
+- 修复 **RebornAnchor**（Web）：链接登记表变化后重算激活项；两处静态模板引用统一 useTemplateRef。
+- 修复 **RebornAvatar / RebornAvatarGroup**（Web）：补查水合前已失败图片；分组 Fragment 路径参与 key，避免相邻列表撞键。
+- 调整 **RebornCalendar**（Web）：SSR 首屏复用日期/时区快照并支持普通 Vue，客户端挂载后刷新日期，减少跨时区和午夜错位。
+- 修复 **RebornCarousel**（Web）：保留真实片 VNode，取消帧时同步清除登记；初始索引在 setup 确定。
+- 修复 **RebornBadge / RebornButton / RebornBreadcrumbItem**（Web）：动态插槽存在性随渲染更新，不继续使用 setup 首帧快照。
+- 调整 **RebornBadge**（Web）：`class` 只作用于徽标主体（与 `ui.base` 同一节点），不再同时加到外层动画容器；依赖外层容器布局（`w-full`、外边距等）的写法改用 `ui.root`。
+- 破坏 **RebornButton**（Web）：`trailing` 插槽作用域参数 `ui` 从 `trailingIcon` 类名字符串改为与 `leading` 相同的样式函数对象，与 UniApp 一致；原先把 `ui` 直接当类名用的写法改为 `ui.trailingIcon()`。
+- 修复 **RebornDatePicker**（Web）：文档移除过时的 style 不生效说明，确认原生属性落在触发器根节点。
+- 修复 **RebornCollapse**（Web）：绑定 `v-model` 时 `toggle` 事件载荷是切换前的旧值（展开收到 `false`）；现在与文档一致，载荷为切换后的状态。
+- 破坏 **RebornCollapse**（Web）：Expose 的 `isAnimating` 改为只读（`Readonly<Ref<boolean>>`），外部不能再改写动画状态。
+- 修复 **RebornColorPicker**（Web）：透明度改动没有写回 `v-model`；现在带透明度时输出 `#rrggbbaa`，不透明时仍为 `#rrggbb`。
+- 修复 **RebornColorPicker**（Web）：色值输入框边输边被改写，现在失焦或回车时才解析提交，不合法的输入恢复为当前色值。
+- 修复 **RebornColorPicker**（Web）：外部改写 `v-model` 会被面板转成小写六位十六进制后回传（颜色名等无法解析的值被改成黑色）；现在外部改值只同步显示、不回传。
+- 修复 **RebornColorPicker**（Web）：不绑 `v-model` 时取色无效；改用 `defineModel`，非受控用法由组件自己保存颜色。
+- 修复 **RebornColorPicker**（Web）：触屏拖动被系统手势打断后 window 上的监听残留、拖滑块时页面跟着滚动；改用 Pointer Events，卸载时清理。
+- 调整 **RebornColorPicker**（Web）：新增 `change` 事件（`RebornColorPickerPanel` 同样提供），一次取色交互结束且颜色变化时派发；表单校验从「拖拽中逐帧」改为在 `change` 时触发一次。
+- 破坏 **RebornColorPicker**（Web）：`size` 类型去掉从未生效的 `'xs'`，只接受 `'sm' | 'md' | 'lg'`，与 UniApp 端一致。
+- 修复 **RebornCountdown**（Web）：`:value="dayjs(...)"` 内联构造时，父组件每次重渲染都会重启倒计时、重复派发 `change` / `finish`；现在按时间戳判断目标是否变化。
+- 修复 **RebornCoupon**（Web）：每次重算都新建 5 组媒体查询且卸载后不释放，长时间停留或反复进出页面时监听持续累积。
+- 调整 **RebornCoupon**（Web）：断点覆盖项（`sm` / `md` / `lg` / `xl` / `xxl`）改为挂载后生效，服务端渲染时水合首帧与服务端一致。
+- 调整 **RebornDialog**（Web）：嵌套弹窗按 `Esc` 只关闭最上层；`z-index` 改为基础层级，打开时与 RebornDrawer 共用弹层栈自动递增，后打开的始终在上层。
+- 修复 **RebornDialog**（Web）：未开 `scrollable` 时，面板里自带滚动的表格、textarea、下拉列表能用滚轮滚动；`append-to` 改为打开时解析并在找不到目标时回退 body；拖拽中关闭或卸载会移除 window 监听。
+- 破坏 **RebornDrawer**（Web）：expose 的 `panel` 改为只读引用，首次打开前的值从 `undefined` 变为 `null`。
+- 调整 **RebornDrawer**（Web）：事件在脚本中改为 camelCase 声明（`openAutoFocus`、`closeAutoFocus`、`resizeStart`、`resizeEnd`），模板写法 `@open-auto-focus` 等不受影响。
+- 修复 **RebornForm**（Web）：`resetFields` 的初始值快照改为保留类型的深拷贝，`Date` 不再被重置成字符串，初值为 `undefined` 的字段也能被清空；`validate()` 只解析一次 schema，连续触发的异步校验只采纳最新结果；`validate` 的回调抛错不再让 Promise 挂起。
+- 修复 **RebornFormItem**（Web）：expose 的 `prop` 随属性实时更新；`label` 插槽动态出现或消失后表单项间距随之刷新；错误提示不再叠加两套进场动画。
+- 修复 **RebornInput / RebornInputNumber**（Web）：`style` 透传到根节点生效；前置 / 后置插槽动态增删后圆角压平随之刷新。
+- 破坏 **RebornInput / RebornInputNumber**（Web）：expose 的 `ref` / `inputRef` 改为只读引用。
+- 修复 **RebornInputNumber**（Web）：`v-model` 绑定为 `undefined` 时不再在挂载时被改写成 `null`。
+- 修复 **RebornInputOtp**（Web）：`input-type="text"` 时移动端弹出全键盘；`id`、`name`、`aria-*` 等透传属性落到隐藏的原生输入框，`style` 落到根节点。
+- 修复 **RebornDialog / RebornEmpty / RebornFormItem**（Web）：插槽动态增删后头部、底部、标题区与表单项间距随之刷新；RebornDialog 的 `id`、`style`、`data-*` 等透传属性落到面板上。
+- 修复 **RebornFireworks**（Web）：`class` 以外的透传属性落到容器上；运行时切换 `teleport` 后烟花画到新画布上。
+- 修复 **RebornFab**（Web）：`v-model` 改为点击即写回，不再延迟 400ms，与 UniApp 端时序一致；动画期间父组件写入的值不再被覆盖；运行时修改 `top` / `bottom` / `left` / `right` 立即落位，`variant` 离开 `circle` 时清除环形布局残留样式。
+- 调整 **RebornDropdown**（Web）：内部注入键改为带类型的 Symbol；放进只提供部分上下文的宿主（如面包屑 `#droplist`）时不再因缺方法报错。
+- 修复 **RebornDraggable**（Web）：在列表项以外松手或取消拖拽时显示顺序回滚到 `v-model`，不再与数据脱节；允许重复的原始值，对象项不再用 `name` 作为渲染 key。
+- 调整 **RebornGuide**（Web）：`steps` 换新引用但目标与形态不变时只刷新内容，不再重放切步动画；事件在脚本中改为 camelCase 声明（`nextStepClick`、`prevStepClick`），模板写法不变。
+- 修复 **RebornImage**（Web）：预览打开期间组件卸载（如离开路由）会一并关闭预览遮罩；连续点击图片不再叠出多个预览；图片加载完成时不再无条件读取布局。
+- 破坏 **NoticeBar**（Web）：点击 `right-icon` 属性渲染的右侧图标改为派发 `close` 并阻止冒泡，不再触发 `click`；`right-icon` 插槽内容不参与关闭。此前 Web 端 `close` 从未派发，与文档和 UniApp 端不一致。
+- 修复 **NoticeBar**（Web）：水平模式调用 `replay()` 后滚动停住；运行时修改 `speed` / `scrollable` / `wrapable` / `disabled` / `interval` 或容器宽度变化后滚动与轮播状态失步；`text` 变为单条或空数组后轮播定时器不停、派发 `change(NaN)`。
+- 修复 **NoticeBar**（Web）：`customStyle` 此前被静默丢弃，现在追加到根节点内联样式；移除从未生效的 `ui.content` 键。
+- 修复 **Popover / Popconfirm**（Web）：`v-model:open` 初始为 `true` 时气泡不打开；`open` 与 `defaultOpen` 同时传入时改为以 `open` 为准。Popover 的 `open` 改由 `defineModel` 声明，props / 事件名不变。
+- 调整 **Pagination**（Web）：`total` 变小导致当前页越界时，组件钳制页码并回写 `v-model`、派发 `current-change`（此前只在显示层钳制）；`total` 为 0 时不钳制。
+- 修复 **Pagination**（Web）：`style`、`id`、`data-*` 与原生事件监听器此前被 `inheritAttrs: false` 静默吞掉，现在透传到根 `<nav>`。
+- 破坏 **Notification**（Web）：同 `key` 再次调用改为以最后一次的 config 整体替换实例，上次传过、这次没传的字段（`footer`、`ribbon`、`onClose`、`progress` 等）不再沿用；进度条随计时一起从头播放。
+- 修复 **Notification**（Web）：`message` / `icon` / `closeIcon` / `footer` 传 VNode 时，新增或关闭任意通知、悬停暂停都会让该节点卸载重挂，内部组件状态与输入焦点丢失。
+- 修复 **Menu**（Web）：受控 `openKeys` 被拒收时保持父值，实例 `open/close` 解析完整祖先路径，插槽增删会重新测量溢出，点击继续自然冒泡。
+- 调整 **Menu**（Web）：展开状态只由模型持有，关闭句柄触发或取消即释放；浮层只在展开时监听滚动和窗口尺寸。
+- 调整 **Menu/Anchor**（Web）：共用可取消滚动补间，菜单仍只滚动最近容器。
+- 破坏 **Slider**（Web）：`thumb` 插槽改为只替换滑块中心圆，外层滑块的定位、聚焦、方向键与气泡始终由组件渲染；作用域参数由 `{ value: { value, style } }` 改为平铺的 `{ value, index, active, disabled }`，范围模式也可使用。原先用插槽画整个滑块的写法，改为用 `ui.thumb` 调整外形、插槽只放内容。
+- 修复 **Slider**（Web）：范围模式下用方向键或拖拽推过相邻节点后，焦点跟到被移动滑块的新位置，继续按方向键不再移动被越过的节点；受控绑定被父级拒收时，滑块停在父级的值。
+- 修复 **Switch**（Web）：键盘聚焦后按空格可以切换，并与点击一样经过 `beforeChange`、发出 `update:modelValue` / `change`；原生 checkbox 的勾选态与开关状态保持一致。
+- 调整 **Switch**（Web）：未声明的 attrs 中 `style` 与 `data-*` 改为落到根节点，其余仍落到内部隐藏的原生 checkbox。
+- 修复 **Switch**、**RadioGroup**（Web）：绑定值被父级置回 `undefined` 时回到 `defaultValue`（Switch 缺省取 `inactiveValue`），不再停在上一次的值。
+- 修复 **Select**（Web）：远程搜索替换 `options` 后，已选项仍能在触发器上回显文本与标签；多选标签按选择先后排列。
+- 修复 **Rate**（Web）：受控绑定被父级拒收时星形停在父级的值；卸载时取消排队中的指针换算，`trigger="hover"` 下不会在卸载后发出 `update:modelValue`。
+- 破坏 **SearchBox**（Web）：删除 `saveHistory` / `removeHistory` 回调，历史改用 `v-model:history`，未绑定时按 `historyKey` 使用浏览器本地存储。主模型与 `search` 载荷仍是 `{ inputValue, selectValue, ...扩展字段 }` 对象，`dropdown` 插槽自定义面板，`showDropdown` 保留；不要套用 UniApp 的字符串模型和插槽名。根节点属性透传恢复。
+- 破坏 **Segmented**（Web）：字段映射属性由 `props` 改为 `fieldNames`，不保留别名。
+- 破坏 **RootPortal**（Web）：移除未使用的 `config` 导出与配置文件，仅保留传送组件和默认插槽。
+- 破坏 **Splitter**（Web）：默认插槽不再暴露内部 ui；折叠插槽只提供按钮内部内容并接收 `collapsed`，size 载荷保留输入格式且挂载不触发更新。
+- 调整 **Sticky**（Web）：`rect` 只读，调用 `forceUpdate` 重新测量；DOM 测量合并同帧快照，吸顶/吸底状态独立，Collapse 动画按类型化登记协调。
+- 修复 **SelectTrigger**（Web）：完整复用共享外部关闭与嵌套浮层登记，离场中保留补位，结束后释放监听。
+- 调整 **RadioGroup/Segmented/Statistic**（Web）：底板动画直接写 DOM 帧，统计格式器按规范化精度复用。
+- 破坏 **TimelineItem**（Web）：`content` 默认按文本转义；需要 HTML 时显式启用 `dangerouslyUseHTMLString`，`items` 支持同名字段。
+- 破坏 **Timeline**（Web）：父子注入键改为类型化 Symbol，扩展组件须导入配置文件公开的注入键，不再按旧字符串注入；Tabs 的对应迁移见同日 TabPane 条目。
+- 修复 **Table**（Web）：异步数据到达前保留预选；动态插槽、重复字段列替换正确更新。行更新边界、共享溢出观察器与默认跨度短路减少整表工作。
+- 调整 **Tabs / TimePanel**（Web）：Tabs 指示器和高度动画直接写 DOM 帧并释放已移除标签的观察目标；TimePanel 按列缓存选项，无关列不随秒值更新。
+- 修复 **Toast**（Web）：`content`、`icon`、`closeIcon` 传 VNode 时，其他消息新增、关闭或同 key 更新不再让它卸载重建，内部状态（倒计时、输入框）与动画得以保留。
+- 调整 **Toast**（Web）：服务端渲染期间调用 `message.*` 改为空操作，返回的 Promise 立即兑现；导出的 `messageState` 改为只读，修改须经命令式 API。
+- 修复 **TimePicker**（Web）：受控绑定下选择时间，父级只收到一次 `update:modelValue`，此前同一个值会连续派发两次。
+- 修复 **TimePanel**（Web）：单独使用且绑定值为空时，服务端与客户端首帧都选中 `00:00:00`，挂载后再切到当前时刻，不再出现水合不一致；禁用回调换成新函数时只按新规则校正当前选择，父级频繁重渲染时秒列不再反复跳到「此刻」。
+- 调整 **TimePanel**（Web）：选项类名预先按状态算好，每次选择不再逐项合并样式，毫秒格式下切换更轻。
+- 调整 **Text**（Web）：未声明的属性（`id`、`data-*`、`aria-*`、`style`、`@click` 等）透传到承载文字的 `span`，开启 `tooltip` 时同样落在文字节点上；此前这些属性全部被丢弃。
+- 修复 **Text**（Web）：`tooltip` 挂载后再开启，或关闭再开启时，容器宽度变化后仍会重新判断是否省略，气泡开关与实际省略状态保持一致。
+- 修复 **Textarea**（Web）：父级把绑定值重置为 `undefined` 时输入框与字数统计一并清空；重置或回填为 `null` 时不再在开启 `show-word-limit` 后报错。`autofocus` 不再预设聚焦样式，以真实聚焦为准。
+- 修复 **Transfer**（Web）：`disabled` 从 `true` 切回 `false`、或所在表单解除禁用后，勾选、搜索、分页与穿梭按钮恢复可用；整体禁用时条目不再显示悬停底色与手型光标。此前禁用一次后再也解除不了。
+- 修复 **Transfer**（Web）：`default-target-keys` 在首次拿到非空 `dataSource` 时初始化一次，`dataSource` 异步加载时也能生效；未绑定 `v-model` 时服务端首屏即把默认条目放进右栏。此前挂载时数据为空，默认值就永久丢失。
+- 调整 **Transfer**（Web）：未提供条目插槽时，勾选一条只重新渲染这一行；开启 `virtual-scroll` 后滚动只在跨行时更新可视窗口，头部下拉的选项不再随勾选整批重建。
+- 修复 **TextHighlight**（Web）：默认渐变终色使用正确的 `textEndColor`，继承文字颜色；样式限定根节点，不再误匹配所有后代 span。
+- 破坏 **RebornTypewriter**（Web）：通过 ref 暴露的 `displayText` / `isTyping` / `isDeleting` 改为只读，外部不能再直接赋值，请改用 `startTyping` / `startDeleting`。
+- 修复 **RebornTypewriter**（Web）：`resetOnChange` 为 `false` 时初始文本不出现；手动调用 `startTyping` / `startDeleting` 时与在途动画并行、卸载后残留光标定时器；SSR 下服务端启动定时器且永不清理（打字改为挂载后开始）。
+- 调整 **RebornWatermark**（Web）：`customClass` 现在会追加到根元素（此前声明了但不生效）；图片加载失败时回退为文字水印。
+- 修复 **RebornWatermark**（Web）：SSR 页面上水印不显示；`image` 连续变化时旧图片后加载完会覆盖新水印。
+- 调整 **ShaderToy**（Web）：新增 `error` 事件与 `fallback` 插槽，不支持 WebGL 2 时不再抛错，改为触发事件并渲染降级内容；`shaderCode` / `mouseMode` 挂载后修改即生效，切换着色器不再需要 `:key` 重建。
+- 修复 **ShaderToy**（Web）：卸载时未释放 WebGL 上下文与尺寸观察器，反复切换后触发浏览器上下文数量上限；`rebornShaderToy.setFrameRate()` 设为低于 60 时 rAF 回调逐帧翻倍。
+- 调整 **TextReveal**（Web）：插槽内容或参数变化时会还原拆分、重建文字容器并重播入场动画（此前插槽更新不生效，可能抛 DOMException）。
+- 调整 **SpringCalendar**（Web）：新增 `activeIndex` 属性，支持 `v-model:active-index` 受控选中；`update:activeIndex` 事件名不变。
+- 修复 **SpringCalendar**（Web）：任何一次重渲染都会重挂事件列表并重播动画；`calendarData` 变短后下标越界抛错。
+- 修复 **SafariMockup**、**TextHoverEffect**、**TracingBeam**、**TextMorph**（Web）：写死的 SVG id 在同页多实例时互相引用；SafariMockup 的 SVG 属性名不生效（地址栏文字字号恢复为 12px）。
+- 破坏 **VanishingInput**（Web）：挂载后默认不再自动聚焦输入框；需要时传新增的 `autofocus`，聚焦时不滚动页面。
+- 修复 **Sparkles**（Web）：高 DPR 屏幕上粒子只出现在左上区域。
+- 修复 **Ripple**（Web）：虚线圈落在倒数第二圈，改为最外圈。
+- 修复 **ScratchToReveal**（Web）：修改 `width` / `height` 后刮层不重绘、内容直接露出；页面任意位置松开鼠标都会读取整张画布像素。
+- 修复 **useOverlay**（Web）：SSR调用不再保留首个请求的应用上下文。
+- 调整 **useMotionList / useUniDemoPanel**（Web）：资源清理随独立 effectScope 停止，手动注销仍幂等。
+- 调整 **tv**（Web）：按主题对象、组件名及config身份复用主题函数，保留服务端标记算法和变体输出。
+- 调整 **useFloatingDismiss**（Web）：增加外部点击时机、滚动意图、离场期间关闭守卫及共享滚动回调，SelectTrigger实际宿主已接线。
+- 调整 **useDarkMode**（UniApp演示）：新增 `setDarkMode(boolean)` 同步共享只读状态、存储与H5根节点，`toggleDarkMode`复用该入口，供App外部消息接线。
+- 破坏 **useOverlay**（Web）：`overlays` 由调用时的快照数组改为 `ComputedRef<OverlaySummary[]>`，每项为 `{ id, component, isOpen, props }`，不再暴露内部状态；读取当前值请取 `.value`。
+- 调整 **useOverlay**（Web）：在组件 `setup` / `effectScope` 内 `create()` 的实例随作用域注销，创建者卸载时浮层立即移除、`open()` 以 `undefined` 解析；新增 `persistent` 选项保留旧的「跨组件长期持有」用法。服务端调用 `create()` 返回不登记的空实例。
+- 调整 **useOverlay**（Web）：浮层改由宿主组件 `RebornOverlayHost` 统一渲染（放在 app.vue 的 `UApp` 内），浮层内 `useId`、`provide`、全局组件与指令、错误处理随主应用继承；未放置宿主时退回共用的独立应用，`useId` 前缀为 `rb-overlay-N`。
+- 修复 **useOverlay**（Web）：`patch()` 不再重建组件，表单输入、滚动位置与焦点保留；关闭时播放组件的离场动画（`closeDelay` 生效）；已打开时再次 `open()` 会以 `undefined` 解析上一次的 Promise，不再永远挂起；`isOpen()` 可在模板与 `computed` 中响应式使用。
+- 破坏 **useFieldGroup**（Web / UniApp）：表单与表单项的上下文改用 `FORM_KEY` / `FORM_ITEM_KEY`（Symbol）提供与注入，按字符串 `inject('rebornForm')` / `inject('rebornFormItem')` 的自定义代码需改为导入这两个键；新增导出上下文类型 `FormContext`、`FormItemContext`、`FormFieldEntry`。
+- 破坏 **useFieldGroup**（Web / UniApp）：`errors`、`fields`、`fieldInstances` 改为只读返回，`getErrors()` 改为同步返回 `FormValidateError[]`（`await` 写法不受影响，`.then()` 写法需改）；删除从未生效的 `errorLock`。RebornForm 暴露的 `fields` 随之变为只读。
+- 修复 **useFormInject**（Web）：控件尺寸不再读取表单项的兜底尺寸，`RebornFormItem` 单独使用或表单 `size=""` 时，内部控件保持各自默认尺寸，不再被缩成 `sm`，与 UniApp 端一致。
+- 修复 **useFormInject**（Web / UniApp）：父级增删控件的 `size` 属性时，尺寸来源在显式值与表单值之间正确切换。
+- 调整 **useGlobalScrollLock**（Web）：在组件 `setup` / `effectScope` 内调用时，作用域销毁自动释放持有的锁。
+- 破坏 **copyToClipboard**（Web）：`useCopyToClipboard` 改名为 `copyToClipboard` 并移到 `app/utils/copyToClipboard.ts`（仍自动导入），返回 `Promise<boolean>`；写入失败时弹出失败提示，不再产生未捕获的 Promise 拒绝。文档地址改为 `/composables/copy-to-clipboard`。
+- 破坏 **showLoading**（Web）：`useLoading` 改名为 `showLoading`，过渡导出已删除，调用方须更新导入名称；源码文件与导入路径 `~/composables/useLoading` 保留。服务实例不随调用组件卸载关闭，文档地址改为 `/composables/show-loading`。
+- 修复 **showLoading**（Web）：在组件 `setup` 中创建的全屏遮罩不会因组件卸载提前释放滚动锁。
+- 破坏 **useMouseState**（Web）：移除全局组合式函数 `useMouseState` 及其文档（与 card-3d 目录内的同名文件重复，站内已无引用）；需要悬停状态时在组件内用一个 `shallowRef(false)` 即可，3D 卡片改用其目录内自带的 `useMouseState.ts`。
+- 修复 **defineShortcuts**（Web）：链式快捷键不再区分大小写，开着大写锁定或按住 Shift 时 `g-h` 也能命中；焦点切换不再触发整张快捷键表重新解析，非法键名只告警一次（改用 `console.warn`）。
+- 修复 **useIsRootPage**（文档站）：总览页判定改为只比较路径，带 hash / query / 尾斜杠打开 `/components`、`/changelogs` 时不再出现布局错乱与水合告警。
+- 修复 **useComponentCode**（文档站）：快速切换文件树时不再被先发出的慢请求覆盖；入参支持 getter，组件 props 变化后源码面板随之刷新。
+- 修复 **useLockScroll**（UniApp H5）：嵌套弹层关闭内层时页面仍保持锁定；以打开状态挂载的遮罩会上锁；KeepAlive 激活时重新上锁。
+- 修复 **useDarkMode**（UniApp 演示）：各页面共用同一个暗色状态，从子页面切换主题后返回，上一页的开关与主题同步。
+- 修复 **useChildren**（UniApp）：注销未登记的子组件不再误删最后一个兄弟项；动态排序遵循同日 `order` 规则，Tabbar / Tabs / Breadcrumb 的登记与注销保持实例身份。
+- 修复 **InputNumber**（UniApp）：defaultValue 作为非受控初始值，回到 0 正常触发 change，非法文本回退最近提交值。
+- 调整 **Popup**（UniApp）：size 默认不限制并实际应用；遮罩、关闭、层级别名未传时回退主属性，安全区随位置变化，面板统一渲染。
+- 破坏 **Popover**（UniApp）：删除 update:modelValue 与无效 useContentSlot，只使用 v-model:open；每次打开重新测量并避免重复关闭事件。
+- 破坏 **SearchBox**（UniApp）：删除 `saveHistory` / `removeHistory` 回调，改用 `v-model:history`，未绑定时按 `historyKey` 使用 uni 本地存储；主模型与 `search` 载荷为字符串。删除未实现的 `mode` / `showDropdown` / `skuAttributes` / `selectSku`，新增 `prefix` / `extra` 插槽，移除业务图片与站点占位弹层；Web 的对象模型和 `dropdown` 插槽不适用于此端。
+- 破坏 **Pagination**（UniApp）：class 改为 customClass，pager-item 新增 select() 并受禁用守卫。
+- 修复 **Qrcode/Signature/Rate/NoticeBar**（UniApp）：绘制与触摸异步竞态、节点测量、卸载后定时任务与导出 Promise 收尾。
+- 破坏 **Slider**（UniApp）：thumb 插槽从嵌套 scope 改为平铺 value/index/active/disabled，插槽仅替换中心内容，外层定位与交互由组件维护。
+- 破坏 **Textarea**（UniApp）：expose.isFocus 改为只读；null/undefined 模型统一显示为空文本。
+- 调整 **Slider / Switch / Textarea / Tabbar**（UniApp）：模型改用 defineModel；Switch 收到 undefined 时回落 defaultValue/inactiveValue，新增 blur 复位样式聚焦态。
+- 调整 **Waterfall / Toast**（UniApp）：`append()` 的 Promise 在分列完成后兑现，`clear()` 或卸载使旧批次失效；Toast 页面实例优先仲裁唯一渲染者，H5 命令式容器沿用应用上下文。
+- 修复 **Switch / Slider / SlideVerify / SwiperAction / Sticky / Tabbar / Text / Watermark**（UniApp）：禁用与拦截并发、早松手异步竞态、受控成功载荷、外部取值同步、重新测量、动画解锁、数字脱敏、画布作用域及过期导出。
+- 修复 **Tabbar / TabPane / Tabs / Sticky / Textarea / Transition / Watermark**（UniApp）：销毁时清理定时器，异步回调不再写入已销毁实例。
+- 修复 **文档站**：主题常驻与静态首屏恢复；总览 payload 裁剪；侧栏复用；异步生命周期清理。
+- 修复 **Web 演示主题**：BalanceSlider、GradientButton 与 LineShadowText 读取站点主题，避免挂载时改变整站明暗。
+- 修复 **演练场配置**：修正 AnimateGrid 默认光晕与 UniApp 预览地址，删除没有对应演示的配置入口。
+- 修复 **Lens / ColorPicker 演示**：更正 SVG 属性与实例标识，分离颜色输入及结果回显，并同步避免 HSL 回喂的文档说明。
+- 修复 **MultiStepLoader 演示**：关闭、重开和卸载取消旧异步任务，阻止已失效续段继续排入计时。
+- 调整 **Web 演示**：对齐 AnimatedList、Lens 和 iPhoneMockup 当前 API，恢复 Alert 受控显隐，区分 Affix 吸附行为并匹配边界尺寸。
+- 修复 **Web 组件演示**：级联配置误清空、勾选文案互相覆盖、嵌套 label 与优惠券辅助属性透传。
+- 调整 **日历与日期演示**：日历共享右键菜单；日期演示按职责拆分，保留全部章节和交互；总览下拉触发框静态化。
+- 调整 **Web 演示写法**：显式导入、类型化模板引用、按数据编辑方式选择响应式状态、定时器清理与静态模板数据；ColorPicker 同步三档尺寸和 change 提交回显。
+- 修复 **Web 演示**：表单实例隔离、联系人身份与校验路径一致，弹窗与加载流程随卸载清理，菜单示例独立并生成可编译代码。
+- 调整 **组件总览**（Web）：Dropdown/Mention 缩略图静态绘制，避免长期挂载浮层定位监听。
+- 破坏 **服务命名**（Web）：删除 useLoading 与 isRootPage 兼容入口，调用方使用 showLoading 与 useIsRootPage。
+- 修复 **Web 演示**：修正分页互相钳制、page-size 不回写、自定义页码绕过公开动作、Popover 外部关闭重新打开。
+- 修复 **Web 演示**：取消卸载后的通知、确认、搜索、滚动加载与表格懒加载任务，保留远程 Select 已选项，接通通知 footer 操作。
+- 调整 **Web 演示**：Popover/Popconfirm 缩略图静态化，稳定 data/config 引用，统一响应式状态、模板引用与显式导入。
+- 调整 **Web 演示**：对齐 Slider/Segmented API，补 SearchBox 外部历史与独立存储键。
+- 修复 **Web 演示**：ShaderToy 预设切换、主题读取、树数据重置、上传媒体预览与异步清理正确响应；补齐 Textarea `maxlength` 与 Watermark `customClass`，日志使用稳定 key 并限制容量，降低 TextRevealCard 默认演示负载。
+- 修复 **分页演示**（UniApp）：错误请求不提前写数据，只有显式重试重新请求当前页。
+- 调整 **组件演示**（UniApp）：各实例独立持有模型，使用公开事件与插槽，删除无效属性。
+- 修复 **演示生命周期**（UniApp）：离页取消模拟请求、延时更新及Promise后续提示。
+- 调整 **条件插槽演示**（UniApp）：显式切换带插槽与不带插槽实例。
+- 修复 **首页入口**（UniApp）：标签页路径正确，补Card/Page入口。
+- 修复 **Transfer**（Web）：同一条目对象原地修改 `disabled`、`label`、`description` 后，普通与虚拟列表以及单向撤回按钮立即更新；未提供自定义插槽时仍只重绘受影响行。
+- 修复 **useOverlay**（Web）：异步确认按每次打开隔离；关闭后重开或连续 `open()` 时，旧确认的成功 / 失败不能关闭新浮层、兑现新 Promise 或清除新加载状态。
+- 修复 **Menu**（Web）：初始 `openKeys` / `defaultOpeneds` 展开完整祖先路径，关闭祖先或同级互斥时移除旧分支；父级连续拒收后仍按实际展开集合处理下一次操作。
+- 修复 **Switch**（Web）：根节点与原生 checkbox 的属性、样式及监听分流随父级新增、替换、删除同步，不再保留首帧快照。
 
 :::
 

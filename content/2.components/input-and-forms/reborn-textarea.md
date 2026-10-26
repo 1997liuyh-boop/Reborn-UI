@@ -12,18 +12,22 @@ badge: New
 
 ## 简介
 
-Textarea 是双端（Web / UniApp）多行文本输入组件：`v-model` 绑定文本，内置字数统计（`maxlength` + `showWordLimit`，可用 `limit` 插槽自定义统计区），`autoHeight` 开启后随内容自动增高。UniApp 端额外透传原生 textarea 的键盘行为属性（`confirmType`、`adjustPosition`、`holdKeyboard` 等），并支持接入 `reborn-form` 做 change / blur 校验联动。
+Textarea 是 Web 与 UniApp 均可用的多行文本输入组件，适合备注、描述和反馈内容。
 
-适用场景：
+`modelValue` 绑定文本，`maxlength` / `showWordLimit` 控制长度与统计，`autoHeight` 控制是否随内容增长。
 
-- 备注、评论、描述等多行文本录入。
-- 需要字数统计与输入上限的文本框（`maxlength` + `showWordLimit`，`limit` 插槽可自定义统计区）。
-- 内容随输入自动增高的输入区（`autoHeight`）。
+`size` / `color` 控制视觉，`readonly` / `disabled` 控制输入；Web 用 `rows` 指定初始行数，UniApp 用 `height` 设定高度并提供键盘和光标相关配置。
 
-不适用场景：
+### 何时使用
 
-- 单行输入改用 `reborn-input`。
-- 短信验证码等分格输入改用 `reborn-input-otp`。
+- 备注、描述等多行文本录入——用 `modelValue` 绑定内容。
+- 输入长度需要可见反馈——用 `maxlength` 配合 `showWordLimit`。
+- 希望内容增加时自动扩展——开启 `autoHeight`。
+
+### 何时不使用
+
+- 只需单行短文本——改用 `reborn-input`。
+- 需要数值范围与步进控制——改用 `reborn-input-number`。
 
 ## 用法
 
@@ -94,12 +98,11 @@ UniApp 端透传原生 textarea 的键盘配置：`confirmType` 设置键盘右�
 ```
 
 ## API
-
 ### Props
 
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
-| `modelValue` | `string` | `""` | 输入框的绑定值，支持 `v-model`。 |
+| `modelValue` | `string \| null` | `""` | 输入框绑定值，支持 `v-model`；重置为 `null` 或 `undefined` 时按空文本显示。 |
 | `placeholder` | `string` | Web `""` / UniApp `"请输入"` | 占位文本。 |
 | `disabled` | `boolean` | `false` | 是否禁用。 |
 | `readonly` | `boolean` | `false` | 是否只读（只读时同样不可聚焦输入）。 |
@@ -155,7 +158,7 @@ UniApp 端透传原生 textarea 的键盘配置：`confirmType` 设置键盘右�
 
 | 名称 | 签名 | 描述 |
 | --- | --- | --- |
-| `isFocus` | `Ref<boolean>` | 当前是否处于聚焦状态（仅 UniApp）。 |
+| `isFocus` | `Readonly<Ref<boolean>>` | 当前样式聚焦态，只允许读取（仅 UniApp）。 |
 | `focus` | `() => void` | 让输入框重新聚焦并唤起键盘（仅 UniApp）。 |
 
 ### 自定义样式（ui）
@@ -168,10 +171,20 @@ UniApp 端透传原生 textarea 的键盘配置：`confirmType` 设置键盘右�
 | `inner` | 内部 textarea 样式（文字、占位符颜色）。 |
 | `text` | 默认字数统计文本样式。 |
 
+## 两端差异对照
+
+| 维度 | Web | UniApp |
+| --- | --- | --- |
+| 初始高度 | rows，默认 4 行 | height，默认 140rpx |
+| 默认字数统计 | 关闭 | 开启 |
+| 键盘设置 | 浏览器输入行为 | confirmType / cursorSpacing 等原生配置 |
+
 ## 注意事项
 
-- Web 与 UniApp 双端可用；`confirmType`、`cursorSpacing`、`adjustPosition`、`holdKeyboard`、`showConfirmBar` 等键盘类属性对应 uniapp 原生 textarea 能力，主要在小程序 / App 端生效。
-- `maxlength` 默认仅 100，长内容需显式调大；`showWordLimit` 在 Web 端默认关闭、UniApp 端默认开启，且需设置 `maxlength` 才有意义。
-- 高度控制双端不同：Web 端由 `rows`（默认 4）决定；UniApp 端由 `height`（默认 140rpx）决定，开启 `autoHeight` 后 `height` 失效、以 48rpx 为最小高度自动增长。
-- `readonly` 为 `true` 时内部同时置为 `disabled`，输入框无法聚焦，外观与禁用态一致。
-- 位于 `reborn-form` 中时自动接入字段校验：`change` 与 `blur` 时触发校验，错误态展示错误边框色。
+- **父级重置为 `null` 或 `undefined` 会清空文本。** 两端以模型为唯一数据源，字数统计同步回到 0；请勿通过实例写入 `isFocus`。
+
+- **键盘属性按平台生效**。Web 与 UniApp 双端可用；`confirmType`、`cursorSpacing`、`adjustPosition`、`holdKeyboard`、`showConfirmBar` 等键盘类属性对应 uniapp 原生 textarea 能力，主要在小程序 / App 端生效。
+- **长内容需调整长度上限**。`maxlength` 默认仅 100，长内容需显式调大；`showWordLimit` 在 Web 端默认关闭、UniApp 端默认开启，且需设置 `maxlength` 才有意义。
+- **高度配置按平台区分**。高度控制双端不同：Web 端由 `rows`（默认 4）决定；UniApp 端由 `height`（默认 140rpx）决定，开启 `autoHeight` 后 `height` 失效、以 48rpx 为最小高度自动增长。
+- **只读状态不能聚焦**。`readonly` 为 `true` 时内部同时置为 `disabled`，输入框无法聚焦，外观与禁用态一致。
+- **表单内会自动参与校验**。位于 `reborn-form` 中时自动接入字段校验：`change` 与 `blur` 时触发校验，错误态展示错误边框色。

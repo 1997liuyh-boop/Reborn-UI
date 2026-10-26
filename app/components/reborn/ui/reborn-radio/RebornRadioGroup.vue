@@ -2,10 +2,11 @@
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
 import type { RadioColor, RadioDirection, RadioFieldNames, RadioOption, RadioSize, RadioType, RadioVariant } from "./reborn-radio.config";
 import { useMutationObserver, useResizeObserver } from "@vueuse/core";
-import { computed, nextTick, onMounted, provide, ref, shallowRef, toRef, useSlots, watch } from "vue";
+import { computed, nextTick, onMounted, provide, shallowRef, toRef, useTemplateRef, watch } from "vue";
 import { useLiquidSlider } from "~/composables/useLiquidSlider";
 import { tv } from "~/lib/tv";
 import theme from "./reborn-radio.config";
+import { radioGroupContextKey } from "./reborn-radio.context";
 import RebornRadio from "./RebornRadio.vue";
 
 const props = withDefaults(defineProps<RadioGroupProps>(), {
@@ -20,6 +21,15 @@ const props = withDefaults(defineProps<RadioGroupProps>(), {
 const emit = defineEmits<{
   /** 值改变时触发 */
   (e: "change", value: string | number | boolean): void;
+}>();
+
+const slots = defineSlots<{
+  /** 未传 options 时手写的 RebornRadio 子项 */
+  default?: () => any;
+  /** 传 options 时透传给每个 RebornRadio 的 radio 插槽，完全接管单选框的渲染 */
+  radio?: (props: { checked: boolean; disabled: boolean }) => any;
+  /** 传 options 时自定义选项文案，data 为归一化后的选项对象 */
+  label?: (props: { data: RadioOption }) => any;
 }>();
 
 const b = tv(theme);
@@ -49,10 +59,11 @@ export interface RadioGroupProps {
   class?: any;
 }
 
-/** 绑定值（v-model）；显式 default: undefined 跳过 Boolean 类型未传时被强转为 false 的规则，保住非受控判断 */
+/**
+ * 绑定值（v-model）；显式 default: undefined 跳过 Boolean 类型未传时被强转为 false 的规则，保住非受控判断。
+ * 未绑定时由 defineModel 自己持有选中值，组件里不再另存一份内部值。
+ */
 const model = defineModel<string | number | boolean>({ default: undefined });
-
-const slots = useSlots();
 
 const {
   disabled: fieldGroupDisabled,
@@ -61,11 +72,11 @@ const {
   validate,
 } = useFormInject(props);
 
-/** 非受控状态的内部值，未绑定 v-model 时以 defaultValue 起始 */
-const innerValue = ref<string | number | boolean>(props.defaultValue);
-
-/** 当前选中值：受控时取 v-model，非受控时取内部值 */
-const currentValue = computed(() => (model.value !== undefined ? model.value : innerValue.value));
+/**
+ * 当前选中值：绑定值为 undefined（未绑定且尚未选择，或被父级置回 undefined）时回到 defaultValue。
+ * 此前受控时也会写一份内部值，父级重置为 undefined 后组件仍显示上一次选中的项。
+ */
+const currentValue = computed(() => (model.value !== undefined ? model.value : props.defaultValue));
 
 /** 尺寸回退链：FormItem/Form > 自身 props > md */
 const computedSize = computed<RadioSize>(() => fieldGroupSize.value || props.size || "md");
@@ -85,7 +96,6 @@ const normalizedOptions = computed<RadioOption[]>(() => {
 });
 
 const updateValue = (value: string | number | boolean, _ev: Event) => {
-  innerValue.value = value;
   model.value = value;
   emit("change", value);
   validate("change");
@@ -93,15 +103,16 @@ const updateValue = (value: string | number | boolean, _ev: Event) => {
 
 // ============ 分段按钮滑块 ============
 
-const groupRef = ref<HTMLElement>();
+const groupRef = useTemplateRef<HTMLElement>("groupRef");
+const sliderRef = useTemplateRef<HTMLElement>("sliderRef");
 const isButton = computed(() => props.type === "button");
 /**
  * 选中底色是否已交给滑块。挂载并量好位置后才置 true：
  * 服务端渲染与首帧仍由选中项自己画底色，滑块就位的同一帧再交接，页面不会先闪一下未选中的样子
  */
-const sliderReady = ref(false);
+const sliderReady = shallowRef(false);
 /** 滑块的落位与液体形变交给 useLiquidSlider，与 RebornTabs 胶囊型底板共用一套节奏 */
-const { style: sliderStyle, move: moveSlider, hide: hideSlider } = useLiquidSlider();
+const { style: sliderStyle, move: moveSlider, hide: hideSlider } = useLiquidSlider(sliderRef);
 /** 滑块底色跟随选中项自身的 variant / color（组内单项可以覆盖），禁用时一起淡化 */
 const sliderTone = shallowRef<{ color?: RadioColor; variant?: RadioVariant; disabled: boolean }>({ disabled: false });
 /** 上一次量到的选中项；只有它换了才算一次切换 */
@@ -140,15 +151,18 @@ function updateSlider() {
   sliderReady.value = true;
 }
 
+/** 只有分段按钮才有滑块要量，其他类型不挂观察器，避免每次子树变动都白跑一遍 */
+const sliderTarget = () => (isButton.value ? groupRef.value : undefined);
+
 // 选中项切换、选项增删、文案变化都会改动这几个属性或子树，统一在 DOM 更新后重量
-useMutationObserver(groupRef, updateSlider, {
+useMutationObserver(sliderTarget, updateSlider, {
   subtree: true,
   childList: true,
   characterData: true,
   attributes: true,
   attributeFilter: ["data-checked", "data-color", "data-variant", "data-disabled"],
 });
-useResizeObserver(groupRef, updateSlider);
+useResizeObserver(sliderTarget, updateSlider);
 onMounted(updateSlider);
 
 // 在 button 与其他类型间切换时重置，换回 button 再重新落位
@@ -159,7 +173,7 @@ watch(isButton, (value) => {
   if (value) nextTick(updateSlider);
 });
 
-provide("RebornRadioGroup", {
+provide(radioGroupContextKey, {
   modelValue: currentValue,
   disabled: computedDisabled,
   size: computedSize,
@@ -171,6 +185,11 @@ provide("RebornRadioGroup", {
   sliderReady: computed(() => isButton.value && sliderReady.value),
   updateValue,
 });
+
+/** 选项的 key：带类型前缀，避免 1 与 "1"、true 与 "true" 撞成同一个 key */
+function optionKeyOf(value: string | number | boolean) {
+  return `${typeof value}:${String(value)}`;
+}
 
 const groupClass = computed(() =>
   b({
@@ -199,6 +218,7 @@ const sliderClass = computed(() =>
     <!-- 分段按钮的选中滑块：放在最前，配合 z-0 / z-[1] 垫在所有选项下面 -->
     <span
       v-if="isButton"
+      ref="sliderRef"
       aria-hidden="true"
       :class="sliderClass"
       :style="sliderStyle"
@@ -206,7 +226,7 @@ const sliderClass = computed(() =>
     <template v-if="normalizedOptions.length">
       <RebornRadio
         v-for="opt in normalizedOptions"
-        :key="String(opt.value)"
+        :key="optionKeyOf(opt.value)"
         :value="opt.value"
         :disabled="opt.disabled"
       >

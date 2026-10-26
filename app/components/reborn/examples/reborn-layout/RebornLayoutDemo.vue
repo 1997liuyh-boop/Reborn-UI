@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { LayoutDirection } from "~/components/reborn/ui/reborn-layout/reborn-layout.config";
+import { computed, shallowRef } from 'vue';
 
 /** 演练场绑定值 */
-const state = ref<Record<string, any>>({
+const state = shallowRef<Record<string, any>>({
   direction: "auto",
   headerHeight: 60,
   asideWidth: 200,
@@ -93,9 +94,6 @@ const boxClass = "border-default h-60 w-full overflow-hidden border";
 /** 组合示例统一用更高的容器，给菜单展开留出空间 */
 const tallBoxClass = "border-default h-96 w-full overflow-hidden border";
 
-/** 顶部导航备用数据源；顶栏当前演示 SubMenu 形态，切回普通水平菜单时可直接使用 */
-// eslint-disable-next-line unused-imports/no-unused-vars
-const topNavs = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 const sideNavs = [
   { key: "sub1", icon: "lucide:user" },
   { key: "sub2", icon: "lucide:laptop" },
@@ -110,23 +108,23 @@ const sideNavs = [
 ];
 
 /** 顶部-侧边布局-通栏的菜单激活态 */
-const bannerTopActive = ref(["1"]);
-const bannerSideActive = ref(["1"]);
+const bannerTopActive = shallowRef(["1"]);
+const bannerSideActive = shallowRef(["1"]);
 /** 侧边布局（暗色 Sider）的激活态与收起状态 */
-const darkSideActive = ref(["1"]);
-const darkCollapsed = ref(false);
+const darkSideActive = shallowRef(["1"]);
+const darkCollapsed = shallowRef(false);
 /** 自定义触发器的两种形态（激活态各自独立） */
-const customCollapsed = ref(false);
-const customSideActive = ref(["1"]);
-const noTriggerCollapsed = ref(false);
-const noTriggerSideActive = ref(["1"]);
+const customCollapsed = shallowRef(false);
+const customSideActive = shallowRef(["1"]);
+const noTriggerCollapsed = shallowRef(false);
+const noTriggerSideActive = shallowRef(["1"]);
 /** 折叠覆盖布局（零宽收起）的收起状态与激活态 */
-const zeroCollapsed = ref(true);
-const zeroSideActive = ref(["1"]);
-const rightZeroCollapsed = ref(true);
-const rightZeroSideActive = ref(["1"]);
+const zeroCollapsed = shallowRef(true);
+const zeroSideActive = shallowRef(["1"]);
+const rightZeroCollapsed = shallowRef(true);
+const rightZeroSideActive = shallowRef(["1"]);
 /** 事件回显 */
-const lastSiderEvent = ref("等待操作");
+const lastSiderEvent = shallowRef("等待操作");
 
 function onSiderCollapse(collapsed: boolean, type: "clickTrigger" | "responsive") {
   lastSiderEvent.value = `collapse：collapsed=${collapsed}，type=${type}`;
@@ -261,7 +259,6 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
               >
                 <RebornSubMenu
                   v-for="(nav, index) in sideNavs" :key="nav.key" :index="nav.key"
-                  background-color="#1B6DFA"
                 >
                   <template #icon>
                     <Icon :name="nav.icon" class="size-4" />

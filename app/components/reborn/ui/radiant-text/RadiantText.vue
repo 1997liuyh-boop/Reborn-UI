@@ -1,18 +1,9 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 
-const props = defineProps({
-  duration: {
-    type: Number,
-    default: 10,
-  },
-  radiantWidth: {
-    type: Number,
-    default: 100,
-  },
-  class: String,
-});
+interface Props { duration?: number; radiantWidth?: number; class?: string }
 
+const props = withDefaults(defineProps<Props>(), { duration: 10, radiantWidth: 100 });
 const styleVar = computed(() => {
   return {
     "--radiant-anim-duration": `${props.duration}s`,
@@ -30,6 +21,7 @@ const styleVar = computed(() => {
     <slot />
   </p>
 </template>
+
 
 <style scoped>
 @keyframes radiant {

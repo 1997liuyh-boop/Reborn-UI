@@ -1,7 +1,5 @@
 import type { ClassValue } from "clsx";
-
-/** 父子组件通信用的 provide/inject 键 */
-export const BREADCRUMB_INJECTION_KEY = "reborn-breadcrumb";
+import type { ComputedRef, InjectionKey } from "vue";
 
 /** 面包屑下拉菜单项：label 为展示文案，path 为点击后的跳转地址 */
 export interface BreadcrumbDroplistItem {
@@ -44,6 +42,22 @@ export interface BreadcrumbUI {
   /** 下拉菜单项之间的分隔线（divided 的菜单项才渲染） */
   droplistDivider?: ClassValue;
 }
+
+/**
+ * 容器下发给条目的上下文：只放只读的 computed，条目不能改写容器状态。
+ * 条目的位置与折叠结果不走注入，由容器渲染时按插槽顺序直接写进条目的内部 prop。
+ */
+export interface BreadcrumbContext {
+  /** 容器级分隔符文字 */
+  separator: ComputedRef<string | number>;
+  /** 容器级图标分隔符 */
+  separatorIcon: ComputedRef<any>;
+  /** 容器级样式覆盖，条目与自身的 ui 按键合并 */
+  ui: ComputedRef<BreadcrumbUI>;
+}
+
+/** 父子组件通信用的注入键（Symbol），注入方据此拿到 BreadcrumbContext 类型 */
+export const BREADCRUMB_INJECTION_KEY: InjectionKey<BreadcrumbContext> = Symbol("reborn-breadcrumb");
 
 export default {
   slots: {
@@ -97,10 +111,9 @@ export default {
       },
     },
     /**
-     * 首项样式的兜底开关，当前为空——首项不做任何视觉区分。
-     * 保留这个钩子是因为它解决的问题仍然存在：折叠时父组件会在最前插入省略号节点，
-     * 首项不再是 first-child，`group-first/breadcrumb:` 会整条失效；
-     * 组件里由注册索引在折叠态下补发 first，以后若要给首项加样式，写在这里即可。
+     * 首项样式钩子，当前为空——首项不做任何视觉区分。
+     * 容器按插槽顺序给条目编号，省略号插在首项之后，DOM 顺序即视觉顺序，首项始终是 first-child；
+     * 这里额外按编号下发 first，以后若要给首项加样式，写在这里或用 `group-first/breadcrumb:` 都可以。
      */
     first: {
       true: {},
@@ -120,7 +133,7 @@ export default {
       },
       false: {},
     },
-    /** 条目是否被 max-count 折叠：保留挂载但不可见，避免卸载后索引抖动 */
+    /** 条目是否被 max-count 折叠：保留挂载但不可见，展开时不必重新创建条目（下拉菜单等状态得以保留） */
     collapsed: {
       true: {
         item: "hidden",

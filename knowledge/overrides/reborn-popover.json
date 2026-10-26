@@ -16,6 +16,9 @@
     "定位用 placement（「方向-对齐」12 种，默认 bottom，与 reborn-popconfirm / reborn-tooltip 一致）+ sideOffset（Web 默认 8，UniApp 默认 0）；旧的 content 对象（side/align/sideOffset）已废弃但仍可用，同时传入时以 placement / sideOffset 为准。",
     "modal 默认 false 无遮罩；hover 模式关闭延迟默认 120ms。",
     "Web 端 dismissible（点击外部，含 iframe 内点击）与 closeOnScroll（滚动关闭）默认都开启；closeOnScroll 只在页面或触发器所在容器滚动时关闭，设为 false 后气泡跟随触发器移动。UniApp 端没有 closeOnScroll。",
-    "气泡里嵌套 RebornSelect、RebornPopconfirm 等浮层时，内层传送到 body 但会向外层登记，在内层点选不会关掉外层；与 Select 等下拉类组件共用同一套判定。"
+    "气泡里嵌套 RebornSelect、RebornPopconfirm 等浮层时，内层传送到 body 但会向外层登记，在内层点选不会关掉外层；与 Select 等下拉类组件共用同一套判定。",
+    "UniApp 仅支持 v-model:open，不再发 update:modelValue；删除无效 useContentSlot 属性，content 插槽在渲染时判定；每次打开重新测量，已关闭实例不重复发送关闭。",
+    "Web 传入 open 后显隐归父级：触发器点击、点击外部、滚动关闭与 close() 都只派发 update:open，只传值不接事件或拒收时保持父值（与 UniApp 一致）；显式 undefined 在 Web 端不覆盖当前显隐，UniApp 端按关闭处理。",
+    "UniApp 的 open 默认 undefined；未传时用 defaultOpen 初始化本地状态，显式 false/null/undefined 都关闭。传值后由父级持有状态，open()/close() 发出更新请求但父级拒收时不改显示；移除绑定恢复本地值，初始化不派发更新或开关事件。"
   ]
 }

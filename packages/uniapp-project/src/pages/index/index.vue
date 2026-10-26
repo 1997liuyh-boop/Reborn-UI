@@ -10,6 +10,8 @@ const menuItems = [
   {
     label: '基础组件',
     children: [
+      { label: '卡片', icon: 'i-lucide-square', path: '/pages/reborn-card/RebornCardDemo' },
+      { label: '页面', icon: 'i-lucide-panels-top-left', path: '/pages/reborn-page/RebornPageDemo' },
       { label: '文本', icon: 'i-lucide-text', path: '/pages/reborn-text/RebornTextDemo' },
       { label: '按钮', icon: 'i-lucide-mouse', path: '/pages/reborn-button/RebornButtonDemo' },
       { label: '图片', icon: 'i-lucide-image', path: '/pages/reborn-image/RebornImageDemo' },
@@ -47,7 +49,7 @@ const menuItems = [
   {
     label: '布局组件',
     children: [
-      { label: '标签页', icon: 'i-lucide-gallery-horizontal-end', path: '/pages/reborn-tabs/index' },
+      { label: '标签页', icon: 'i-lucide-gallery-horizontal-end', path: '/pages/reborn-tabs/RebornTabsDemo' },
       { label: '折叠', icon: 'i-lucide-chevrons-down-up', path: '/pages/reborn-collapse/RebornCollapseDemo' },
       { label: '图钉', icon: 'i-lucide-pin', path: '/pages/reborn-affix/RebornAffixDemo' },
       { label: '返回顶部', icon: 'i-lucide-arrow-big-up', path: '/pages/reborn-back-top/RebornBackTopDemo' },
@@ -116,7 +118,7 @@ function goToDemo(path: string) {
             active:scale-95
           " @click="toggleDarkMode">
           <view class="flex items-baseline gap-1">
-            <text v-for="(char, index) in 'Reborn U'" :key="index" class="
+            <text v-for="char in 'Reborn U'" :key="char" class="
                 text-4xl font-black text-blue-5
                 dark:text-orange-5
               ">
@@ -149,7 +151,7 @@ function goToDemo(path: string) {
         </view>
       </view>
 
-      <view v-for="(item, index) in menuItems" :key="index">
+      <view v-for="item in menuItems" :key="item.label">
         <view class="
             mb-2 text-20 font-medium text-gray-7
             dark:text-gray-3
@@ -157,7 +159,7 @@ function goToDemo(path: string) {
           {{ item.label }}({{ item.children.length }})
         </view>
         <view class="grid grid-cols-3 gap-2">
-          <view v-for="(child, index) in item.children" :key="index" class="
+          <view v-for="child in item.children" :key="child.path" class="
               flex flex-col items-center justify-center rounded-xl bg-white p-4
               text-20 font-medium text-gray-7 shadow-sm transition-transform
               active:scale-95

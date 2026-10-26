@@ -1,24 +1,12 @@
-<template>
-    <view :style="{ width: size + 'px', height: size + 'px' }">
-        <!-- #ifdef MP-WEIXIN -->
-        <canvas class="relative z-1" type="2d" :id="qrcodeId"
-            :style="{ width: size + 'px', height: size + 'px' }"></canvas>
-        <!-- #endif -->
-        <!-- #ifndef MP-WEIXIN -->
-        <canvas :canvas-id="qrcodeId" :id="qrcodeId" :style="{ width: size + 'px', height: size + 'px' }"></canvas>
-        <!-- #endif -->
-    </view>
-</template>
+
 
 <script lang="ts" setup>
 import {
-    ref,
     watch,
     onMounted,
     getCurrentInstance,
     nextTick,
-    computed,
-    onUnmounted,
+    onBeforeUnmount,
 } from "vue";
 
 import { drawQrcode, eccLevel, type ClQrcodeMode } from "./draw";
@@ -27,7 +15,6 @@ import { isAppIOS, isHarmony } from "../../lib/device";
 
 defineOptions({
     name: "reborn-qrcode",
-    inheritAttrs: false
 });
 
 interface RebornQrcodeOptions {
@@ -75,7 +62,11 @@ const props = withDefaults(defineProps<RebornQrcodeOptions>(), {
 const { proxy } = getCurrentInstance()!;
 
 // 二维码组件id
-const qrcodeId = ref<string>("cl-qrcode-" + uuid());
+const qrcodeId = "cl-qrcode-" + uuid();
+let disposed = false;
+let drawVersion = 0;
+let mountTimer: ReturnType<typeof setTimeout> | undefined;
+const exportsPending = new Map<ReturnType<typeof setTimeout>, (error: Error) => void>();
 
 /**
  * 主绘制方法，根据当前 props 生成二维码并绘制到 canvas。
@@ -83,6 +74,8 @@ const qrcodeId = ref<string>("cl-qrcode-" + uuid());
  * 内部调用 drawQrcode 进行二维码点阵绘制。
  */
 function drawer() {
+    const version = ++drawVersion;
+    const isStale = () => disposed || version !== drawVersion;
     const data = {
         ecc: props.ecc,
         text: props.text,
@@ -109,26 +102,27 @@ function drawer() {
     };
 
     nextTick(() => {
+        if (isStale()) return;
         // #ifdef MP-WEIXIN
         const query = uni.createSelectorQuery().in(proxy as any);
-        (query.select('#' + qrcodeId.value) as any)
+        (query.select('#' + qrcodeId) as any)
             .fields({ node: true, size: true }, (res: any) => {
-                if (res?.node) {
+                if (!isStale() && res?.node) {
                     const canvas = res.node as any;
                     const ctx = canvas.getContext('2d') as any;
                     const dpr = uni.getSystemInfoSync().pixelRatio;
                     canvas.width = props.size * dpr;
                     canvas.height = props.size * dpr;
                     ctx.scale(dpr, dpr);
-                    drawQrcode(ctx, data, canvas);
+                    void drawQrcode(ctx, data, canvas, isStale);
                 }
             })
             .exec();
         // #endif
 
         // #ifndef MP-WEIXIN
-        const context = uni.createCanvasContext(qrcodeId.value, proxy);
-        drawQrcode(context, data);
+        const context = uni.createCanvasContext(qrcodeId, proxy);
+        void drawQrcode(context, data, undefined, isStale);
         // #endif
     });
 }
@@ -137,12 +131,15 @@ function drawer() {
  * @param call 回调函数，返回图片路径，失败返回空字符串
  */
 function toPng(): Promise<string> {
+    if (disposed) return Promise.reject(new Error('二维码组件已卸载'));
     return new Promise((resolve, reject) => {
-        setTimeout(() => {
+        const timer = setTimeout(() => {
+            if (disposed) return;
             // #ifdef MP-WEIXIN
             const query = uni.createSelectorQuery().in(proxy as any);
-            (query.select('#' + qrcodeId.value) as any)
+            (query.select('#' + qrcodeId) as any)
                 .fields({ node: true }, (res: any) => {
+                    if (disposed) return;
                     if (res?.node) {
                         const canvas = res.node as any;
                         (uni.canvasToTempFilePath as any)({
@@ -150,13 +147,16 @@ function toPng(): Promise<string> {
                             destWidth: props.size * 3,
                             destHeight: props.size * 3,
                             success: (result: any) => {
+                                exportsPending.delete(timer);
                                 resolve(result.tempFilePath);
                             },
                             fail: (err: any) => {
+                                exportsPending.delete(timer);
                                 reject(err);
                             }
                         });
                     } else {
+                        exportsPending.delete(timer);
                         reject(new Error('未找到 canvas 节点'));
                     }
                 })
@@ -165,24 +165,28 @@ function toPng(): Promise<string> {
 
             // #ifndef MP-WEIXIN
             uni.canvasToTempFilePath({
-                canvasId: qrcodeId.value,
+                canvasId: qrcodeId,
                 destWidth: props.size * 3,
                 destHeight: props.size * 3,
                 success: (res) => {
+                    exportsPending.delete(timer);
                     resolve(res.tempFilePath);
                 },
                 fail: (err) => {
-                    reject(err);
+                    exportsPending.delete(timer);
+                                reject(err);
                 }
             }, proxy);
             // #endif
         }, 100);
+        exportsPending.set(timer, reject);
     });
 }
 
 // 自动重绘
-const stopWatch = watch(
-    computed(() => [
+watch(
+    () => [
+        props.size,
         props.pdColor,
         props.pdRadius,
         props.pdOuterRadius,
@@ -204,14 +208,14 @@ const stopWatch = watch(
         props.mode,
         props.padding,
         props.ecc
-    ]),
+    ],
     () => {
         drawer();
     }
 );
 
 onMounted(() => {
-    setTimeout(
+    mountTimer = setTimeout(
         () => {
             drawer();
         },
@@ -219,11 +223,30 @@ onMounted(() => {
     );
 });
 
-onUnmounted(() => {
-    stopWatch();
+onBeforeUnmount(() => {
+    disposed = true;
+    drawVersion++;
+    clearTimeout(mountTimer);
+    for (const [timer, reject] of exportsPending) {
+        clearTimeout(timer);
+        reject(new Error('二维码组件已卸载'));
+    }
+    exportsPending.clear();
 });
 
 defineExpose({
     toPng
 });
 </script>
+
+<template>
+    <view :style="{ width: size + 'px', height: size + 'px' }">
+        <!-- #ifdef MP-WEIXIN -->
+        <canvas class="relative z-1" type="2d" :id="qrcodeId"
+            :style="{ width: size + 'px', height: size + 'px' }"></canvas>
+        <!-- #endif -->
+        <!-- #ifndef MP-WEIXIN -->
+        <canvas :canvas-id="qrcodeId" :id="qrcodeId" :style="{ width: size + 'px', height: size + 'px' }"></canvas>
+        <!-- #endif -->
+    </view>
+</template>

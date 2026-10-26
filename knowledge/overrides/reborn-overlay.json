@@ -12,7 +12,7 @@
   "pitfalls": [
     "web、uniapp 双端可用。",
     "absolute=true 时在最近的非 static 定位祖先内展示，用于局部遮罩。",
-    "zIndex 默认仅 10，与其他弹层（如 Web reborn-drawer 默认 2000、UniApp reborn-popup 默认 25）叠放时注意层级。",
-    "closeOnClickOverlay 与 lockScroll 默认均为 true。"
+    "closeOnClickOverlay 与 lockScroll 默认均为 true。",
+    "两端 modelValue 默认 undefined；缺省与显式 false/undefined/null 均隐藏，受控关闭只发送 update:modelValue，只传值不接事件或父级拒收时保持父值。zIndex 默认值为 Web 100、UniApp 10。"
   ]
 }

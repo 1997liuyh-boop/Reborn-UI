@@ -4,7 +4,7 @@ import { after, afterEach, it } from 'node:test';
 import { installDom, loadAppModule, wait } from './harness';
 
 const dom = installDom();
-const { createApp, defineComponent, h, onUnmounted, watch } = await import('vue');
+const { createApp, defineComponent, effectScope, h, onUnmounted, watch } = await import('vue');
 const { useGlobalScrollLock } = await loadAppModule<typeof import('../../app/composables/useGlobalScrollLock')>('app/composables/useGlobalScrollLock.ts');
 
 /** 每个用例结束后卸载残留组件，断言失败也不会把锁带到下一个用例 */
@@ -62,4 +62,17 @@ it('解锁后再次上锁仍然生效', async () => {
   unmount();
   await wait();
   assert.notEqual(lockedElement().style.overflow, 'hidden');
+});
+
+it('调用方忘记释放时，作用域销毁自动兜底释放', async () => {
+  const scope = effectScope();
+  scope.run(() => {
+    const { acquire } = useGlobalScrollLock();
+    acquire();
+  });
+  await wait();
+  assert.equal(lockedElement().style.overflow, 'hidden');
+  scope.stop();
+  await wait();
+  assert.notEqual(lockedElement().style.overflow, 'hidden', '作用域销毁后计数归零');
 });

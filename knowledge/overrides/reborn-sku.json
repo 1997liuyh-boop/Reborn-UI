@@ -11,7 +11,7 @@
   ],
   "pitfalls": [
     "platforms 仅 web 端提供。",
-    "modelValue 为 Record<string, any> 对象，change 与 update:modelValue 同步选中状态。",
+    "modelValue 为 Record<string, any> 对象（defineModel），change 与 update:modelValue 同步选中状态；不绑定 v-model 时组件自己持有选中结果，点选同样生效。",
     "无文档页与演示示例，props 描述缺失，SkuOption 具体结构需查阅源码（RebornSku.vue）。"
   ]
 }

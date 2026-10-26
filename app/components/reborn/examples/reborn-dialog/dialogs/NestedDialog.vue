@@ -4,12 +4,13 @@ import RebornDialog from "~/components/reborn/ui/reborn-dialog/RebornDialog.vue"
 /**
  * 嵌套流程对话框
  */
-const open = defineModel<boolean>("open", { default: false });
+const open = defineModel<boolean>("open", { default: undefined });
 
-const props = defineProps<{
+interface Props {
   title?: string;
   description?: string;
-}>();
+}
+defineProps<Props>();
 
 const emit = defineEmits<{
   confirm: [];
@@ -29,7 +30,7 @@ function handleCancel() {
   <RebornDialog
     v-model="open"
     :title="title || '第一层对话框'"
-    :description="description || '您可以点击下方按钮开启更深一层的交互。'"
+    :describe="description || '您可以点击下方按钮开启更深一层的交互。'"
     confirm-btn="下一步"
     cancel-btn="取消"
     @confirm="handleConfirm"

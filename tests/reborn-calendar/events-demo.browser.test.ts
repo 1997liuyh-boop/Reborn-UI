@@ -30,6 +30,9 @@ before(async () => {
     plugins: [{ name: 'calendar-events-browser', setup(builder) {
       builder.onResolve({ filter: /^#components$/ }, () => ({ path: 'icons', namespace: 'calendar-icons' }));
       builder.onLoad({ filter: /.*/, namespace: 'calendar-icons' }, () => ({ contents: `import {h} from 'vue';export const Icon=props=>h('svg',{'data-icon':props.name,viewBox:'0 0 24 24'});`, loader: 'js', resolveDir: resolve('.') }));
+      // 日历用 Nuxt 的 useState 把服务端时区带到客户端；纯客户端挂载时等价于按初始化函数取值
+      builder.onResolve({ filter: /^#imports$/ }, () => ({ path: 'imports', namespace: 'calendar-nuxt' }));
+      builder.onLoad({ filter: /.*/, namespace: 'calendar-nuxt' }, () => ({ contents: `import {shallowRef} from 'vue';export const useState=(_key,init)=>shallowRef(init());`, loader: 'js', resolveDir: resolve('.') }));
       builder.onLoad({ filter: /\.vue$/ }, async ({ path }) => {
         const { descriptor } = parse(await readFile(path, 'utf8'), { filename: path });
         const script = compileScript(descriptor, {

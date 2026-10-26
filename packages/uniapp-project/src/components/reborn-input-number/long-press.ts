@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { onUnmounted, ref } from 'vue'
+import { onUnmounted, shallowRef } from 'vue'
 
 // 长按触发延迟时间,单位毫秒
 const DELAY = 500
@@ -26,7 +26,7 @@ interface UseLongPress {
  */
 export function useLongPress(): UseLongPress {
   // 是否正在长按中
-  const isPressing = ref(false)
+  const isPressing = shallowRef(false)
   // 长按延迟定时器
   let pressTimer: number = 0
   // 重复执行定时器

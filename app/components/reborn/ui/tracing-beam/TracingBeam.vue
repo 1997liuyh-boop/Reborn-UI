@@ -1,18 +1,25 @@
 <script lang="ts" setup>
+import type { HTMLAttributes } from "vue";
+import { useEventListener, useResizeObserver } from "@vueuse/core";
 import { Motion } from "motion-v";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, shallowRef, useId, useTemplateRef, watch } from "vue";
 import { useSpring } from "vue-use-spring";
 
-defineProps({
-  class: String,
-});
+interface Props {
+  /** 根容器的自定义类名 */
+  class?: HTMLAttributes["class"];
+}
+defineProps<Props>();
 
-const tracingBeamRef = ref<HTMLDivElement>();
-const tracingBeamContentRef = ref<HTMLDivElement>();
+const tracingBeamRef = useTemplateRef<HTMLDivElement>("tracingBeamRef");
+const tracingBeamContentRef = useTemplateRef<HTMLDivElement>("tracingBeamContentRef");
 
-const scrollYProgress = ref(0);
-const svgHeight = ref(0);
-const scrollPercentage = ref(0);
+/** 渐变定义的唯一 id：写死的 id 在同页多实例时会解析到第一个实例的渐变，光束跟着别的实例走 */
+const gradientId = `${useId()}-tracing-beam-gradient`;
+
+const scrollYProgress = shallowRef(0);
+const svgHeight = shallowRef(0);
+const scrollPercentage = shallowRef(0);
 
 const computedY1 = computed(
   () =>
@@ -51,30 +58,35 @@ function updateScrollYProgress() {
   }
 }
 
-onMounted(() => {
-  window.addEventListener("scroll", updateScrollYProgress);
-  window.addEventListener("resize", updateScrollYProgress);
-  updateScrollYProgress();
-
-  const resizeObserver = new ResizeObserver(() => {
-    updateSVGHeight();
+/** 滚动与缩放按帧合并：一帧内多次事件只测量、更新一次 */
+let frame = 0;
+function scheduleUpdate() {
+  if (frame) return;
+  frame = requestAnimationFrame(() => {
+    frame = 0;
+    updateScrollYProgress();
   });
-
-  resizeObserver.observe(tracingBeamContentRef.value!);
-
-  updateSVGHeight();
-});
-
-onUnmounted(() => {
-  tracingBeamRef.value?.removeEventListener("scroll", updateScrollYProgress);
-  window.removeEventListener("resize", updateScrollYProgress);
-});
+}
 
 function updateSVGHeight() {
   if (!tracingBeamContentRef.value) return;
 
   svgHeight.value = tracingBeamContentRef.value.offsetHeight;
 }
+
+// 监听都随组件作用域自动移除：不传目标时默认挂到 window 且服务端不执行，scroll 用 passive 不阻塞滚动
+useEventListener("scroll", scheduleUpdate, { passive: true });
+useEventListener("resize", scheduleUpdate, { passive: true });
+useResizeObserver(tracingBeamContentRef, updateSVGHeight);
+
+onMounted(() => {
+  updateScrollYProgress();
+  updateSVGHeight();
+});
+
+onBeforeUnmount(() => {
+  if (frame) cancelAnimationFrame(frame);
+});
 
 function mapRange(
   value: number,
@@ -124,13 +136,13 @@ function mapRange(
         <path
           :d="`M 1 0V -36 l 18 24 V ${svgHeight * 0.8} l -18 24V ${svgHeight}`"
           fill="none"
-          stroke="url(#gradient)"
+          :stroke="`url(#${gradientId})`"
           stroke-width="1.25"
           class="motion-reduce:hidden"
         />
         <defs>
           <linearGradient
-            id="gradient"
+            :id="gradientId"
             gradientUnits="userSpaceOnUse"
             x1="0"
             x2="0"

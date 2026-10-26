@@ -7,7 +7,7 @@ tags: [css, tailwind, radio, uniapp]
 badge: New
 ---
 
-::ComponentViewer{demoFile="RebornRadioDemo.vue" config="RebornRadioConfig" componentId="reborn-radio" :componentFiles='["RebornRadio.vue", "RebornRadioGroup.vue", "reborn-radio.config.ts"]' :uniappFiles='["RebornRadio.vue", "RebornRadioGroup.vue", "reborn-radio.config.ts"]'}
+::ComponentViewer{demoFile="RebornRadioDemo.vue" config="RebornRadioConfig" componentId="reborn-radio" :componentFiles='["RebornRadio.vue", "RebornRadioGroup.vue", "reborn-radio.config.ts", "reborn-radio.context.ts"]' :uniappFiles='["RebornRadio.vue", "RebornRadioGroup.vue", "reborn-radio.config.ts"]'}
 ::
 
 ## 简介
@@ -247,7 +247,7 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 | 属性名                  | 类型                                                                                   | 默认值         | 描述                                                                                  |
 | ----------------------- | -------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------- |
 | `modelValue`            | `string \| number \| boolean`                                                          | -              | 绑定值（`v-model`）。                                                                 |
-| `defaultValue`          | `string \| number \| boolean`                                                          | `""`           | 默认值（非受控状态，未绑定 `v-model` 时生效）。                                       |
+| `defaultValue`          | `string \| number \| boolean`                                                          | `""`           | 默认值：未绑定 `v-model` 时作为初始值；绑定值被父级置回 `undefined` 时也回到该值。    |
 | `type`                  | `"radio" \| "button" \| "pure-button"`                                                 | `"radio"`      | 单选框组的类型。                                                                      |
 | `color`                 | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`    | 语义色，作用于选中态。                                                                |
 | `variant`               | `"filled" \| "outlined"`                                                               | `"outlined"`   | 样式变体：filled 实底（语义色背景 + 白色前景）/ outlined 描边。                       |
@@ -369,4 +369,4 @@ API 层面两端一致，以下为平台实现层面的差异：
 - **`buttonProps` 里不要随手带 `variant` / `color`。** `pure-button` 的按钮颜色与变体按「`buttonProps` 优先，其次组的 `variant` × `color`」取值，选中与未选中两态共用这条规则；传了这两个键，选中项就固定成传入的外观，不再随组的 `variant` / `color` 切换。首尾圆角由组容器按 `size` 取 `RebornButton` 同款圆角令牌恢复。
 - **组内的 `type` 以 Group 为准。** 单个 `RebornRadio` 在组内写的 `type` 会被 Group 下发值覆盖（Group 默认 `radio`），`size` 也只取 Group 的值；只有 `color` / `variant` 是自身优先。
 - **`pure-button` 的拼接效果依赖结构性伪类**，在不支持 `:first-child` / `:last-child` 的小程序端会降级为独立按钮外观。
-- **非受控用法下 `default-value` 只在初始化时生效**，后续变更请通过 `change` 事件读取最新值，或改用 `v-model` 受控。
+- **`default-value` 是绑定值为 `undefined` 时的回落值。** 非受控用法下用户选过之后，组件自己持有选中值，再改 `default-value` 不会生效，最新值请通过 `change` 事件读取；受控用法下父级把绑定值重置为 `undefined`（如表单重置到未赋值），组件回到 `default-value`，而不是停在上一次选中的项。

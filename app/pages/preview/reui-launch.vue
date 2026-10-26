@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { shallowRef } from "vue";
 import ReuiLaunchDoodle from "~/components/reborn/ui/reui-launch/ReuiLaunchDoodle.vue";
 
 definePageMeta({ layout: false, header: false, footer: false });
 useSeoMeta({ title: "REUI Launch · 动画预览", robots: "noindex, nofollow" });
 
-const expanded = ref(false);
-const cardSize = ref(false);
-const replayKey = ref(0);
-const text = ref("REUI");
-const screenText = ref("RE");
+const expanded = shallowRef(false);
+const cardSize = shallowRef(false);
+const replayKey = shallowRef(0);
+const text = shallowRef("REUI");
+const screenText = shallowRef("RE");
 
 function replay() {
   expanded.value = false;

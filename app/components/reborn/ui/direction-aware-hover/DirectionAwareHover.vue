@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, shallowRef, useTemplateRef } from "vue";
 
 interface Props {
   imageUrl: string;
@@ -14,13 +14,14 @@ const props = withDefaults(defineProps<Props>(), {
   class: undefined,
 });
 
-const divRef = ref<HTMLDivElement | null>(null);
-const direction = ref<"top" | "bottom" | "left" | "right" | null>(null);
-const isTouched = ref(false);
-const isMobile = ref(false);
+const divRef = useTemplateRef<HTMLDivElement>("divRef");
+const direction = shallowRef<"top" | "bottom" | "left" | "right" | null>(null);
+const isTouched = shallowRef(false);
+const isMobile = shallowRef(false);
 
-// Touch timer for mobile interactions
+// 移动端触摸交互的定时器：自动隐藏与离开后的延迟复位，句柄都保存下来以便卸载时取消
 let touchTimer: ReturnType<typeof setTimeout> | null = null;
+let resetTimer: ReturnType<typeof setTimeout> | null = null;
 
 function detectMobile() {
   isMobile.value = window.matchMedia("(max-width: 768px)").matches || "ontouchstart" in window;
@@ -88,7 +89,7 @@ function handleTouchStart(event: TouchEvent) {
       break;
   }
 
-  // Auto-hide after 3 seconds on mobile
+  // 移动端 3 秒后自动隐藏
   if (touchTimer) clearTimeout(touchTimer);
   touchTimer = setTimeout(() => {
     handleTouchEnd();
@@ -101,7 +102,9 @@ function handleTouchEnd() {
     touchTimer = null;
   }
 
-  setTimeout(() => {
+  if (resetTimer) clearTimeout(resetTimer);
+  resetTimer = setTimeout(() => {
+    resetTimer = null;
     direction.value = null;
     isTouched.value = false;
   }, 300);
@@ -117,35 +120,35 @@ function getDirection(ev: MouseEvent, obj: HTMLElement) {
 
 const containerClass = computed(() => [
   "group/card relative overflow-hidden rounded-lg bg-transparent transition-all duration-300",
-  // Mobile first responsive sizing
-  "h-48 w-48", // Base mobile size
-  "xs:h-56 xs:w-56", // Extra small screens
-  "sm:h-64 sm:w-64", // Small screens
-  "md:h-80 md:w-80", // Medium screens
-  "lg:h-96 lg:w-96", // Large screens
-  "xl:h-[28rem] xl:w-[28rem]", // Extra large screens
-  // Mobile touch improvements
+  // 移动优先的响应式尺寸：基础、xs、sm、md、lg、xl 逐级放大
+  "h-48 w-48",
+  "xs:h-56 xs:w-56",
+  "sm:h-64 sm:w-64",
+  "md:h-80 md:w-80",
+  "lg:h-96 lg:w-96",
+  "xl:h-[28rem] xl:w-[28rem]",
+  // 触摸优化：按下时轻微缩小，桌面端不缩放
   "touch-manipulation",
   "active:scale-[0.98]",
-  "md:active:scale-100", // Disable scale on desktop
+  "md:active:scale-100",
   props.class,
 ]);
 
 const imageClass = computed(() => [
   "h-full w-full object-cover transition-transform duration-300",
-  // Responsive scaling
-  "scale-125", // Mobile
-  "sm:scale-135", // Small screens
-  "md:scale-150", // Desktop
+  // 响应式缩放：移动端、小屏、桌面逐级放大
+  "scale-125",
+  "sm:scale-135",
+  "md:scale-150",
   props.imageClass,
 ]);
 
 const childrenClass = computed(() => [
   "absolute z-40 text-white transition-opacity duration-300",
-  // Responsive positioning
-  "bottom-2 left-2 text-sm", // Mobile
-  "sm:bottom-3 sm:left-3 sm:text-base", // Small screens
-  "md:bottom-4 md:left-4 md:text-lg", // Desktop
+  // 响应式定位：移动端、小屏、桌面逐级加大边距与字号
+  "bottom-2 left-2 text-sm",
+  "sm:bottom-3 sm:left-3 sm:text-base",
+  "md:bottom-4 md:left-4 md:text-lg",
   props.childrenClass,
 ]);
 
@@ -176,7 +179,7 @@ const overlayClass = computed(() => {
 });
 
 const imageContainerClass = computed(() => ({
-  // Reduced movement on mobile for better UX
+  // 移动端减小位移幅度
   "translate-y-2 md:translate-y-5": direction.value === "top",
   "-translate-y-2 md:-translate-y-5": direction.value === "bottom",
   "translate-x-2 md:translate-x-5": direction.value === "left",
@@ -192,6 +195,9 @@ onUnmounted(() => {
   window.removeEventListener("resize", detectMobile);
   if (touchTimer) {
     clearTimeout(touchTimer);
+  }
+  if (resetTimer) {
+    clearTimeout(resetTimer);
   }
 });
 </script>

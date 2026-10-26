@@ -1,36 +1,32 @@
-<!-- Uses base code from shadcn-vue Input component and extends it's functionality-->
+<!-- 基于 shadcn-vue 的 Input 组件扩展而来 -->
 <script setup lang="ts">
 import type { HTMLAttributes } from "vue";
-import { useVModel } from "@vueuse/core";
-import { computed, ref } from "vue";
+import { computed, shallowRef, useTemplateRef } from "vue";
+import { useControlledModel } from "~/composables/useControlledModel";
+
+interface Props {
+  /** 非受控模式下的初始值，未绑定 v-model 时生效 */
+  defaultValue?: string | number;
+  class?: HTMLAttributes["class"];
+  containerClass?: HTMLAttributes["class"];
+}
 
 defineOptions({
   inheritAttrs: false,
 });
 
-const props = defineProps<{
-  /** 非受控模式下的初始值，未绑定 v-model 时生效 */
-  defaultValue?: string | number;
-  /** 输入框绑定值（v-model） */
-  modelValue?: string | number;
-  class?: HTMLAttributes["class"];
-  containerClass?: HTMLAttributes["class"];
-}>();
+const props = defineProps<Props>();
 
-const emits = defineEmits<{
-  /** 输入值变化时触发（v-model 同步） */
-  (e: "update:modelValue", payload: string | number): void;
-}>();
+/** 输入框绑定值（v-model）；defineModel 只负责声明类型与 update 事件，读写交给 useControlledModel */
+defineModel<string | number | null>();
+// 未绑定 v-model 时以 defaultValue 为初值，由组件内部保存
+const modelValue = useControlledModel<string | number | null | undefined>("modelValue", { initial: props.defaultValue });
 
-const modelValue = useVModel(props, "modelValue", emits, {
-  passive: true,
-  defaultValue: props.defaultValue,
-});
-
-const inputContainerRef = ref<HTMLDivElement | null>(null);
-const mouse = ref<{ x: number; y: number }>({ x: 0, y: 0 });
+const inputContainerRef = useTemplateRef<HTMLDivElement>("inputContainerRef");
+// 指针位置每次整体替换
+const mouse = shallowRef<{ x: number; y: number }>({ x: 0, y: 0 });
 const radius = 100;
-const visible = ref(false);
+const visible = shallowRef(false);
 
 const containerBg = computed(() => {
   return `

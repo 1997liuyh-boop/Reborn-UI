@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { SliderTooltip } from "~/components/reborn/ui/reborn-slider/RebornSlider.vue";
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
+import { computed, ref, shallowRef } from 'vue';
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { sliderColors, sliderSizes } from "~/components/reborn/ui/reborn-slider/reborn-slider.config";
 import RebornSlider from "~/components/reborn/ui/reborn-slider/RebornSlider.vue";
@@ -21,7 +24,7 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 演练场滑块绑定值 */
-const playValue = ref(40);
+const playValue = shallowRef(40);
 
 /** 重置演练场配置 */
 function resetState() {
@@ -67,35 +70,43 @@ const sliderCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 步长演示 */
-const stepValue = ref(40);
+const stepValue = shallowRef(40);
 /** 间断点演示 */
-const stopsValue = ref(30);
-const stopsRange = ref([20, 70]);
+const stopsValue = shallowRef(30);
+const stopsRange = shallowRef([20, 70]);
 /** 范围选择演示 */
-const rangeValues = ref([20, 80]);
+const rangeValues = shallowRef([20, 80]);
 /** 两侧图标演示：属性形式 */
-const iconValue = ref(50);
+const iconValue = shallowRef(50);
 /** 两侧图标演示：插槽形式的音量与亮度 */
-const volumeValue = ref(30);
-const brightnessValue = ref(70);
+const volumeValue = shallowRef(30);
+const brightnessValue = shallowRef(70);
 /** 自定义提示演示 */
-const percentValue = ref(35);
-const tempValue = ref(26);
+const percentValue = shallowRef(35);
+/** 气泡里给数值补上百分号 */
+const percentTooltip: SliderTooltip = { formatter: formatPercent };
+const tempValue = shallowRef(26);
+/** 气泡里给数值补上温度单位 */
+const tempTooltip: SliderTooltip = { formatter: formatTemp };
 /** Tooltip 显隐控制演示 */
-const tipDefaultValue = ref(30);
-const tipOpenValue = ref(60);
-const tipHiddenValue = ref(80);
+const tipDefaultValue = shallowRef(30);
+const tipOpenValue = shallowRef(60);
+/** 气泡常显，不必拖拽 */
+const alwaysOpenTooltip: SliderTooltip = { open: true };
+const tipHiddenValue = shallowRef(80);
+/** 气泡强制隐藏，拖拽时也不出现 */
+const hiddenTooltip: SliderTooltip = { open: false };
 /** 事件演示 */
-const eventValue = ref(50);
+const eventValue = shallowRef(50);
 /** change 触发次数（拖拽过程实时累加） */
-const changeCount = ref(0);
+const changeCount = shallowRef(0);
 /** 最近一次 change 载荷 */
-const lastChange = ref("—");
+const lastChange = shallowRef("—");
 /** 最近一次 changeComplete 载荷 */
-const lastComplete = ref("—");
+const lastComplete = shallowRef("—");
 /** 垂直模式演示 */
-const verticalValue = ref(30);
-const verticalRange = ref([20, 60]);
+const verticalValue = shallowRef(30);
+const verticalRange = shallowRef([20, 60]);
 /** 刻度标记演示：50°C 单独给了红色样式 */
 const sliderMarks = {
   0: { style: { color: "#FF3D53" }, label: "0 分" },
@@ -105,17 +116,19 @@ const sliderMarks = {
   100: { style: { color: "#81e22c" }, label: "100 分" },
 };
 /** 常规步长 + 刻度展示 */
-const marksFreeValue = ref(30);
+const marksFreeValue = shallowRef(30);
 /** step="mark"：取值只能落在刻度上 */
-const markSnapValue = ref(37);
+const markSnapValue = shallowRef(37);
 /** 范围整体拖拽演示 */
-const dragRange = ref([30, 60]);
+const dragRange = shallowRef([30, 60]);
 /** 禁用指定滑块演示：下标 0（值较小的一端）被禁用 */
-const partialDisabledRange = ref([30, 70]);
+const partialDisabledRange = shallowRef([30, 70]);
+/** 按排序后的下标逐个指定：左端禁用、右端可拖 */
+const leftThumbDisabled = [true, false];
 /** 可编辑节点演示：节点数量随增删变化 */
-const editableNodes = ref([20, 50, 80]);
+const editableNodes = shallowRef([20, 50, 80]);
 /** 自定义渲染演示 */
-const thumbValue = ref(40);
+const thumbValue = shallowRef(40);
 
 /** 温度格式化：给数值补上单位 */
 function formatTemp(value: number) {
@@ -137,13 +150,15 @@ function onSliderChange(value: number | number[]) {
 function onSliderComplete(value: number | number[]) {
   lastComplete.value = JSON.stringify(value);
 }
+/** 外形走公开 UI 键，组件仍负责滑块交互。 */
+const customThumbUi = { thumb: "h-5 w-[30px] rounded-full bg-warning" };
 </script>
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="sliderCode" component-name="RebornSlider" title="交互演练场"
-      description="调节左侧参数，实时查看滑块表现；方向键 ←/→（↑/↓）可在聚焦滑块后步进取值。"
+      description="调节上方参数，实时查看滑块表现；方向键 ←/→（↑/↓）可在聚焦滑块后步进取值。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -225,10 +240,10 @@ function onSliderComplete(value: number | number[]) {
         <code>tooltip.formatter</code> 接收当前值并返回展示内容，拖拽时在气泡里生效。
       </template>
       <DemoBlock layout="stack" class="gap-6">
-        <RebornSlider v-model="percentValue" class="w-full max-w-sm" :tooltip="{ formatter: formatPercent }" />
+        <RebornSlider v-model="percentValue" class="w-full max-w-sm" :tooltip="percentTooltip" />
         <RebornSlider
           v-model="tempValue" class="w-full max-w-sm" color="error" :min="16" :max="32"
-          :tooltip="{ formatter: formatTemp }"
+          :tooltip="tempTooltip"
         />
       </DemoBlock>
     </DemoSection>
@@ -240,8 +255,8 @@ function onSliderComplete(value: number | number[]) {
       </template>
       <DemoBlock layout="stack" class="gap-8 pt-8">
         <RebornSlider v-model="tipDefaultValue" class="w-full max-w-sm" />
-        <RebornSlider v-model="tipOpenValue" class="w-full max-w-sm" :tooltip="{ open: true }" />
-        <RebornSlider v-model="tipHiddenValue" class="w-full max-w-sm" :tooltip="{ open: false }" />
+        <RebornSlider v-model="tipOpenValue" class="w-full max-w-sm" :tooltip="alwaysOpenTooltip" />
+        <RebornSlider v-model="tipHiddenValue" class="w-full max-w-sm" :tooltip="hiddenTooltip" />
       </DemoBlock>
     </DemoSection>
 
@@ -319,7 +334,7 @@ function onSliderComplete(value: number | number[]) {
       </template>
       <DemoBlock layout="stack">
         <RebornSlider
-          v-model:values="partialDisabledRange" class="w-full max-w-sm" range :disabled="[true, false]"
+          v-model:values="partialDisabledRange" class="w-full max-w-sm" range :disabled="leftThumbDisabled"
           show-value
         />
       </DemoBlock>
@@ -342,17 +357,12 @@ function onSliderComplete(value: number | number[]) {
 
     <DemoSection title="自定义渲染：thumb 与 value 插槽">
       <template #description>
-        <code>thumb</code> 插槽替换单值模式的滑块本体，作用域 <code>value.style</code> 是已折算两端内边距的定位样式，自定义节点需自带 translate 居中；<code>value</code> 插槽替换末尾数值显示。
+        <code>thumb</code> 插槽接收平铺的 <code>value / index / active / disabled</code>，只替换滑块内容；通过 <code>ui.thumb</code> 改外形，定位、聚焦与键盘操作仍由组件处理。<code>value</code> 插槽替换末尾数值显示。
       </template>
       <DemoBlock layout="stack">
-        <RebornSlider v-model="thumbValue" class="w-full max-w-sm">
-          <template #thumb="{ value }">
-            <div
-              :style="{ ...value.style, width: '30px', height: '20px' }"
-              class="pointer-events-none absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-warning text-center text-xs leading-[20px] text-white"
-            >
-              {{ value.value }}
-            </div>
+        <RebornSlider v-model="thumbValue" class="w-full max-w-sm" :ui="customThumbUi">
+          <template #thumb="{ value, active, disabled }">
+            <span class="pointer-events-none text-sm text-white" :class="{ 'opacity-60': disabled, 'font-semibold': active }">{{ value }}</span>
           </template>
           <template #value="{ value }">
             <span class="text-primary ml-2 w-10 shrink-0 text-sm">{{ value }}%</span>

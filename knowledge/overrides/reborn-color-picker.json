@@ -11,7 +11,8 @@
   ],
   "pitfalls": [
     "web 与 uniapp 双端可用。",
-    "modelValue 为颜色字符串，默认 '#000000'；可用 format/defaultFormat 控制输出格式。",
+    "modelValue 为颜色字符串，默认 '#000000'；UniApp 端可用 format/defaultFormat 控制输出格式，Web 端固定输出十六进制（不透明 #rrggbb，带透明度 #rrggbbaa）。",
+    "两端拖拽中 update:modelValue 逐帧触发，一次交互结束且颜色变化时才派发 change 并做表单校验；外部改写 v-model 不会被面板改写回传。",
     "弹出位置默认值两端不同：Web 端 bottom、UniApp 端 right；贴近屏幕边缘时用 placement 调整（如 placement=\"top\"）。旧的 content 对象仅 UniApp 端保留且已废弃。"
   ]
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef } from "vue";
 import { backTopColors, backTopSizes } from "~/components/reborn/ui/reborn-back-top/reborn-back-top.config";
 import RebornBackTop from "~/components/reborn/ui/reborn-back-top/RebornBackTop.vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
@@ -48,7 +48,7 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 演练场实例的点击计数 */
-const clickCount = ref(0);
+const clickCount = shallowRef(0);
 
 /** 重置演练场配置 */
 function resetState() {
@@ -103,7 +103,7 @@ const rows = Array.from({ length: 12 }, (_, i) => `占位内容 ${i + 1}`);
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="backTopCode" component-name="RebornBackTop"
-      title="交互演练场" description="调节左侧参数后向下滚动本页，查看按钮在视口右下角的显隐、形状与进度环走向。"
+      title="交互演练场" description="调节上方参数后向下滚动本页，查看按钮在视口右下角的显隐、形状与进度环走向。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">

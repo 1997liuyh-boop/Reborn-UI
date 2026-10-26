@@ -1,8 +1,8 @@
 /* eslint-disable regexp/no-super-linear-backtracking */
 /* eslint-disable regexp/no-useless-quantifier */
-import { computed, ref, toValue } from 'vue'
 import type { MaybeRefOrGetter } from 'vue'
 import { useActiveElement, useDebounceFn, useEventListener } from '@vueuse/core'
+import { computed, toValue } from 'vue'
 
 /** 快捷键回调函数类型 */
 type Handler = (event?: KeyboardEvent) => void
@@ -48,11 +48,11 @@ export interface ShortcutsOptions {
   layoutIndependent?: boolean
 }
 
-/** 经过解析后的内部快捷键结构 */
+/** 经过解析后的内部快捷键结构（只取决于配置，与焦点无关） */
 interface Shortcut {
   handler: Handler
-  /** 当前是否启用（受 `usingInput` 和焦点状态影响） */
-  enabled: boolean
+  /** 输入框聚焦时是否生效，原样保留配置值；是否启用在按键时按当时的焦点现算 */
+  usingInput?: string | boolean
   /** 是否为链式快捷键（如 `g-h`） */
   chained: boolean
   /** 匹配用的按键标识（`event.key` 或 `event.code`） */
@@ -210,18 +210,20 @@ export function extractShortcuts(items: ShortcutItem[] | ShortcutItem[][], separ
  * ```
  */
 export function defineShortcuts(config: MaybeRefOrGetter<ShortcutsConfig>, options: ShortcutsOptions = {}) {
-  /** 记录最近按下的键序列，用于匹配链式快捷键 */
-  const chainedInputs = ref<string[]>([])
+  /** 记录最近按下的键序列，用于匹配链式快捷键；只在按键逻辑里读写、从不渲染，用普通数组 */
+  const chainedInputs: string[] = []
   /** 当前获得焦点的 DOM 元素 */
   const activeElement = useActiveElement()
   const layoutIndependent = options.layoutIndependent ?? false
-  const macOS = computed(() => isMacPlatform())
+  /** 是否为 macOS / iOS：平台不会变，首次解析时求值一次（解析只在客户端按键时发生） */
+  let macPlatform: boolean | undefined
+  const isMac = () => (macPlatform ??= isMacPlatform())
   /** shiftableKeys 转换为 code 格式，用于 layoutIndependent 模式 */
   const shiftableCodes = shiftableKeys.map(key => convertKeyToCode(key))
 
   /** 清空链式键输入缓冲区 */
   const clearChainedInput = () => {
-    chainedInputs.value.splice(0, chainedInputs.value.length)
+    chainedInputs.length = 0
   }
 
   /** 防抖版清空：超过 chainDelay 未输入下一个键时自动重置 */
@@ -246,9 +248,16 @@ export function defineShortcuts(config: MaybeRefOrGetter<ShortcutsConfig>, optio
     return ((activeElement.value as HTMLInputElement | HTMLTextAreaElement | null)?.name as string) || true
   })
 
+  /** 按当时的焦点判断快捷键是否启用：默认输入框聚焦时禁用，配置为字符串时只在对应 name 的输入框里生效 */
+  const isEnabled = (shortcut: Shortcut) => {
+    if (!shortcut.usingInput) return !usingInput.value
+    if (typeof shortcut.usingInput === 'string') return usingInput.value === shortcut.usingInput
+    return true
+  }
+
   /**
    * 将用户传入的配置解析为标准化的 Shortcut 数组。
-   * 每次 config 或焦点状态变化时自动重新计算。
+   * 只依赖 config：焦点变化不会触发整表重新解析，是否启用在按键时现算。
    */
   const shortcuts = computed<Shortcut[]>(() => {
     return Object.entries(toValue(config)).map(([key, shortcutConfig]) => {
@@ -262,12 +271,12 @@ export function defineShortcuts(config: MaybeRefOrGetter<ShortcutsConfig>, optio
       // ─── 格式校验 ───
       // 含 `-` 但不匹配链式格式的键名（如以 `-` 开头/结尾）
       if (key.includes('-') && key !== '-' && !key.includes('_') && !chainedShortcutRegex.test(key)) {
-        console.trace(`[Shortcut] 无效的快捷键：${key}`)
+        console.warn(`[Shortcut] 无效的快捷键：${key}`)
       }
 
       // 含 `_` 但不匹配组合格式的键名
       if (key.includes('_') && key !== '_' && !combinedShortcutRegex.test(key)) {
-        console.trace(`[Shortcut] 无效的快捷键：${key}`)
+        console.warn(`[Shortcut] 无效的快捷键：${key}`)
       }
 
       // ─── 判断类型：链式 or 组合 ───
@@ -308,7 +317,7 @@ export function defineShortcuts(config: MaybeRefOrGetter<ShortcutsConfig>, optio
 
       // ─── 跨平台修饰符适配 ───
       // 非 macOS 平台：将 meta（⌘）自动映射为 ctrl
-      if (!macOS.value && shortcut.metaKey && !shortcut.ctrlKey) {
+      if (!isMac() && shortcut.metaKey && !shortcut.ctrlKey) {
         shortcut.metaKey = false
         shortcut.ctrlKey = true
       }
@@ -325,23 +334,12 @@ export function defineShortcuts(config: MaybeRefOrGetter<ShortcutsConfig>, optio
       }
 
       if (!shortcut.handler) {
-        console.trace('[Shortcut] 无效的处理函数')
+        console.warn('[Shortcut] 无效的处理函数')
         return null
       }
 
-      // ─── 根据 usingInput 和焦点状态决定是否启用 ───
-      let enabled = true
-
-      if (!(shortcutConfig as ShortcutConfig).usingInput) {
-        // 默认行为：焦点在输入框时禁用
-        enabled = !usingInput.value
-      }
-      else if (typeof (shortcutConfig as ShortcutConfig).usingInput === 'string') {
-        // 仅当焦点在指定 name 的输入框时才生效
-        enabled = usingInput.value === (shortcutConfig as ShortcutConfig).usingInput
-      }
-
-      shortcut.enabled = enabled
+      // 只记下配置，是否启用在按键时按当时的焦点判断
+      shortcut.usingInput = typeof shortcutConfig === 'function' ? undefined : shortcutConfig.usingInput
 
       return shortcut as Shortcut
     }).filter(Boolean) as Shortcut[]
@@ -365,20 +363,20 @@ export function defineShortcuts(config: MaybeRefOrGetter<ShortcutsConfig>, optio
     const alphabetKey = layoutIndependent ? /^Key[A-Z]$/i.test(event.code) : /^[a-z]{1}$/i.test(event.key)
     const shiftableKey = layoutIndependent ? shiftableCodes.includes(event.code) : shiftableKeys.includes(event.key.toLowerCase())
 
-    // 追加到链式输入缓冲区
-    chainedInputs.value.push(layoutIndependent ? event.code : event.key)
+    // 追加到链式输入缓冲区；配置的链式键名已转成小写，按键也统一小写，大写锁定或按住 Shift 时同样能匹配
+    chainedInputs.push(layoutIndependent ? event.code : event.key.toLowerCase())
 
     // ─── 1. 链式快捷键匹配 ───
-    if (chainedInputs.value.length >= 2) {
+    if (chainedInputs.length >= 2) {
       // 取最后两次按键拼接为链式键名
-      const chainedKey = chainedInputs.value.slice(-2).join('-')
+      const chainedKey = chainedInputs.slice(-2).join('-')
 
       for (const shortcut of shortcuts.value.filter(item => item.chained)) {
         if (shortcut.key !== chainedKey) {
           continue
         }
 
-        if (shortcut.enabled) {
+        if (isEnabled(shortcut)) {
           event.preventDefault()
           shortcut.handler(event)
         }
@@ -420,7 +418,7 @@ export function defineShortcuts(config: MaybeRefOrGetter<ShortcutsConfig>, optio
         continue
       }
 
-      if (shortcut.enabled) {
+      if (isEnabled(shortcut)) {
         event.preventDefault()
         shortcut.handler(event)
       }

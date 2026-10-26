@@ -287,7 +287,7 @@ function locate() {
 | `draggable` | `boolean \| ((node: TreeDataNode) => boolean) \| { icon?: boolean; nodeDraggable?: (node: TreeDataNode) => boolean }` | `false` | 节点可拖拽：布尔整树开关 / 函数按节点判定 / 对象写法，`icon: false` 隐藏拖拽手柄图标。 |
 | `allowDrop` | `({ dropNode, dropPosition }) => boolean` | - | 拖拽悬停时判定该位置是否可放置，返回 `false` 则指示不亮起且拒绝 drop。`dropPosition`：-1 前 / 0 内 / 1 后。 |
 | `height` | `number` | - | 滚动区最大高度（px）。节点少时按内容撑开，超出后在区内滚动；设置后关闭横向滚动，并默认启用虚拟滚动。 |
-| `itemHeight` | `number` | `28` | 虚拟滚动的行高（px），滚动位置与 `scrollTo` 都按它定高换算。Vue 适配新增，antd 无此项。 |
+| `itemHeight` | `number` | `28` | 虚拟滚动的行高（px），虚拟滚动下的切片与 `scrollTo` 都按它定高换算；关闭虚拟滚动后 `scrollTo` 改读节点的实际位置，不再依赖它。Vue 适配新增，antd 无此项。 |
 | `virtual` | `boolean` | `true` | 设为 `false` 关闭虚拟滚动；`height` 仍生效，退化为普通滚动容器。 |
 | `animated` | `boolean` | `true` | 展开/收起的行级过渡动画（antd `motion` 参数的 Vue 化替代）：新行淡入下滑、下方行 FLIP 位移让位。虚拟滚动生效时强制关闭；`prefers-reduced-motion` 下自动归零。 |
 | `class` | `any` | - | 追加到根元素的自定义类名。 |
@@ -339,7 +339,7 @@ function locate() {
 
 | 方法名 | 签名 | 描述 |
 | --- | --- | --- |
-| `scrollTo` | `({ key, align?, offset?, autoExpand?, behavior? }) => Promise<void>` | 滚动到指定 key 的节点。`align`：`top` / `bottom` / `auto`（仅视口外才滚动）；`offset` 为对齐后的额外偏移（px）；`autoExpand` 仅非受控展开下先自动展开目标父链；`behavior: 'smooth'` 启用平滑动画（rAF 驱动、时长随距离取 150~400ms，缺省即时跳转）。无 `height` 时退化为 `scrollIntoView`。 |
+| `scrollTo` | `({ key, align?, offset?, autoExpand?, behavior? }) => Promise<void>` | 滚动到指定 key 的节点。`align`：`top` / `bottom` / `auto`（仅视口外才滚动）；`offset` 为对齐后的额外偏移（px）；`autoExpand` 仅非受控展开下先自动展开目标父链；`behavior: 'smooth'` 启用平滑动画（rAF 驱动、时长随距离取 150~400ms，缺省即时跳转）。关闭虚拟滚动但设置了 `height` 时按节点的实际位置定位；无 `height` 时退化为 `scrollIntoView`。 |
 
 ::tip
 平滑动画由 rAF 自行驱动而非原生 `behavior: 'smooth'`——部分环境会把原生 smooth 静默丢弃成不滚动；rAF 逐帧写 `scrollTop` 还能让虚拟滚动的切片随动画逐帧更新，不会露白。系统开启「减少动态效果」（`prefers-reduced-motion`）时自动退回即时跳转；动画途中用户滚轮/触摸介入会立即中止动画，交还控制权。
@@ -394,6 +394,6 @@ function locate() {
 - **非 `checkStrictly` 下 `checkedKeys` 会被联动归一**。传入父节点 key 等于整枝勾选，取消一个子级会同时摘掉父链再重算——受控方拿到的回写值是归一后的完整集合，不是原样透传。
 - **禁用节点阻断勾选联动**。`disabled` / `disableCheckbox` 的节点不参与父子传导；而节点级 `checkable: false` 只隐藏复选框、仍参与联动计算，两者语义不同。
 - **虚拟滚动依赖定高行**。滚动位置按 `itemHeight`（默认 28px）换算，用 `ui` 改了行高（如加大 `content` 内边距）时必须同步调整 `itemHeight`，否则切片与 `scrollTo` 的落点都会漂移。
-- **`scrollTo` 的 `autoExpand` 只在非受控展开下生效**。受控（`v-model:expanded-keys`）时展开集合归外部所有、组件不越权改写，需要先用 `useTree` 的 `getPath` 自行把父链并入展开集合。
+- **`scrollTo` 的 `autoExpand` 只在非受控展开下生效**。是否受控看父组件有没有传入非 `undefined` 的 `expandedKeys`：传了（如 `v-model:expanded-keys`）展开集合就归外部所有、组件不越权改写，需要先用 `useTree` 的 `getPath` 自行把父链并入展开集合；没传时即使用户已经展开 / 收起过节点，`autoExpand` 照常展开父链。
 - **`autoExpandParent` 只响应外部写入**。组件内部的展开/收起不触发父链补全，否则用户刚收起的父级会被子级 key 立刻撑回，无法收起。
 - **`itemHeight` 是 Vue 适配新增 prop**。antd 的行高是内部常量，这里因拍平定高渲染需要显式换算而暴露出来；不用虚拟滚动时无需关心。

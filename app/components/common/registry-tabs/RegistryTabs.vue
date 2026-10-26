@@ -7,7 +7,7 @@ interface Props {
 
 const { componentId } = defineProps<Props>();
 
-const items = ref([
+const items = computed(() => [
   {
     label: "pnpm",
     icon: "vscode-icons:file-type-pnpm",
@@ -38,7 +38,7 @@ const mdc = computed(() =>
 // 独立 MDC 场景下标签映射缺失 pre → ProsePre，按字符串名全局解析本地覆盖组件会触发
 // "Failed to resolve component: ProsePre" 警告；这里通过 components prop 注入组件对象，
 // 让 findMappedTag 直接命中组件引用，彻底绕开运行时组件名解析。
-const { data } = await useAsyncData(`registry-tabs-${componentId}`, async () => {
+const { data } = await useAsyncData(() => `registry-tabs-${componentId}`, async () => {
   const { parseMarkdown } = await import("@nuxtjs/mdc/runtime");
   return parseMarkdown(mdc.value);
 });

@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import type { Collections, ContentNavigationItem, DocsCollectionItem } from "@nuxt/content";
-import { findPageHeadline } from "@nuxt/content/utils";
-import { kebabCase } from "scule";
-import { addPrerenderPath } from "@/utils/prerender";
 
 const route = useRoute();
-const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
 
 const isLandingPage = computed(() => {
   return route.path === "/";
 });
 
-const pageType = isLandingPage.value ? "landing" : "docs";
+const pageType = computed(() => isLandingPage.value ? "landing" : "docs");
 
 definePageMeta({
   layout: false,
@@ -27,68 +22,25 @@ definePageMeta({
   },
 });
 
-const collectionName = computed(() => pageType);
+const collectionName = computed(() => pageType.value);
 
-const [{ data: page, error: pageError }, { data: surround }] =
-  await Promise.all([
-    useAsyncData(
-      `content-${kebabCase(route.path || "index")}`,
-      () =>
-        queryCollection(collectionName.value as keyof Collections)
-          .path(route.path)
-          .first() as Promise<DocsCollectionItem>,
-    ),
-    useAsyncData(`content-${kebabCase(route.path || "index")}-surround`, () => {
-      return queryCollectionItemSurroundings(
-        collectionName.value as keyof Collections,
-        route.path,
-        {
-          fields: ["description"],
-        },
-      );
-    }),
-  ]);
+// 先在组件 setup 中读取导航注入，再进入 Nuxt 的异步上下文。
+const pageRequest = useDocsPageData(collectionName);
+const { page, surround, headline } = await pageRequest;
 
-if (pageError.value) {
-  throw createError({
-    statusCode: 500,
-    statusMessage: pageError.value.message || "Internal Server Error",
-    fatal: true,
-  });
-}
-
-if (!page.value) {
-  throw createError({
-    statusCode: 404,
-    statusMessage: `Page not found: ${route.path} in collection ${collectionName.value}`,
-    fatal: true,
-  });
-}
-
-// 将页面路径加入预渲染列表。
-addPrerenderPath(`/raw${route.path}.md`);
-
-const title = page.value.seo?.title || page.value.title;
-const description = page.value.seo?.description || page.value.description;
+const title = computed(() => page.value?.seo?.title || page.value?.title);
+const description = computed(() => page.value?.seo?.description || page.value?.description);
 
 useSeoMeta({
-  title: isLandingPage.value ? "Reborn UI — 跨端 Vue 组件库" : title,
-  ogTitle: isLandingPage.value ? "Reborn UI — 跨端 Vue 组件库" : title,
+  title: isLandingPage.value ? "Reborn UI — 跨端 Vue 组件库" : title.value,
+  ogTitle: isLandingPage.value ? "Reborn UI — 跨端 Vue 组件库" : title.value,
   description: isLandingPage.value
     ? "面向 Web 与 UniApp 的 Vue 组件库，使用 TypeScript 与 Tailwind CSS，支持按需安装组件源码与自由定制。"
-    : description,
+    : description.value,
   ogDescription: isLandingPage.value
     ? "面向 Web 与 UniApp 的 Vue 组件库，使用 TypeScript 与 Tailwind CSS，支持按需安装组件源码与自由定制。"
-    : description,
+    : description.value,
 });
-
-const headline = ref(findPageHeadline(navigation?.value, page.value?.path));
-watch(
-  () => navigation?.value,
-  () => {
-    headline.value = findPageHeadline(navigation?.value, page.value?.path) || headline.value;
-  },
-);
 
 defineOgImageComponent("Docs", {
   headline: headline.value,

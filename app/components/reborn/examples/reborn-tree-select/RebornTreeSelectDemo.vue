@@ -2,7 +2,7 @@
 import type { TreeSelectValue } from "~/components/reborn/ui/reborn-tree-select/reborn-tree-select.config";
 import type { TreeSelectProps } from "~/components/reborn/ui/reborn-tree-select/RebornTreeSelect.vue";
 import { DemoBlock, DemoItem, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, ref } from "vue";
+import { computed, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 import { treeSelectColors, treeSelectSizes, treeSelectVariants } from "~/components/reborn/ui/reborn-tree-select/reborn-tree-select.config";
@@ -32,8 +32,8 @@ const defaultState = {
   collapseTags: false, collapseTagsTooltip: false, maxCollapseTags: 1, closeOn: "mousedown", portal: true,
   checkStrictly: false, showLine: false, showIcon: false, height: 240, virtual: true, defaultExpandAll: true
 } satisfies TreeSelectProps;
-const state = ref<Pick<TreeSelectProps, keyof typeof defaultState>>({ ...defaultState });
-const value = ref<TreeSelectValue>(null);
+const state = shallowRef<Pick<TreeSelectProps, keyof typeof defaultState>>({ ...defaultState });
+const value = shallowRef<TreeSelectValue>(null);
 /**
  * 控制面板按参数的作用对象分组：TreeSelect 由选择框（触发器与浮层）和内部 RebornTree 组成，
  * 分开摆放才能看出某个参数改的是哪一部分。
@@ -70,20 +70,21 @@ const controls = [
   },
 ];
 /** 代码包含演示数据，可直接复制。 */
-const code = computed(() => `<script setup>\nimport { ref } from 'vue'\nconst value = ref(${JSON.stringify(value.value)})\nconst treeData = ${JSON.stringify(treeData, null, 2)}\n<\/script>\n<template>\n  <RebornTreeSelect v-model="value" :tree-data="treeData"\n    color="${state.value.color}" :multiple="${state.value.multiple}" :disabled="${state.value.disabled}"\n    variant="${state.value.variant}" size="${state.value.size}" :allow-search="${state.value.allowSearch}" :clearable="${state.value.clearable}"\n    :collapse-tags="${state.value.collapseTags}" :collapse-tags-tooltip="${state.value.collapseTagsTooltip}" :max-collapse-tags="${state.value.maxCollapseTags}"\n    close-on="${state.value.closeOn}" :portal="${state.value.portal}"\n    :check-strictly="${state.value.checkStrictly}" :show-line="${state.value.showLine}" :show-icon="${state.value.showIcon}"\n    :height="${state.value.height}" :virtual="${state.value.virtual}" default-expand-all />\n</template>`);
+const code = computed(() => `<script setup>\nimport { shallowRef } from 'vue'\nconst value = shallowRef(${JSON.stringify(value.value)})\nconst treeData = ${JSON.stringify(treeData, null, 2)}\n<\/script>\n<template>\n  <RebornTreeSelect v-model="value" :tree-data="treeData"\n    color="${state.value.color}" :multiple="${state.value.multiple}" :disabled="${state.value.disabled}"\n    variant="${state.value.variant}" size="${state.value.size}" :allow-search="${state.value.allowSearch}" :clearable="${state.value.clearable}"\n    :collapse-tags="${state.value.collapseTags}" :collapse-tags-tooltip="${state.value.collapseTagsTooltip}" :max-collapse-tags="${state.value.maxCollapseTags}"\n    close-on="${state.value.closeOn}" :portal="${state.value.portal}"\n    :check-strictly="${state.value.checkStrictly}" :show-line="${state.value.showLine}" :show-icon="${state.value.showIcon}"\n    :height="${state.value.height}" :virtual="${state.value.virtual}" default-expand-all />\n</template>`);
 /** 同时重置演练参数与选中值。 */
 function resetState() { state.value = { ...defaultState }; value.value = null; }
 
 // ─── 场景演示状态 ───
 /** 单选与多选分开维护，方便比较返回值。 */
-const single = ref<TreeSelectValue>("web");
+const single = shallowRef<TreeSelectValue>("web");
 /** 联动初值各勾一个子级，两个父级都呈半选。 */
-const multiple = ref<TreeSelectValue>(["design", "content"]);
+const multiple = shallowRef<TreeSelectValue>(["design", "content"]);
 /** 严格模式初值只勾父级，对照子级不受牵连。 */
-const strictMultiple = ref<TreeSelectValue>(["product"]);
+const strictMultiple = shallowRef<TreeSelectValue>(["product"]);
 /** 自定义节点示例独立维护选中值，展示插槽的 selected 状态。 */
-const customItem = ref<TreeSelectValue>("design");
-const selectValue = ref("web");
+const customItem = shallowRef<TreeSelectValue>("design");
+const selectValue = shallowRef("web");
+const selectOptions = [{ label: "前端开发", value: "web" }];
 const variants = { outlined: "描边", filled: "填充", borderless: "无边框", underlined: "下划线" };
 </script>
 
@@ -91,7 +92,7 @@ const variants = { outlined: "描边", filled: "填充", borderless: "无边框"
   <div class="flex w-full flex-col">
     <Playground
       v-model="state" :controls="controls" :code="code" component-name="RebornTreeSelect" title="交互演练场"
-      description="左侧参数按作用对象分组：共用参数同时作用于选择框与树，选择框参数只改触发器与浮层，树参数作用于浮层内的 RebornTree。"
+      description="上方参数按作用对象分组：共用参数同时作用于选择框与树，选择框参数只改触发器与浮层，树参数作用于浮层内的 RebornTree。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -119,7 +120,7 @@ const variants = { outlined: "描边", filled: "填充", borderless: "无边框"
           class="grid w-full gap-3 sm:grid-cols-[5rem_1fr_1fr] sm:items-center"
         >
           <span class="text-sm text-gray-6">{{ variants[variant] }}</span>
-          <RebornSelect v-model="selectValue" :variant="variant" :options="[{ label: '前端开发', value: 'web' }]" />
+          <RebornSelect v-model="selectValue" :variant="variant" :options="selectOptions" />
           <RebornTreeSelect model-value="web" :variant="variant" :tree-data="treeData" default-expand-all />
         </div>
         <div class="grid w-full gap-3 sm:grid-cols-2">

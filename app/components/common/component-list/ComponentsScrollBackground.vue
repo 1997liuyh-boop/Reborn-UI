@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { withBase } from 'ufo'
-import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import { onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
 
 const { app } = useRuntimeConfig()
 const source = withBase('/videos/components-city-scroll.webm?v=7c2b604d', app.baseURL)
 const poster = withBase('/images/components-city-poster.webp?v=7c2b604d', app.baseURL)
 const video = useTemplateRef<HTMLVideoElement>('video')
-const motionAllowed = ref(false)
-const ready = ref(false)
-const failed = ref(false)
+const motionAllowed = shallowRef(false)
+const ready = shallowRef(false)
+const failed = shallowRef(false)
 const frameDuration = 1 / 24
 let frame = 0
 let preference: MediaQueryList | undefined

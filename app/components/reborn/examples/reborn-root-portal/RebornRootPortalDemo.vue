@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DemoBlock, DemoSection } from '#components';
 // Web 端 Demo：前端加紧开发中
 </script>
 

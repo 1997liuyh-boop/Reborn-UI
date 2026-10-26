@@ -1,17 +1,3 @@
-<template>
-    <div class="group/prose-pre relative">
-        <UProsePre v-bind="props">
-            <slot />
-        </UProsePre>
-        <!-- 仅 vue/html 演示代码显示入口;定位在代码块右下角,避开右上角的复制按钮 -->
-        <UButton v-if="runnable" icon="i-lucide-play" size="xs" variant="soft"
-            class="absolute right-2.5 bottom-2.5 z-[1] opacity-0 transition-opacity group-hover/prose-pre:opacity-90 hover:opacity-100 focus-visible:opacity-100"
-            @click="runInPlayground">
-            在 Playground 运行
-        </UButton>
-    </div>
-</template>
-
 <script setup lang="ts">
 /**
  * ProsePre 项目级覆盖 —— 文档代码块的「在 Playground 运行」入口
@@ -56,3 +42,17 @@ function runInPlayground() {
     window.open(buildPlaygroundUrl(props.code.trim()), "_blank");
 }
 </script>
+
+<template>
+    <div class="group/prose-pre relative">
+        <UProsePre v-bind="props">
+            <slot />
+        </UProsePre>
+        <!-- 仅 vue/html 演示代码显示入口;定位在代码块右下角,避开右上角的复制按钮 -->
+        <UButton v-if="runnable" icon="i-lucide-play" size="xs" variant="soft"
+            class="absolute right-2.5 bottom-2.5 z-[1] opacity-0 transition-opacity group-hover/prose-pre:opacity-90 hover:opacity-100 focus-visible:opacity-100"
+            @click="runInPlayground">
+            在 Playground 运行
+        </UButton>
+    </div>
+</template>

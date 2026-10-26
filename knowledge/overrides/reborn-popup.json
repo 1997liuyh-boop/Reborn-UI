@@ -14,6 +14,8 @@
     "仅 UniApp；Web 已迁移为 reborn-drawer。",
     "swipeClose 仅 bottom 生效，swipeCloseThreshold 默认 120px。",
     "showMask、maskClosable、overlayZIndex 别名优先。",
-    "默认 lazyRender=true，安全区适配默认开启。"
+    "默认 lazyRender=true，安全区适配默认开启。",
+    "size 未传时不限制尺寸，传入后实际应用且 customStyle 可覆盖。showMask/maskClosable/overlayZIndex 未传时回退 modal/closeOnClickModal/zIndex，显式值优先。",
+    "modelValue 默认 undefined；未传时本地初始关闭，显式 false/null/undefined 均关闭。传值后 close() 等操作只请求更新，父级拒收保持父值；移除绑定恢复本地值，初始化不派发 update:modelValue。"
   ]
 }

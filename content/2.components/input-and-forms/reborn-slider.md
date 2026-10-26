@@ -239,27 +239,22 @@ Web 端额外支持键盘：点击抓取或 Tab 聚焦节点后，按 `Delete` /
 
 ### 自定义渲染：thumb 与 value 插槽
 
-`thumb` 插槽替换滑块本体（仅单值模式生效），作用域 `value` 内含当前值与定位样式；`value` 插槽替换末尾数值显示。定位样式是沿滑轨方向的 `left` / `top`，自定义节点需要自带 `translate` 居中：
+`value` 插槽替换末尾数值显示；`thumb` 插槽只替换滑块中心圆，单值与范围模式两端都可用。作用域参数平铺为 `{ value, index, active, disabled }`，外层滑块始终由组件负责定位与气泡，Web 端也保留聚焦与键盘步进。外形与底色通过 `ui.thumb` 覆盖，尺寸类按各端的 px / rpx 规则书写。
 
 ```vue
 <template>
-  <RebornSlider v-model="volume">
+  <RebornSlider v-model="volume" :ui="{ thumb: 'bg-warning' }">
     <template #thumb="{ value }">
-      <view
-        :style="{ ...value.style, width: '30px', height: '20px' }"
-        class="pointer-events-none absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-warning text-center text-white"
-      >
-        {{ value.value }}
-      </view>
+      <text>{{ value }}</text>
     </template>
     <template #value="{ value }">
-      <text class="text-primary">{{ value }}%</text>
+      <text>{{ value }}%</text>
     </template>
   </RebornSlider>
 </template>
 ```
 
-Web 端的定位值已折算交互带两端各半个滑块的内边距（`calc(半径 + (100% - 直径) × 比例)`），滑块在端点不会溢出；UniApp 端是纯百分比，端点处滑块会向外溢出半个直径，外层需留出余量。
+Web 端滑块在端点不会溢出；UniApp 端保持纯百分比定位，端点会溢出半个直径，外层应留出余量。
 
 ## API
 
@@ -344,11 +339,11 @@ Web 端的定位值已折算交互带两端各半个滑块的内边距（`calc(�
 
 ### Slots
 
-两端插槽名与作用域一致。
+两端作用域参数与替换范围一致；键盘能力仅 Web 提供。
 
 | 插槽名 | 作用域参数 | 描述 |
 | --- | --- | --- |
-| `thumb` | `{ value: { value, style } }` | 自定义滑块本体（仅单值模式生效）。`style` 为沿滑轨方向的 `left` / `top` 定位：Web 已折算两端半个滑块的内边距，UniApp 为纯百分比；自定义节点需自带 `translate` 居中。 |
+| `thumb` | `{ value, index, active, disabled }` | 替换滑块中心圆（`thumbDot`），单值与范围模式都可用。`value` 为该滑块的值，`index` 为滑块下标（单值恒为 0），`active` 为是否激活滑块，`disabled` 为该滑块是否禁用。外层滑块的定位、聚焦、键盘与气泡仍由组件渲染。 |
 | `value` | `{ value }` | 自定义数值显示，`value` 为当前值文本（范围模式为 `起 - 止`）。 |
 | `prefix` | `-` | 完全接管滑轨起始端内容（覆盖 `prefixIcon`）。 |
 | `suffix` | `-` | 完全接管滑轨末尾端内容（覆盖 `suffixIcon`）。 |
@@ -370,8 +365,8 @@ Web 端的定位值已折算交互带两端各半个滑块的内边距（`calc(�
 | `stopDot` | 间断点 | `absolute top-1/2 … size-[8px] rounded-full bg-gray-1 border-[1.5px]` | 仅 `showStops` 且 `step` 为数字、间断点数量在 1–100 之间时渲染 |
 | `markDot` | 刻度点 | 同 `stopDot` | 仅 `marks` 含合法 key 时渲染 |
 | `markLabel` | 刻度文字 | `absolute top-full mt-[8px] -translate-x-1/2 text-sm text-gray-6 whitespace-nowrap cursor-pointer select-none` | 同 `markDot` |
-| `thumb` | 滑块本体（语义色外圆） | `absolute top-1/2 … rounded-full flex items-center justify-center z-[1] outline-none` + `bg-<color> ring-<color>/20` | 单值模式使用 `#thumb` 插槽时不渲染 |
-| `thumbDot` | 滑块中心圆 | `rounded-full bg-gray-1` | 同 `thumb` |
+| `thumb` | 滑块本体（语义色外圆） | `absolute top-1/2 … rounded-full flex items-center justify-center z-[1] outline-none` + `bg-<color> ring-<color>/20` | 始终渲染；使用 `#thumb` 插槽时仍是插槽内容的外层，外形与底色在这里改 |
+| `thumbDot` | 滑块中心圆 | `rounded-full bg-gray-1` | 使用 `#thumb` 插槽时不渲染 |
 | `tooltip` | 数值气泡 | `absolute z-[3] rounded-sm bg-gray-9 px-2 py-1 text-sm text-gray-1 whitespace-nowrap shadow-md` | 仅拖拽中或 `tooltip.open` 为 `true` 时渲染；`open: false` 或 `formatter: null` 时不渲染 |
 | `suffix` | 末尾端图标容器 | `shrink-0 inline-flex items-center text-gray-6 ml-[8px]` | 仅设置 `suffixIcon` 且未使用 `#suffix` 插槽时渲染 |
 | `value` | 末尾数值文本 | `text-center w-[50px] text-gray-8 ml-[8px]` | 仅 `showValue` 且未使用 `#value` 插槽时渲染 |
@@ -389,8 +384,8 @@ Web 端的定位值已折算交互带两端各半个滑块的内边距（`calc(�
 | `stopDot` | 间断点 | `absolute top-1/2 … size-[16rpx] rounded-full bg-gray-1 border-[3rpx] border-solid` | 仅 `showStops` 且 `step` 为数字、间断点数量在 1–100 之间时渲染 |
 | `markDot` | 刻度点 | 同 `stopDot` | 仅 `marks` 含合法 key 时渲染 |
 | `markLabel` | 刻度文字 | `absolute top-full mt-[12rpx] -translate-x-1/2 text-24 text-gray-6 whitespace-nowrap` | 同 `markDot` |
-| `thumb` | 滑块本体（语义色外圆） | `absolute top-1/2 … rounded-full flex items-center justify-center z-[1]` + `bg-<color> ring-<color>/20` | 单值模式使用 `#thumb` 插槽时不渲染 |
-| `thumbDot` | 滑块中心圆 | `rounded-full bg-gray-1` | 同 `thumb` |
+| `thumb` | 滑块本体（语义色外圆） | `absolute top-1/2 … rounded-full flex items-center justify-center z-[1]` + `bg-<color> ring-<color>/20` | 始终渲染；使用 `#thumb` 插槽时仍承载插槽内容 |
+| `thumbDot` | 滑块中心圆 | `rounded-full bg-gray-1` | 使用 `#thumb` 插槽时不渲染 |
 | `tooltip` | 数值气泡 | `absolute z-[4] rounded-ui-2xs bg-gray-9 px-[16rpx] py-[8rpx] text-24 text-gray-1 whitespace-nowrap shadow-md` | 仅拖拽中或 `tooltip.open` 为 `true` 时渲染；`open: false` 或 `formatter: null` 时不渲染 |
 | `suffix` | 末尾端图标容器 | `shrink-0 inline-flex items-center text-gray-6 ml-[16rpx]` | 仅设置 `suffixIcon` 且未使用 `#suffix` 插槽时渲染 |
 | `value` | 末尾数值文本 | `text-center w-[100rpx] text-gray-8 dark:text-gray-1` | 仅 `showValue` 且未使用 `#value` 插槽时渲染 |
@@ -420,7 +415,7 @@ Web 端的定位值已折算交互带两端各半个滑块的内边距（`calc(�
 | 图标 prop 取值 | `Icon` 组件名（`lucide:volume`） | iconify 类名（`i-lucide-volume`） |
 | 滑块尺寸单位 | px（激活 16 / 14 / 12px） | rpx 随屏宽缩放（激活 32 / 28 / 24rpx） |
 | 轨道粗细 | 固定 4px，可用 `ui.track` 覆盖 | `trackHeight` prop，默认 4px，内联样式优先于 `ui.track` |
-| 交互带两端内边距 | 有，滑块在端点不溢出，`thumb` 插槽的 `style` 已折算 | 无，端点处滑块溢出半个直径，`style` 为纯百分比 |
+| 交互带两端内边距 | 有，滑块在端点不溢出 | 无，端点处滑块溢出半个直径，定位为纯百分比 |
 | 命中滑块判定半径 | 12px | 16px |
 | 键盘操作 | 方向键步进（`step="mark"` 时跳相邻刻度）、Delete / Backspace 删除节点 | 不支持（无键盘） |
 | 交互事件源 | Pointer Events + 指针捕获，move 按动画帧合并 | Touch 事件 + `createSelectorQuery` 触摸前测量 |
@@ -435,7 +430,7 @@ Web 端的定位值已折算交互带两端各半个滑块的内边距（`calc(�
 - 范围模式默认最右侧滑块为激活态（大一号），跟随最近一次按下切换；拖拽越过相邻节点时激活下标自动换位。
 - `disabled` 数组下标对应**排序后**的节点位置，`editable` 增删节点会使后续下标偏移，两者组合使用需业务侧自行维护。
 - `step="mark"` 时取值吸附刻度、Web 端方向键在相邻刻度间跳转；`draggableTrack` 在该模式下不可用（平移量无法保证所有节点同时落在刻度上）。
-- `thumb` 插槽仅在单值模式渲染，范围模式的滑块不可通过插槽替换；插槽拿到的 `style` 只负责沿滑轨定位，需自带 `translate` 居中。
+- **`thumb` 插槽两端只替换中心圆，外形改 `ui.thumb`。** 外层定位与气泡由组件保留，Web 端的聚焦和方向键也不受影响；范围模式每个滑块均能定制。
 - 色晕（按压态 ring）不占布局空间，组件高度只由滑块外径决定；有 `marks` 时组件会自动为刻度文字留出下方（垂直模式为右侧）空间。
 - UniApp 端触摸开始前会通过 `createSelectorQuery` 测量轨道位置，滑块所在容器若有进入动画，请保证动画结束后再交互，否则首次取值可能偏移。
 - UniApp 端交互带没有两端内边距，端点处滑块会向外溢出半个直径；贴边布局时请给外层留出左右余量。

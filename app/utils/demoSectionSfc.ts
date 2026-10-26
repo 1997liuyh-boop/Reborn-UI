@@ -222,6 +222,12 @@ function collectIdentifiers(text: string): Set<string> {
                 index++;
                 return;
             }
+            // 展开运算符后面跟的是被引用的绑定（如 { ...defaultState }），不能当成属性访问的点跳过
+            else if (ch === "." && text[index + 1] === "." && text[index + 2] === ".") {
+                index += 3;
+                previous = "...";
+                continue;
+            }
             else if (/[A-Z_$]/i.test(ch)) {
                 const start = index++;
                 while (index < text.length && /[\w$]/.test(text[index]!)) index++;

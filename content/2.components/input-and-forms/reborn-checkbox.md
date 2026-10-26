@@ -471,7 +471,7 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
 | --- | --- | --- |
 | 自定义类名 | `class`，与 `ui.wrapper` 合并时 `ui` 优先 | `customClass`，与 `ui.wrapper` 合并时 `customClass` 优先 |
 | 自定义写回值 | `trueValue` / `falseValue` | 不支持，布尔模式固定 `true` / `false` |
-| 只读展示 | 无（用 `disabled` 或外层拦截） | `readOnly` prop |
+| 只读展示 | 只传 `:model-value` 不接更新事件即可：严格受控，点击只派发 `change`，显示保持父值 | `readOnly` prop；只传 `:model-value` 时点击后会接管为内部状态 |
 | 底层实现 | 隐藏原生 `input[type=checkbox]`，支持键盘切换与焦点环，读屏可拿到 mixed 语义 | 自绘节点 + tap 事件，状态靠 `is-*` 标记类驱动，无焦点环 |
 | 单独使用时的尺寸回退 | `FormItem` > `Form` > 自身 `size` | 自身 `size`（默认 `md`，表单尺寸实际不生效） |
 | 勾选方块圆角 | `rounded-sm` | `rounded-md` |
@@ -482,7 +482,7 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
 ## 注意事项
 
 - **绑定模式由 `modelValue` 类型决定**：数组即多选（按 `value` 存取），非数组即布尔/自定义值开关；`trueValue` / `falseValue` 仅 Web 端存在，且数组模式下不生效。
-- **受控 / 非受控二选一**。绑定 `v-model` 即完全受控，值由外层数据决定；不绑定时以 `defaultValue`（优先）或 `defaultChecked` 起始并由组件内部维护。若只写单向的 `:model-value` 而不监听更新，组件会在用户点击后接管为内部状态（`defineModel` 的单向绑定语义），需要「只读展示」请配合 `disabled`（UniApp 端可用 `readOnly`）。
+- **受控 / 非受控二选一，Web 端受控按严格受控处理**。写了 `modelValue`（`v-model` 或单向 `:model-value`）即受控，显示只认父级传入的值：只传值不接更新事件、或在 `update:modelValue` 里拒收，点击都只派发 `change`，勾选状态（含原生 `input`）保持父值，所以 Web 端单向 `:model-value` 本身就是只读展示。不写时以 `defaultValue`（优先）或 `defaultChecked` 起始并由组件内部维护。UniApp 端仍是 `defineModel` 的单向绑定语义：只写 `:model-value` 时点击后接管为内部状态，只读展示请用 `readOnly`。
 - **组内的 `size` / `color` / `variant` 以组为准**。组总会提供这三个值（未写时取默认值），所以子项自身的同名属性在组内不生效；`disabled` 则是组与子项任一为真即禁用。
 - **单独使用时两端的尺寸回退不同**。Web 端按 `FormItem` > `Form` > 自身 `size` 回退；UniApp 端先取自身 `size`，而它默认就是 `md`，所以 `RebornForm` 的尺寸不会传到单独使用的复选框上，需要统一尺寸时请显式写 `size` 或放进组（组的尺寸为「表单尺寸 || 组尺寸」）。
 - **`indeterminate` 只负责渲染**。组件不会在用户点击后自动清除半选；半选态与选中态可同时成立，此时视觉上以半选为准。
@@ -502,3 +502,6 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
   </RebornForm>
 </template>
 ```
+
+- **Web 端 `style` 作用于外层标签。** `class` 与 `style` 放在 `label` 上参与布局，`aria-*`、`data-*` 和原生输入事件仍传给 `input`，动态增删属性会同步更新。
+- **Web 端显式清空不会回落默认值。** 已绑定的 `modelValue` 改成 `undefined` 或 `null` 后清空；`defaultValue` / `defaultChecked` 仅作为非受控初值。

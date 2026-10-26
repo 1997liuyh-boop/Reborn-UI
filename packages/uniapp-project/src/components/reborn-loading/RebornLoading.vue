@@ -1,40 +1,3 @@
-<template>
-    <view :class="ui.root()" :style="rootStyle">
-        <view v-if="props.type === 'ring' || props.type === 'outline'" :key="props.type" :class="ui.container()"
-            :style="containerStyle">
-            <view v-if="props.type === 'outline'" :class="ui.outlineTrack()" />
-            <view :class="ui.indicator()" :style="ringIndicatorStyle" />
-        </view>
-
-        <view v-else-if="props.type === 'spinner'" key="loading-spinner" :class="ui.container()"
-            :style="containerStyle">
-            <view v-for="i in 12" :key="i" :class="ui.spinnerItem()" :style="{ '--i': i }" />
-        </view>
-
-        <view v-else-if="props.type === 'bars-scale'" key="loading-bars-scale" :class="ui.container()"
-            :style="containerStyle">
-            <view v-for="i in 5" :key="i" :class="ui.barItem()" :style="{ '--i': i }" />
-        </view>
-
-        <view v-else-if="props.type === 'blocks-shuffle'" key="loading-blocks-shuffle" :class="ui.container()"
-            :style="containerStyle">
-            <view :class="ui.blockItem()" class="rb-shuffle-1" />
-            <view :class="ui.blockItem()" class="rb-shuffle-2" />
-        </view>
-
-        <view v-else-if="props.type === 'blocks-wave'" key="loading-blocks-wave" :class="ui.container()"
-            :style="containerStyle">
-            <view v-for="i in 9" :key="i" :class="ui.waveItem()" :style="{ '--d': getWaveDelay(i) }" />
-        </view>
-
-        <view v-else-if="props.type === 'gooey-balls'" key="loading-gooey-balls" :class="ui.container()"
-            :style="containerStyle">
-            <view :class="ui.gooeyItem()" class="rb-gooey-1" />
-            <view :class="ui.gooeyItem()" class="rb-gooey-2" />
-        </view>
-    </view>
-</template>
-
 <script lang="ts">
 export default {
     name: 'reborn-loading',
@@ -43,7 +6,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { computed, watch, ref } from 'vue'
+import { computed } from 'vue'
 import { addUnit, objToStyle } from '@/lib/util'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -64,8 +27,7 @@ const props = withDefaults(defineProps<RebornLoadingProps>(), {
     size: '30px'
 })
 
-const iconSize = ref<string>('30px')
-watch(() => props.size, (val) => { iconSize.value = addUnit(val) }, { immediate: true })
+const iconSize = computed(() => addUnit(props.size))
 
 const isPresetColor = computed(() => LoadingColors.includes(props.color as typeof LoadingColors[number]))
 
@@ -122,6 +84,43 @@ function getWaveDelay(index: number) {
     return ((index - 1) % 3 + Math.floor((index - 1) / 3)) * 0.12 + 's'
 }
 </script>
+
+<template>
+    <view :class="ui.root()" :style="rootStyle">
+        <view v-if="props.type === 'ring' || props.type === 'outline'" :key="props.type" :class="ui.container()"
+            :style="containerStyle">
+            <view v-if="props.type === 'outline'" :class="ui.outlineTrack()" />
+            <view :class="ui.indicator()" :style="ringIndicatorStyle" />
+        </view>
+
+        <view v-else-if="props.type === 'spinner'" key="loading-spinner" :class="ui.container()"
+            :style="containerStyle">
+            <view v-for="i in 12" :key="i" :class="ui.spinnerItem()" :style="{ '--i': i }" />
+        </view>
+
+        <view v-else-if="props.type === 'bars-scale'" key="loading-bars-scale" :class="ui.container()"
+            :style="containerStyle">
+            <view v-for="i in 5" :key="i" :class="ui.barItem()" :style="{ '--i': i }" />
+        </view>
+
+        <view v-else-if="props.type === 'blocks-shuffle'" key="loading-blocks-shuffle" :class="ui.container()"
+            :style="containerStyle">
+            <view :class="ui.blockItem()" class="rb-shuffle-1" />
+            <view :class="ui.blockItem()" class="rb-shuffle-2" />
+        </view>
+
+        <view v-else-if="props.type === 'blocks-wave'" key="loading-blocks-wave" :class="ui.container()"
+            :style="containerStyle">
+            <view v-for="i in 9" :key="i" :class="ui.waveItem()" :style="{ '--d': getWaveDelay(i) }" />
+        </view>
+
+        <view v-else-if="props.type === 'gooey-balls'" key="loading-gooey-balls" :class="ui.container()"
+            :style="containerStyle">
+            <view :class="ui.gooeyItem()" class="rb-gooey-1" />
+            <view :class="ui.gooeyItem()" class="rb-gooey-2" />
+        </view>
+    </view>
+</template>
 
 <style>
 /* 1. 性能基础设置 */

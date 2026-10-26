@@ -1,7 +1,8 @@
 <script lang="ts" setup></script>
 
 <template>
-  <ComponentPlayground uniapp url="/uni-render/#/pages/reborn-select/RebornSelectDemo">
+  <!-- 仅 Web 端实现 -->
+  <ComponentPlayground>
     <template #component>
       <RebornSplitterDemo />
     </template>

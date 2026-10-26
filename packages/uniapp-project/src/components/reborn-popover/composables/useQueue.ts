@@ -1,6 +1,7 @@
-import { type Ref, provide, ref } from 'vue'
+import type { InjectionKey, Ref } from 'vue'
+import { provide, shallowRef } from 'vue'
 
-export const queueKey = '__QUEUE_KEY__'
+export const queueKey: InjectionKey<Queue> = Symbol('RebornPopoverQueue')
 
 export interface Queue {
     queue: Ref<any[]>
@@ -11,10 +12,10 @@ export interface Queue {
 }
 
 export function useQueue() {
-    const queue = ref<any[]>([])
+    const queue = shallowRef<any[]>([])
 
     function pushToQueue(comp: any) {
-        queue.value.push(comp)
+        queue.value = [...queue.value, comp]
     }
 
     function removeFromQueue(comp: any) {

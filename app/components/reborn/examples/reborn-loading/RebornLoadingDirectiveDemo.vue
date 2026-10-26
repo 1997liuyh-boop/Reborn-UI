@@ -1,10 +1,15 @@
 <script setup lang="ts">
 /**
  * Loading 指令与服务演示
- * 聚焦 v-loading 指令与 useLoading 服务式调用（加载图标本身的样式请参阅 RebornLoadingDemo）
+ * 聚焦 v-loading 指令与 showLoading 服务式调用（加载图标本身的样式请参阅 RebornLoadingDemo）
  */
-import { LoadingTypes, LoadingColors } from "~/components/reborn/ui/reborn-loading/reborn-loading.config";
-import { useLoading } from "~/composables/useLoading";
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { createDemoTasks } from "~/components/reborn/examples/shared/demo-tasks";
+import { LoadingColors, LoadingTypes } from "~/components/reborn/ui/reborn-loading/reborn-loading.config";
+import { showLoading } from "~/composables/useLoading";
+
+const tasks = createDemoTasks();
+const loadingInstances = new Set<ReturnType<typeof showLoading>>();
 
 /* ==================== 交互演练场 ==================== */
 
@@ -155,7 +160,7 @@ watch(
       fullscreenTimer = null;
     }
     if (fs && ld) {
-      fullscreenTimer = setTimeout(() => {
+      fullscreenTimer = tasks.schedule(() => {
         state.value.loading = false;
       }, 2200);
     }
@@ -185,7 +190,7 @@ const statusTone: Record<string, string> = {
 
 /* ==================== 区域加载（数据看板） ==================== */
 
-const boardLoading = ref(false);
+const boardLoading = shallowRef(false);
 /** 看板统计卡数据 */
 const boardStats = [
   { label: "今日成交", value: "¥ 86,420", trend: "+12.6%", icon: "lucide:trending-up" },
@@ -200,7 +205,7 @@ const trendBars = [42, 66, 51, 80, 62, 92, 71, 58, 84, 68, 95, 76];
 function refreshBoard() {
   if (boardLoading.value) return;
   boardLoading.value = true;
-  setTimeout(() => {
+  tasks.schedule(() => {
     boardLoading.value = false;
   }, 1600);
 }
@@ -217,23 +222,26 @@ const attrCases = [
 
 /* ==================== 全屏加载（指令修饰符） ==================== */
 
-const fullscreenOn = ref(false);
+const fullscreenOn = shallowRef(false);
 /** 触发全屏加载：2 秒后自动关闭，期间 .lock 锁定页面滚动 */
 function triggerFullscreen() {
   if (fullscreenOn.value) return;
   fullscreenOn.value = true;
-  setTimeout(() => {
+  tasks.schedule(() => {
     fullscreenOn.value = false;
   }, 2000);
 }
 
-/* ==================== 服务式 useLoading ==================== */
+/* ==================== 服务式 showLoading ==================== */
 
 /** 操作日志（让每一次调用都「有回应」） */
-const serviceLogs = ref<{ time: string; msg: string; tone: "info" | "success" }[]>([]);
+const serviceLogs = ref<{ id: number; time: string; msg: string; tone: "info" | "success" }[]>([]);
+
+let logSeed = 0;
 
 function pushLog(msg: string, tone: "info" | "success" = "info") {
   serviceLogs.value.push({
+    id: ++logSeed,
     time: new Date().toLocaleTimeString("zh-CN", { hour12: false }),
     msg,
     tone,
@@ -242,51 +250,73 @@ function pushLog(msg: string, tone: "info" | "success" = "info") {
   if (serviceLogs.value.length > 7) serviceLogs.value.shift();
 }
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = tasks.wait;
 
-const publishing = ref(false);
+/**
+ * 关闭服务式实例，每个实例只关一次：
+ * close() 对已在淡出的实例会跳过淡出直接销毁，所以成功路径、finally 与卸载清理共用这一个出口，
+ * 用 loadingInstances 的登记状态判断是否已关闭（实例自身的 closed 在淡出期间仍为 false，不能用来判断）。
+ */
+function closeLoading(loading: ReturnType<typeof showLoading>) {
+  if (!loadingInstances.delete(loading)) return;
+  loading.close();
+}
+
+const publishing = shallowRef(false);
 /** 模拟分步发布流程：演示 setText 更新文案 + patch 动态换装 + close 关闭 */
 async function runPublishFlow() {
   if (publishing.value) return;
   publishing.value = true;
-  const loading = useLoading({ text: "正在连接服务器…", type: "ring", size: "30px" });
-  pushLog("useLoading() 创建全屏加载实例");
-  await sleep(900);
-  loading.setText("正在上传资源 (1/2)…");
-  pushLog("setText('正在上传资源 (1/2)…')");
-  await sleep(900);
-  loading.setText("正在上传资源 (2/2)…");
-  pushLog("setText('正在上传资源 (2/2)…')");
-  await sleep(900);
-  loading.patch({ type: "bars-scale", color: "success", text: "发布成功，正在收尾…" });
-  pushLog("patch({ type: 'bars-scale', color: 'success' })");
-  await sleep(1100);
-  loading.close();
-  pushLog("close() 遮罩淡出并销毁", "success");
-  publishing.value = false;
+  const loading = showLoading({ text: "正在连接服务器…", type: "ring", size: "30px" });
+  loadingInstances.add(loading);
+  try {
+    pushLog("showLoading() 创建全屏加载实例");
+    if (!await sleep(900)) return;
+    loading.setText("正在上传资源 (1/2)…");
+    pushLog("setText('正在上传资源 (1/2)…')");
+    if (!await sleep(900)) return;
+    loading.setText("正在上传资源 (2/2)…");
+    pushLog("setText('正在上传资源 (2/2)…')");
+    if (!await sleep(900)) return;
+    loading.patch({ type: "bars-scale", color: "success", text: "发布成功，正在收尾…" });
+    pushLog("patch({ type: 'bars-scale', color: 'success' })");
+    if (!await sleep(1100)) return;
+    closeLoading(loading);
+    pushLog("close() 遮罩淡出并销毁", "success");
+  } finally {
+    closeLoading(loading);
+    publishing.value = false;
+  }
 }
 
-const targetRunning = ref(false);
+const targetRunning = shallowRef(false);
 /** 局部服务式加载：通过 CSS 选择器锁定目标容器（日志面板），3 秒后关闭 */
 async function runTargetLoading() {
   if (targetRunning.value) return;
   targetRunning.value = true;
-  const loading = useLoading({
+  const loading = showLoading({
     target: "#reborn-loading-service-panel",
     text: "局部遮罩 · 3 秒后 close()",
     type: "blocks-shuffle",
     color: "secondary",
     size: "28px",
   });
-  pushLog("useLoading({ target: '#…' }) 局部遮罩");
-  await sleep(3000);
-  loading.close();
-  pushLog("close() 关闭局部遮罩", "success");
-  targetRunning.value = false;
+  loadingInstances.add(loading);
+  try {
+    pushLog("showLoading({ target: '#…' }) 局部遮罩");
+    if (!await sleep(3000)) return;
+    closeLoading(loading);
+    pushLog("close() 关闭局部遮罩", "success");
+  } finally {
+    closeLoading(loading);
+    targetRunning.value = false;
+  }
 }
 
 /** 组件卸载时清理演练场遗留定时器 */
-onUnmounted(() => {
+onBeforeUnmount(() => {
+  tasks.dispose();
+  [...loadingInstances].forEach(closeLoading);
   if (fullscreenTimer) clearTimeout(fullscreenTimer);
 });
 </script>
@@ -422,7 +452,7 @@ onUnmounted(() => {
       </div>
     </DemoSection>
 
-    <DemoSection title="服务式调用" description="useLoading 命令式创建遮罩，返回实例句柄进行 setText / patch / close 全流程控制。">
+    <DemoSection title="服务式调用" description="showLoading 命令式创建遮罩，返回实例句柄进行 setText / patch / close 全流程控制。">
       <DemoBlock layout="stack" class="gap-4">
         <div class="flex flex-wrap gap-3">
           <RebornButton label="模拟发布流程 (全屏分步)" color="primary" variant="soft" size="sm" :disabled="publishing"
@@ -451,13 +481,13 @@ onUnmounted(() => {
             service console
           </div>
           <TransitionGroup name="log">
-            <div v-for="(item, i) in serviceLogs" :key="item.time + item.msg + i" class="flex items-start gap-2">
+            <div v-for="item in serviceLogs" :key="item.id" class="flex items-start gap-2">
               <span class="text-dimmed shrink-0">{{ item.time }}</span>
               <span :class="item.tone === 'success' ? 'text-success' : 'text-primary'">{{ item.msg }}</span>
             </div>
           </TransitionGroup>
           <div v-if="serviceLogs.length === 0" class="text-dimmed flex flex-1 items-center justify-center">
-            点击上方按钮，观察 useLoading 实例的完整生命周期 →
+            点击上方按钮，观察 showLoading 实例的完整生命周期 →
           </div>
         </div>
       </DemoBlock>

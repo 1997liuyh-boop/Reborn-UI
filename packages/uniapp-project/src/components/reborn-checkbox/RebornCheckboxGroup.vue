@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { CheckboxFieldNames, CheckboxOption, CheckboxValue, checkboxColors, checkboxDirections, checkboxSizes, checkboxVariants } from './reborn-checkbox.config'
-import { computed, provide, ref, toRef } from 'vue'
+import { computed, provide, readonly, ref } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import RebornCheckbox from './RebornCheckbox.vue'
-import { checkboxGroupTheme } from './reborn-checkbox.config'
+import { CHECKBOX_GROUP_KEY, checkboxGroupTheme } from './reborn-checkbox.config'
 
 const props = withDefaults(defineProps<CheckboxGroupProps>(), {
   direction: 'horizontal',
@@ -129,13 +129,13 @@ function updateValue(value: CheckboxValue, ev: Event) {
   return nextValue
 }
 
-provide('RebornCheckboxGroup', {
-  modelValue: currentValue,
+provide(CHECKBOX_GROUP_KEY, {
+  modelValue: readonly(currentValue),
   disabled: computed(() => fieldGroupDisabled.value || props.disabled),
   size: computed(() => fieldGroupSize.value || props.size),
-  color: toRef(props, 'color'),
-  variant: toRef(props, 'variant'),
-  max: toRef(props, 'max'),
+  color: computed(() => props.color),
+  variant: computed(() => props.variant),
+  max: computed(() => props.max),
   limitReached,
   isError,
   updateValue,
@@ -146,19 +146,34 @@ provide('RebornCheckboxGroup', {
   <view :class="ui.root({ class: customClass })">
     <!-- options 优先：传入数据时由组自行渲染，默认插槽不再渲染 -->
     <template v-if="normalizedOptions.length">
-      <RebornCheckbox
-        v-for="option in normalizedOptions" :key="String(option.value)" :value="option.value"
-        :disabled="option.disabled" :indeterminate="option.indeterminate"
-      >
-        <!-- checkbox 插槽透传：作用域逐项展开而非 v-bind="scope"，
-             uniapp 小程序编译器不支持插槽上的对象展开 v-bind -->
-        <template v-if="$slots.checkbox" #checkbox="{ checked, disabled: itemDisabled, indeterminate }">
-          <slot name="checkbox" :checked="checked" :disabled="itemDisabled" :indeterminate="indeterminate" />
-        </template>
-        <template #default>
-          <slot name="label" :data="option">{{ option.label }}</slot>
-        </template>
-      </RebornCheckbox>
+      <!-- 按组自身的 $slots（来自使用方，两端都准确）分两支渲染，不在插槽模板上写 v-if：
+           小程序编译器无视插槽上的 v-if，转发的 #checkbox 一律记为已传入，子项的 $slots.checkbox 恒为真，
+           使用方没写 #checkbox 时子项也不再渲染自带的勾选框 -->
+      <template v-if="$slots.checkbox">
+        <RebornCheckbox
+          v-for="option in normalizedOptions" :key="String(option.value)" :value="option.value"
+          :disabled="option.disabled" :indeterminate="option.indeterminate"
+        >
+          <!-- checkbox 插槽透传：作用域逐项展开而非 v-bind="scope"，
+               uniapp 小程序编译器不支持插槽上的对象展开 v-bind -->
+          <template #checkbox="{ checked, disabled: itemDisabled, indeterminate }">
+            <slot name="checkbox" :checked="checked" :disabled="itemDisabled" :indeterminate="indeterminate" />
+          </template>
+          <template #default>
+            <slot name="label" :data="option">{{ option.label }}</slot>
+          </template>
+        </RebornCheckbox>
+      </template>
+      <template v-else>
+        <RebornCheckbox
+          v-for="option in normalizedOptions" :key="String(option.value)" :value="option.value"
+          :disabled="option.disabled" :indeterminate="option.indeterminate"
+        >
+          <template #default>
+            <slot name="label" :data="option">{{ option.label }}</slot>
+          </template>
+        </RebornCheckbox>
+      </template>
     </template>
     <slot v-else />
   </view>

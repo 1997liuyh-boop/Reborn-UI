@@ -49,9 +49,12 @@ const features = [
 <template>
   <BentoGrid class="grid w-full auto-rows-[22rem] grid-cols-3 gap-4 lg:grid-rows-3">
     <BentoGridCard
-      v-for="(feature, index) in features"
-      :key="index"
-      v-bind="feature"
+      v-for="feature in features"
+      :key="feature.name"
+      :name="feature.name"
+      :description="feature.description"
+      :href="feature.href"
+      :cta="feature.cta"
       :class="feature.class"
     >
       <template
@@ -60,7 +63,7 @@ const features = [
       >
         <div
           class="absolute top-0 right-0 size-full bg-center opacity-40 transition duration-150 ease-in-out group-hover:opacity-20"
-          :style="`background-image: url('${feature.image}')`"
+          :style="{ backgroundImage: `url(${JSON.stringify(feature.image)})` }"
         />
       </template>
     </BentoGridCard>

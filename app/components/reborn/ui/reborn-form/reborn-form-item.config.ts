@@ -14,8 +14,9 @@ export default {
          * 比令牌高的内容（多行文本、卡片列表）高度自然撑开、从顶部排起，标签便与第一行对齐
          */
         content: 'relative w-full flex-1 flex flex-col justify-center',
-        // 定位与间距随 inlineMessage 变体给出：两种模式下错误出现与消失都不改变表单项高度
-        error: 'text-sm text-red-5 animate-in slide-in-from-top-1 fade-in duration-300',
+        // 定位与间距随 inlineMessage 变体给出：两种模式下错误出现与消失都不改变表单项高度。
+        // 进场 / 离场动画由 RebornFormItem 的 <Transition name="form-error"> 负责，这里不再叠加 animate-in 关键帧
+        error: 'text-sm text-red-5',
     },
     variants: {
         /**

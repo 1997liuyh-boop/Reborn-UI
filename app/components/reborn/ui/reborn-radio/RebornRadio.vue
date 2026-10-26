@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
-import type { ComputedRef, Ref } from "vue";
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
-import type { RadioColor, RadioSize, RadioType, RadioVariant } from "./reborn-radio.config";
-import { computed, inject, useSlots } from "vue";
+import type { RadioColor, RadioType, RadioVariant } from "./reborn-radio.config";
+import { computed, inject } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornButton from "../reborn-button/RebornButton.vue";
 import theme from "./reborn-radio.config";
+import { radioGroupContextKey } from "./reborn-radio.context";
 
 defineOptions({ inheritAttrs: false });
 
@@ -21,31 +21,14 @@ const emit = defineEmits<{
   (e: "change", value: string | number | boolean, ev: Event): void;
 }>();
 
-const b = tv(theme);
+const slots = defineSlots<{
+  /** 完全接管单选框的渲染 */
+  radio?: (props: { checked: boolean; disabled: boolean }) => any;
+  /** 选项文案 */
+  default?: () => any;
+}>();
 
-/** RadioGroup 通过 provide 下发的上下文 */
-export interface RadioGroupContext {
-  /** 组内当前选中值 */
-  modelValue: ComputedRef<string | number | boolean | undefined>;
-  /** 组级禁用（含 Form 级禁用） */
-  disabled: ComputedRef<boolean>;
-  /** 组级尺寸 */
-  size: ComputedRef<RadioSize>;
-  /** 组级类型 */
-  type: Ref<RadioType>;
-  /** 组级语义色 */
-  color: Ref<RadioColor>;
-  /** 组级样式变体 */
-  variant: Ref<RadioVariant>;
-  /** 组级下发给 pure-button 类型的 RebornButton 透传参数 */
-  buttonProps: Ref<ButtonProps | undefined>;
-  /** 表单校验错误态 */
-  isError?: Ref<boolean>;
-  /** 分段按钮的选中底色是否已交给组容器的滑块绘制（组容器挂载并量好位置后为 true） */
-  sliderReady?: Ref<boolean>;
-  /** 组内选中值更新入口 */
-  updateValue: (value: string | number | boolean, ev: Event) => void;
-}
+const b = tv(theme);
 
 export interface RadioProps {
   /** 选项的 value，与绑定值严格相等时呈选中态 */
@@ -74,9 +57,7 @@ export interface RadioProps {
 /** 绑定值（v-model）；显式 default: undefined 跳过 Boolean 类型未传时被强转为 false 的规则 */
 const model = defineModel<string | number | boolean>({ default: undefined });
 
-const slots = useSlots();
-
-const radioGroup = inject<RadioGroupContext | null>("RebornRadioGroup", null);
+const radioGroup = inject(radioGroupContextKey, null);
 
 /** 选中态：组内取 Group 绑定值，独立使用取自身 v-model */
 const isChecked = computed(() => {

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { DemoBlock, DemoNote, DemoSection, Playground } from '#components';
+import { computed, ref, shallowRef } from 'vue';
+import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue';
 import RebornOverlay from "~/components/reborn/ui/reborn-overlay/RebornOverlay.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
@@ -9,7 +12,7 @@ const state = ref<Record<string, any>>({
 });
 
 /** 演练场内局部遮罩的显隐 */
-const playgroundVisible = ref(false);
+const playgroundVisible = shallowRef(false);
 
 /** 演练场控制面板配置 */
 const controls = [
@@ -47,10 +50,10 @@ const overlayCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 全屏遮罩显隐 */
-const fullscreenVisible = ref(false);
+const fullscreenVisible = shallowRef(false);
 
 /** 自定义样式遮罩显隐 */
-const gradientVisible = ref(false);
+const gradientVisible = shallowRef(false);
 </script>
 
 <template>
@@ -77,7 +80,7 @@ const gradientVisible = ref(false);
             :close-on-click-overlay="state.closeOnClickOverlay"
           >
             <div class="flex h-full items-center justify-center">
-              <div class="bg-default border-default rounded-xl w-[240px] border p-5 text-center">
+              <div class="bg-default border-default rounded-xl w-[240px] border p-5 text-center" @click.stop>
                 <p class="text-highlighted text-sm font-medium">局部遮罩内容</p>
                 <p class="text-muted mt-1 text-xs">
                   {{ state.closeOnClickOverlay ? "点击遮罩可关闭" : "已禁止点击遮罩关闭" }}
@@ -118,7 +121,7 @@ const gradientVisible = ref(false);
 
       <RebornOverlay v-model="fullscreenVisible">
         <div class="flex h-full items-center justify-center">
-          <div class="bg-default border-default rounded-xl w-[280px] border p-6 text-center">
+          <div class="bg-default border-default rounded-xl w-[280px] border p-6 text-center" @click.stop>
             <p class="text-highlighted text-base font-medium">全屏遮罩</p>
             <p class="text-muted mt-1.5 text-sm">页面滚动已被锁定，点击遮罩或按钮均可关闭。</p>
             <RebornButton
@@ -161,7 +164,7 @@ const gradientVisible = ref(false);
       </RebornOverlay>
 
       <DemoNote tone="dimmed">
-        遮罩内容通过默认插槽渲染，容器高度为 100%，可直接用 flex 做居中布局。
+        遮罩内容通过默认插槽渲染；内容卡片使用 @click.stop 阻止点击冒泡，点击卡片不会触发遮罩关闭。
       </DemoNote>
     </DemoSection>
   </div>

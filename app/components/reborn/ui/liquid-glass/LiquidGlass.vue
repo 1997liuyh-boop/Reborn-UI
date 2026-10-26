@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { LiquidGlassProps } from "./index";
-import { computed, onMounted, onUnmounted, reactive, ref, useId } from "vue";
+import { computed, onMounted, onUnmounted, reactive, useId, useTemplateRef } from "vue";
 import { cn } from "~/lib/utils";
 import liquidGlassConfig from "./liquid-glass.config";
 
@@ -21,8 +21,7 @@ const props = withDefaults(defineProps<LiquidGlassProps>(), {
   position: "fixed",
   displace: 14,
 });
-
-const liquidGlassRoot = ref<HTMLElement | null>(null);
+const liquidGlassRoot = useTemplateRef<HTMLElement>("liquidGlassRoot");
 const dimensions = reactive({
   width: 0,
   height: 0,
@@ -115,12 +114,48 @@ onUnmounted(() => {
       <defs>
         <filter :id="filterId" color-interpolation-filters="sRGB">
           <feImage x="0" y="0" width="100%" height="100%" :href="displacementDataUri" result="map" />
-          <feDisplacementMap in="SourceGraphic" in2="map" :xChannelSelector="props.xChannel" :yChannelSelector="props.yChannel" :scale="props.scale + props.rOffset" result="dispRed" />
-          <feColorMatrix in="dispRed" type="matrix" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="red" />
-          <feDisplacementMap in="SourceGraphic" in2="map" :xChannelSelector="props.xChannel" :yChannelSelector="props.yChannel" :scale="props.scale + props.gOffset" result="dispGreen" />
-          <feColorMatrix in="dispGreen" type="matrix" values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0" result="green" />
-          <feDisplacementMap in="SourceGraphic" in2="map" :xChannelSelector="props.xChannel" :yChannelSelector="props.yChannel" :scale="props.scale + props.bOffset" result="dispBlue" />
-          <feColorMatrix in="dispBlue" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0" result="blue" />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="map"
+            :xChannelSelector="props.xChannel"
+            :yChannelSelector="props.yChannel"
+            :scale="props.scale + props.rOffset"
+            result="dispRed"
+          />
+          <feColorMatrix
+            in="dispRed"
+            type="matrix"
+            values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0"
+            result="red"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="map"
+            :xChannelSelector="props.xChannel"
+            :yChannelSelector="props.yChannel"
+            :scale="props.scale + props.gOffset"
+            result="dispGreen"
+          />
+          <feColorMatrix
+            in="dispGreen"
+            type="matrix"
+            values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0"
+            result="green"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="map"
+            :xChannelSelector="props.xChannel"
+            :yChannelSelector="props.yChannel"
+            :scale="props.scale + props.bOffset"
+            result="dispBlue"
+          />
+          <feColorMatrix
+            in="dispBlue"
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0"
+            result="blue"
+          />
           <feBlend in="red" in2="green" mode="screen" result="rg" />
           <feBlend in="rg" in2="blue" mode="screen" result="output" />
           <feGaussianBlur :stdDeviation="props.displace" />

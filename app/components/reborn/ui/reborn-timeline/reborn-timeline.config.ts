@@ -1,8 +1,13 @@
 import type { ClassValue } from "clsx";
-import type { Component } from "vue";
+import type { Component, ComputedRef, InjectionKey } from "vue";
 
 /** 父子组件通信用的 provide/inject 键 */
-export const TIMELINE_INJECTION_KEY = "reborn-timeline";
+export const TIMELINE_INJECTION_KEY: InjectionKey<TimelineContext> = Symbol("reborn-timeline");
+
+export interface TimelineContext {
+  readonly direction: ComputedRef<TimelineDirection>;
+  readonly ui: ComputedRef<TimelineUI>;
+}
 
 /** 节点颜色预设：与主题配置中的七个语义色保持一致 */
 export type TimelinePresetColor = "primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral";
@@ -24,8 +29,10 @@ export interface TimelineItemData {
   timestamp?: string;
   /** 节点颜色：primary / secondary / success / info / warning / error / neutral，或任意 CSS 色值 */
   color?: TimelinePresetColor | (string & {});
-  /** 节点内容，按 HTML 渲染 */
+  /** 节点内容，默认作为文本渲染 */
   content?: string;
+  /** 显式启用 HTML；仅传入已经清理过的可信内容 */
+  dangerouslyUseHTMLString?: boolean;
   /** 自定义节点图标：Iconify 名称或组件 */
   icon?: string | Component;
   /** 是否为加载中节点 */
@@ -174,14 +181,13 @@ export default {
   },
   compoundVariants: [
     /** 竖向并排时两端对齐，时间戳贴在远离轴线的一端 */
-    { direction: "vertical", flow: "inline", class: { body: "justify-between" } },
+    { direction: "vertical" as const, flow: "inline" as const, class: { body: "justify-between" } },
     /** 竖向内容在左侧时，堆叠的内容与时间戳一起靠右对齐贴近轴线 */
-    { direction: "vertical", side: "left", flow: "stacked", class: { body: "items-end" } },
+    { direction: "vertical" as const, side: "left" as const, flow: "stacked" as const, class: { body: "items-end" } },
   ],
   /** side 与 columns 不设默认值：它们只属于竖向，横向时必须缺省，否则会串入列定位类 */
   defaultVariants: {
-    direction: "vertical",
-    iconed: false,
-    flow: "stacked",
+    direction: "vertical" as const,
+    flow: "stacked" as const,
   },
 };

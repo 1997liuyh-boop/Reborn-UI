@@ -2,11 +2,11 @@
 import cloudflare from "./cloudflare.svg";
 
 interface Props {
-  textGlowStartColor: string;
-  perspective: number;
-  textGlowEndColor: string;
-  rotateX: number;
-  rotateY: number;
+  textGlowStartColor?: string;
+  perspective?: number;
+  textGlowEndColor?: string;
+  rotateX?: number;
+  rotateY?: number;
 }
 
 const props = defineProps<Props>();

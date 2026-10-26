@@ -1,6 +1,6 @@
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 
-const height = ref(0)
+const height = shallowRef(0)
 
 export const rebornFooterOffset = {
   height,

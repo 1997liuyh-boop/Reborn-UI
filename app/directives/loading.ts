@@ -4,7 +4,7 @@ import { createLoading } from '~/composables/useLoading';
 
 /**
  * v-loading 自定义指令（对应 Element Plus 的 v-loading）
- * 与 useLoading 共享同一套底层创建 / 销毁逻辑（createLoading）。
+ * 与 showLoading 共享同一套底层创建 / 销毁逻辑（createLoading）。
  *
  * 用法：
  * - `v-loading="isLoading"`：布尔值控制宿主元素上的加载遮罩

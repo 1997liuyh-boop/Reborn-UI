@@ -10,8 +10,8 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref, watch, type PropType } from 'vue'
-import { isObj, isPromise, pause } from '../../lib/util'
+import { computed, onBeforeUnmount, shallowRef, watch } from 'vue'
+import { isObj, isPromise } from '../../lib/util'
 import { AbortablePromise } from '../../lib/AbortablePromise'
 import { transitionStyles } from './reborn-transition.config'
 
@@ -29,34 +29,46 @@ export type TransitionName =
     | 'zoom-out'
     | 'badge-custom'
 
-const props = defineProps({
-    customClass: { type: String, default: '' },
-    customStyle: { type: String, default: '' },
-    show: { type: Boolean, default: false },
-    duration: { type: [Object, Number, Boolean] as PropType<Record<string, number> | number | boolean>, default: 300 },
-    lazyRender: { type: Boolean, default: false },
-    name: { type: [String, Array] as PropType<TransitionName | TransitionName[]>, default: 'fade' },
-    destroy: { type: Boolean, default: true },
-    enterClass: { type: String, default: '' },
-    enterActiveClass: { type: String, default: '' },
-    enterToClass: { type: String, default: '' },
-    leaveClass: { type: String, default: '' },
-    leaveActiveClass: { type: String, default: '' },
-    leaveToClass: { type: String, default: '' },
-    disableTouchMove: { type: Boolean, default: false }
+export interface TransitionProps {
+    customClass?: string
+    customStyle?: string
+    show?: boolean
+    duration?: Record<string, number> | number | boolean
+    lazyRender?: boolean
+    name?: TransitionName | TransitionName[]
+    destroy?: boolean
+    enterClass?: string
+    enterActiveClass?: string
+    enterToClass?: string
+    leaveClass?: string
+    leaveActiveClass?: string
+    leaveToClass?: string
+    disableTouchMove?: boolean
+}
+const props = withDefaults(defineProps<TransitionProps>(), {
+    customClass: '', customStyle: '', show: false, duration: 300, lazyRender: false,
+    name: 'fade', destroy: true, enterClass: '', enterActiveClass: '', enterToClass: '',
+    leaveClass: '', leaveActiveClass: '', leaveToClass: '', disableTouchMove: false,
 })
+const emit = defineEmits<{
+    click: []
+    'before-enter': []
+    enter: []
+    'before-leave': []
+    leave: []
+    'after-leave': []
+    'after-enter': []
+}>()
 
-const emit = defineEmits(['click', 'before-enter', 'enter', 'before-leave', 'leave', 'after-leave', 'after-enter'])
-
-const inited = ref<boolean>(false)
-const display = ref<boolean>(false)
-const status = ref<string>('')
-const transitionEnded = ref<boolean>(false)
-const currentDuration = ref<number>(300)
-const classes = ref<string>('')
-const enterPromise = ref<AbortablePromise<void> | null>(null)
-const enterLifeCyclePromises = ref<AbortablePromise<unknown> | null>(null)
-const leaveLifeCyclePromises = ref<AbortablePromise<unknown> | null>(null)
+const inited = shallowRef<boolean>(false)
+const display = shallowRef<boolean>(false)
+const status = shallowRef<string>('')
+const transitionEnded = shallowRef<boolean>(false)
+const currentDuration = shallowRef<number>(300)
+const classes = shallowRef<string>('')
+const enterPromise = shallowRef<AbortablePromise<void> | null>(null)
+const enterLifeCyclePromises = shallowRef<AbortablePromise<unknown> | null>(null)
+const leaveLifeCyclePromises = shallowRef<AbortablePromise<unknown> | null>(null)
 
 const getClassNames = (name?: TransitionName | TransitionName[]) => {
     let enter: string = `${props.enterClass} ${props.enterActiveClass}`
@@ -97,13 +109,23 @@ const rootClass = computed(() => `rb-transition ease-in-out ${props.customClass}
 
 const isShow = computed(() => !props.lazyRender || inited.value)
 
-onBeforeMount(() => { if (props.show) enter() })
-watch(() => props.show, (newVal) => handleShow(newVal), { deep: true })
+let disposed = false
+const timers = new Set<ReturnType<typeof setTimeout>>()
+watch(() => props.show, (newVal, previous) => {
+    if (newVal || previous !== undefined) handleShow(newVal)
+}, { immediate: true })
+onBeforeUnmount(() => {
+    disposed = true
+    handleAbortPromise()
+    timers.forEach(clearTimeout)
+    timers.clear()
+})
 function handleClick() { emit('click') }
 function handleShow(value: boolean) {
     if (value) { handleAbortPromise(); enter() } else leave()
 }
 function handleAbortPromise() {
+    enterPromise.value?.catch(() => {})
     isPromise(enterPromise.value) && enterPromise.value.abort()
     isPromise(enterLifeCyclePromises.value) && enterLifeCyclePromises.value.abort()
     isPromise(leaveLifeCyclePromises.value) && leaveLifeCyclePromises.value.abort()
@@ -118,16 +140,16 @@ function enter() {
             const duration = isObj(props.duration) ? (props.duration as any).enter : props.duration
             status.value = 'enter'
             emit('before-enter')
-            enterLifeCyclePromises.value = pause()
+            enterLifeCyclePromises.value = setPromise(1000 / 30)
             await enterLifeCyclePromises.value
             emit('enter')
             classes.value = classNames.enter
-            currentDuration.value = duration
-            enterLifeCyclePromises.value = pause()
+            currentDuration.value = typeof duration === 'number' ? duration : 0
+            enterLifeCyclePromises.value = setPromise(1000 / 30)
             await enterLifeCyclePromises.value
             inited.value = true
             display.value = true
-            enterLifeCyclePromises.value = pause()
+            enterLifeCyclePromises.value = setPromise(1000 / 30)
             await enterLifeCyclePromises.value
             enterLifeCyclePromises.value = null
             transitionEnded.value = false
@@ -148,12 +170,12 @@ async function leave() {
         const duration = isObj(props.duration) ? (props.duration as any).leave : props.duration
         status.value = 'leave'
         emit('before-leave')
-        currentDuration.value = duration
-        leaveLifeCyclePromises.value = pause()
+        currentDuration.value = typeof duration === 'number' ? duration : 0
+        leaveLifeCyclePromises.value = setPromise(1000 / 30)
         await leaveLifeCyclePromises.value
         emit('leave')
         classes.value = classNames.leave
-        leaveLifeCyclePromises.value = pause()
+        leaveLifeCyclePromises.value = setPromise(1000 / 30)
         await leaveLifeCyclePromises.value
         transitionEnded.value = false
         classes.value = classNames['leave-to']
@@ -166,10 +188,12 @@ async function leave() {
 }
 function setPromise(duration: number) {
     return new AbortablePromise<void>((resolve) => {
-        const timer = setTimeout(() => { clearTimeout(timer); resolve() }, duration)
+        const timer = setTimeout(() => { timers.delete(timer); resolve() }, duration)
+        timers.add(timer)
     })
 }
 function onTransitionEnd() {
+    if (disposed) return
     if (transitionEnded.value) return
     transitionEnded.value = true
     // 先将 display 置为 false，再触发 after-leave 事件。

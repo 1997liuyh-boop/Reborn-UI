@@ -1,54 +1,34 @@
-<script lang="ts">
-import type { PopoverPlacement } from '../reborn-popover/types'
-export default {
-    name: 'reborn-color-picker',
-    options: {
-        virtualHost: true,
-        addGlobalClass: true,
-        styleIsolation: 'shared'
-    }
-}
-</script>
-
 <script lang="ts" setup>
-import { computed, ref, type PropType, watch } from 'vue'
-import { tv } from '@/lib/tv'
-import theme from './reborn-color-picker.config'
-import RebornPopover from '../reborn-popover/RebornPopover.vue'
-import RebornColorPickerPanel from './RebornColorPickerPanel.vue'
+import type { PopoverContentProps, PopoverPlacement } from '../reborn-popover/types'
+import { computed, shallowRef, watch } from 'vue'
 import { colorStringToHsva, detectColorFormat, hsvaToColorString, type ColorFormat } from '@/lib/color-utils'
+import { tv } from '@/lib/tv'
+import RebornPopover from '../reborn-popover/RebornPopover.vue'
+import theme from './reborn-color-picker.config'
+import RebornColorPickerPanel from './RebornColorPickerPanel.vue'
 
-const props = defineProps({
-    modelValue: { type: String, default: '#000000' },
-    disabled: { type: Boolean, default: false },
-    size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: 'md' },
-    /** 初始颜色输出格式，可选 'hex' | 'rgb' | 'rgba'；未设置时根据 modelValue 自动识别，用户仍可在面板中切换 */
-    defaultFormat: { type: String as PropType<ColorFormat | undefined>, default: undefined },
-    /** defaultFormat 的别名，同样指定颜色输出格式；两者同时传入时 defaultFormat 优先 */
-    format: { type: String as PropType<ColorFormat | undefined>, default: undefined },
-    /** 面板出现的方向与对齐方式，与 Web 端及 reborn-popover 的 placement 一致；未传时回落到 content，都没有则为 right */
-    placement: { type: String as PropType<PopoverPlacement>, default: undefined },
-    /** 面板与触发器之间的间距（px），未传时回落到 content.sideOffset，都没有则为 8 */
-    sideOffset: { type: Number, default: undefined },
-    /** 旧的定位对象写法（side / align / sideOffset），等价于 placement + sideOffset；已废弃，请改用 placement / sideOffset */
-    content: { type: Object as PropType<any>, default: () => ({ side: 'right', align: 'center', sideOffset: 8 }) },
-    /** Whether to show arrow */
-    arrow: { type: Boolean, default: true },
-    ui: { type: Object as PropType<any>, default: () => ({}) }
-})
-
-const emit = defineEmits([
-    'update:modelValue',
-    /** 用户在面板中选色导致颜色变化时触发，参数为面板输出的颜色字符串 */
-    'onChange',
-])
+interface Props {
+  disabled?: boolean
+  size?: 'sm' | 'md' | 'lg'
+  defaultFormat?: ColorFormat
+  format?: ColorFormat
+  placement?: PopoverPlacement
+  sideOffset?: number
+  content?: PopoverContentProps
+  arrow?: boolean
+  ui?: { root?: string; base?: string; icon?: string }
+}
+defineOptions({ name: 'RebornColorPicker', options: { virtualHost: true, addGlobalClass: true, styleIsolation: 'shared' } })
+const props = withDefaults(defineProps<Props>(), { disabled: false, size: 'md', arrow: true, content: () => ({ side: 'right', align: 'center', sideOffset: 8 }), ui: () => ({}) })
+const emit = defineEmits<{ change: [value: string] }>()
+const model = defineModel<string>({ default: '#000000' })
 const b = tv(theme)
-const showPicker = ref(false)
+const showPicker = shallowRef(false)
 const resolvedDefaultFormat = computed<ColorFormat | undefined>(() => props.defaultFormat ?? props.format)
-const selectedFormat = ref<ColorFormat>(resolvedDefaultFormat.value ?? detectColorFormat(props.modelValue))
+const selectedFormat = shallowRef<ColorFormat>(resolvedDefaultFormat.value ?? detectColorFormat(model.value))
 
-// Internal color state in HSVA to avoid precision loss
-const internalHsva = ref(colorStringToHsva(props.modelValue))
+// 以 HSVA 保存内部颜色，避免格式转换损失精度。
+const internalHsva = shallowRef(colorStringToHsva(model.value))
 
 watch(() => resolvedDefaultFormat.value, (val) => {
     if (val) {
@@ -56,7 +36,7 @@ watch(() => resolvedDefaultFormat.value, (val) => {
     }
 }, { immediate: true })
 
-watch(() => props.modelValue, (val) => {
+watch(() => model.value, (val) => {
     const nextHsva = colorStringToHsva(val)
     // 与当前内部状态一致时跳过，避免 Panel 选色后产生多余回写和重渲染导致卡顿
     const same =
@@ -79,7 +59,7 @@ function getFormattedColor(hsva: any) {
 
 const colorValue = computed({
     get: () => getFormattedColor(internalHsva.value),
-    set: (val: string) => emit('update:modelValue', val)
+    set: (val: string) => { model.value = val }
 })
 
 const uiOverrides = computed(() => props.ui || {})
@@ -98,20 +78,16 @@ const uiClasses = computed(() => {
 function onPanelChange(value: string) {
     const hsva = colorStringToHsva(value)
     internalHsva.value = hsva
-    emit('update:modelValue', getFormattedColor(hsva))
-    emit('onChange', value)
+    model.value = getFormattedColor(hsva)
+    emit('change', value)
 }
 
-function togglePicker() {
-    if (props.disabled) return
-    showPicker.value = !showPicker.value
-}
 </script>
 
 <template>
-    <RebornPopover v-model="showPicker" :placement="placement" :side-offset="sideOffset" :content="content" :arrow="arrow" :disabled="disabled">
+    <RebornPopover v-model:open="showPicker" :placement="placement" :side-offset="sideOffset" :content="content" :arrow="arrow" :disabled="disabled">
         <view :class="uiClasses.root">
-            <view :class="uiClasses.base" :style="{ backgroundColor: colorValue }" @tap="togglePicker">
+            <view :class="uiClasses.base" :style="{ backgroundColor: colorValue }">
                 <view class="i-lucide-chevron-down text-white transition-transform duration-200"
                     :class="[uiClasses.icon, showPicker ? 'rotate-180' : '']">
                 </view>
@@ -119,7 +95,7 @@ function togglePicker() {
         </view>
         <template #content>
             <RebornColorPickerPanel :model-value="colorValue" v-model:format="selectedFormat"
-                @update:modelValue="onPanelChange" />
+                @update:modelValue="colorValue = $event" @change="onPanelChange" />
         </template>
     </RebornPopover>
 </template>

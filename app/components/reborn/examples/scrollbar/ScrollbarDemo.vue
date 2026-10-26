@@ -1,23 +1,8 @@
 <script lang="ts" setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
 import Playground from '~/components/common/play-ground/Playground.vue'
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'
-
-/** 命令式滚动的可选参数（与组件内部保持一致） */
-interface ScrollToOptions {
-  animated?: boolean
-  duration?: number
-}
-
-/** 组件实例的最小结构，用于类型标注模板 ref */
-interface ScrollbarExposed {
-  update: () => void
-  refresh: () => void
-  setScrollTop: (value: number, options?: ScrollToOptions) => Promise<void>
-  setScrollLeft: (value: number, options?: ScrollToOptions) => Promise<void>
-  stopScroll: () => void
-  wrapRef: HTMLElement | null
-}
+import RebornScrollbar from '~/components/reborn/ui/scrollbar/RebornScrollbar.vue'
 
 /**
  * 滚动容器本身就是被演示的对象，按示例规范它是画布内唯一允许的那层浅填充；
@@ -60,7 +45,7 @@ const defaultState = {
   hideDelay: 800,
 }
 
-const state = ref({ ...defaultState })
+const state = shallowRef({ ...defaultState })
 
 function resetState() {
   state.value = { ...defaultState }
@@ -200,15 +185,15 @@ const rails = Array.from({ length: 12 }, (_, i) => ({
 
 // ============ 圆角自适应：读取组件实际写入的内缩值 ============
 
-const insetAutoRef = ref<ScrollbarExposed | null>(null)
-const insetOffRef = ref<ScrollbarExposed | null>(null)
-const insetFixedRef = ref<ScrollbarExposed | null>(null)
-const playgroundRef = ref<ScrollbarExposed | null>(null)
+const insetAutoRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('insetAutoRef')
+const insetOffRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('insetOffRef')
+const insetFixedRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('insetFixedRef')
+const playgroundRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('playgroundRef')
 
-const insetValues = ref({ auto: '—', off: '—', fixed: '—', playground: '—' })
+const insetValues = shallowRef({ auto: '—', off: '—', fixed: '—', playground: '—' })
 
 /** 组件把内缩量写在根元素的 --reborn-scrollbar-inset 上，从计算样式读回即可 */
-function readInset(instance: ScrollbarExposed | null) {
+function readInset(instance: InstanceType<typeof RebornScrollbar> | null) {
   const root = instance?.wrapRef?.parentElement
   if (!root) return '—'
   return getComputedStyle(root).getPropertyValue('--reborn-scrollbar-inset').trim() || '0px'
@@ -236,8 +221,8 @@ watch(() => [state.value.radius, state.value.insetMode], async () => {
 
 // ============ 命令式滚动动画 ============
 
-const jumpRef = ref<ScrollbarExposed | null>(null)
-const railRef = ref<ScrollbarExposed | null>(null)
+const jumpRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('jumpRef')
+const railRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('railRef')
 
 /** 动画时长档位，0 表示立即落位 */
 const durationOptions = [
@@ -246,12 +231,12 @@ const durationOptions = [
   { label: '600ms', value: 600 },
   { label: '1200ms', value: 1200 },
 ]
-const duration = ref(600)
+const duration = shallowRef(600)
 
-const jumpScrollTop = ref(0)
-const jumpProgress = ref(0)
+const jumpScrollTop = shallowRef(0)
+const jumpProgress = shallowRef(0)
 /** 动画进行中标记，用于按钮禁用与状态提示 */
-const scrollBusy = ref(false)
+const scrollBusy = shallowRef(false)
 
 function onJumpScroll(payload: { scrollTop: number; scrollLeft: number }) {
   jumpScrollTop.value = Math.round(payload.scrollTop)
@@ -302,9 +287,9 @@ function railStep(direction: 1 | -1) {
 
 // ============ 不占宽度对比：浮层式 vs 原生滚动条 ============
 
-const overlayRef = ref<ScrollbarExposed | null>(null)
-const nativeRef = ref<HTMLElement | null>(null)
-const widthResult = ref({ overlayOuter: 0, overlayInner: 0, nativeOuter: 0, nativeInner: 0 })
+const overlayRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('overlayRef')
+const nativeRef = useTemplateRef<HTMLElement>('nativeRef')
+const widthResult = shallowRef({ overlayOuter: 0, overlayInner: 0, nativeOuter: 0, nativeInner: 0 })
 
 function measureWidths() {
   const wrap = overlayRef.value?.wrapRef

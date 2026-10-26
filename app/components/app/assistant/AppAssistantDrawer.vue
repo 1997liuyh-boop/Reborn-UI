@@ -9,28 +9,17 @@
  * 原补丁里的登录门控 / 自动保存 / 刷新后续上会话，都搬到这里统一维护，不再改 node_modules 补丁。
  */
 import type { UIMessage } from "ai";
-import type { DefineComponent } from "vue";
 import type { AssistantConversation } from "./AppAssistantHistory.vue";
 import { Chat } from "@ai-sdk/vue";
 import { until, useResizeObserver } from "@vueuse/core";
 import { DefaultChatTransport } from "ai";
 import { withBase } from "ufo";
-import { defineAsyncComponent } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornDrawer from "~/components/reborn/ui/reborn-drawer/RebornDrawer.vue";
 import RebornTextarea from "~/components/reborn/ui/reborn-textarea/RebornTextarea.vue";
 import AppAssistantHistory from "./AppAssistantHistory.vue";
 import AppAssistantMessage from "./AppAssistantMessage.vue";
-
-/**
- * AI 回答里的代码块走 Docus 的流式高亮组件，边输出边着色，与原面板一致。
- * MDCCached 的 components 只接受 DefineComponent，异步组件的推导类型对不上，这里显式断言。
- */
-const mdcComponents: Record<string, DefineComponent<any, any, any>> = {
-  pre: defineAsyncComponent(
-    () => import("docus/modules/assistant/runtime/components/AssistantPreStream.vue"),
-  ) as DefineComponent<any, any, any>,
-};
+import AppAssistantMessageItem from "./AppAssistantMessageItem.vue";
 
 /** AI 回答方的显示名 */
 const ASSISTANT_NAME = "客服机器人";
@@ -46,9 +35,9 @@ const backgroundImage = withBase("/images/assistant/thinking-pixel.png", config.
 /** AI 回答的头像 */
 const assistantAvatar = withBase("/images/assistant/avatar.webp", config.app.baseURL);
 
-const input = ref("");
+const input = shallowRef("");
 /** 窄屏下左侧历史栏是否以浮层展开；宽屏时历史栏常驻，不读这个值 */
-const historyOpen = ref(false);
+const historyOpen = shallowRef(false);
 
 /** 桌面端 45%；全屏或手机端占满视口，手机上 45% 放不下双栏 */
 const drawerSize = computed(() => (isMobile.value || isExpanded.value ? "100%" : "45%"));
@@ -96,7 +85,7 @@ const chat = new Chat({
 
 // 新消息在第一次出现时打点；带着时间落库的历史消息沿用原值
 watch(
-  () => chat.messages.map((message) => message.id),
+  () => chat.messages.map((message) => message.id).join("\0"),
   () => {
     const now = Date.now();
     for (const message of chat.messages) {
@@ -125,27 +114,6 @@ const visibleMessages = computed(() =>
 /** 已发出提问、AI 还没返回第一段：此时没有 AI 消息，补一个占位气泡显示思考中 */
 const waitingFirstChunk = computed(() => chat.status === "submitted" && lastMessage.value?.role === "user");
 
-/** AI 消息已创建但还没有正文（只在调用工具） */
-function isThinking(message: UIMessage) {
-  return chat.status === "streaming"
-    && message.id === lastMessage.value?.id
-    && !message.parts.some((part) => part.type === "text");
-}
-
-/** Docus 服务端把工具调用汇总在 data-tool-calls 部件里，用于显示「读取了哪些文档」 */
-function toolCalls(message: UIMessage) {
-  return message.parts
-    .filter((part) => part.type === "data-tool-calls")
-    .flatMap((part) => (part as { data?: { tools?: unknown[] } }).data?.tools ?? []) as never[];
-}
-
-function messageText(message: UIMessage) {
-  return message.parts
-    .filter((part) => part.type === "text")
-    .map((part) => (part as { text: string }).text)
-    .join("\n");
-}
-
 /** 含中文即视为服务端已换好的提示 */
 const CJK_PATTERN = /[\u4E00-\u9FFF]/;
 
@@ -172,8 +140,8 @@ const errorText = computed(() => {
 
 // ============ 滚动 ============
 
-const scrollRef = ref<HTMLElement>();
-const contentRef = ref<HTMLElement>();
+const scrollRef = useTemplateRef<HTMLElement>("scrollRef");
+const contentRef = useTemplateRef<HTMLElement>("contentRef");
 /** 用户停在底部附近时才跟随新内容滚动；往上翻看时不打断阅读 */
 let stickToBottom = true;
 
@@ -196,10 +164,10 @@ useResizeObserver(contentRef, () => {
 
 interface AuthUser { id: string; name: string; avatar?: string }
 
-const authUser = ref<AuthUser | null>(null);
-const feishuEnabled = ref(false);
+const authUser = shallowRef<AuthUser | null>(null);
+const feishuEnabled = shallowRef(false);
 /** 登录态是否已从服务端拉取完成；完成前不切换输入区，避免已登录用户看到登录入口一闪而过 */
-const authReady = ref(false);
+const authReady = shallowRef(false);
 const isDev = import.meta.dev;
 
 async function fetchAuthUser() {
@@ -232,10 +200,10 @@ function feishuLogin() {
 
 /** 当前会话对应的服务端记录 id；新对话在首次保存时生成 */
 const conversationId = useState<string | undefined>("assistant-conversation-id", () => undefined);
-const historyList = ref<AssistantConversation[]>([]);
-const historyLoading = ref(false);
+const historyList = shallowRef<AssistantConversation[]>([]);
+const historyLoading = shallowRef(false);
 /** 正在载入的会话 id：接口返回前先高亮被点的那条并显示载入提示，否则慢网络下像是点了没反应 */
-const loadingConversationId = ref<string>();
+const loadingConversationId = shallowRef<string>();
 
 /**
  * 会话切换计数。切换会话时旧回答可能还在保存途中，
@@ -444,11 +412,10 @@ watch(authUser, async (user) => {
 
 // 外部把 messages 置空（如浮动输入框另起会话）即视为新会话，conversationId 必须同步作废
 watch(
-  messages,
-  (list) => {
-    if (list.length === 0 && chat.messages.length > 0) startFreshConversation();
+  () => messages.value.length,
+  (length) => {
+    if (length === 0 && chat.messages.length > 0) startFreshConversation();
   },
-  { deep: true },
 );
 
 // 每次打开抽屉都刷新列表，其他标签页里新增的会话也能看到
@@ -583,43 +550,11 @@ onMounted(fetchAuthUser);
       <div ref="scrollRef" class="min-h-0 flex-1 overflow-y-auto" @scroll.passive="onScroll">
         <div ref="contentRef" class="flex flex-col gap-5 p-5">
           <template v-if="visibleMessages.length > 0">
-            <AppAssistantMessage
-              v-for="message in visibleMessages"
-              :key="message.id"
-              :role="message.role === 'user' ? 'user' : 'assistant'"
-              :name="message.role === 'user' ? (authUser?.name ?? '我') : ASSISTANT_NAME"
-              :avatar="message.role === 'user' ? undefined : assistantAvatar"
-              :time="messageTime(message)"
-            >
-              <p v-if="message.role === 'user'" class="whitespace-pre-wrap">{{ messageText(message) }}</p>
-              <div v-else class="flex min-w-0 flex-col gap-2">
-                <AssistantLoading
-                  v-if="toolCalls(message).length > 0 || isThinking(message)"
-                  :tool-calls="toolCalls(message)"
-                  :is-loading="isThinking(message)"
-                />
-                <!--
-                  key 必须带上文本片段的 state（streaming → done）：MDCCached 首次解析是异步的，
-                  解析期间到达的内容不会触发重新解析，回答很短时整段都可能落在这个窗口里，
-                  结果只渲染出第一段。片段收尾时 key 变化会重新挂载，按完整文本再解析一次。
-                  末尾的 [&>:last-child>*:last-child]:mb-0 针对以代码块收尾的回答：项目的 ProsePre
-                  在代码块外多包了一层，外边距落在内层，*:last 够不着，气泡底部会多出一截空白。
-                -->
-                <template
-                  v-for="(part, index) in message.parts"
-                  :key="`${message.id}-${part.type}-${index}${'state' in part ? `-${part.state}` : ''}`"
-                >
-                  <MDCCached
-                    v-if="part.type === 'text' && part.text"
-                    :value="part.text"
-                    :cache-key="`${message.id}-${index}`"
-                    :components="mdcComponents"
-                    :parser-options="{ highlight: false }"
-                    class="*:first:mt-0 *:last:mb-0 [&>:last-child>*:last-child]:mb-0"
-                  />
-                </template>
-              </div>
-            </AppAssistantMessage>
+            <AppAssistantMessageItem
+              v-for="message in visibleMessages" :key="message.id" :message="message"
+              :user-name="authUser?.name ?? '我'" :assistant-name="ASSISTANT_NAME" :avatar="assistantAvatar"
+              :time="messageTime(message)" :streaming="chat.status === 'streaming' && message.id === lastMessage?.id"
+            />
 
             <AppAssistantMessage v-if="waitingFirstChunk" role="assistant" :name="ASSISTANT_NAME" :avatar="assistantAvatar">
               <AssistantLoading :tool-calls="[]" is-loading />

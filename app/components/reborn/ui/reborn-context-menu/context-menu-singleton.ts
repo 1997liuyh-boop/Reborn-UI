@@ -6,8 +6,24 @@
  * 导致每个组件实例各自持有一份独立的副本，无法跨实例通信。
  * 将状态放在独立模块中，变量只在模块首次加载时初始化一次，所有实例共享同一份引用。
  */
+import type { InjectionKey } from "vue";
 
-let contextMenuRootCount = 0;
+/** 根菜单控制器：根实例创建，递归渲染的子菜单通过注入拿到同一份 */
+export interface ContextMenuRootController {
+  /** 根菜单 id，由根实例的 useId() 生成，服务端与客户端一致；整条菜单链共用 */
+  rootId: string;
+  /** 关闭整条菜单链（根菜单收起后，子菜单跟随收起） */
+  closeAll: () => void;
+  /** 根菜单当前是否展开；子菜单据此在根菜单收起时一并收起 */
+  isOpen: () => boolean;
+}
+
+/**
+ * 根控制器的注入键。必须在模块作用域声明：写在 <script setup> 里会落进每个实例的 setup()，
+ * 每个实例各生成一个新 Symbol，子菜单永远注入不到根控制器
+ */
+export const CONTEXT_MENU_ROOT_KEY: InjectionKey<ContextMenuRootController> = Symbol("reborn-context-menu-root");
+
 let activeRootMenuId: string | null = null;
 let activeRootMenuClose: (() => void) | null = null;
 let contextMenuScrollLockCount = 0;
@@ -23,11 +39,6 @@ const blockedScrollKeys = new Set([
   "End",
   " ",
 ]);
-
-export function createRootId(): string {
-  contextMenuRootCount += 1;
-  return `reborn-context-menu-${contextMenuRootCount}`;
-}
 
 export function setActiveRootMenu(rootId: string, close: () => void): void {
   if (activeRootMenuId && activeRootMenuId !== rootId) {

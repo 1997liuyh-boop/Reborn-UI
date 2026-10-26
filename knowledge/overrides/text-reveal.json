@@ -13,6 +13,9 @@
     "仅 web 端可用，依赖 gsap（SplitText）。",
     "文字通过默认插槽传入。",
     "duration（默认 0.6）、delay（默认 0.2）、stagger（默认 0.1）均为 GSAP 时间参数（秒）。",
-    "内外层样式分别用 class 与 containerClass 控制。"
+    "内外层样式分别用 class 与 containerClass 控制。",
+    "组件按插槽渲染结果判断是否重新拆分：插槽文字或 duration / delay / stagger 变化才重播入场动画；插槽里只有属性变化时重建拆分但沿用原进度；渲染结果不变的重渲染（v-for 动态插槽、内联 class 数组）不做处理。",
+    "拆分后的行 / 词元素没有 scoped 属性，自定义样式需用 :deep()。",
+    "插槽里子组件自身的更新不会同步到拆分后的文字，需要变化的文字由父组件直接写进插槽，或变化时给 TextReveal 换 key。"
   ]
 }

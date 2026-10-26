@@ -1,4 +1,5 @@
 import type { ContentNavigationItem } from "@nuxt/content";
+import type { MaybeRefOrGetter } from "vue";
 
 /**
  * 侧边栏导航组合式函数
@@ -6,7 +7,7 @@ import type { ContentNavigationItem } from "@nuxt/content";
  * 根据当前路由路径，从 Nuxt Content 的导航树中提取对应的子级导航数据，
  * 用于渲染文档站点的侧边栏菜单。
  *
- * @param navigation - 由 `fetchContentNavigation()` 返回的完整导航树（响应式引用）
+ * @param navigation - 完整导航树：普通数组、ref、computed 或 getter 均可，内部用 toValue 读取
  * @returns `nav` — 经过处理后可直接用于侧边栏渲染的导航列表
  *
  * @example
@@ -15,7 +16,7 @@ import type { ContentNavigationItem } from "@nuxt/content";
  * const { nav } = useNavigation(navigation)
  * ```
  */
-export function useNavigation(navigation?: Ref<ContentNavigationItem[]>) {
+export function useNavigation(navigation?: MaybeRefOrGetter<ContentNavigationItem[] | null | undefined>) {
   const route = useRoute();
   const { filterNavigation } = useDocsPlatform();
 
@@ -29,7 +30,8 @@ export function useNavigation(navigation?: Ref<ContentNavigationItem[]>) {
    *    这里再按 Web / UniApp 档位过滤；其它分区原样返回
    */
   const children = computed(() => {
-    const nav = toValue(navigation);
+    // useAsyncData 的 data 初始可能是 null，统一按「无导航」处理
+    const nav = toValue(navigation) ?? undefined;
 
     // 将路由路径拆分为段，过滤空字符串（首尾斜杠产生的空串）
     // 例如 '/components/button' → ['components', 'button']

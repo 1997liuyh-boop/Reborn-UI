@@ -32,6 +32,7 @@
     "formatter 与 parser 必须配对使用，只传其一会导致展示文本无法被解析回数值。",
     "web 端 readonly 为原生语义（只读且按钮禁用）；uniapp 端 readonly 与原生语义相反，默认 true 表示允许键入，设为 false 后仅能通过按钮增减。",
     "uniapp 端 min 默认 0、max 默认 200；web 端默认取 Number.MIN_SAFE_INTEGER / Number.MAX_SAFE_INTEGER 即不限制，业务范围不同时必须显式传入。",
-    "inputType（仅 uniapp）仅支持 digit/number 两种；digit 模式下默认保留两位小数，显式传 precision 会覆盖这一默认。"
+    "inputType（仅 uniapp）仅支持 digit/number 两种；digit 模式下默认保留两位小数，显式传 precision 会覆盖这一默认。",
+    "UniApp modelValue 默认 undefined，未绑定时由 defaultValue 初始化；非法数字回退上次提交值，数值回到 0 也会触发 change。"
   ]
 }

@@ -7,11 +7,11 @@
  * 外观对齐组件默认态：行与行之间只有顶边分隔线、日期靠右、有事项的格子带浅底与色顶边；
  * 每条事项保留组件的彩色圆点，标题文字在这个尺寸下读不出来，换成一截灰条示意。
  */
-import type { CalendarColor } from '~/components/reborn/ui/reborn-calendar/reborn-calendar.config'
-import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'
-import { calendarDotTheme, calendarTheme } from '~/components/reborn/ui/reborn-calendar/reborn-calendar.config'
-import { CALENDAR_WEEK_DAYS } from '~/components/reborn/ui/reborn-calendar/reborn-calendar.utils'
-import { cn } from '~/lib/utils'
+import type { CalendarColor } from "~/components/reborn/ui/reborn-calendar/reborn-calendar.config";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
+import { calendarDotTheme, calendarTheme } from "~/components/reborn/ui/reborn-calendar/reborn-calendar.config";
+import { CALENDAR_WEEK_DAYS } from "~/components/reborn/ui/reborn-calendar/reborn-calendar.utils";
+import { cn } from "~/lib/utils";
 
 interface OverviewCell {
   /** 日期数字 */
@@ -63,8 +63,8 @@ const weeks: OverviewCell[][] = [11, 18, 25].map(start =>
         </div>
       </div>
       <div
-        v-for="week in weeks"
-        :key="week[0]!.day"
+        v-for="(week, weekIndex) in weeks"
+        :key="week[0]?.day ?? weekIndex"
         :class="cn(theme.row(), 'gap-x-1')"
       >
         <div

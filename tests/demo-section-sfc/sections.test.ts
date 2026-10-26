@@ -52,3 +52,10 @@ const format = () => {
   assert.ok(source.includes('const value'));
   assert.ok(!source.includes('const code'));
 });
+
+it('展开运算符引用的声明会跟着带入，属性访问与可选链后的同名标识符仍不带入', () => {
+  const source = buildSectionSfc('<A :x="state.a" />', 'const d = { a: 1 };\nconst a = 2;\nconst state = ref({ ...d, b: d?.a });');
+  assert.ok(source.includes('const d'));
+  assert.ok(source.includes('const state'));
+  assert.ok(!source.includes('const a = 2'));
+});

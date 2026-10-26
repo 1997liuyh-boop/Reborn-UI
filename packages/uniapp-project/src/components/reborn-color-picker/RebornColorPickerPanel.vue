@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch, getCurrentInstance, onMounted } from "vue";
+import { computed, getCurrentInstance, onBeforeUnmount, shallowRef, watch } from "vue";
 import {
     colorStringToHsva,
-    detectColorFormat,
     hsvaToColorString,
     hsvaToHex,
     hsvaToRgba,
@@ -18,9 +17,7 @@ import RebornButton from "../reborn-button/RebornButton.vue";
 import RebornInput from "../reborn-input/RebornInput.vue";
 
 interface Props {
-    modelValue?: string;
     /** 面板当前的颜色输出格式（'hex' | 'rgb' | 'rgba'），支持 v-model:format 双向绑定 */
-    format?: ColorFormat;
     /** 追加到面板根节点的自定义类名 */
     class?: any;
     ui?: {
@@ -44,15 +41,11 @@ interface Props {
     };
 }
 
-const props = withDefaults(defineProps<Props>(), {
-    modelValue: "#000000",
-});
+const props = defineProps<Props>();
 
-const emit = defineEmits<{
-    (e: "update:modelValue", value: string): void;
-    /** 用户点击格式切换按钮时触发（v-model:format 同步），参数为新的输出格式 */
-    (e: "update:format", value: ColorFormat): void;
-}>();
+const emit = defineEmits<{ change: [value: string] }>();
+const model = defineModel<string>({ default: '#000000' });
+const format = defineModel<ColorFormat>('format', { default: 'hex' });
 
 const { proxy } = getCurrentInstance()!;
 
@@ -85,91 +78,74 @@ const ui = computed(() => {
 });
 
 // --- 状态 ---
-const colorHsv = ref<HsvaColor>(colorStringToHsva(props.modelValue || "#000000"));
-const format = ref<ColorFormat>(props.format || detectColorFormat(props.modelValue));
-
-// 画布/滑块区域 rect 缓存，touchmove 时用缓存同步计算位置，避免每次异步 query 导致不跟手
+const colorHsv = shallowRef<HsvaColor>(colorStringToHsva(model.value));
 type Rect = { left: number; top: number; width: number; height: number };
-const saturationRect = ref<Rect | null>(null);
-const hueRect = ref<Rect | null>(null);
-const alphaRect = ref<Rect | null>(null);
-
-// --- 来自 base.css 的预设颜色 ---
-const presets = [
-    "#ffebee", "#ff3d58", "#ff9711", "#16ae88", "#0d99e5", "#ffffff", "#eeeeee", "#333333",
-];
-
-// --- 计算属性 ---
+let saturationRect: Rect | null = null;
+let hueRect: Rect | null = null;
+let alphaRect: Rect | null = null;
+let disposed = false;
+onBeforeUnmount(() => { disposed = true });
+const presets = ['#ffebee', '#ff3d58', '#ff9711', '#16ae88', '#0d99e5', '#ffffff', '#eeeeee', '#333333'];
+const formats: ColorFormat[] = ['hex', 'rgb', 'rgba'];
 const hexValue = computed(() => hsvaToHex(colorHsv.value));
 const rgbaValue = computed(() => hsvaToRgba(colorHsv.value));
+const displayValue = computed(() => hsvaToColorString(colorHsv.value, format.value));
+const draftText = shallowRef(displayValue.value);
+const editing = shallowRef(false);
+watch(displayValue, val => { if (!editing.value) draftText.value = val });
 
-const displayValue = computed({
-    get: () => {
-        const value = hsvaToColorString(colorHsv.value, format.value);
-        return format.value === "hex" ? value.toUpperCase() : value;
-    },
-    set: (val: string) => {
-        try {
-            colorHsv.value = colorStringToHsva(val);
-
-            if (!props.format) {
-                format.value = detectColorFormat(val);
-            }
-        } catch (e) {
-            // 忽略无效输入
-        }
-    },
+let changeBase = displayValue.value;
+watch(model, val => {
+  if (val !== displayValue.value) { colorHsv.value = colorStringToHsva(val); changeBase = displayValue.value; }
 });
+function commitColor(next: HsvaColor) {
+  colorHsv.value = next;
+  model.value = displayValue.value;
+}
 
-// --- 监听器 ---
-watch(() => props.modelValue, (val: string | undefined) => {
-    if (!val) return;
-
-    if (props.format) {
-        format.value = props.format;
-    } else {
-        format.value = detectColorFormat(val);
-    }
-
-    const hsv = colorStringToHsva(val);
-    const cur = colorHsv.value;
-    if (
-        cur.h !== hsv.h || cur.s !== hsv.s || cur.v !== hsv.v || cur.a !== hsv.a
-    ) {
-        colorHsv.value = hsv;
-    }
-});
-
-watch(() => props.format, (val) => {
-    if (val) {
-        format.value = val;
-    }
-}, { immediate: true });
-
-watch(displayValue, (val: string) => {
-    emit("update:modelValue", val);
-});
-
-watch(format, (val) => {
-    emit("update:format", val);
-});
+function emitChange(value = displayValue.value) {
+  if (value === changeBase) return;
+  changeBase = value;
+  emit('change', value);
+}
+function commitDraft() {
+  const text = draftText.value.trim();
+  const hex = /^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i.test(text);
+  const rgb = text.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*(\d+(?:\.\d+)?|\.\d+)\s*)?\)$/i);
+  if (hex || (rgb && [rgb[1], rgb[2], rgb[3]].every(n => Number(n) <= 255) && Number(rgb[4] ?? 1) <= 1)) {
+    // 颜色工具只接收完整透明度十六进制，先展开四位简写。
+    const color = /^#[\da-f]{4}$/i.test(text) ? `#${text.slice(1).split('').map(value => value + value).join('')}` : text;
+    commitColor(colorStringToHsva(color));
+    emitChange();
+  }
+  editing.value = false;
+  draftText.value = displayValue.value;
+}
+function changeFormat(next: ColorFormat) {
+  commitDraft();
+  format.value = next;
+  const value = hsvaToColorString(colorHsv.value, next);
+  model.value = value;
+  draftText.value = value;
+  emitChange(value);
+}
 
 // --- 交互逻辑：touchstart 预热 rect 缓存，touchmove 用缓存同步计算，避免异步 query 导致不跟手 ---
 function updateSaturationFromRect(rect: Rect, clientX: number, clientY: number) {
     const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
-    colorHsv.value = {
+    commitColor({
         ...colorHsv.value,
         s: x * 100,
         v: (1 - y) * 100,
-    };
+    });
 }
 
 function handleSaturationTouch(e: any) {
     const touch = e.touches[0];
     if (!touch) return;
-    if (e.type === "touchstart") saturationRect.value = null;
-    const rect = saturationRect.value;
+    if (e.type === "touchstart") saturationRect = null;
+    const rect = saturationRect;
     if (rect) {
         updateSaturationFromRect(rect, touch.clientX, touch.clientY);
         return;
@@ -178,9 +154,9 @@ function handleSaturationTouch(e: any) {
         .in(proxy)
         .select(".reborn-saturation")
         .boundingClientRect((r: any) => {
-            if (!r) return;
-            saturationRect.value = { left: r.left, top: r.top, width: r.width, height: r.height };
-            updateSaturationFromRect(saturationRect.value, touch.clientX, touch.clientY);
+            if (!r || disposed) return;
+            saturationRect = { left: r.left, top: r.top, width: r.width, height: r.height };
+            updateSaturationFromRect(saturationRect, touch.clientX, touch.clientY);
         })
         .exec();
 }
@@ -188,21 +164,21 @@ function handleSaturationTouch(e: any) {
 function handleHueTouch(e: any) {
     const touch = e.touches[0];
     if (!touch) return;
-    if (e.type === "touchstart") hueRect.value = null;
-    const rect = hueRect.value;
+    if (e.type === "touchstart") hueRect = null;
+    const rect = hueRect;
     if (rect) {
         const x = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
-        colorHsv.value = { ...colorHsv.value, h: x * 360 };
+        commitColor({ ...colorHsv.value, h: x * 360 });
         return;
     }
     uni.createSelectorQuery()
         .in(proxy)
         .select(".reborn-hue-slider")
         .boundingClientRect((r: any) => {
-            if (!r) return;
-            hueRect.value = { left: r.left, top: r.top, width: r.width, height: r.height };
+            if (!r || disposed) return;
+            hueRect = { left: r.left, top: r.top, width: r.width, height: r.height };
             const x = Math.max(0, Math.min(1, (touch.clientX - r.left) / r.width));
-            colorHsv.value = { ...colorHsv.value, h: x * 360 };
+            commitColor({ ...colorHsv.value, h: x * 360 });
         })
         .exec();
 }
@@ -210,27 +186,28 @@ function handleHueTouch(e: any) {
 function handleAlphaTouch(e: any) {
     const touch = e.touches[0];
     if (!touch) return;
-    if (e.type === "touchstart") alphaRect.value = null;
-    const rect = alphaRect.value;
+    if (e.type === "touchstart") alphaRect = null;
+    const rect = alphaRect;
     if (rect) {
         const x = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
-        colorHsv.value = { ...colorHsv.value, a: x };
+        commitColor({ ...colorHsv.value, a: x });
         return;
     }
     uni.createSelectorQuery()
         .in(proxy)
         .select(".reborn-alpha-slider")
         .boundingClientRect((r: any) => {
-            if (!r) return;
-            alphaRect.value = { left: r.left, top: r.top, width: r.width, height: r.height };
+            if (!r || disposed) return;
+            alphaRect = { left: r.left, top: r.top, width: r.width, height: r.height };
             const x = Math.max(0, Math.min(1, (touch.clientX - r.left) / r.width));
-            colorHsv.value = { ...colorHsv.value, a: x };
+            commitColor({ ...colorHsv.value, a: x });
         })
         .exec();
 }
 
 function selectPreset(color: string) {
-    colorHsv.value = colorStringToHsva(color);
+    commitColor(colorStringToHsva(color));
+    emitChange();
 }
 </script>
 
@@ -239,7 +216,7 @@ function selectPreset(color: string) {
         <!-- 饱和度/明度 画布 -->
         <view :class="[ui.saturation(), 'reborn-saturation']"
             :style="{ background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, hsl(${colorHsv.h}, 100%, 50%))` }"
-            @touchstart="handleSaturationTouch" @touchmove="handleSaturationTouch">
+            @touchstart="handleSaturationTouch" @touchmove="handleSaturationTouch" @touchend="emitChange()" @touchcancel="emitChange()">
             <view :class="ui.saturationCursor()" :style="{ left: `${colorHsv.s}%`, top: `${100 - colorHsv.v}%` }" />
         </view>
 
@@ -251,14 +228,14 @@ function selectPreset(color: string) {
                 <!-- 色相滑块 -->
                 <view :class="[ui.hueSlider(), 'reborn-hue-slider']"
                     style="background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)"
-                    @touchstart="handleHueTouch" @touchmove="handleHueTouch">
+                    @touchstart="handleHueTouch" @touchmove="handleHueTouch" @touchend="emitChange()" @touchcancel="emitChange()">
                     <view :class="ui.hueCursor()" :style="{ left: `${(colorHsv.h / 360) * 100}%` }" />
                 </view>
 
                 <!-- 透明度滑块 -->
                 <view :class="[ui.alphaSlider(), 'reborn-alpha-slider']" :style="{
                     background: `linear-gradient(to right, transparent, ${hexValue})`
-                }" @touchstart="handleAlphaTouch" @touchmove="handleAlphaTouch">
+                }" @touchstart="handleAlphaTouch" @touchmove="handleAlphaTouch" @touchend="emitChange()" @touchcancel="emitChange()">
                     <view :class="ui.alphaCursor()" :style="{ left: `${colorHsv.a * 100}%` }" />
                 </view>
             </view>
@@ -267,14 +244,14 @@ function selectPreset(color: string) {
         <!-- 输入框与格式 -->
         <view :class="ui.inputs()">
             <view :class="ui.formatToggles()">
-                <RebornButton v-for="f in (['hex', 'rgb', 'rgba'] as const)" :key="f" size="xs"
+                <RebornButton v-for="f in formats" :key="f" size="sm"
                     :variant="format === f ? 'filled' : 'soft'" :color="format === f ? 'primary' : 'neutral'"
                     class="px-2 py-1 text-[10px] uppercase font-bold rounded transition-colors"
-                    @tap="format = f as ColorFormat">
+                    @tap="changeFormat(f)">
                     {{ f }}
                 </RebornButton>
             </view>
-            <RebornInput v-model="displayValue" size="sm" :class="ui.input()" spellcheck="false" />
+            <RebornInput v-model="draftText" size="sm" :class="ui.input()" spellcheck="false" @focus="editing = true" @blur="commitDraft" @confirm="commitDraft" />
         </view>
 
         <!-- 预设颜色 -->

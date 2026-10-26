@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { segmentedDirections, segmentedSizes, SegmentedUI } from "./reborn-segmented.config";
 import { useMutationObserver, useResizeObserver } from "@vueuse/core";
-import { computed, nextTick, onMounted, ref, useId, watch } from "vue";
+import { computed, nextTick, onMounted, shallowRef, useId, useTemplateRef, watch } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { useLiquidSlider } from "~/composables/useLiquidSlider";
 import { cn } from "~/lib/utils";
@@ -36,7 +36,7 @@ export interface SegmentedProps {
    * 对象选项的字段映射
    * @defaultValue { value: 'value', label: 'label', disabled: 'disabled' }
    */
-  props?: SegmentedOptionProps;
+  fieldNames?: SegmentedOptionProps;
   /** 尺寸；处于表单内时被表单的尺寸覆盖，都没有时为 md */
   size?: (typeof segmentedSizes)[number];
   /**
@@ -77,7 +77,7 @@ defineOptions({
 
 const props = withDefaults(defineProps<SegmentedProps>(), {
   options: () => [],
-  props: () => ({}),
+  fieldNames: () => ({}),
   block: false,
   disabled: false,
   validateEvent: true,
@@ -88,6 +88,10 @@ const props = withDefaults(defineProps<SegmentedProps>(), {
 const emit = defineEmits<{
   /** 选中值变化时触发，参数为新的选中值 */
   change: [value: SegmentedValue];
+}>();
+
+defineSlots<{
+  default?: (props: { item: SegmentedValue | SegmentedOption; checked: boolean; disabled: boolean }) => any;
 }>();
 
 /** 绑定值；显式 default: undefined，否则类型含 boolean 时未绑定会被强转成 false，误选中值为 false 的选项 */
@@ -114,7 +118,7 @@ interface NormalizedOption {
 }
 
 const normalizedOptions = computed<NormalizedOption[]>(() => {
-  const keys = { value: "value", label: "label", disabled: "disabled", ...props.props };
+  const keys = { value: "value", label: "label", disabled: "disabled", ...props.fieldNames };
   return props.options.map((option) => {
     if (typeof option !== "object" || option === null)
       return { value: option, label: String(option), disabled: false, source: option };
@@ -145,14 +149,15 @@ function handleSelect(option: NormalizedOption) {
 
 // ─── 选中块 ─────────────────────────────────────────────────────
 
-const rootRef = ref<HTMLElement>();
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
+const sliderRef = useTemplateRef<HTMLElement>("sliderRef");
 /**
  * 选中底色是否已交给选中块。挂载并量好位置后才置 true：
  * 服务端渲染与首帧由选中项自己画底色，选中块就位的同一帧再交接，页面不会先闪一下没有选中的样子
  */
-const sliderReady = ref(false);
+const sliderReady = shallowRef(false);
 /** 落位与液体形变交给 useLiquidSlider，与 RebornRadioGroup 的分段按钮、RebornTabs 的胶囊底板同一套节奏 */
-const { style: sliderStyle, move: moveSlider, hide: hideSlider } = useLiquidSlider();
+const { style: sliderStyle, move: moveSlider, hide: hideSlider } = useLiquidSlider(sliderRef);
 /** 上一次量到的选中项；只有它换了才算一次切换 */
 let lastChecked: HTMLElement | null = null;
 
@@ -210,19 +215,22 @@ const ui = computed(() => {
     block: props.block,
     sliderReady: sliderReady.value,
   };
+  const styles = segmentedTheme(base);
+  // 四种选中与禁用组合只各生成一次，选项渲染时直接复用
+  const variants = [false, true].flatMap(checked => [false, true].map(disabled => segmentedTheme({ ...base, checked, disabled })));
   const o = props.ui;
   return {
     // 整组禁用时外框的内边距一圈也显示禁止光标，不只选项本身
-    root: () => segmentedTheme(base).root({ class: cn(computedDisabled.value && "cursor-not-allowed", o.root, props.class) }),
-    slider: () => segmentedTheme(base).slider({ class: o.slider }),
+    root: () => styles.root({ class: cn(computedDisabled.value && "cursor-not-allowed", o.root, props.class) }),
+    slider: () => styles.slider({ class: o.slider }),
     // 选中块就位前由选中项自己画底色，ui.slider 也一并挂上，否则覆盖了选中块颜色时首屏会先闪一下默认的白底
     item: (option: NormalizedOption) =>
-      segmentedTheme({ ...base, checked: isChecked(option), disabled: isOptionDisabled(option) }).item({
+      variants[Number(isChecked(option)) * 2 + Number(isOptionDisabled(option))]!.item({
         class: cn(isChecked(option) && !sliderReady.value && o.slider, o.item),
       }),
-    input: () => segmentedTheme(base).input(),
-    icon: () => segmentedTheme(base).icon({ class: o.icon }),
-    label: () => segmentedTheme(base).label({ class: o.label }),
+    input: () => styles.input(),
+    icon: () => styles.icon({ class: o.icon }),
+    label: () => styles.label({ class: o.label }),
   };
 });
 </script>
@@ -232,7 +240,7 @@ const ui = computed(() => {
     :id="id" ref="rootRef" :class="ui.root()" role="radiogroup" :aria-label="ariaLabel"
     :aria-disabled="computedDisabled || undefined" :aria-orientation="direction"
   >
-    <span aria-hidden="true" :class="ui.slider()" :style="sliderStyle" />
+    <span ref="sliderRef" aria-hidden="true" :class="ui.slider()" :style="sliderStyle" />
 
     <label
       v-for="(option, index) in normalizedOptions" :key="`${index}-${String(option.value)}`" :class="ui.item(option)"

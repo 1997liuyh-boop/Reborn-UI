@@ -13,18 +13,22 @@ tags: [uniapp, tabbar, navigation]
 
 ## 简介
 
-Tabbar 是用于替代原生 tabBar 的自定义底部标签栏：`RebornTabbar` 作为容器管理选中状态与动画，`RebornTabbarTrigger` 作为子项放在默认插槽内，通过 `title` / `icon` / `inactive` 配置每个标签。`v-model` 绑定当前激活项（对应子项 `name`），支持 `normal` / `round` 两种形状、六种切换动画（含 `drop` 凸起指示球与 `fly-balls` 彩色小球飞跃），并内置吸底、占位与 iOS 底部安全区适配。
+Tabbar 是 UniApp 的自定义底部标签栏，`RebornTabbar` 管理选中状态，`RebornTabbarTrigger` 提供子项；Web 暂无独立实现。
 
-适用场景：
+`shape` 决定通栏或胶囊外观，`animation` 决定切换动效，`color` 决定强调色；三者可独立组合。
 
-- 原生 tabBar 无法满足样式需求，需要自定义形状、动画、主题色的底部导航。
+`fixed` / `placeholder` / `safeAreaInsetBottom` 管理吸底布局，`beforeChange` 拦截切换；子项 `order` 决定排列，`name` 缺省时以排列后的索引作为模型值。
+
+### 何时使用
+
+- 需要自定义底部导航外观——用 `shape`、`animation` 与 `color`。
 - 需要固定吸底并处理 iOS 底部安全区（`fixed` + `safeAreaInsetBottom`，`placeholder` 自动占位）。
 - 切换前需要拦截校验（`beforeChange` 支持返回 boolean / Promise 或调用 `done` 回调）。
 
-不适用场景：
+### 何时不使用
 
-- Web 端项目：组件仅有 UniApp 实现。
-- 页面内的内容区切换，改用 `reborn-tabs`。
+- Web 页面内导航——改用 `reborn-tabs`。
+- 侧边层级导航——改用 `reborn-menu`。
 
 ## 用法
 
@@ -50,6 +54,28 @@ const active = ref("home");
       inactive="/static/my.png"
       :image-size="52"
     />
+  </RebornTabbar>
+</template>
+```
+
+动态列表应让每个子项都传入 `order`，通常使用 `v-for` 下标。只有整组都是有限数值才启用显式排序；同值保留相对次序，混传或 `NaN` / `Infinity` 会忽略整组排序。缺省时 H5 跟随 VNode 顺序，MP 保留当前登记次序，所以小程序动态增删或重排不能省略 `order`。
+
+| 配置 | 排列与模型 | 典型用途 |
+| --- | --- | --- |
+| 全项 `:order="index"` | 按数据顺序排列，缺省 `name` 使用排序后索引 | 动态增删与重排 |
+| `name` | 使用稳定业务值匹配 `v-model` | 重排后仍保持同一业务项选中 |
+| 缺省 `order` | H5 按 VNode；MP 按当前登记次序 | 静态子项 |
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { RebornTabbar, RebornTabbarTrigger } from '@/components/reborn-tabbar'
+const active = ref(0)
+const items = ref([{ id: 'home', title: '首页' }, { id: 'mine', title: '我的' }])
+</script>
+<template>
+  <RebornTabbar v-model="active">
+    <RebornTabbarTrigger v-for="(item, index) in items" :key="item.id" :order="index" :title="item.title" />
   </RebornTabbar>
 </template>
 ```
@@ -165,6 +191,7 @@ function beforeChange({ name }: { name: string | number }, done: (ok?: boolean) 
 | --- | --- | --- | --- |
 | `title` | `string` | - | 标签标题，`pureIcon` 开启时不显示。 |
 | `name` | `number \| string` | 子项索引 | 唯一标识，与父组件 `modelValue` 匹配判断激活态。 |
+| `order` | `number` | - | 全项提供有限数值时按其排序；动态列表传下标，缺省 `name` 使用排序后索引。 |
 | `icon` | `string` | - | 图标类名或图片链接（带 `/`、`.`、`http`、`data:image` 的值按图片渲染）。 |
 | `inactive` | `string` | - | 未选中时的图标类名或图片链接，缺省时复用 `icon`。 |
 | `disabled` | `boolean` | `false` | 是否禁用该子项（点击无效）。 |
@@ -216,6 +243,7 @@ function beforeChange({ name }: { name: string | number }, done: (ok?: boolean) 
 
 ## 注意事项
 
+- **MP 动态列表须为每项传 `order`**。显式排序同时驱动子项索引与视觉位置；`name` 缺省时 `v-model` 始终指向排序后索引，重排可能改变同一索引对应的业务项，需稳定选中身份时设置 `name`。
 - 仅 UniApp 端可用；示例尺寸单位为 rpx（标签栏高 `110rpx`，`pureIcon` 时 `90rpx`，`normal` + `glass` 动画时 `130rpx`）。
 - 子项 `RebornTabbarTrigger` 必须放在 `RebornTabbar` 默认插槽内，二者通过依赖注入关联；`title` / `name` / `icon` 等是子项的 props，不要写在父组件上。
 - `fixed` 与 `safeAreaInsetBottom` 默认均为 `false`：吸底和安全区适配都需显式开启；关闭 `placeholder` 后吸底时页面底部内容会被遮挡。

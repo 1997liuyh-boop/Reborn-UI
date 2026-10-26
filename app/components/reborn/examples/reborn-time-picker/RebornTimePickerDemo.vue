@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DemoBlock, DemoNote, DemoSection, Playground } from "#components";
-import { ref } from "vue";
+import { computed, ref, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import {
   timePanelVariants,
@@ -10,7 +10,7 @@ import {
 import RebornTimePanel from "~/components/reborn/ui/reborn-time-picker/RebornTimePanel.vue";
 import RebornTimePicker from "~/components/reborn/ui/reborn-time-picker/RebornTimePicker.vue";
 
-// 演练场各维度独立，可直接比较输入框与中心选中区域。
+// 时间选择会直接回写嵌套字段，保留深层响应以同步预览和代码明细。
 const state = ref<Record<string, any>>({
   value: "09:30:15",
   size: "md",
@@ -23,6 +23,27 @@ const state = ref<Record<string, any>>({
   closeOn: "mousedown",
   showFooter: true,
 });
+/** 复制代码包含当前时间及全部演练参数。 */
+const timePickerCode = computed(() => `<script setup lang="ts">
+import { shallowRef } from 'vue';
+import RebornTimePicker from '~/components/reborn/ui/reborn-time-picker/RebornTimePicker.vue';
+const value = shallowRef(${JSON.stringify(state.value.value)});
+<\/script>
+
+<template>
+  <RebornTimePicker
+    v-model="value"
+    size="${state.value.size}"
+    color="${state.value.color}"
+    variant="${state.value.variant}"
+    panel-variant="${state.value.panelVariant}"
+    :allow-input="${state.value.allowInput}"
+    close-on="${state.value.closeOn}"
+    :show-footer="${state.value.showFooter}"
+    :clearable="${state.value.clearable}"
+    :disabled="${state.value.disabled}"
+  />
+</template>`);
 const variants = ["outlined", "filled", "borderless", "underlined"] as const;
 const controls = [
   {
@@ -72,9 +93,9 @@ const controls = [
     ],
   },
 ];
-const empty = ref("");
-const selected = ref("12:30:45");
-const inputMessage = ref("");
+const empty = shallowRef("");
+const selected = shallowRef("12:30:45");
+const inputMessage = shallowRef("");
 const formats = ref([
   { label: "时分秒", format: "HH:mm:ss", value: "09:30:15" },
   { label: "时", format: "HH", value: "09" },
@@ -83,14 +104,14 @@ const formats = ref([
   { label: "时分", format: "HH:mm", value: "09:30" },
   { label: "分秒", format: "mm:ss", value: "30:15" },
 ]);
-const filled = ref("12:30:45");
-const outlined = ref("12:30:45");
-const limitedValue = ref("12:30:15");
+const filled = shallowRef("12:30:45");
+const outlined = shallowRef("12:30:45");
+const limitedValue = shallowRef("12:30:15");
 const rangeValue = ref(["09:00:00", "18:00:00"]);
-const arrowValue = ref("14:20:00");
-const preciseValue = ref("10:20:30.123");
-const footerValue = ref("08:30:00");
-const noFooterValue = ref("09:30:00");
+const arrowValue = shallowRef("14:20:00");
+const preciseValue = shallowRef("10:20:30.123");
+const footerValue = shallowRef("08:30:00");
+const noFooterValue = shallowRef("09:30:00");
 
 /** 禁用凌晨与深夜，输入和滚动选择遵循同一规则。 */
 function disabledHours() {
@@ -113,9 +134,10 @@ function onInvalid(value: string) {
     <Playground
       v-model="state"
       :controls="controls"
+      :code="timePickerCode"
       component-name="RebornTimePicker"
       title="交互演练场"
-      description="调节左侧参数，对比输入框与中心选中区域的样式、尺寸、颜色和禁用状态。"
+      description="调节上方参数，对比输入框与中心选中区域的样式、尺寸、颜色和禁用状态。"
     >
       <RebornTimePicker
         v-model="state.value"

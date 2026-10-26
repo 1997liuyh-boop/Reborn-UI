@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from "#components";
+
 /**
  * 总览卡片缩略：指针在右上方时被补光照亮的士兵，旁边是它的深度图
  *
@@ -13,7 +15,8 @@ const DEPTH_SRC = "/images/depth-image/soldier-depth.webp";
 
 /** 补光层：光斑落在右肩、紧挨指针图标，遮罩取彩色图的透明通道 */
 const lightStyle = {
-  backgroundImage: "radial-gradient(circle at 66% 30%, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.35) 22%, rgb(255 255 255 / 0) 48%)",
+  backgroundImage:
+    "radial-gradient(circle at 66% 30%, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.35) 22%, rgb(255 255 255 / 0) 48%)",
   maskImage: `url(${COLOR_SRC})`,
   maskSize: "contain",
   maskPosition: "center",
@@ -24,15 +27,8 @@ const lightStyle = {
 <template>
   <div class="flex items-end gap-3">
     <div class="relative h-32 w-[110px]">
-      <img
-        :src="COLOR_SRC"
-        alt=""
-        class="size-full object-contain"
-      >
-      <div
-        class="absolute inset-0"
-        :style="lightStyle"
-      />
+      <img :src="COLOR_SRC" alt="" class="size-full object-contain">
+      <div class="absolute inset-0" :style="lightStyle" />
       <!-- 指针压在照片上，不随明暗切换：照系统光标用黑芯白边，浅色盔甲和亮斑上都看得清 -->
       <Icon
         name="lucide:mouse-pointer-2"
@@ -41,11 +37,7 @@ const lightStyle = {
     </div>
 
     <div class="flex flex-col items-center gap-1">
-      <img
-        :src="DEPTH_SRC"
-        alt=""
-        class="border-default h-[70px] w-[60px] rounded-md border object-contain"
-      >
+      <img :src="DEPTH_SRC" alt="" class="border-default h-[70px] w-[60px] rounded-md border object-contain">
       <span class="text-muted text-[10px]">深度图</span>
     </div>
   </div>

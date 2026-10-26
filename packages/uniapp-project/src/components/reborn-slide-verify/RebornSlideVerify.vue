@@ -5,7 +5,8 @@ import type {
   SlideVerifySize,
   SlideVerifyUI,
 } from './reborn-slide-verify.config'
-import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue'
+import { useBooleanModel } from '@/composables/useBooleanModel'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -60,7 +61,9 @@ defineSlots<{
   thumb: (props: { verified: boolean, loading: boolean, progress: number, icon: string, ui: any }) => any
 }>()
 
-const verified = defineModel<boolean>({ default: false })
+defineModel<boolean>({ default: undefined })
+// 默认通过态仅提供本地初值；显式空模型关闭，初始化不派发交互事件。
+const verified = useBooleanModel('modelValue', props.defaultVerified)
 
 interface TouchPoint {
   clientX: number
@@ -136,8 +139,8 @@ export interface RebornSlideVerifyProps {
 }
 
 const { proxy } = getCurrentInstance()!
+let disposed = false
 const { disabled: formDisabled, size: formSize, validate } = useFormInject(props)
-const slots = useSlots()
 const b = tv(theme)
 
 const uiOverrides = computed(() => props.ui || {})
@@ -155,16 +158,16 @@ const rootStyle = computed(() => {
   return { ...base, width: props.width }
 })
 
-const isDragging = ref(false)
-const isBouncing = ref(false)
-const failVisible = ref(false)
-const rootWidth = ref(0)
-const thumbWidth = ref(0)
-const translateX = ref(0)
-const startX = ref(0)
-const startY = ref(0)
-const startTranslateX = ref(0)
-const lockDirection = ref<'x' | 'y' | ''>('')
+const isDragging = shallowRef(false)
+const isBouncing = shallowRef(false)
+const failVisible = shallowRef(false)
+const rootWidth = shallowRef(0)
+const thumbWidth = shallowRef(0)
+const translateX = shallowRef(0)
+const startX = shallowRef(0)
+const startY = shallowRef(0)
+const startTranslateX = shallowRef(0)
+const lockDirection = shallowRef<'x' | 'y' | ''>('')
 
 let failTimer: ReturnType<typeof setTimeout> | undefined
 let bounceTimer: ReturnType<typeof setTimeout> | undefined
@@ -240,29 +243,27 @@ const thumbStyle = computed<Record<string, string>>(() => ({
   transitionDuration: transitionDuration.value,
   transitionTimingFunction: transitionEasing.value,
   touchAction: 'none',
-  WebkitTouchCallout: 'none',
-  WebkitUserSelect: 'none',
+  '-webkit-touch-callout': 'none',
+  '-webkit-user-select': 'none',
   userSelect: 'none',
 }))
 
-const hasCustomDefaultSlot = computed(() => !!slots.default)
 const showReveal = computed(() => (
   props.splitText
-  && !hasCustomDefaultSlot.value
   && !verified.value
   && !props.loading
   && (!failVisible.value || isBouncing.value)
 ))
 const revealOverlayStyle = computed(() => ({
   clipPath: `inset(0 ${100 - progress.value}% 0 0)`,
-  WebkitClipPath: `inset(0 ${100 - progress.value}% 0 0)`,
+  '-webkit-clip-path': `inset(0 ${100 - progress.value}% 0 0)`,
   transitionProperty: isDragging.value ? 'none' : 'clip-path, -webkit-clip-path',
   transitionDuration: transitionDuration.value,
   transitionTimingFunction: transitionEasing.value,
 }))
 const revealRemainderOverlayStyle = computed(() => ({
   clipPath: `inset(0 0 0 ${progress.value}%)`,
-  WebkitClipPath: `inset(0 0 0 ${progress.value}%)`,
+  '-webkit-clip-path': `inset(0 0 0 ${progress.value}%)`,
   transitionProperty: isDragging.value ? 'none' : 'clip-path, -webkit-clip-path',
   transitionDuration: transitionDuration.value,
   transitionTimingFunction: transitionEasing.value,
@@ -327,11 +328,11 @@ function clearAutoResetTimer() {
   }
 }
 
-function createPayload(): SlideVerifyPayload {
+function createPayload(verifiedValue = !!verified.value): SlideVerifyPayload {
   return {
     progress: progress.value,
     offset: translateX.value,
-    verified: verified.value,
+    verified: verifiedValue,
   }
 }
 
@@ -356,7 +357,7 @@ function syncPosition(value = verified.value) {
 
 async function refreshTrackMeasure() {
   await nextTick()
-  if (isDragging.value) {
+  if (disposed || isDragging.value) {
     return
   }
   await measureTrack()
@@ -368,7 +369,8 @@ function measureTrack(): Promise<void> {
     query.select('.reborn-slide-verify').boundingClientRect()
     query.select('.reborn-slide-verify__thumb').boundingClientRect()
     query.exec((res) => {
-      const [rootNode, thumbNode] = res as any[]
+      if (disposed) { resolve(); return }
+      const [rootNode, thumbNode] = (res ?? []) as any[]
 
       if (rootNode) {
         rootWidth.value = rootNode.width ?? 0
@@ -420,7 +422,7 @@ function completeVerify() {
   setTranslate(maxTranslate.value)
   updateVerified(true)
 
-  const payload = createPayload()
+  const payload = createPayload(true)
   emit('success', payload)
 
   if (props.showToast) {
@@ -465,9 +467,11 @@ async function verify() {
   if (rootWidth.value <= 0) {
     await measureTrack()
   }
-  completeVerify()
+  if (!disposed) completeVerify()
 }
 
+let touchSeq = 0
+let releasedSeq = -1
 async function handleTouchStart(e: any) {
   if (!isInteractive.value) {
     return
@@ -478,6 +482,8 @@ async function handleTouchStart(e: any) {
     return
   }
 
+  const seq = ++touchSeq
+  const coords = { clientX: point.clientX, clientY: point.clientY }
   preventGesture(e)
 
   clearFailTimer()
@@ -486,14 +492,14 @@ async function handleTouchStart(e: any) {
   isBouncing.value = false
 
   await measureTrack()
-  if (!isInteractive.value) {
+  if (disposed || seq !== touchSeq || releasedSeq === seq || !isInteractive.value) {
     return
   }
 
   isDragging.value = true
   lockDirection.value = ''
-  startX.value = point.clientX
-  startY.value = point.clientY
+  startX.value = coords.clientX
+  startY.value = coords.clientY
   startTranslateX.value = translateX.value
 
   emit('start', createPayload())
@@ -532,6 +538,7 @@ function handleTouchMove(e: any) {
 }
 
 function handleTouchEnd() {
+  releasedSeq = touchSeq
   if (!isDragging.value) {
     return
   }
@@ -549,6 +556,7 @@ function handleTouchEnd() {
 
 watch(verified, async (value) => {
   await nextTick()
+  if (disposed) return
   if (rootWidth.value <= 0 || thumbWidth.value <= 0) {
     await measureTrack()
     return
@@ -556,12 +564,7 @@ watch(verified, async (value) => {
   syncPosition(value)
 })
 
-watch([
-  currentSize,
-  () => props.customClass,
-  () => props.ui,
-  () => props.width,
-], refreshTrackMeasure, { deep: true })
+watch(() => JSON.stringify([currentSize.value, props.customClass, props.ui, props.width]), refreshTrackMeasure)
 
 watch(() => props.showFailText, (value) => {
   if (!value) {
@@ -572,13 +575,12 @@ watch(() => props.showFailText, (value) => {
 
 onMounted(async () => {
   await nextTick()
-  if (props.defaultVerified && !verified.value) {
-    updateVerified(true)
-  }
-  await measureTrack()
+  if (!disposed) await measureTrack()
 })
 
 onBeforeUnmount(() => {
+  disposed = true
+  touchSeq++
   clearFailTimer()
   clearBounceTimer()
   clearAutoResetTimer()
@@ -597,14 +599,14 @@ defineExpose({
 
       <view :class="ui.content()">
         <slot :verified="verified" :loading="loading" :progress="progress" :text="displayText" :ui="ui">
-          <text v-if="!showReveal" :class="ui.text()">
+          <text v-if="!showReveal || $slots.default" :class="ui.text()">
             {{ displayText }}
           </text>
         </slot>
       </view>
 
       <!-- 分层文案：通过文案只显示在已滑过区域 -->
-      <view v-if="showReveal"
+      <view v-if="showReveal && !$slots.default"
         class="absolute inset-0 z-[1] pointer-events-none"
         :style="revealOverlayStyle">
         <view :class="revealContentClass">
@@ -615,7 +617,7 @@ defineExpose({
       </view>
 
       <!-- 默认文案只保留在未滑过区域 -->
-      <view v-if="showReveal"
+      <view v-if="showReveal && !$slots.default"
         class="absolute inset-0 z-[1] pointer-events-none"
         :style="revealRemainderOverlayStyle">
         <view :class="revealContentClass">

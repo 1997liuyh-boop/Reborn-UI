@@ -1,3 +1,7 @@
+import type { InjectionKey } from 'vue'
+import type { CheckboxGroupContext } from './RebornCheckbox.vue'
+/** 组内共享只读状态与切换操作。 */
+export const CHECKBOX_GROUP_KEY: InjectionKey<CheckboxGroupContext> = Symbol('reborn-checkbox-group')
 const size = ['sm', 'md', 'lg'] as const
 const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 const variant = ['filled', 'outlined'] as const

@@ -16,7 +16,7 @@ navigation:
 
 ```ts
 function useNavigation(
-  navigation?: Ref<ContentNavigationItem[]>
+  navigation?: MaybeRefOrGetter<ContentNavigationItem[] | null | undefined>
 ): {
   nav: ComputedRef<ContentNavigationItem[]>
 }

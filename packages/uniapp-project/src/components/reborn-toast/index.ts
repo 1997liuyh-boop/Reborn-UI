@@ -1,13 +1,16 @@
 import type { MessageGlobalConfig, MessageNode, MessageOptions, MessageType } from './reborn-toast.config'
 // #ifdef H5
 // 仅 H5 有 DOM 渲染 API，小程序端的 vue 运行时不导出 render，必须条件编译
-import { createVNode, getCurrentInstance, render } from 'vue'
+import { createVNode, render } from 'vue'
 // #endif
 import {
   addMessage,
   applyMessageConfig,
   destroyMessages,
-  hasMessageInstance,
+  getMessageAppContext,
+  MESSAGE_CONTAINER_KEY,
+  needsMessageContainer,
+  syncMessageRenderer,
 } from './reborn-toast.config'
 import RebornToast from './RebornToast.vue'
 
@@ -38,8 +41,8 @@ function mountContainer() {
     return
   }
 
-  // 页面内已渲染 <RebornToast />（RebornPage 内置）时无需再挂容器，避免消息重复展示
-  if (!containerEl && hasMessageInstance()) {
+  // 当前页面已渲染 <RebornToast />（RebornPage 内置）时无需挂容器，避免消息重复展示
+  if (!containerEl && !needsMessageContainer()) {
     return
   }
 
@@ -54,18 +57,17 @@ function mountContainer() {
 
   if (!containerEl) {
     containerEl = document.createElement('div')
-    const vnode = createVNode(RebornToast)
-    // 命令式调用大多发生在事件回调里，桥接当前应用上下文以支持全局注入
-    const instance = getCurrentInstance()
-    if (instance) {
-      vnode.appContext = instance.appContext
-    }
+    const vnode = createVNode(RebornToast, { key: MESSAGE_CONTAINER_KEY })
+    // 从已挂载页面实例保存的上下文桥接，事件回调无需读取当前实例。
+    vnode.appContext = getMessageAppContext()
     render(vnode, containerEl)
   }
 
   if (containerEl.parentElement !== parent) {
     parent.appendChild(containerEl)
   }
+  // 容器已存在时按当前页面重判一次：切到没有页面实例的页面后由容器接管，切回后让位
+  syncMessageRenderer()
   // #endif
 }
 

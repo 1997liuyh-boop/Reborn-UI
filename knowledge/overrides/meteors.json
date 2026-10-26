@@ -12,6 +12,6 @@
     "仅 web 端可用。",
     "作为装饰层放入目标容器内部，父容器需 relative 且 overflow-hidden（见示例），否则流星会溢出。",
     "示例外层包裹了 ClientOnly，流星位置为随机生成。",
-    "count 控制流星数量（默认 20），class 追加到每颗流星上。"
+    "count 控制流星数量（默认 20），class 追加到每颗流星上；style、data-* 等未声明属性落在根节点——一层 absolute inset-0、pointer-events-none 的盒子上，可用 style 控制整层透明度。"
   ]
 }

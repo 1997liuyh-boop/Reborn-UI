@@ -9,7 +9,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { computed, getCurrentInstance, nextTick, onMounted, onUnmounted, ref, watch, type CSSProperties } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, reactive, shallowRef, toRefs, watch, type CSSProperties } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme, { tabbarAnimations, tabbarColors, tabbarShapes } from './reborn-tabbar.config'
@@ -18,8 +18,6 @@ import { TABBAR_KEY } from './types'
 import type { TabbarItem } from './types'
 
 export interface TabbarProps {
-    /** 当前激活项，对应子项 RebornTabbarTrigger 的 name（子项未设 name 时为其索引），支持 v-model */
-    modelValue?: number | string
     /** 是否固定在页面底部（fixed 定位吸底，配合 placeholder 自动占位） */
     fixed?: boolean
     /** 是否显示顶部分隔线（仅 shape 为 normal 时渲染） */
@@ -57,7 +55,6 @@ export interface TabbarProps {
 }
 
 const props = withDefaults(defineProps<TabbarProps>(), {
-    modelValue: 0,
     fixed: false,
     bordered: true,
     safeAreaInsetBottom: false,
@@ -71,27 +68,25 @@ const props = withDefaults(defineProps<TabbarProps>(), {
     ballColors: () => ['#ff6675', '#ffb03b', '#35b6f2', '#3ac29e']
 })
 
-const emit = defineEmits([
-    'change', // 选中项切换后触发，参数为 { value }，value 为新选中项的 name
-    'update:modelValue', // 选中项变化时触发（v-model 同步），参数为新选中项的 name
-])
+const emit = defineEmits<{ change: [payload: { value: string | number }] }>()
+const model = defineModel<string | number>({ default: 0 })
 
 const b = tv(theme)
 const { proxy } = getCurrentInstance() as any
 const { linkChildren, children } = useChildren(TABBAR_KEY)
 
-const height = ref<number | string>('')
-const locked = ref(false)
-const isTransition = ref(false)
-const oldIndexRef = ref(0)
-const newIndexRef = ref(0)
-const dropBallLeft = ref(0)
-const dropBallStartLeft = ref(0)
-const dropBallTop = ref(-16)
-const dropBallSize = ref(44)
-const dropBallReady = ref(false)
-const dropBallAnimating = ref(false)
-const pendingDropAnimation = ref(false)
+const height = shallowRef<number | string>('')
+const locked = shallowRef(false)
+const isTransition = shallowRef(false)
+const oldIndexRef = shallowRef(0)
+const newIndexRef = shallowRef(0)
+const dropBallLeft = shallowRef(0)
+const dropBallStartLeft = shallowRef(0)
+const dropBallTop = shallowRef(-16)
+const dropBallSize = shallowRef(44)
+const dropBallReady = shallowRef(false)
+const dropBallAnimating = shallowRef(false)
+const pendingDropAnimation = shallowRef(false)
 const dropBallVisible = computed(() => {
     if (props.animation !== 'drop' || !dropBallReady.value) {
         return false
@@ -102,6 +97,10 @@ const dropBallVisible = computed(() => {
     return true
 })
 
+let disposed = false
+let frameTimer: ReturnType<typeof setTimeout> | undefined
+let dropTimer: ReturnType<typeof setTimeout> | undefined
+let layoutVersion = 0
 let transitionTimer: ReturnType<typeof setTimeout> | null = null
 let layoutTimer: ReturnType<typeof setTimeout> | null = null
 let unlockTimer: ReturnType<typeof setTimeout> | null = null
@@ -109,7 +108,7 @@ let unlockTimer: ReturnType<typeof setTimeout> | null = null
 const DROP_ANIMATION_DURATION = 480
 
 linkChildren({
-    props,
+    props: reactive({ ...toRefs(props), modelValue: model }),
     setChange,
     locked,
 })
@@ -165,7 +164,7 @@ const presets = computed(() => {
 const ballCount = computed(() => props.ballColors.length || 3)
 
 const activeIndex = computed(() => {
-    const index = children.findIndex((child: any, idx: number) => getChildName(child, idx) === props.modelValue)
+    const index = children.findIndex((child: any, idx: number) => getChildName(child, idx) === model.value)
     return index >= 0 ? index : 0
 })
 
@@ -195,6 +194,8 @@ function getFallbackRect(baseRect: any, index: number, count: number) {
 }
 
 function syncDropIndicator(animate = false) {
+    const version = ++layoutVersion
+    if (disposed) return
     if (props.animation !== 'drop') {
         dropBallReady.value = false
         dropBallAnimating.value = false
@@ -206,8 +207,10 @@ function syncDropIndicator(animate = false) {
     query.select('.reborn-tabbar-base').boundingClientRect()
     query.selectAll('.reborn-tabbar-trigger').boundingClientRect()
     query.exec((res: any[]) => {
+        if (disposed || version !== layoutVersion) return
         const baseRect = res?.[0]
-        const rects = (res?.[1] || []).filter(Boolean)
+        // flex order 可改变视觉位置，查询仍按节点顺序返回，按横向位置对齐登记索引。
+        const rects = (res?.[1] || []).filter(Boolean).sort((a: { left: number }, b: { left: number }) => a.left - b.left)
         if (!baseRect) return
 
         const targetRect = rects[activeIndex.value] || getFallbackRect(baseRect, activeIndex.value, children.length || 1)
@@ -232,7 +235,8 @@ function syncDropIndicator(animate = false) {
 
         dropBallStartLeft.value = dropBallLeft.value
         dropBallAnimating.value = false
-        setTimeout(() => {
+        clearTimeout(dropTimer)
+        dropTimer = setTimeout(() => {
             dropBallLeft.value = metrics.left
             dropBallAnimating.value = true
         }, 16)
@@ -243,6 +247,7 @@ function scheduleLayoutSync(animate = false, delay = 0) {
     if (layoutTimer) clearTimeout(layoutTimer)
     layoutTimer = setTimeout(() => {
         nextTick(() => {
+            if (disposed) return
             syncDropIndicator(animate)
             setPlaceholderHeight()
         })
@@ -257,26 +262,19 @@ watch(
 )
 
 watch(
-    () => children.length,
+    () => children.slice(),
     () => {
         scheduleLayoutSync(false, 16)
     }
 )
 
 watch(
-    () => props.modelValue,
+    model,
     () => {
         const shouldAnimate = props.animation === 'drop' && pendingDropAnimation.value
         scheduleLayoutSync(shouldAnimate, shouldAnimate ? 16 : 0)
         pendingDropAnimation.value = false
 
-        if (shouldAnimate) {
-            if (unlockTimer) clearTimeout(unlockTimer)
-            unlockTimer = setTimeout(() => {
-                dropBallAnimating.value = false
-                locked.value = false
-            }, DROP_ANIMATION_DURATION)
-        }
     }
 )
 
@@ -284,7 +282,11 @@ onMounted(() => {
     scheduleLayoutSync(false, 32)
 })
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
+    disposed = true
+    layoutVersion++
+    clearTimeout(frameTimer)
+    clearTimeout(dropTimer)
     if (transitionTimer) clearTimeout(transitionTimer)
     if (layoutTimer) clearTimeout(layoutTimer)
     if (unlockTimer) clearTimeout(unlockTimer)
@@ -293,14 +295,15 @@ onUnmounted(() => {
 function setChange(child: TabbarItem) {
     const active = child.name
 
-    if (active === props.modelValue) return
+    if (active === model.value) return
     if (locked.value) return
 
     const done = () => {
-        const currentIndex = children.findIndex((c: any, i: number) => getChildName(c, i) === props.modelValue)
+        const currentIndex = children.findIndex((c: any, i: number) => getChildName(c, i) === model.value)
         oldIndexRef.value = currentIndex >= 0 ? currentIndex : 0
 
-        emit('update:modelValue', active)
+        if (disposed) return
+        model.value = active
         emit('change', { value: active })
 
         if (props.animation === 'fly-balls') {
@@ -309,7 +312,8 @@ function setChange(child: TabbarItem) {
 
             locked.value = true
             isTransition.value = false
-            setTimeout(() => {
+            clearTimeout(frameTimer)
+            frameTimer = setTimeout(() => {
                 isTransition.value = true
                 if (transitionTimer) clearTimeout(transitionTimer)
                 transitionTimer = setTimeout(() => {
@@ -320,6 +324,12 @@ function setChange(child: TabbarItem) {
         } else if (props.animation === 'drop') {
             locked.value = true
             pendingDropAnimation.value = true
+            if (unlockTimer) clearTimeout(unlockTimer)
+            unlockTimer = setTimeout(() => {
+                dropBallAnimating.value = false
+                pendingDropAnimation.value = false
+                locked.value = false
+            }, DROP_ANIMATION_DURATION + 32)
         } else {
             locked.value = false
         }
@@ -327,7 +337,10 @@ function setChange(child: TabbarItem) {
 
     if (props.beforeChange && typeof props.beforeChange === 'function') {
         locked.value = true
+        let settled = false
         const wrappedDone = (shouldProceed: boolean = true) => {
+            if (settled || disposed) return
+            settled = true
             if (shouldProceed) {
                 done()
             } else {
@@ -376,7 +389,7 @@ const getBallStyle = (ballIndex: number) => {
         width: `${p.width}rpx`,
         height: `${p.height}rpx`,
         borderRadius: '50%',
-        backgroundColor: props.ballColors?.[ballIndex % count] || '#000',
+        backgroundColor: p.backgroundColor,
         opacity: 0,
     }
 }
@@ -389,7 +402,7 @@ function setPlaceholderHeight() {
 
     const query = uni.createSelectorQuery().in(proxy)
     query.select('.reborn-tabbar-base').boundingClientRect((res: any) => {
-        if (res) {
+        if (!disposed && res) {
             const extra = props.animation === 'drop' ? Math.max(-dropBallTop.value, 0) : 0
             height.value = Number(res.height) + extra
         }

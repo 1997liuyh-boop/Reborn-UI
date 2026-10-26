@@ -3,9 +3,10 @@ import type { ClassValue } from "clsx";
 import type { CSSProperties } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 import type { ItemType, MenuContext, MenuUI } from "./reborn-menu.config";
-import { useEventListener } from "@vueuse/core";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from "vue";
+import { defaultWindow, useEventListener } from "@vueuse/core";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, shallowRef, useSlots, useTemplateRef, watch } from "vue";
 import { motionPresets, runMotion, stopMotion } from "@/lib/motion";
+import { resolveFloatingPosition } from "~/lib/floating";
 import { cn } from "~/lib/utils";
 import theme, { getMenuFallbackChar, MENU_INJECTION_KEY, MENU_INLINE_INDENT } from "./reborn-menu.config";
 // RebornMenuItems 由 Nuxt 全局自动注册，不写静态 import 以避免递归组件的 ESM 循环依赖。
@@ -196,10 +197,6 @@ if (menuContext) {
     inlineDepth: computed(() =>
       effectiveExpandType.value === "normal" ? (menuContext?.inlineDepth.value ?? 0) + 1 : 0,
     ),
-    /** 子级通知时，由于使用 CSS Grid 动画，直接向上冒泡即可 */
-    notifyResize: () => {
-      menuContext?.notifyResize?.();
-    },
   });
 }
 
@@ -301,9 +298,9 @@ const subMenuUi = computed(() => {
   };
 });
 
-const popupRef = ref<HTMLElement | null>(null);
-const liRef = ref<HTMLElement | null>(null);
-const popupStyle = ref<Record<string, string>>({});
+const popupRef = useTemplateRef<HTMLElement>("popupRef");
+const liRef = useTemplateRef<HTMLElement>("liRef");
+const popupStyle = shallowRef<Record<string, string>>({});
 
 /**
  * 浮层展开动画的缩放原点。
@@ -311,7 +308,7 @@ const popupStyle = ref<Record<string, string>>({});
  * 否则缩放看起来像是从半空中凭空浮现。具体方位由 updatePopupPosition 按实际落位（含翻转）写入。
  * 默认值对应未翻转的左上角，也是不 teleport 分支（纯 CSS 定位在条目右上）的正确原点。
  */
-const popupOrigin = ref("left top");
+const popupOrigin = shallowRef("left top");
 
 /**
  * 浮层展开动画是否生效。
@@ -364,9 +361,9 @@ const popupTransitionProps = {
  * 但展开后一直裁着，会把首尾子条目的选中投影切掉一半。所以只在落定后放开裁剪，
  * 一旦开始收起就立刻恢复，收起动画照常被裁住。
  */
-const inlineSettled = ref(isOpened.value);
-const inlineRef = ref<HTMLElement | null>(null);
-const inlineAnimating = ref(false);
+const inlineSettled = shallowRef(isOpened.value);
+const inlineRef = useTemplateRef<HTMLElement>("inlineRef");
+const inlineAnimating = shallowRef(false);
 let inlineVersion = 0;
 /** 展开与收起都从当前可见高度出发，落定后放开裁剪，保留条目投影。 */
 watch([isOpened, popupTransitionEnabled, effectiveExpandType], async ([opened]) => {
@@ -402,7 +399,7 @@ watch([isOpened, popupTransitionEnabled, effectiveExpandType], async ([opened]) 
 });
 
 /** 浮层非持久化时，用于控制关闭后销毁 DOM */
-const popupMounted = ref(false);
+const popupMounted = shallowRef(false);
 
 watch(isOpened, (val) => {
   if (val) popupMounted.value = true;
@@ -423,7 +420,7 @@ watch(popupRef, (newVal, oldVal) => {
   if (newVal) menuContext?.registerPopup?.(newVal);
 });
 
-let closeTimer: ReturnType<typeof setTimeout> | null = null;
+let cancelClose: (() => void) | null = null;
 let openTimer: ReturnType<typeof setTimeout> | null = null;
 
 /** 清除本组件挂起的展开定时器 */
@@ -436,10 +433,8 @@ function clearOpenTimer() {
 
 /** 清除本组件挂起的关闭定时器 */
 function clearOwnCloseTimer() {
-  if (closeTimer) {
-    clearTimeout(closeTimer);
-    closeTimer = null;
-  }
+  cancelClose?.();
+  cancelClose = null;
 }
 
 function handleClick(event: MouseEvent) {
@@ -457,7 +452,7 @@ function handleClick(event: MouseEvent) {
   // （鼠标移向子项必经父项之外，倒计时关闭会让刚展开的子菜单当场收回）。
   // 两者叠加后「悬停 + 平铺」根本没有收起路径，展开即锁死，只能靠展开同级项互斥挤掉。
   // ✅ 修复：平铺态无论触发方式如何，都允许点击标题切换展开状态。
-  // 子项与嵌套子菜单的 li 都带 @click.stop，冒泡不上来，不会误折叠祖先。
+  // 切换入口只挂在标题行，子项点击可继续冒泡，不会触发祖先的标题处理。
   const canToggleByClick =
     menuContext?.menuTrigger.value === "click" || effectiveExpandType.value === "normal";
 
@@ -505,12 +500,11 @@ function handleMouseLeave() {
   if (effectiveExpandType.value === "normal") return;
 
   if (menuContext?.menuTrigger.value === "hover") {
-    closeTimer = setTimeout(() => {
+    clearOwnCloseTimer();
+    cancelClose = menuContext?.scheduleClose?.(() => {
       menuContext.handleClose(props.index, indexPath.value);
-      closeTimer = null;
-    }, effectiveHideTimeout.value);
-
-    menuContext?.registerCloseTimer?.(closeTimer);
+      cancelClose = null;
+    }, effectiveHideTimeout.value) ?? null;
   }
 }
 
@@ -537,51 +531,17 @@ async function updatePopupPosition() {
   // 所以浮层尺寸一律用不受 transform / scale 影响的 offsetWidth、offsetHeight。
   const popupWidth = popupRef.value.offsetWidth;
   const popupHeight = popupRef.value.offsetHeight;
-  const viewportHeight = window.innerHeight;
-  const viewportWidth = window.innerWidth;
-
-  const isRootHoriz = isRootHorizontal.value;
-  // ⚠️ 根因：旧实现四处硬编码 8，导致声明出来的 popperOffset 属性完全没有接线。
-  // ✅ 修复：统一由 offset 提供触发元素与浮层之间的间距，视口安全边距另算。
-  const offset = effectivePopperOffset.value;
-  /** 贴近视口边缘时保留的安全距离 */
-  const safeGap = 8;
-
-  let top = isRootHoriz ? liRect.bottom + offset : liRect.top;
-  let left = isRootHoriz ? liRect.left : liRect.right + offset;
-  /** 是否因右侧空间不足翻到了条目左边 */
-  let flippedToLeft = false;
-
-  // 底部溢出处理
-  if (top + popupHeight > viewportHeight) {
-    top = Math.max(safeGap, viewportHeight - popupHeight - safeGap);
-  }
-
-  // 右侧溢出处理
-  if (left + popupWidth > viewportWidth) {
-    if (isRootHoriz) {
-      left = Math.max(safeGap, viewportWidth - popupWidth - safeGap);
-    } else {
-      // ⚠️ 根因：翻转分支此前无条件写 liRect.left - popupWidth - offset，不做任何钳位。
-      // 浮层最小宽度 200px，视口窄到约 470px 以下时左边同样塞不下，
-      // 这个减法会得到负数，浮层有一截被推出左边缘，里面的条目直接点不到。
-      // ✅ 修复：只有左侧确实放得下才翻转；两侧都放不下时退回较宽的一侧再钳进视口。
-      const flippedLeft = liRect.left - popupWidth - offset;
-      if (flippedLeft >= safeGap) {
-        left = flippedLeft;
-        flippedToLeft = true;
-      } else if (liRect.left > viewportWidth - liRect.right) {
-        // 条目左侧空间更大：贴左边缘摆放
-        left = safeGap;
-        flippedToLeft = true;
-      } else {
-        // 条目右侧空间更大：贴右边缘摆放
-        left = Math.max(safeGap, viewportWidth - popupWidth - safeGap);
-      }
-      // 走到后两支时浮层必然与触发条目重叠——视口已经容不下「菜单 + 浮层」并排，
-      // 重叠至少还能点，被裁在视口外则完全不可用。
-    }
-  }
+  const { side, position } = resolveFloatingPosition({
+    triggerRect: liRect,
+    size: { width: popupWidth, height: popupHeight },
+    side: isRootHorizontal.value ? "bottom" : "right",
+    align: "start",
+    offset: effectivePopperOffset.value,
+  });
+  // 两侧均放不下时保留可点击区域；共享几何负责常规翻转与交叉轴贴边
+  const left = Math.max(8, Math.min(position.left, window.innerWidth - popupWidth - 8));
+  const top = position.top;
+  const flippedToLeft = side === "left";
 
   // 缩放原点取浮层与触发条目贴合的那个点：横向是贴合的那条边（翻转后换成右边），
   // 纵向是条目中线相对浮层顶边的偏移。根级水平菜单的浮层挂在条目下方，
@@ -647,7 +607,7 @@ watch(
 // 当弹窗打开时，监听滚动事件
 // 使用 capture 确保能捕获到局部滚动容器的滚动
 useEventListener(
-  window,
+  () => (isOpened.value && props.teleported && effectiveExpandType.value === "popup" ? defaultWindow : undefined),
   "scroll",
   (e) => {
     if (!props.teleported) return;
@@ -683,7 +643,16 @@ useEventListener(
   { capture: true, passive: true },
 );
 
+// 只在传送浮层展开时重算视口变化，收起实例不占监听。
+useEventListener(
+  () => (isOpened.value && props.teleported && effectiveExpandType.value === "popup" ? defaultWindow : undefined),
+  "resize",
+  () => { void updatePopupPosition(); },
+  { passive: true },
+);
+
 onBeforeUnmount(() => {
+  menuContext?.unregisterSubMenu?.(props.index, indexPath.value);
   inlineVersion++;
   stopMotion(inlineRef.value);
   if (popupRef.value) cancelPopup(popupRef.value);
@@ -701,7 +670,6 @@ onBeforeUnmount(() => {
     :class="subMenuUi.subMenu({ class: props.class })"
     role="menuitem"
     :data-menu-active="isActive || undefined"
-    @click.stop="handleClick"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
@@ -709,6 +677,7 @@ onBeforeUnmount(() => {
     <div
       :class="subMenuUi.menuItem()"
       :style="inlineIndentStyle"
+      @click="handleClick"
     >
       <div :class="subMenuUi.menuItemContent()">
         <div
@@ -733,7 +702,7 @@ onBeforeUnmount(() => {
           :class="subMenuUi.menuItemArrow({ opened: hasCustomExpandIcon ? false : isOpened })"
         >
           <Icon
-            :name="hasCustomExpandIcon ? currentExpandIcon! : 'lucide:chevron-right'"
+            :name="hasCustomExpandIcon ? currentExpandIcon ?? '' : 'lucide:chevron-right'"
             class="size-4"
           />
         </div>

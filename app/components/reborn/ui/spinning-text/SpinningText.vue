@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import type { Transition, Variant } from "motion-v";
+import type { Transition, Variants } from "motion-v";
 import { Motion } from "motion-v";
+import { computed } from "vue";
 
 const props = withDefaults(defineProps<CircularTextProps>(), {
   duration: 10,
@@ -24,9 +25,10 @@ interface CircularTextProps {
   reverse?: boolean;
   radius?: number;
   transition?: Transition;
+  /** 容器与每个字母的变体表（以 hidden / visible 为键），分别合并进内置变体 */
   variants?: {
-    container?: Variant;
-    item?: Variant;
+    container?: Variants;
+    item?: Variants;
   };
 }
 
@@ -43,7 +45,7 @@ const finalTransition = computed(() => ({
 
 const containerVariants = computed(() => ({
   visible: { rotate: props.reverse ? -360 : 360 },
-  // ...props.variants?.container,
+  ...props.variants?.container,
 }));
 
 const itemVariants = computed(() => ({
@@ -62,11 +64,12 @@ const itemVariants = computed(() => ({
     :variants="containerVariants"
     :transition="finalTransition"
   >
+    <!-- 外层普通 span 负责沿圆周定位；variants 只对 Motion 组件有效，绑在原生 span 上只会渲染成 [object Object] 属性。
+         定位的 transform 与字母动画分在两层，自定义的 item 变体含缩放等变换时也不会覆盖定位 -->
     <span
       v-for="(letter, index) in letters"
       :key="`${letter}-${index}`"
       class="absolute top-1/2 left-1/2"
-      :variants="itemVariants"
       :style="{
         '--index': index,
         '--total': letters.length,
@@ -79,7 +82,9 @@ const itemVariants = computed(() => ({
         transformOrigin: 'center',
       }"
     >
-      {{ letter }}
+      <Motion as="span" class="inline-block" :variants="itemVariants">
+        {{ letter }}
+      </Motion>
     </span>
   </Motion>
 </template>

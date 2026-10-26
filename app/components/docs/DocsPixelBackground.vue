@@ -5,7 +5,7 @@
  * - 由下往上逐行落位：先落的行在下，后落的行停在它上面，像一块块搭起来；
  * - 拼完后画一帧静止图就停掉 rAF，不留常驻循环；视口尺寸变化时按新尺寸重画静止图；
  * - 减少动态效果偏好下直接画成品，不播放下落。
- * 由 docs 布局挂载，挂在 UPage 的 :key 之外：同一节里切换子页不重播，从别的栏目进入时才播。
+ * 由 docs 布局挂载、位于 UPage 之外：同一节里切换子页时组件实例复用、不重播，从别的栏目进入时才挂载并播放。
  */
 import { withBase } from 'ufo'
 import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
@@ -145,6 +145,7 @@ async function loadPixels() {
 }
 
 let resizeObserver: ResizeObserver | undefined
+let disposed = false
 
 function onResize() {
   measure()
@@ -165,6 +166,7 @@ onMounted(async () => {
     // 素材加载失败只影响装饰层，不打断页面
     return
   }
+  if (disposed) return
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     finished = true
     draw(performance.now())
@@ -175,6 +177,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  disposed = true
   cancelAnimationFrame(frame)
   resizeObserver?.disconnect()
 })

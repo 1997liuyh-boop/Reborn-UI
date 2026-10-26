@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from '#components';
+
 /**
  * 总览卡片缩略：手机屏下半截，底部是四个图标加文字的标签栏，「首页」为选中态
  *

@@ -4,12 +4,13 @@ import RebornDialog from "~/components/reborn/ui/reborn-dialog/RebornDialog.vue"
 /**
  * 成功提示对话框
  */
-const open = defineModel<boolean>("open", { default: false });
+const open = defineModel<boolean>("open", { default: undefined });
 
-const props = defineProps<{
+interface Props {
   title?: string;
   message?: string;
-}>();
+}
+defineProps<Props>();
 
 const emit = defineEmits<{
   confirm: [];

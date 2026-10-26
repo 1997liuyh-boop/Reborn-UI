@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
@@ -42,7 +42,7 @@ const confirmList = ref(
 )
 
 const controlledSwiperRef = ref<{ open: (side?: string) => void, close: () => void } | null>(null)
-const controlledOpen = ref(false)
+const controlledOpen = shallowRef(false)
 
 function onSwitchChange(val: boolean) {
   if (val) {
@@ -54,11 +54,11 @@ function onSwitchChange(val: boolean) {
 }
 
 function onControlledSwiperOpen() {
-  nextTick(() => { controlledOpen.value = true })
+  controlledOpen.value = true
 }
 
 function onControlledSwiperClose() {
-  nextTick(() => { controlledOpen.value = false })
+  controlledOpen.value = false
 }
 
 const confirmDeleteActions: SwiperActionItem[] = [
@@ -71,9 +71,9 @@ const demoSwiperUi = {
   content: 'rounded-none',
 }
 
-const currentMode = ref<'push' | 'overlay'>('push')
-const touchHintEnabled = ref(true)
-const currentActionRadius = ref<'none' | 'right' | 'both'>('right')
+const currentMode = shallowRef<'push' | 'overlay'>('push')
+const touchHintEnabled = shallowRef(true)
+const currentActionRadius = shallowRef<'none' | 'right' | 'both'>('right')
 
 const actionRadiusOptions: { label: string, value: 'none' | 'right' | 'both', desc: string }[] = [
   { label: '无', value: 'none', desc: '不补圆角' },
@@ -114,7 +114,7 @@ function handleContentClick() {
 
 <template>
   <RebornPage title="SwiperAction 滑动操作" description="左滑唤出收藏、删除等快捷操作">
-    <RebornCard title="基础用法" :border="false" overflow-visible>
+    <RebornCard title="基础用法" overflow-visible>
       <RebornSwiperAction :ui="demoSwiperUi" :right-actions="rightActions" @click="handleAction">
         <view class="flex min-h-[128rpx] flex-row items-center gap-[24rpx] px-[32rpx]">
           <view class="flex size-[72rpx] items-center justify-center rounded-full bg-primary/10">
@@ -129,7 +129,7 @@ function handleContentClick() {
       </RebornSwiperAction>
     </RebornCard>
 
-    <RebornCard title="自定义宽度" :border="false" overflow-visible>
+    <RebornCard title="自定义宽度" overflow-visible>
       <RebornSwiperAction :ui="demoSwiperUi" :right-actions="compactActions" :threshold="0.25" @click="handleAction">
         <view class="flex min-h-[132rpx] flex-row items-center justify-between gap-[24rpx] px-[32rpx]">
           <view class="flex min-w-0 flex-1 flex-col gap-[10rpx]">
@@ -146,7 +146,7 @@ function handleContentClick() {
       </RebornSwiperAction>
     </RebornCard>
 
-    <RebornCard title="滑动模式" :border="false" overflow-visible>
+    <RebornCard title="滑动模式" overflow-visible>
       <view class="flex flex-col gap-[16rpx]">
         <view class="flex flex-row items-center justify-between px-[32rpx] pb-[4rpx]">
           <view class="flex flex-col gap-[6rpx]">
@@ -218,7 +218,7 @@ function handleContentClick() {
       </view>
     </RebornCard>
 
-    <RebornCard title="内容点击" :border="false" overflow-visible>
+    <RebornCard title="内容点击" overflow-visible>
       <RebornSwiperAction :ui="demoSwiperUi" :right-actions="rightActions" content-tap-navigate @click="handleAction"
         @content-click="handleContentClick">
         <view class="flex min-h-[128rpx] flex-row items-center justify-between px-[32rpx]">
@@ -231,7 +231,7 @@ function handleContentClick() {
       </RebornSwiperAction>
     </RebornCard>
 
-    <RebornCard title="外部控制" :border="false" overflow-visible>
+    <RebornCard title="外部控制" overflow-visible>
       <view class="flex flex-col gap-[20rpx]">
         <view class="flex flex-row items-center justify-between px-[32rpx]">
           <view class="flex flex-col gap-[6rpx]">
@@ -256,11 +256,11 @@ function handleContentClick() {
       </view>
     </RebornCard>
 
-    <RebornCard title="列表互斥" :border="false" overflow-visible>
+    <RebornCard title="列表互斥" overflow-visible>
       <view class="flex flex-col gap-[16rpx]">
         <RebornSwiperAction v-for="(item, index) in messageList" :key="item.id" group="message-list"
           :right-actions="rightActionsWithRemove" :ui="{ ...demoSwiperUi, action: 'px-[16rpx]' }" @click="handleAction"
-          @remove="messageList.splice(index, 1)">
+          @remove="messageList = messageList.filter(message => message.id !== item.id)">
           <view class="flex min-h-[120rpx] flex-row items-center gap-[24rpx] px-[32rpx]">
             <view class="flex size-[68rpx] shrink-0 items-center justify-center rounded-full bg-gray-1 dark:bg-gray-7">
               <view :class="[item.iconClass, 'text-[32rpx]']" />
@@ -277,12 +277,12 @@ function handleContentClick() {
       </view>
     </RebornCard>
 
-    <RebornCard title="确认删除" :border="false" overflow-visible>
+    <RebornCard title="确认删除" overflow-visible>
       <view class="flex flex-col gap-[16rpx]">
-        <RebornSwiperAction v-for="(item, index) in confirmList" :key="item.id" group="confirm-list"
+        <RebornSwiperAction v-for="item in confirmList" :key="item.id" group="confirm-list"
           :right-actions="confirmDeleteActions" :close-on-action-click="false"
           :ui="{ ...demoSwiperUi, action: 'px-[16rpx]' }" @click="handleConfirmAction"
-          @remove="confirmList.splice(index, 1)">
+          @remove="confirmList = confirmList.filter(message => message.id !== item.id)">
           <view class="flex min-h-[120rpx] flex-row items-center gap-[24rpx] px-[32rpx]">
             <view class="flex size-[68rpx] shrink-0 items-center justify-center rounded-full bg-gray-1 dark:bg-gray-7">
               <view :class="[item.iconClass, 'text-[32rpx]']" />
@@ -296,7 +296,7 @@ function handleContentClick() {
       </view>
     </RebornCard>
 
-    <RebornCard title="禁用状态" :border="false" overflow-visible>
+    <RebornCard title="禁用状态" overflow-visible>
       <RebornSwiperAction :ui="demoSwiperUi" :right-actions="rightActions" disabled>
         <view class="flex min-h-[112rpx] flex-row items-center justify-between px-[32rpx]">
           <view class="flex flex-col gap-[8rpx]">

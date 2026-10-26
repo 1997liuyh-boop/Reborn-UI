@@ -89,10 +89,10 @@ const AvatarContent = () => {
   const limit = props.collapseAvatars ? normalizeAvatarLimit(props.maxCollapseAvatars) : avatars.length;
   const visible = avatars.slice(0, limit);
   const hidden = avatars.slice(limit);
-  const items = visible.map((avatar, index) => h('span', {
-    key: avatar.key ?? index,
+  const items = visible.map(({ node, id }) => h('span', {
+    key: id,
     class: styles.value.item({ class: props.ui.item }),
-  }, [avatar]));
+  }, [node]));
   if (!hidden.length) return animatedItems(items);
 
   const counter = () => h(RebornAvatar, {
@@ -121,11 +121,12 @@ const AvatarContent = () => {
           class: styles.value.tooltip({ class: cn(props.ui.tooltip, props.popperClass) }),
           style: props.popperStyle,
           'data-effect': props.effect,
-        }, hidden.map(avatar => cloneVNode(avatar))),
+        }, hidden.map(({ node }) => cloneVNode(node))),
       })
     : collapse();
   items.push(h('span', {
-    key: 'collapse', class: styles.value.item({ class: props.ui.item }), 'data-count': hidden.length,
+    // 折叠位的 key 不以 k: / p: / 数字开头，不会与头像包装层相撞
+    key: '__collapse__', class: styles.value.item({ class: props.ui.item }), 'data-count': hidden.length,
     onVnodeUpdated(vnode, previous) {
       if (vnode.props?.['data-count'] !== previous.props?.['data-count'] && vnode.el instanceof HTMLElement) {
         runMotion(vnode.el, { opacity: [0.6, 1] }, { duration: 0.15 });

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { DropdownContext } from './reborn-dropdown.config';
-import { computed, inject, useSlots } from 'vue';
+import { computed, inject, toValue, useSlots } from 'vue';
 import { cn } from '~/lib/utils';
 import { DROPDOWN_INJECTION_KEY } from './reborn-dropdown.config';
 
@@ -16,17 +15,15 @@ export interface DgroupProps {
 
 const slots = useSlots();
 
-const parent = inject<DropdownContext | null>(DROPDOWN_INJECTION_KEY, null);
+const parent = inject(DROPDOWN_INJECTION_KEY, null);
 
 const fallbackUi = {
   group: (opts?: { class?: any }) => cn(opts?.class),
   groupTitle: (opts?: { class?: any }) => cn(opts?.class),
 };
 
-const ui = computed(() => {
-  const raw = parent?.ui as any;
-  return (raw?.value ?? raw) || fallbackUi;
-});
+/** 宿主只提供了部分样式键时，缺的键退化为无样式 */
+const ui = computed(() => ({ ...fallbackUi, ...toValue(parent?.ui) }));
 </script>
 
 <template>

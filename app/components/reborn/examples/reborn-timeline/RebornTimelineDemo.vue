@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TimelineItemData } from "~/components/reborn/ui/reborn-timeline/reborn-timeline.config"
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components"
-import { computed, ref } from "vue"
+import { computed, ref, shallowRef } from "vue"
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue"
 import { TIMELINE_PRESET_COLORS } from "~/components/reborn/ui/reborn-timeline/reborn-timeline.config"
@@ -47,7 +47,7 @@ const defaultState: Record<string, any> = {
   loading: false,
 }
 
-const state = ref<Record<string, any>>({ ...defaultState })
+const state = shallowRef<Record<string, any>>({ ...defaultState })
 
 /** 演练场节点列表：可追加节点，用来观察插槽模式下增删节点后的连接线、倒序与列轨道是否同步 */
 const playgroundActivities = ref([...activities])
@@ -104,7 +104,7 @@ const controls: any = [
 const timelineCode = computed(() => {
   const s = state.value
   const itemProps: string[] = [
-    ':key="index"',
+    ':key="activity.timestamp"',
     ':timestamp="activity.timestamp"',
     `color="${s.color}"`,
     `label-position="${s.labelPosition}"`,
@@ -129,13 +129,13 @@ const timelineCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 基础用法：用户示例中的倒序开关 */
-const reverse = ref(false)
+const reverse = shallowRef(false)
 
-/** 数据驱动：content 按 HTML 渲染，可直接带强调标签 */
+/** 数据驱动：content 默认按文本渲染，接口数据直接传入即可，不会被当作 HTML 解析 */
 const releaseItems: TimelineItemData[] = [
-  { key: 'plan', timestamp: '2026-09-01', content: '确定 <strong>v1.2.0</strong> 发布范围', color: 'neutral' },
-  { key: 'dev', timestamp: '2026-09-10', content: '完成开发并合入 <code>main</code> 分支', color: 'success' },
-  { key: 'test', timestamp: '2026-09-18', content: '回归测试发现 <strong>2</strong> 个阻塞问题', color: 'error' },
+  { key: 'plan', timestamp: '2026-09-01', content: '确定 v1.2.0 发布范围', color: 'neutral' },
+  { key: 'dev', timestamp: '2026-09-10', content: '完成开发并合入 main 分支', color: 'success' },
+  { key: 'test', timestamp: '2026-09-18', content: '回归测试发现 2 个阻塞问题', color: 'error' },
   { key: 'release', timestamp: '2026-09-25', content: '灰度发布中', loading: true },
 ]
 
@@ -166,7 +166,7 @@ const stageItems: TimelineItemData[] = [
   <div class="flex w-full flex-col">
     <Playground
       v-model="state" :controls="controls" :code="timelineCode" component-name="RebornTimeline" title="交互演练场"
-      description="调节左侧参数，实时查看时间线的方向、排序与时间戳落位。"
+      description="调节上方参数，实时查看时间线的方向、排序与时间戳落位。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -181,7 +181,7 @@ const stageItems: TimelineItemData[] = [
         <div :class="state.direction === 'horizontal' ? 'w-full' : 'w-full max-w-md'">
           <RebornTimeline :direction="state.direction" :reverse="state.reverse">
             <RebornTimelineItem
-              v-for="(activity, index) in playgroundActivities" :key="index"
+              v-for="(activity, index) in playgroundActivities" :key="activity.timestamp"
               :timestamp="activity.timestamp" :color="state.color" :label-position="state.labelPosition"
               :placement="state.placement" :loading="state.loading && index === playgroundActivities.length - 1"
               :icon="activity.icon"
@@ -219,7 +219,7 @@ const stageItems: TimelineItemData[] = [
       <DemoBlock layout="stack">
         <RebornCheckbox v-model="reverse" label="倒序排列" />
         <RebornTimeline class="mt-2" :reverse="reverse">
-          <RebornTimelineItem v-for="(activity, index) in activities" :key="index" :timestamp="activity.timestamp">
+          <RebornTimelineItem v-for="activity in activities" :key="activity.timestamp" :timestamp="activity.timestamp">
             {{ activity.content }}
           </RebornTimelineItem>
         </RebornTimeline>
@@ -228,11 +228,16 @@ const stageItems: TimelineItemData[] = [
     </DemoSection>
 
     <DemoSection title="数据驱动">
-      <template #description>传入 <code>items</code> 后由组件渲染节点，<code>content</code> 按 HTML 解析，适合节点来自接口数据的场景。</template>
+      <template #description>
+        传入 <code>items</code> 后由组件渲染节点，适合节点来自接口数据的场景；<code>content</code> 默认作为文本渲染，确需 HTML 时显式设置
+        <code>dangerouslyUseHTMLString: true</code>。
+      </template>
       <DemoBlock layout="stack">
         <RebornTimeline :items="releaseItems" />
       </DemoBlock>
-      <DemoNote>content 使用 v-html 渲染，只传可信内容；来自用户输入的文本需先转义。</DemoNote>
+      <DemoNote tone="dimmed">
+        content 走文本插值，内容里的 HTML 标签按原文显示、不会生效；dangerouslyUseHTMLString 只把渲染方式切换为 v-html，不做任何清理，开启前须先清理内容。需要强调样式时优先用 #content 插槽。
+      </DemoNote>
     </DemoSection>
 
     <DemoSection title="节点颜色">

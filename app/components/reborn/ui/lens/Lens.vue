@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Motion } from "motion-v";
-import { computed, ref, watchEffect } from "vue";
+import { AnimatePresence, Motion } from "motion-v";
+import { computed, shallowRef } from "vue";
 
 interface LensProps {
   zoomFactor?: number;
@@ -10,30 +10,27 @@ interface LensProps {
     y: number;
   };
   isStatic?: boolean;
-  hovering?: boolean;
 }
 
 const props = withDefaults(defineProps<LensProps>(), {
   zoomFactor: 1.5,
   lensSize: 170,
   isStatic: false,
-  hovering: undefined,
   position: () => ({ x: 200, y: 150 }),
 });
 
-const emit = defineEmits<{
-  (e: "hover-update", value: boolean): void;
-}>();
+/**
+ * 悬停状态，支持 v-model:hovering；未绑定时由组件内部维护。
+ * 类型含 Boolean，未传时会被强转为 false，因此写 default: undefined 保留「未传」
+ */
+const hovering = defineModel<boolean>("hovering", { default: undefined });
+// 指针位置每次整体替换
+const mousePosition = shallowRef({ x: 100, y: 100 });
 
-const containerRef = ref<HTMLElement | null>(null);
-const localIsHovering = ref(false);
-const mousePosition = ref({ x: 100, y: 100 });
-
-const isHovering = computed(() => props.hovering ?? localIsHovering.value);
+const isHovering = computed(() => hovering.value ?? false);
 
 function setIsHovering(hover: boolean) {
-  localIsHovering.value = hover;
-  emit("hover-update", hover);
+  hovering.value = hover;
 }
 
 function handleMouseMove(e: MouseEvent) {
@@ -53,15 +50,10 @@ const transformOrigin = computed(() => {
   const pos = props.isStatic ? props.position : mousePosition.value;
   return `${pos.x}px ${pos.y}px`;
 });
-
-watchEffect(() => {
-  setIsHovering(false);
-});
 </script>
 
 <template>
   <div
-    ref="containerRef"
     class="relative z-20 overflow-hidden rounded-lg"
     @mouseenter="setIsHovering(true)"
     @mouseleave="setIsHovering(false)"
@@ -69,15 +61,17 @@ watchEffect(() => {
   >
     <slot />
 
-    <div v-if="props.isStatic || isHovering">
+    <!-- AnimatePresence 管理镜头的 v-if 移除，exit 离场动画才会生效（motion-v 没有 leave 属性） -->
+    <AnimatePresence>
       <Motion
+        v-if="props.isStatic || isHovering"
         :initial="{ opacity: 0, scale: 0.58 }"
         :animate="{
           opacity: 1,
           scale: 1,
         }"
         :transition="{ duration: 0.3, ease: 'easeOut' }"
-        :leave="{ opacity: 0, scale: 0.8 }"
+        :exit="{ opacity: 0, scale: 0.8 }"
         class="absolute inset-0 overflow-hidden"
         :style="{
           maskImage: `radial-gradient(${maskPosition}, black 100%, transparent 100%)`,
@@ -92,6 +86,6 @@ watchEffect(() => {
           <slot />
         </div>
       </Motion>
-    </div>
+    </AnimatePresence>
   </div>
 </template>

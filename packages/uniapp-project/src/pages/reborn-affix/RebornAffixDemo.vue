@@ -11,6 +11,8 @@ const list = ['i-meteocons-clear-day-fill', 'i-meteocons-solar-eclipse-fill']
 </script>
 
 <template>
+  <!-- 与首页一致按 useDarkMode 的约定声明 page-meta 的 root-class：小程序端没有共享的 html 根节点，暗色类要由每个页面自己挂 -->
+  <page-meta :root-class="isDark ? 'dark' : ''" />
   <RebornPage>
     <RebornCard>
       <view class="dark:text-white">

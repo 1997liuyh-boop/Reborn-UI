@@ -1,16 +1,26 @@
 <!-- eslint-disable check-file/filename-naming-convention -->
 <script lang="ts" setup>
 // eslint-disable-next-line check-file/filename-naming-convention
+import { useId } from "vue";
+
 interface Props {
+  /** 模型 SVG 的宽度，单位 px */
   width?: number;
+  /** 模型 SVG 的高度，单位 px */
   height?: number;
+  /** 屏幕中显示的图片地址，按 cover 方式铺满屏幕区域 */
   src?: string;
+  /** 屏幕中嵌入的页面地址，以 iframe 渲染；与 src 同时传入时优先显示页面 */
+  iframeSrc?: string;
 }
 
 withDefaults(defineProps<Props>(), {
   width: 433,
   height: 882,
 });
+
+// 屏幕圆角裁剪路径的 id 按实例生成，页面上有多个模型时互不冲突
+const clipId = `iphone-mockup-clip-${useId()}`;
 </script>
 
 <template>
@@ -35,9 +45,29 @@ withDefaults(defineProps<Props>(), {
     <path
       d="M21.25 75C21.25 44.2101 46.2101 19.25 77 19.25H355C385.79 19.25 410.75 44.2101 410.75 75V807C410.75 837.79 385.79 862.75 355 862.75H77C46.2101 862.75 21.25 837.79 21.25 807V75Z"
       class="fill-[#E5E5E5] stroke-[#E5E5E5] stroke-[0.5] dark:fill-[#404040] dark:stroke-[#404040]" />
-    <foreignObject v-if="src" x="21.25" y="19.25" width="389.5" height="843.5" style="clip-path: url(#roundedCorners)">
-      <iframe src="/uni-render/#/pages/index/index" class="size-full bg-white border-none" />
+    <foreignObject
+      v-if="iframeSrc"
+      x="21.25"
+      y="19.25"
+      width="389.5"
+      height="843.5"
+      :style="{ clipPath: `url(#${clipId})` }"
+    >
+      <iframe
+        :src="iframeSrc"
+        class="size-full bg-white border-none"
+      />
     </foreignObject>
+    <image
+      v-else-if="src"
+      :href="src"
+      x="21.25"
+      y="19.25"
+      width="389.5"
+      height="843.5"
+      preserveAspectRatio="xMidYMid slice"
+      :clip-path="`url(#${clipId})`"
+    />
 
     <path
       d="M154 48.5C154 38.2827 162.283 30 172.5 30H259.5C269.717 30 278 38.2827 278 48.5C278 58.7173 269.717 67 259.5 67H172.5C162.283 67 154 58.7173 154 48.5Z"
@@ -49,7 +79,7 @@ withDefaults(defineProps<Props>(), {
       d="M254 48.5C254 45.4624 256.462 43 259.5 43C262.538 43 265 45.4624 265 48.5C265 51.5376 262.538 54 259.5 54C256.462 54 254 51.5376 254 48.5Z"
       class="fill-[#E5E5E5] transition-opacity duration-300 group-hover:opacity-0 dark:fill-[#404040]" />
     <defs>
-      <clipPath id="roundedCorners">
+      <clipPath :id="clipId">
         <rect x="21.25" y="19.25" width="389.5" height="843.5" rx="55.75" ry="55.75" />
       </clipPath>
     </defs>

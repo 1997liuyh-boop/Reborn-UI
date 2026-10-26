@@ -36,7 +36,7 @@ after(async () => {
 });
 await build({
   entryPoints: [resolve('app/components/reborn/ui/reborn-table/RebornTable.vue')], outfile: output,
-  bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app') },
+  bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app'), '@': resolve('app') },
   plugins: [{ name: 'table-tooltip-test', setup(builder) {
     builder.onLoad({ filter: /\.css$/ }, () => ({ contents: '', loader: 'js' }));
     builder.onLoad({ filter: /\.vue$/ }, async ({ path }) => {
@@ -204,4 +204,37 @@ it('插槽子组件独立更新文本时重新检测溢出，键盘入口与已�
     assert.equal(t.trigger().getAttribute('tabindex'), null);
     assert.equal(t.trigger().getAttribute('aria-describedby'), null);
   } finally { t.stop(); }
+});
+
+it('整表内容观察器只在有溢出提示单元格时存在，最后一个注销后断开', async () => {
+  const Native = dom.window.MutationObserver;
+  let created = 0;
+  let active = 0;
+  class CountingObserver extends Native {
+    constructor(callback: MutationCallback) { super(callback); created += 1; }
+    observe(target: Node, options?: MutationObserverInit) { active += 1; super.observe(target, options); }
+    disconnect() { active = Math.max(0, active - 1); super.disconnect(); }
+  }
+  Object.defineProperty(globalThis, 'MutationObserver', { value: CountingObserver, configurable: true, writable: true });
+  try {
+    const plain = mount({ showOverflowTooltip: false });
+    await nextTick();
+    assert.equal(created, 0, '未开溢出提示的表格不创建内容观察器');
+    plain.stop();
+    const t = mount();
+    await nextTick();
+    assert.equal(created, 1);
+    assert.equal(active, 1);
+    t.props.showOverflowTooltip = false;
+    await nextTick(); await nextTick();
+    assert.equal(active, 0, '溢出单元格全部注销后断开观察');
+    t.props.showOverflowTooltip = true;
+    await nextTick(); await nextTick();
+    assert.equal(created, 2, '重新出现溢出单元格时再建');
+    assert.equal(active, 1);
+    t.stop();
+    assert.equal(active, 0);
+  } finally {
+    Object.defineProperty(globalThis, 'MutationObserver', { value: Native, configurable: true, writable: true });
+  }
 });

@@ -1,18 +1,22 @@
+
+
 <script setup lang="ts">
-import { computed, type PropType } from 'vue'
+import { computed } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme, { type PageUI } from './reborn-page.config'
 import RebornToast from '@/components/reborn-toast/RebornToast.vue'
 
-const props = defineProps({
-  title: { type: String, default: '' },
-  description: { type: String, default: '' },
-  customClass: { type: String, default: '' },
-  ui: {
-    type: Object as PropType<PageUI>,
-    default: () => ({}),
-  },
+interface PageProps {
+  title?: string
+  description?: string
+  customClass?: string
+  ui?: PageUI
+}
+defineOptions({ name: 'reborn-page', options: { virtualHost: true, addGlobalClass: true, styleIsolation: 'shared' } })
+
+const props = withDefaults(defineProps<PageProps>(), {
+  title: '', description: '', customClass: '', ui: () => ({}),
 })
 
 const b = tv(theme)
@@ -50,14 +54,3 @@ const ui = computed(() => {
     <RebornToast />
   </view>
 </template>
-
-<script lang="ts">
-export default {
-  name: 'reborn-page',
-  options: {
-    virtualHost: true,
-    addGlobalClass: true,
-    styleIsolation: 'shared',
-  },
-}
-</script>

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref } from "vue";
+import { nextTick, onMounted, onUnmounted, shallowRef, useTemplateRef, watch } from "vue";
 
 interface Testimonial {
   img: string;
@@ -7,13 +7,14 @@ interface Testimonial {
   name: string;
   role: string;
 }
+interface Props {
+  testimonials?: Testimonial[];
+  autoRotate?: boolean;
+  duration?: number;
+}
 
 const props = withDefaults(
-  defineProps<{
-    testimonials?: Testimonial[];
-    autoRotate?: boolean;
-    duration?: number;
-  }>(),
+  defineProps<Props>(),
   {
     autoRotate: true,
     duration: 5,
@@ -21,9 +22,10 @@ const props = withDefaults(
   },
 );
 
-const active = ref<number>(0);
-const autorotate = ref(props.autoRotate);
-const testimonialsRef = ref<HTMLElement | null>(null);
+const active = shallowRef(0);
+/** 是否自动轮播：初值取 autoRotate，用户手动切换后停止；autoRotate 变化时重新同步 */
+const autorotate = shallowRef(props.autoRotate);
+const testimonialsRef = useTemplateRef<HTMLElement>("testimonialsRef");
 let intervalId: number | null = null;
 
 function heightFix() {
@@ -32,27 +34,44 @@ function heightFix() {
   }
 }
 
+/** 切换后等 DOM 更新完再量高度：同步测量拿到的是上一条的高度 */
+function heightFixAfterUpdate() {
+  nextTick(heightFix);
+}
+
 function setActiveIndex(index: number) {
   active.value = index;
   autorotate.value = false;
   resetAutorotate();
+  heightFixAfterUpdate();
 }
 
 function startAutorotate() {
   intervalId = window.setInterval(() => {
     active.value = active.value + 1 === props.testimonials.length ? 0 : active.value + 1;
-    heightFix();
+    heightFixAfterUpdate();
   }, props.duration * 1000);
 }
 
 function resetAutorotate() {
   if (intervalId) {
     clearInterval(intervalId);
+    intervalId = null;
   }
   if (autorotate.value) {
     startAutorotate();
   }
 }
+
+// autoRotate 与 duration 挂载后修改同样生效：重新同步开关并按新间隔重建定时器
+watch(
+  () => props.autoRotate,
+  (value) => {
+    autorotate.value = value;
+    resetAutorotate();
+  },
+);
+watch(() => props.duration, resetAutorotate);
 
 function handleNext() {
   setActiveIndex((active.value + 1) % props.testimonials.length);
@@ -78,7 +97,7 @@ onUnmounted(() => {
 
 <template>
   <div class="mx-auto w-full max-w-3xl text-center">
-    <!-- Testimonial image -->
+    <!-- 头像 -->
     <div class="relative h-32">
       <div
         class="pointer-events-none absolute top-0 left-1/2 size-[480px] -translate-x-1/2 before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-gradient-to-b before:from-zinc-500/25 before:via-zinc-500/5 before:via-25% before:to-zinc-500/0 before:to-75%"
@@ -105,7 +124,7 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
-    <!-- Text -->
+    <!-- 引言文字 -->
     <div class="mb-8 transition-all delay-300 duration-150 ease-in-out">
       <div
         ref="testimonialsRef"
@@ -138,7 +157,7 @@ onUnmounted(() => {
         />
       </button>
 
-      <!-- Name and Org -->
+      <!-- 姓名与职位 -->
       <div class="flex flex-col items-center gap-1">
         <span class="text-base italic">{{ testimonials.at(active)?.name }}</span>
         <span class="text-sm italic">{{ testimonials.at(active)?.role }}</span>
@@ -158,7 +177,7 @@ onUnmounted(() => {
 </template>
 
 <style>
-/* Testimonial image transitions */
+/* 头像切换过渡 */
 .testimonial-image-enter-active {
   transition: all 700ms cubic-bezier(0.68, -0.3, 0.32, 1);
 }
@@ -182,7 +201,7 @@ onUnmounted(() => {
   transform: rotate(60deg);
 }
 
-/* Testimonial text transitions */
+/* 引言文字切换过渡 */
 .testimonial-text-enter-active {
   transition: all 500ms ease-in-out 200ms;
 }

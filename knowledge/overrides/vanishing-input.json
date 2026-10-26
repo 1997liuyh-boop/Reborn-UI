@@ -13,6 +13,7 @@
     "仅 web 端可用。",
     "通过 v-model（modelValue）双向绑定输入值。",
     "placeholders 为字符串数组轮换显示，不传时使用内置的 3 条默认占位文本。",
-    "提交时触发 submit 事件并播放文字消失动画，输入变化触发 change 事件。"
+    "提交时触发 submit 事件并播放文字消失动画，输入变化触发 change 事件。",
+    "默认不自动聚焦，需要时传 autofocus（以 preventScroll 聚焦，不滚动页面）。"
   ]
 }

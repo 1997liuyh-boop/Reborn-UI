@@ -14,12 +14,12 @@ const {
     tree = [],
 } = defineProps<Props>();
 
-const initialPath = defaultFile ? (rootPath ? `${rootPath}/${defaultFile}` : defaultFile) : '';
+const initialPath = computed(() => defaultFile ? (rootPath ? `${rootPath}/${defaultFile}` : defaultFile) : '');
 
-const { mdcCode, loadFilesByPath } = useComponentCode({
-    paths: initialPath ? [initialPath] : [],
+const { mdcCode, loadFilesByPath } = useComponentCode(() => ({
+    paths: initialPath.value ? [initialPath.value] : [],
     format: 'collapse'
-});
+}));
 
 const selectedFileCode = computed(() => mdcCode.value);
 
@@ -89,8 +89,8 @@ async function onToggle(e: TreeItemToggleEvent<TreeItem>, item: any) {
                 </div>
                 <div class="h-full overflow-y-auto no-scrollbar">
                     <UTree propagate-select bubble-select virtualize :items="items" @toggle="onToggle" :ui="{
-                        trigger: 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-md transition-colors px-2 py-1',
-                        label: 'text-sm'
+                        link: 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-md transition-colors px-2 py-1',
+                        linkLabel: 'text-sm'
                     }" />
                 </div>
             </div>
@@ -98,7 +98,7 @@ async function onToggle(e: TreeItemToggleEvent<TreeItem>, item: any) {
             <!-- Right Content: Code Viewer -->
             <div class="relative min-w-0 flex-1 bg-white dark:bg-zinc-950">
                 <div class="h-full overflow-y-auto p-4 custom-scrollbar">
-                    <MdcProse v-if="selectedFileCode" :key="selectedFileCode" :value="selectedFileCode"
+                    <MdcProse v-if="selectedFileCode" :value="selectedFileCode"
                         class="prose-sm prose-zinc dark:prose-invert max-w-none" />
                     <div v-else class="flex h-full items-center justify-center text-gray-400 dark:text-zinc-600">
                         Select a file to view its content

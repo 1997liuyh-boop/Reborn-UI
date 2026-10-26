@@ -21,13 +21,14 @@ withDefaults(defineProps<Props>(), {
 
 <template>
   <div class="absolute inset-0">
+    <!-- v-for 的取值是 1..numberOfCircles，最外圈是 index === numberOfCircles -->
     <RippleCircle
       v-for="index in numberOfCircles"
       :key="index"
       :opacity="baseCircleOpacity - index * circleOpacityDowngradeRatio"
       :size="baseCircleSize + index * spaceBetweenCircle"
       :animation-delay="index * waveSpeed"
-      :border-style="index === numberOfCircles - 1 ? 'dashed' : 'solid'"
+      :border-style="index === numberOfCircles ? 'dashed' : 'solid'"
       :class="circleClass"
     />
   </div>

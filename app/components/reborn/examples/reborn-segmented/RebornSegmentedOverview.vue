@@ -7,10 +7,10 @@
  * （滑块按 getBoundingClientRect 定位，缩放后会错位），改为用 ui 把选项左右内边距从 12px 收到 8px。
  */
 import type { SegmentedOption, SegmentedValue } from '~/components/reborn/ui/reborn-segmented'
-import { ref } from 'vue'
+import { shallowRef } from 'vue';
 import RebornSegmented from '~/components/reborn/ui/reborn-segmented/RebornSegmented.vue'
 
-const view = ref<SegmentedValue>('board')
+const view = shallowRef<SegmentedValue>('board')
 
 const options: SegmentedOption[] = [
   { label: '列表', value: 'list', icon: 'lucide:list' },

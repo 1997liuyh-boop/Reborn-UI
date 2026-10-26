@@ -12,6 +12,11 @@
   "pitfalls": [
     "web 与 uniapp 双端可用。",
     "columns（网格列数）与 longPress（长按触发，默认 true）仅 UniApp 端生效。",
-    "列表项内容通过 item 作用域插槽渲染，数据用 v-model 绑定数组。"
+    "列表项内容通过 item 作用域插槽渲染，数据用 v-model 绑定数组。",
+    "web 端只有在列表项上松手才提交新顺序，落在间隙或列表外视为取消并回滚；对象项按 id / key 作渲染 key（不再用 name），建议带稳定 id。",
+    "UniApp 的 ui.root 与 ui.item 分别覆盖容器与列表项，旧 ui.base 已删除。",
+    "两端保留原始元素引用，不注入 uid；原始值及重复值可直接绑定。受控父级拒绝更新时恢复模型顺序。",
+    "UniApp 普通滑动允许页面滚动，拖拽阻滚需在小程序/App目标设备验证。",
+    "UniApp H5 用 v-memo 缓存未变化项目；小程序/App 的跟手 transform 由 WXS 更新。小程序按位置复用插槽，项目局部状态应由业务数据持有。"
   ]
 }

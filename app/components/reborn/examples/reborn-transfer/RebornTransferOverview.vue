@@ -6,7 +6,8 @@
  * 头部只保留全选复选框（header-select="checkbox"），不渲染下拉菜单，避免面板头部挤压标题。
  */
 import type { TransferDataRecord } from '~/components/reborn/ui/reborn-transfer/reborn-transfer.config'
-import { ref } from 'vue'
+import { shallowRef } from "vue";
+
 import RebornTransfer from '~/components/reborn/ui/reborn-transfer/RebornTransfer.vue'
 
 /** dataSource 的类型是宽松记录（支持 fieldNames 字段别名），不能直接用 TransferItem[] */
@@ -18,7 +19,7 @@ const dataSource: TransferDataRecord[] = [
   { key: 'english', label: '英语' },
 ]
 
-const targetKeys = ref(['chinese', 'english'])
+const targetKeys = shallowRef(['chinese', 'english'])
 </script>
 
 <template>

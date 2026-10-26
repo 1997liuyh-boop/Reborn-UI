@@ -1,15 +1,22 @@
 <script setup lang="ts">
+import { shallowRef } from 'vue';
 import { inputOtpColors, inputOtpSizes } from "~/components/reborn/ui/reborn-input-otp/reborn-input-otp.config";
 
 /** 演练场绑定值 */
-const state = ref({
+interface PlaygroundState {
+  size: typeof inputOtpSizes[number];
+  color: typeof inputOtpColors[number];
+  disabled: boolean;
+}
+
+const state = shallowRef<PlaygroundState>({
   size: "md",
   color: "primary",
   disabled: false,
 });
 
-const value1 = ref("");
-const value2 = ref("");
+const value1 = shallowRef("");
+const value2 = shallowRef("");
 
 /** 演练场控制面板配置 */
 const controls = [

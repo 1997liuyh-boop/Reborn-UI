@@ -7,7 +7,7 @@ series: reborn
 tags: [vue, component, scrollbar, layout]
 ---
 
-::ComponentViewer{demoFile="ScrollbarDemo.vue" config="ScrollbarConfig" componentId="scrollbar" :componentFiles='["RebornScrollbar.vue", "scrollbar.css", "index.ts"]'}
+::ComponentViewer{demoFile="ScrollbarDemo.vue" config="ScrollbarConfig" componentId="scrollbar" :componentFiles='["RebornScrollbar.vue", "RebornScrollbarBars.vue", "scrollbar.css", "index.ts"]'}
 
 ::
 

@@ -6,9 +6,9 @@
  * 用倒计时自己的格式化函数把一个固定剩余时长排成「DD 天 HH:mm:ss」，
  * 再交给它内部复用的统计数值组件渲染，结构与样式和真实倒计时一致。
  */
-import { Icon } from '#components'
-import { formatCountdown } from '~/components/reborn/ui/reborn-countdown/reborn-countdown.utils'
-import RebornStatistic from '~/components/reborn/ui/reborn-statistic/RebornStatistic.vue'
+import { Icon } from "#components";
+import { formatCountdown } from "~/components/reborn/ui/reborn-countdown/reborn-countdown.utils";
+import RebornStatistic from "~/components/reborn/ui/reborn-statistic/RebornStatistic.vue";
 
 /** 固定剩余时长：2 天 18 小时 45 分 30 秒 */
 const REMAINING = ((2 * 24 + 18) * 3600 + 45 * 60 + 30) * 1000

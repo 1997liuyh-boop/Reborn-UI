@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AnchorContext, AnchorItem } from "./reborn-anchor.config";
+import type { AnchorItem } from "./reborn-anchor.config";
 import { computed, inject } from "vue";
 import { ANCHOR_INJECTION_KEY } from "./reborn-anchor.config";
 // RebornAnchorLink 与本组件由 Nuxt 全局自动注册（nuxt.config 的 pathPrefix: false），这里刻意不写静态 import：
@@ -20,7 +20,7 @@ export interface RebornAnchorItemsProps {
   items: AnchorItem[];
 }
 
-const ctx = inject<AnchorContext | null>(ANCHOR_INJECTION_KEY, null);
+const ctx = inject(ANCHOR_INJECTION_KEY, null);
 if (!ctx) throw new Error("[RebornAnchorItems] 必须作为 RebornAnchor 的子组件使用");
 
 /** 横向锚点不渲染子级：嵌套层会把标记的横向测量基准打乱，这一点与 Ant Design 的约定一致 */

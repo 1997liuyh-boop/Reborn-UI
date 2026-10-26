@@ -4,12 +4,13 @@ import RebornDialog from "~/components/reborn/ui/reborn-dialog/RebornDialog.vue"
 /**
  * 用户协议对话框
  */
-const open = defineModel<boolean>("open", { default: false });
+const open = defineModel<boolean>("open", { default: undefined });
 
-const props = defineProps<{
+interface Props {
   title?: string;
   description?: string;
-}>();
+}
+defineProps<Props>();
 
 const emit = defineEmits<{
   confirm: [];
@@ -33,7 +34,7 @@ function handleCancel() {
   <RebornDialog
     v-model="open"
     :title="title || '用户服务协议'"
-    :description="description || '更新日期：2026年3月'"
+    :describe="description || '更新日期：2026年3月'"
     confirm-btn="我已阅读"
     cancel-btn="关闭"
     scrollable

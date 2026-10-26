@@ -93,7 +93,7 @@ function popperOffsetOf(item: SubMenuType) {
       :popper-class="node.data.popupClassName"
       :popper-offset="popperOffsetOf(node.data)"
       @title-click="
-        (event: MouseEvent) => node.data.onTitleClick?.({ key: node.data.key, domEvent: event })
+        (event) => node.data.onTitleClick?.({ key: node.data.key, domEvent: event })
       "
     >
       <template

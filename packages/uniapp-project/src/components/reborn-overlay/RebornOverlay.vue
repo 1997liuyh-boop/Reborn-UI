@@ -1,16 +1,6 @@
-<script lang="ts">
-export default {
-    name: 'reborn-overlay',
-    options: {
-        virtualHost: true,
-        addGlobalClass: true,
-        styleIsolation: 'shared'
-    }
-}
-</script>
-
 <script lang="ts" setup>
-import { computed, type PropType } from 'vue'
+import { computed } from 'vue'
+import { useBooleanModel } from '@/composables/useBooleanModel'
 import RebornTransition from '../reborn-transition/RebornTransition.vue'
 import { tv } from '@/lib/tv'
 import theme from './reborn-overlay.config'
@@ -18,21 +8,27 @@ import theme from './reborn-overlay.config'
 import { useLockScroll } from '@/composables/useLockScroll'
 // #endif
 
-const props = defineProps({
-    customClass: { type: String, default: '' },
-    customStyle: { type: String, default: '' },
-    modelValue: { type: Boolean, default: false },
-    duration: {
-        type: [Object, Number, Boolean] as PropType<Record<string, number> | number | boolean>,
-        default: 300
-    },
-    lockScroll: { type: Boolean, default: true },
-    zIndex: { type: Number, default: 10 },
-    closeOnClickOverlay: { type: Boolean, default: true },
-    absolute: { type: Boolean, default: false },
+interface OverlayProps {
+  customClass?: string
+  customStyle?: string
+  duration?: Record<string, number> | number | boolean
+  lockScroll?: boolean
+  zIndex?: number
+  closeOnClickOverlay?: boolean
+  absolute?: boolean
+}
+defineOptions({
+  name: 'reborn-overlay',
+  options: { virtualHost: true, addGlobalClass: true, styleIsolation: 'shared' },
 })
 
-const emit = defineEmits(['update:modelValue', 'close', 'click'])
+const props = withDefaults(defineProps<OverlayProps>(), {
+  customClass: '', customStyle: '', duration: 300, lockScroll: true,
+  zIndex: 10, closeOnClickOverlay: true, absolute: false,
+})
+const emit = defineEmits<{ close: []; click: [] }>()
+defineModel<boolean>({ default: undefined })
+const model = useBooleanModel('modelValue')
 
 const b = tv(theme)
 
@@ -43,18 +39,18 @@ const overlayClass = computed(() => {
 function handleClick() {
     emit('click')
     if (props.closeOnClickOverlay) {
-        emit('update:modelValue', false)
+        model.value = false
         emit('close')
     }
 }
 
 // #ifdef H5
-useLockScroll(() => props.modelValue && props.lockScroll)
+useLockScroll(() => model.value && props.lockScroll)
 // #endif
 </script>
 
 <template>
-    <reborn-transition :show="modelValue" name="fade" :custom-class="overlayClass" :duration="duration"
+    <reborn-transition :show="model" name="fade" :custom-class="overlayClass" :duration="duration"
         :custom-style="`z-index: ${zIndex}; ${customStyle}`" :disable-touch-move="lockScroll" @click="handleClick">
         <slot></slot>
     </reborn-transition>

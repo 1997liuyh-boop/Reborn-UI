@@ -7,6 +7,7 @@ import { computed, inject } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import RebornButton from '../reborn-button/RebornButton.vue'
+import { radioGroupKey } from './context'
 import theme from './reborn-radio.config'
 
 defineOptions({
@@ -74,7 +75,7 @@ export interface RadioProps {
 /** 绑定值（v-model）；显式 default: undefined 跳过 Boolean 类型未传时被强转为 false 的规则 */
 const model = defineModel<RadioValue>({ default: undefined })
 
-const radioGroup = inject<RadioGroupContext | null>('RebornRadioGroup', null)
+const radioGroup = inject(radioGroupKey, null)
 
 /** 选中态：组内取 Group 绑定值，独立使用取自身 v-model */
 const isChecked = computed(() => {

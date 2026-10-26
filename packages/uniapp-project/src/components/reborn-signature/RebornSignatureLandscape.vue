@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { SignatureToolbarPosition } from './reborn-signature.config'
 import type { SignatureSavePayload } from './RebornSignature.vue'
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
+import { useBooleanModel } from '@/composables/useBooleanModel'
 import { getSafeAreaBottomInset, getSystemInfo } from '@/lib/device'
 import RebornSignature from './RebornSignature.vue'
 
@@ -50,22 +51,23 @@ export interface RebornSignatureLandscapeProps {
   toolbarPosition?: SignatureToolbarPosition
 }
 
-const show = defineModel<boolean>('show', { default: false })
+defineModel<boolean>('show', { default: undefined })
+const show = useBooleanModel('show')
 const modelValue = defineModel<string>({ default: '' })
 // penColor 改为 defineModel，支持 v-model:pen-color 双向绑定
 const currentPenColor = defineModel<string>('penColor', { default: '#111827' })
 
 const landscapeSignatureRef = ref<InstanceType<typeof RebornSignature> | null>(null)
-const landscapeSignatureValue = ref('')
-const signing = ref(false)
-const deviceBottomSafeAreaInset = ref(0)
+const landscapeSignatureValue = shallowRef('')
+const signing = shallowRef(false)
+const deviceBottomSafeAreaInset = shallowRef(0)
 
 // #ifdef H5
 /** H5 可视视口（iOS Safari 底部标签栏显隐时 100vh 不会同步收缩） */
-const visualViewportWidth = ref(0)
-const visualViewportHeight = ref(0)
-const visualViewportOffsetTop = ref(0)
-const visualViewportOffsetLeft = ref(0)
+const visualViewportWidth = shallowRef(0)
+const visualViewportHeight = shallowRef(0)
+const visualViewportOffsetTop = shallowRef(0)
+const visualViewportOffsetLeft = shallowRef(0)
 
 function syncVisualViewport(options?: { force?: boolean }) {
   if (typeof window === 'undefined') {
@@ -291,7 +293,6 @@ const signatureHeight = computed(() => {
 })
 
 function close() {
-  landscapeSignatureRef.value?.clear()
   landscapeSignatureValue.value = ''
   signing.value = false
   // #ifdef H5

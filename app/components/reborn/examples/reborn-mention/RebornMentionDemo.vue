@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { MentionOption } from "~/components/reborn/ui/reborn-mention";
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, shallowRef } from 'vue';
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornMention from "~/components/reborn/ui/reborn-mention/RebornMention.vue";
 
@@ -49,10 +49,10 @@ const defaultState: Record<string, any> = {
   loading: false,
 };
 
-const state = ref<Record<string, any>>({ ...defaultState });
-const playgroundValue = ref("");
+const state = shallowRef<Record<string, any>>({ ...defaultState });
+const playgroundValue = shallowRef("");
 /** 演练场最近一次 select 事件的回显 */
-const lastSelect = ref("尚未选择");
+const lastSelect = shallowRef("尚未选择");
 
 /** 重置演练场配置 */
 function resetState() {
@@ -90,7 +90,7 @@ const controls: any = [
 /** 演练场实际传给组件的 prefix */
 const playgroundPrefix = computed(() => (state.value.prefix === "both" ? ["@", "#"] : state.value.prefix));
 /** 演练场的选项：# 前缀给话题，其余给成员 */
-const playgroundPrefixUsed = ref("@");
+const playgroundPrefixUsed = shallowRef("@");
 const playgroundOptions = computed(() => (playgroundPrefixUsed.value === "#" ? topics : members));
 
 /** 演练场右上角展示的等价代码：完整列出当前全部参数 */
@@ -116,16 +116,16 @@ const mentionCode = computed(() => {
 
 // ─── 场景演示状态 ─────────────────────────────────────────────────
 
-const basicValue = ref("");
-const multiValue = ref("");
+const basicValue = shallowRef("");
+const multiValue = shallowRef("");
 /** 多前缀一节：按前缀切换选项 */
-const multiPrefix = ref("@");
+const multiPrefix = shallowRef("@");
 const multiOptions = computed(() => (multiPrefix.value === "#" ? topics : members));
 
 /** 远程搜索：模拟接口延迟 */
-const remoteValue = ref("");
-const remoteLoading = ref(false);
-const remoteOptions = ref<MentionOption[]>([]);
+const remoteValue = shallowRef("");
+const remoteLoading = shallowRef(false);
+const remoteOptions = shallowRef<MentionOption[]>([]);
 let remoteTimer: ReturnType<typeof setTimeout> | undefined;
 
 function onRemoteSearch(pattern: string) {
@@ -141,24 +141,26 @@ function onRemoteSearch(pattern: string) {
 }
 
 /** 整体删除一节 */
-const wholeValue = ref("请 @张伟 和 @李娜 一起看下");
-const wholeLog = ref("尚未删除");
-const customWholeValue = ref("负责人：@任意名字 ");
-const customWholeLog = ref("尚未删除");
+const wholeValue = shallowRef("请 @张伟 和 @李娜 一起看下");
+const wholeLog = shallowRef("尚未删除");
+const customWholeValue = shallowRef("负责人：@任意名字 ");
+const customWholeLog = shallowRef("尚未删除");
 
 /** 自定义选项一节 */
-const slotValue = ref("");
+const slotValue = shallowRef("");
 
 /** 面板位置一节 */
-const placeValue = ref("");
-const arrowValue = ref("");
+const placeValue = shallowRef("");
+const arrowValue = shallowRef("");
+/** 卸载时取消模拟远程请求，避免回写已卸载实例。 */
+onBeforeUnmount(() => clearTimeout(remoteTimer));
 </script>
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="mentionCode" component-name="RebornMention"
-      title="交互演练场" description="调节左侧参数后在输入框里输入 @（或 #），查看下拉面板的位置、箭头与整体删除行为。"
+      title="交互演练场" description="调节上方参数后在输入框里输入 @（或 #），查看下拉面板的位置、箭头与整体删除行为。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">

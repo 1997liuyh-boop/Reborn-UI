@@ -1,15 +1,15 @@
 <script setup lang="ts">
-/* eslint vue/custom-event-name-casing: off -- 事件名与约定的 Drawer API 保持一致 */
 import type { CSSProperties } from 'vue';
 import type { DrawerDirection, DrawerUI } from './reborn-drawer.config';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useId, useTemplateRef, watch } from 'vue';
 import { runMotion } from '@/lib/motion';
+import { useBooleanModel } from '~/composables/useControlledModel';
 import { provideFloatingHost } from '~/composables/useFloatingHost';
 import { useGlobalScrollLock } from '~/composables/useGlobalScrollLock';
 import { tv } from '~/lib/tv';
 import { cn } from '~/lib/utils';
 import RebornScrollbar from '../scrollbar/RebornScrollbar.vue';
-import { isTopDrawer, normalizeDrawerSize, registerDrawer, unregisterDrawer } from './drawer.utils';
+import { isTopOverlay, normalizeDrawerSize, registerOverlay, unregisterOverlay } from './drawer.utils';
 import theme from './reborn-drawer.config';
 
 defineOptions({ inheritAttrs: false });
@@ -28,16 +28,16 @@ const emit = defineEmits<{
   close: [];
   /** 关闭动画结束。 */
   closed: [];
-  /** 内容获得自动焦点。 */
-  'open-auto-focus': [];
-  /** 焦点归还原触发元素。 */
-  'close-auto-focus': [];
-  /** 开始调整尺寸，参数为当前像素尺寸。 */
-  'resize-start': [size: number];
+  /** 内容获得自动焦点。模板中写作 @open-auto-focus。 */
+  openAutoFocus: [];
+  /** 焦点归还原触发元素。模板中写作 @close-auto-focus。 */
+  closeAutoFocus: [];
+  /** 开始调整尺寸，参数为当前像素尺寸。模板中写作 @resize-start。 */
+  resizeStart: [size: number];
   /** 尺寸变化，参数为当前像素尺寸。 */
   resize: [size: number];
-  /** 结束调整尺寸，参数为最终像素尺寸。 */
-  'resize-end': [size: number];
+  /** 结束调整尺寸，参数为最终像素尺寸。模板中写作 @resize-end。 */
+  resizeEnd: [size: number];
 }>();
 defineSlots<{
   default: (props: { close: () => void }) => unknown;
@@ -90,26 +90,28 @@ export interface RebornDrawerProps {
   ui?: DrawerUI;
 }
 /** 是否显示抽屉。 */
-const modelValue = defineModel<boolean>({ default: false });
-const panel = ref<HTMLElement>();
-const wrapper = ref<HTMLElement>();
-const mounted = ref(false);
-const rendered = ref(false);
-const visible = ref(false);
+defineModel<boolean>({ default: undefined });
+// 显式空模型按关闭读取，缺省状态独立保留本地交互。
+const modelValue = useBooleanModel('modelValue');
+const panel = useTemplateRef<HTMLElement>('panel');
+const wrapper = useTemplateRef<HTMLElement>('wrapper');
+const mounted = shallowRef(false);
+const rendered = shallowRef(false);
+const visible = shallowRef(false);
 // 关闭时一并收起内部展开的下拉、气泡卡片与文字提示；抽屉内容不卸载，它们收不到别的通知，会留在页面上
 provideFloatingHost(() => visible.value);
-const active = ref(false);
-const resizedSize = ref<number>();
-const layer = ref(props.zIndex);
+const active = shallowRef(false);
+const resizedSize = shallowRef<number>();
+const layer = shallowRef(props.zIndex);
 const titleId = useId();
 const id = Symbol('drawer');
-const target = ref<HTMLElement>();
+const target = shallowRef<HTMLElement>();
 const viewport = computed(() => !mounted.value || target.value === document.body);
 const horizontal = computed(() => props.direction === 'left' || props.direction === 'right');
 const penetrable = computed(() => !props.modal && props.modalPenetrable);
 const b = tv(theme);
 const ui = computed(() => b({ direction: props.direction, viewport: viewport.value, modal: props.modal }));
-const reducedMotion = ref(false);
+const reducedMotion = shallowRef(false);
 const duration = computed(() => reducedMotion.value ? 0 : Math.max(0, props.duration));
 const panelStyle = computed<CSSProperties>(() => ({
   [horizontal.value ? 'width' : 'height']: normalizeDrawerSize(resizedSize.value ?? props.size),
@@ -191,14 +193,14 @@ function focusContent() {
 function restoreFocus() {
   if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
   previousFocus = null;
-  emit('close-auto-focus');
+  emit('closeAutoFocus');
 }
 async function openDrawer() {
   if (disposed || !modelValue.value || visible.value) return;
   resolveTarget();
   if (!active.value) {
     previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    layer.value = registerDrawer(id, props.zIndex);
+    layer.value = registerOverlay(id, props.zIndex);
   }
   active.value = true;
   rendered.value = true;
@@ -206,7 +208,7 @@ async function openDrawer() {
   if (props.lockScroll) lock.acquire();
   emit('open');
   await nextTick();
-  if (!disposed && visible.value && isTopDrawer(id)) { focusContent(); emit('open-auto-focus'); }
+  if (!disposed && visible.value && isTopOverlay(id)) { focusContent(); emit('openAutoFocus'); }
 }
 function closeDrawer() {
   if (disposed || modelValue.value || !visible.value) return;
@@ -247,18 +249,18 @@ async function onOpened() {
 }
 function onClosed() {
   if (visible.value || !active.value) return;
-  const top = isTopDrawer(id);
-  unregisterDrawer(id);
+  const top = isTopOverlay(id);
+  unregisterOverlay(id);
   active.value = false;
   lock.release();
   if (props.destroyOnClose) rendered.value = false;
   if (top) restoreFocus();
-  else { previousFocus = null; emit('close-auto-focus'); }
+  else { previousFocus = null; emit('closeAutoFocus'); }
   emit('closed');
 }
-function onBackdropClick() { if (isTopDrawer(id) && props.closeOnClickModal) requestClose(); }
+function onBackdropClick() { if (isTopOverlay(id) && props.closeOnClickModal) requestClose(); }
 function onKeydown(event: KeyboardEvent) {
-  if (!active.value || !isTopDrawer(id)) return;
+  if (!active.value || !isTopOverlay(id)) return;
   if (event.key === 'Escape' && visible.value && props.closeOnPressEscape) {
     event.preventDefault(); event.stopImmediatePropagation(); requestClose();
   }
@@ -271,7 +273,7 @@ function onKeydown(event: KeyboardEvent) {
   }
 }
 function onFocusin(event: FocusEvent) {
-  if (active.value && visible.value && !penetrable.value && isTopDrawer(id) && !wrapper.value?.contains(event.target as Node)) focusContent();
+  if (active.value && visible.value && !penetrable.value && isTopOverlay(id) && !wrapper.value?.contains(event.target as Node)) focusContent();
 }
 
 let drag: { pointerId: number; origin: number; size: number; extent: number } | undefined;
@@ -307,27 +309,27 @@ function finishResize(event?: PointerEvent) {
   document.removeEventListener('pointermove', onPointerMove);
   document.removeEventListener('pointerup', finishResize);
   document.removeEventListener('pointercancel', finishResize);
-  emit('resize-end', resizedSize.value ?? currentSize());
+  emit('resizeEnd', resizedSize.value ?? currentSize());
 }
 function startResize(event: PointerEvent) {
-  if (!visible.value || !props.resizable || event.button !== 0 || !isTopDrawer(id)) return;
+  if (!visible.value || !props.resizable || event.button !== 0 || !isTopOverlay(id)) return;
   event.preventDefault();
   finishResize();
   drag = { pointerId: event.pointerId, origin: horizontal.value ? event.clientX : event.clientY, size: currentSize(), extent: extent() };
-  emit('resize-start', drag.size);
+  emit('resizeStart', drag.size);
   document.addEventListener('pointermove', onPointerMove);
   document.addEventListener('pointerup', finishResize);
   document.addEventListener('pointercancel', finishResize);
 }
 function resizeByKey(event: KeyboardEvent) {
   const keys = horizontal.value ? ['ArrowLeft', 'ArrowRight'] : ['ArrowUp', 'ArrowDown'];
-  if (!keys.includes(event.key) || !visible.value || !isTopDrawer(id)) return;
+  if (!keys.includes(event.key) || !visible.value || !isTopOverlay(id)) return;
   event.preventDefault();
   const size = currentSize();
   const sign = props.direction === 'right' || props.direction === 'bottom' ? -1 : 1;
-  emit('resize-start', size);
+  emit('resizeStart', size);
   updateSize(size + (event.key === keys[0] ? -10 : 10) * sign, extent());
-  emit('resize-end', resizedSize.value ?? size);
+  emit('resizeEnd', resizedSize.value ?? size);
 }
 function updateMotion() { reducedMotion.value = media?.matches ?? false; }
 watch(modelValue, syncVisibility);
@@ -348,8 +350,8 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKeydown);
   document.removeEventListener('focusin', onFocusin);
   media?.removeEventListener('change', updateMotion);
-  const top = isTopDrawer(id);
-  unregisterDrawer(id); lock.release();
+  const top = isTopOverlay(id);
+  unregisterOverlay(id); lock.release();
   if (active.value && top) restoreFocus();
 });
 /** 手动关闭同样经过 beforeClose；直接修改 v-model 则由父组件决定是否关闭。 */

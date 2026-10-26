@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { buttonColors, buttonSizes, buttonVariants } from './reborn-button.config'
-import { computed, ref, toRef } from 'vue'
+import { computed, shallowRef, toRef } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -53,24 +53,24 @@ const props = withDefaults(defineProps<ButtonProps>(), {
 })
 
 // 事件定义
-const emit = defineEmits([
-  'click', // 点击按钮时触发；disabled 或 loading 时不触发
-  'tap', // 与 click 同时派发，便于沿用 uniapp @tap 写法
-  'getuserinfo', // open-type="getUserInfo" 时触发，e.detail 含 userInfo 等用户信息
-  'contact', // open-type="contact" 客服会话回调，e.detail.path/query 为小程序消息参数
-  'getphonenumber', // open-type="getPhoneNumber" 时触发，e.detail.code 用于服务端换取手机号
-  'error', // 使用开放能力发生错误时触发，e.detail 含错误信息
-  'opensetting', // open-type="openSetting" 打开授权设置页后回调，e.detail.authSetting 为授权结果
-  'launchapp', // open-type="launchApp" 打开 APP 成功时触发，参数经 appParameter 传给 APP
-  'chooseavatar', // open-type="chooseAvatar"（微信）时触发，e.detail.avatarUrl 为所选头像临时路径
-  'chooseaddress', // open-type="chooseAddress"（QQ）用户选择收货地址后回调，e.detail 含地址信息
-  'chooseinvoicetitle', // open-type="chooseInvoiceTitle"（QQ）用户选择发票抬头后回调
-  'addgroupapp', // open-type="addGroupApp"（QQ）添加群应用后回调
-  'subscribe', // open-type="subscribe"（QQ）订阅号订阅结果回调
-  'login', // open-type="login"（QQ）登录回调，e.detail 含登录 code
-  'getrealtimephonenumber', // open-type="getRealtimePhoneNumber"（微信）实时手机号验证回调，e.detail.code 换取手机号
-  'agreeprivacyauthorization', // open-type="agreePrivacyAuthorization"（微信）用户同意隐私协议后回调
-])
+const emit = defineEmits<{
+  click: [event: unknown]
+  tap: [event: unknown]
+  getuserinfo: [event: unknown]
+  contact: [event: unknown]
+  getphonenumber: [event: unknown]
+  error: [event: unknown]
+  opensetting: [event: unknown]
+  launchapp: [event: unknown]
+  chooseavatar: [event: unknown]
+  chooseaddress: [event: unknown]
+  chooseinvoicetitle: [event: unknown]
+  addgroupapp: [event: unknown]
+  subscribe: [event: unknown]
+  login: [event: unknown]
+  getrealtimephonenumber: [event: unknown]
+  agreeprivacyauthorization: [event: unknown]
+}>()
 
 const slots = defineSlots<{
   /** 前置内容（常放图标），作用域含 loading 状态；loading 时被加载动画替代 */
@@ -151,7 +151,7 @@ function onTap(e: UniEvent) {
 }
 
 // 点击态状态
-const isHover = ref(false)
+const isHover = shallowRef(false)
 
 const onGetUserInfo = (e: any) => emit('getuserinfo', e)
 const onContact = (e: any) => emit('contact', e)

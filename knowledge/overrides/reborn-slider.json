@@ -12,6 +12,7 @@
   "pitfalls": [
     "web 与 uniapp 双端均可用。",
     "单值模式用 v-model，范围模式必须同时设置 range=true 并改用 v-model:values 绑定数组。",
-    "除 update:modelValue / update:values 外还提供 change 与 changing 两个事件，回调值为数值或数组。"
+    "除 update:modelValue / update:values 外还提供 change 与 changing 两个事件，回调值为数值或数组。",
+    "两端 thumb 插槽仅替换中心圆，单值与范围模式均支持平铺 { value, index, active, disabled }；外层定位与气泡由组件维护，外形通过 ui.thumb 覆盖，Web 还保留聚焦与键盘。"
   ]
 }

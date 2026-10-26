@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { computed, ref, shallowRef } from 'vue';
 import RebornFab from "~/components/reborn/ui/reborn-fab/RebornFab.vue";
 import { fabColors, fabVariants } from "~/components/reborn/ui/reborn-fab/reborn-fab.config";
 
@@ -132,7 +133,7 @@ const fabCode = computed(() => {
 });
 
 /** 最近一次点击的操作项，替代 console 输出 */
-const lastAction = ref("");
+const lastAction = shallowRef("");
 
 function handleAction(name: string) {
   lastAction.value = name;
@@ -299,7 +300,7 @@ function handleAction(name: string) {
       description="通过 #trigger 插槽可完全替换触发器结构，用于渲染带文字的胶囊按钮等复杂形态。"
     >
       <DemoNote tone="dimmed">
-        在左侧面板勾选「使用自定义触发器插槽」即可在演练场中查看效果。
+        在演练场上方的控制区勾选「使用自定义触发器插槽」即可查看效果。
       </DemoNote>
     </DemoSection>
   </div>

@@ -1,17 +1,21 @@
 <script setup lang="ts">
+import { onLaunch } from '@dcloudio/uni-app'
+import { onUnmounted } from 'vue'
+import { useDarkMode } from '@/composables/useDarkMode'
+
+const { setDarkMode } = useDarkMode()
+// #ifdef H5
+function handleThemeMessage(event: MessageEvent) {
+  const { type, theme } = event.data ?? {}
+  if (type === 'theme-change' && (theme === 'dark' || theme === 'light')) {
+    setDarkMode(theme === 'dark')
+  }
+}
+onUnmounted(() => window.removeEventListener('message', handleThemeMessage))
+// #endif
 onLaunch(() => {
   // #ifdef H5
-  window.addEventListener('message', (event) => {
-    if (event.data?.type === 'theme-change') {
-      const isDark = event.data.theme === 'dark'
-      if (isDark) {
-        document.documentElement.classList.add('dark')
-      }
-      else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
-  })
+  window.addEventListener('message', handleThemeMessage)
   // #endif
 })
 </script>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from '#components';
+
 /**
  * 总览卡片缩略：两条消息列表项，上面一条已左滑露出「收藏」「删除」操作，下面一条保持收起
  *

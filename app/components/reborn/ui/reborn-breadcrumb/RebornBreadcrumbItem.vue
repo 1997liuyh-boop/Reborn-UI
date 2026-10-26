@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import type { BreadcrumbDroplistItem, BreadcrumbUI } from './reborn-breadcrumb.config'
-import { computed, inject, onBeforeUnmount, provide, ref, useSlots } from 'vue'
+import { computed, inject, onBeforeUpdate, provide, shallowRef, useSlots } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
+import { DROPDOWN_INJECTION_KEY } from '../reborn-dropdown/reborn-dropdown.config'
 import RebornSelectTrigger from '../reborn-select-trigger/RebornSelectTrigger.vue'
 import theme, { BREADCRUMB_INJECTION_KEY } from './reborn-breadcrumb.config'
 
 export interface RebornBreadcrumbItemProps {
+  /** 显式序位；小程序动态插槽的所有条目必须传入有限数值 */
+  order?: number
     /** 跳转目标，同 vue-router 的 to */
     to?: string | object
     /** 跳转方式：push 入栈 / replace 替换 / blank 新窗口 */
@@ -23,6 +26,10 @@ export interface RebornBreadcrumbItemProps {
     customClass?: any
     /** 细粒度样式覆盖对象，优先级高于父组件的 ui */
     ui?: BreadcrumbUI
+    /** 内部使用：条目在插槽里的序号，由 RebornBreadcrumb 渲染时写入，业务侧不要传 */
+    internalIndex?: number
+    /** 内部使用：是否被 max-count 折叠，由 RebornBreadcrumb 渲染时写入，业务侧不要传 */
+    internalCollapsed?: boolean
 }
 
 const props = withDefaults(defineProps<RebornBreadcrumbItemProps>(), {
@@ -36,32 +43,27 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
-const context = inject<any>(BREADCRUMB_INJECTION_KEY, null)
+const context = inject(BREADCRUMB_INJECTION_KEY, null)
 
-// --- 位置信息：折叠相关状态由父组件的注册索引下发 ---
-const itemId = context ? context.registerItem() : -1
-onBeforeUnmount(() => context?.unregisterItem(itemId))
-
-const index = computed(() => (context ? context.indexOfItem(itemId) : -1))
-const isCollapsed = computed(() => (context ? context.isItemCollapsed(index.value) : false))
-
-/**
- * 折叠态下父组件把省略号放在了 DOM 最前，这里用 order 把条目排回原位，
- * 同时补发首项样式（此时首项已不是 first-child）。
- */
-const isCollapsing = computed(() => !!context?.collapsing)
-const isFirst = computed(() => isCollapsing.value && index.value === 0)
-const orderStyle = computed(() =>
-    isCollapsing.value && index.value >= 0 ? { order: index.value * 2 } : undefined
-)
+// --- 位置信息：序号与折叠结果由容器按插槽顺序直接写进内部 prop，脱离容器单独使用时两者都缺省 ---
+const isCollapsed = computed(() => !!props.internalCollapsed)
+const isFirst = computed(() => props.internalIndex === 0)
 
 // --- 分隔符：条目级配置优先于容器级 ---
-const separatorText = computed(() => props.separator ?? context?.separator ?? '/')
-const separatorIcon = computed(() => props.separatorIcon ?? context?.separatorIcon)
+const separatorText = computed(() => props.separator ?? context?.separator.value ?? '/')
+const separatorIcon = computed(() => props.separatorIcon ?? context?.separatorIcon.value)
 
 // --- 下拉菜单 ---
-const isOpen = ref(false)
-const hasDroplist = computed(() => !!slots.droplist || !!props.droplist?.length)
+const isOpen = shallowRef(false)
+/**
+ * 是否填充了 droplist 插槽：插槽不是响应式的，computed 读 slots 只会停在首次结果上。
+ * setup 时取初值（服务端渲染也能拿到），每次更新前再同步一次；在 onBeforeUpdate 里写状态不会多一轮渲染。
+ */
+const hasDroplistSlot = shallowRef(!!slots.droplist)
+onBeforeUpdate(() => {
+    hasDroplistSlot.value = !!slots.droplist
+})
+const hasDroplist = computed(() => hasDroplistSlot.value || !!props.droplist?.length)
 
 function toggleDroplist() {
     if (!hasDroplist.value) { return }
@@ -111,7 +113,7 @@ const ui = computed(() => {
         collapsed: isCollapsed.value
     })
     /** 父组件的 ui 先落地，条目自身的 ui 后落地，因此条目级覆盖优先 */
-    const inherited: BreadcrumbUI = context?.ui || {}
+    const inherited: BreadcrumbUI = context?.ui.value || {}
     return {
         item: (opts?: { class?: any }) => styles.item({ class: cn(opts?.class, inherited.item, props.ui?.item) }),
         link: (opts?: { class?: any }) => styles.link({ class: cn(opts?.class, inherited.link, props.ui?.link, props.customClass) }),
@@ -125,11 +127,12 @@ const ui = computed(() => {
 
 /**
  * 兼容 #droplist 插槽里书写的 RebornDoption。
- * 该组件的点击回调与样式全部取自 provide('reborn-dropdown')，
+ * 该组件的点击回调与样式全部取自下拉上下文（DROPDOWN_INJECTION_KEY），
  * 本条目改用 RebornSelectTrigger 自绘浮层后已不存在 RebornDropdown 提供上下文，
  * 这里补一份：选中走 onCommand（点完即收起），样式换成面包屑自己的 droplistItem。
+ * 键必须从下拉组件导入同一个 Symbol，自己写字符串注入不到。
  */
-provide('reborn-dropdown', {
+provide(DROPDOWN_INJECTION_KEY, {
     select: (value: unknown) => onCommand(String(value)),
     ui: computed(() => ({
         item: (opts?: { class?: any }) => ui.value.droplistItem({ class: opts?.class }),
@@ -140,7 +143,7 @@ provide('reborn-dropdown', {
 </script>
 
 <template>
-  <div :class="ui.item()" :style="orderStyle">
+  <div :class="ui.item()">
     <!--
       带下拉菜单的条目。
       浮层只借 RebornSelectTrigger 的定位与外部点击边界，触发器仍是一枚普通面包屑条目：

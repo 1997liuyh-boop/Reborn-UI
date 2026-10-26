@@ -56,10 +56,6 @@ const slots = useSlots()
  * 三段都按需渲染：没内容的段直接不出现在节点树里，
  * 这样段间的 48rpx 间距不会因为空段变成 96rpx。
  */
-const showImage = computed(() => props.image !== null || !!slots.image)
-const showContent = computed(
-  () => !!props.title || !!props.description || !!slots.title || !!slots.description,
-)
 
 /** image 留空走内置插画；传 null 表示这一段交给 image 插槽或整段不要 */
 const imageSrc = computed(() =>
@@ -90,7 +86,7 @@ const ui = computed(() => {
 
 <template>
   <view :class="ui.root()">
-    <view v-if="showImage" :class="ui.image()">
+    <view v-if="props.image !== null || slots.image" :class="ui.image()">
       <slot name="image">
         <!-- widthFix：只认宽度，高度按原图比例算，所以样式里不能给 image 设高 -->
         <image
@@ -103,7 +99,7 @@ const ui = computed(() => {
       </slot>
     </view>
 
-    <view v-if="showContent" :class="ui.content()">
+    <view v-if="props.title || props.description || slots.title || slots.description" :class="ui.content()">
       <view v-if="props.title || slots.title" :class="ui.title()">
         <slot name="title">
           {{ props.title }}

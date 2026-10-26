@@ -15,9 +15,10 @@
     "仅 web 端可用。",
     "trigger 默认 contextmenu（右键），hover 模式下 openDelay/closeDelay 才生效；selection 划词触发时点击菜单项不会清掉选区。",
     "菜单已展开时在另一位置再次右键（或换一段划词）会先收起再在新位置展开，不做平移。",
-    "弹出方向用 placement（与 reborn-popover 一致）+ sideOffset（默认 8）；未传时按触发方式取默认：右键/点击/悬浮 bottom-start、划词 top（选区上方居中）、子菜单 right-start。旧的 content 对象已废弃但仍可用。",
+    "弹出方向用 placement（与 reborn-popover 一致）+ sideOffset（默认 8，右键触发默认 0 即贴住指针）；未传时按触发方式取默认：右键/点击/悬浮 bottom-start、划词 top（选区上方居中）、子菜单 right-start。旧的 content 对象已废弃但仍可用。",
     "根菜单为自顶向下的高度展开动画；面板圆角 8px、底色 gray-1（浅色 #FFFFFF）、阴影 0 2px 16px rgba(1,27,70,.1)、内边距 6px，选项 14px、内边距 6/4、间隔 2px。",
     "portal 默认 true 通过 Teleport 挂载到 body；modal 默认 false 不显示遮罩。",
-    "点击叶子菜单项触发 select 事件（第三个参数为 { selectionText }）；组件暴露 close 方法。"
+    "点击叶子菜单项触发 select 事件（第三个参数为 { selectionText }）；组件暴露 close 方法。",
+    "open 不传即非受控（defaultOpen 为初值）；绑定 v-model:open 时以绑定值为准，初始为 true 会直接展开。"
   ]
 }

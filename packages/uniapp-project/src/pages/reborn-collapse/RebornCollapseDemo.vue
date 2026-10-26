@@ -1,14 +1,15 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornCollapse from '@/components/reborn-collapse/RebornCollapse.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 // demo组件
-import Pinyin from './components/pinyin.vue'
+import PinyinPoem from '@/demo/PinyinPoem.vue'
+import { collapsePoem } from '@/demo/poems'
 
-const visible = ref(false)
+const visible = shallowRef(false)
 const collapseRef = ref<InstanceType<typeof RebornCollapse> | null>(null)
 
 function toggle() {
@@ -48,7 +49,7 @@ function toggle() {
           </view>
         </template>
         <template #content>
-          <Pinyin />
+          <PinyinPoem :poem="collapsePoem" />
         </template>
       </RebornCollapse>
     </RebornCard>
@@ -60,7 +61,7 @@ function toggle() {
 
       <RebornCollapse ref="collapseRef" :ui="{ content: 'pt-4' }">
         <template #content>
-          <Pinyin />
+          <PinyinPoem :poem="collapsePoem" />
         </template>
       </RebornCollapse>
     </RebornCard>

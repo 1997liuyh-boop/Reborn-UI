@@ -57,13 +57,13 @@ Timeline 用于按时间顺序展示一组事件，例如审批记录、发布�
 
 ### 数据驱动
 
-传入 `items` 后由组件渲染节点，字段与 `RebornTimelineItem` 的属性一一对应（见下方 TimelineItemData 表）。`content` 字段按 HTML 渲染，可以直接带 `<strong>`、`<code>` 这类标签。
+传入 `items` 后由组件渲染节点，字段与 `RebornTimelineItem` 的属性一一对应（见下方 TimelineItemData 表）；表外的字段（如接口返回的 `id`、`userId`）不会传给节点，也不会落到 `li` 上成为 DOM 属性，数组可以直接用接口数据。`content` 默认作为文本渲染；确需 HTML 时显式设置 `dangerouslyUseHTMLString: true`，并先清理内容。
 
 ```vue
 <script setup lang="ts">
 const items: TimelineItemData[] = [
-  { key: "plan", timestamp: "2026-09-01", content: "确定 <strong>v1.2.0</strong> 发布范围", color: "neutral" },
-  { key: "dev", timestamp: "2026-09-10", content: "完成开发并合入 <code>main</code> 分支", color: "success" },
+  { key: "plan", timestamp: "2026-09-01", content: "确定 v1.2.0 发布范围", color: "neutral" },
+  { key: "dev", timestamp: "2026-09-10", content: "完成开发并合入 main 分支", color: "success" },
   { key: "release", timestamp: "2026-09-25", content: "灰度发布中", loading: true },
 ];
 </script>
@@ -226,7 +226,8 @@ const items: TimelineItemData[] = [
 | `key` | `string \| number` | 数组下标 | 列表渲染用的唯一标识。 |
 | `timestamp` | `string` | - | 时间戳文本。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral' \| string` | `'primary'` | 节点颜色，预设色或任意 CSS 色值。 |
-| `content` | `string` | - | 节点内容，按 HTML 渲染。 |
+| `content` | `string` | - | 节点内容，默认作为文本渲染。 |
+| `dangerouslyUseHTMLString` | `boolean` | `false` | 显式启用 HTML，仅传入已清理的可信内容。 |
 | `icon` | `string \| Component` | - | 自定义节点图标：Iconify 名称或组件。 |
 | `loading` | `boolean` | `false` | 是否为加载中节点。 |
 | `labelPosition` | `'left' \| 'right'` | `'right'` | 内容位于轴线的哪一侧，仅竖向生效。 |
@@ -246,7 +247,8 @@ const items: TimelineItemData[] = [
 | --- | --- | --- | --- |
 | `timestamp` | `string` | - | 时间戳文本；复杂内容用 `timestamp` 插槽。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral' \| string` | `'primary'` | 节点颜色：预设色走语义类，其余值作为 CSS 色值走内联样式，取值见「节点颜色」。 |
-| `content` | `string` | - | 节点内容，按 HTML（`v-html`）渲染；默认插槽或 `content` 插槽存在时忽略。 |
+| `content` | `string` | - | 节点内容，默认作为文本渲染；默认插槽或 `content` 插槽存在时忽略。 |
+| `dangerouslyUseHTMLString` | `boolean` | `false` | 显式启用 HTML，仅传入已清理的可信内容。 |
 | `icon` | `string \| Component` | - | 自定义节点图标：字符串按 Iconify 名称渲染，否则按组件渲染，以白色显示在节点的实心底圆内。 |
 | `loading` | `boolean` | `false` | 加载中节点：底圆内显示旋转的 `lucide:loader-circle`，优先级高于 `icon`。 |
 | `labelPosition` | `'left' \| 'right'` | `'right'` | 内容位于轴线的哪一侧，仅 `vertical` 方向生效。 |
@@ -299,7 +301,7 @@ const items: TimelineItemData[] = [
 
 ## 注意事项
 
-- **`content` 属性经 `v-html` 渲染**。只传可信内容；来自用户输入的文本需先转义，或改用默认插槽以插值方式渲染。
+- **`content` 默认转义为文本**。此前依赖 HTML 的调用方需显式开启 `dangerouslyUseHTMLString`；该开关不清理 HTML，调用方必须先清理不可信内容。结构化内容优先使用插槽。
 - **`labelPosition` 只在竖向生效**。横向时每个节点占一列，内容固定在轴线下方，没有「轴线左右」可言。
 - **竖向列宽由所有节点的内容侧共同决定**。内容全在右侧时左列按时间戳自适应宽度；全在左侧时相反；两侧都有时左右列等宽、轴线居中——所以只要有一个节点设了 `labelPosition="left"`，整条时间线都会切成居中布局。
 - **`reverse` 翻转的是 DOM 顺序**。插槽模式下翻转的是默认插槽平铺后的节点列表（`v-for` 与手写节点混用时按整体顺序翻转），不是用 CSS `order` 做视觉倒序，因此键盘与读屏顺序都与视觉一致。

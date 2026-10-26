@@ -5,9 +5,8 @@ import { cn } from "~/lib/utils";
 import theme from "./reborn-sku.config";
 import RebornBadge from "../reborn-badge/RebornBadge.vue";
 
-const b = tv(theme);
 
-defineOptions({ inheritAttrs: false });
+// 未声明的属性与监听（id、aria-*、data-*、style 等）按默认规则落到根容器
 
 /** 单个属性选项定义 */
 export interface SkuOptionItem {
@@ -52,11 +51,27 @@ export interface SkuUi {
   item?: string;
 }
 
+/** item 插槽的作用域参数 */
+export interface SkuItemSlotProps {
+  /** 选项数据 */
+  item: SkuOptionItem;
+  /** 所属属性组 */
+  option: SkuOption;
+  /** 是否选中 */
+  selected: boolean;
+}
+
+/** 属性组 slots 字段指定的动态插槽的作用域参数 */
+export interface SkuGroupSlotProps {
+  /** 所属属性组 */
+  option: SkuOption;
+  /** 当前选中结果（与 v-model 同值） */
+  modelValue: Record<string, any>;
+}
+
 export interface SkuProps {
   /** 属性组配置列表 */
   options?: SkuOption[];
-  /** 双向绑定值，key 为 SkuOption.key，value 为选中项按 fieldNames.value 取到的值（多选时为数组） */
-  modelValue?: Record<string, any>;
   /** 自定义类名 */
   class?: any;
   /** UI 覆盖 */
@@ -65,14 +80,36 @@ export interface SkuProps {
 
 const props = withDefaults(defineProps<SkuProps>(), {
   options: () => [],
-  modelValue: () => ({}),
   ui: () => ({}),
 });
 
 const emit = defineEmits<{
-  (e: "update:modelValue", value: Record<string, any>): void;
+  /** 单个属性组选中值变化时触发，key 为该属性组的 key */
   (e: "change", key: string, value: any): void;
 }>();
+
+/**
+ * 插槽类型拆成两部分再取交叉：同一个对象字面量里，具名的 item 必须兼容索引签名，
+ * 只能把索引签名写成两种参数的联合，动态名调用时参数被推成两者的交叉而报错；
+ * 交叉类型不做这项检查，动态名只按分组插槽参数检查，item 仍按自己的参数检查
+ */
+defineSlots<
+  {
+    /** 由属性组 slots 字段指定的动态插槽 */
+    [name: string]: ((props: SkuGroupSlotProps) => any) | undefined;
+  } & {
+    /** 自定义单个选项内容 */
+    item?: (props: SkuItemSlotProps) => any;
+  }
+>();
+
+/**
+ * 选中结果（v-model）：key 为 SkuOption.key，value 为选中项按 fieldNames.value 取到的值（多选时为数组）。
+ * 不绑定时由 defineModel 在本地持有，点选同样生效；对象值每次整体替换，不就地修改
+ */
+const model = defineModel<Record<string, any>>({ default: () => ({}) });
+
+const b = tv(theme);
 
 const styles = b();
 const uiOverrides = computed(() => props.ui || {});
@@ -110,7 +147,7 @@ function labelOf(option: SkuOption, item: SkuOptionItem): any {
 
 /** 判断某个选项是否被选中 */
 function isSelected(option: SkuOption, item: SkuOptionItem): boolean {
-  const current = props.modelValue?.[option.key];
+  const current = model.value?.[option.key];
   const val = valueOf(option, item);
   if (option.multiple && Array.isArray(current)) {
     return current.some(c => isEqual(c, val));
@@ -118,10 +155,36 @@ function isSelected(option: SkuOption, item: SkuOptionItem): boolean {
   return isEqual(current, val);
 }
 
+/** 选项的 key：值是原始类型时带上类型前缀（避免 1 与 "1" 撞 key），值是对象或同值重复时才退回下标 */
+function itemKeyOf(value: any, index: number, seen: Set<string>) {
+  if (value !== null && (typeof value === "object" || typeof value === "function")) return `#${index}`;
+  const key = `${typeof value}:${String(value)}`;
+  if (seen.has(key)) return `${key}#${index}`;
+  seen.add(key);
+  return key;
+}
+
+/**
+ * 渲染用的属性组与选项行：key、文案与选中态在这里按组一次算好。
+ * 选中判断要做 JSON 序列化比较，此前模板里每个选项调用三次，现在只在选中结果或 options 变化时重算
+ */
+const groups = computed(() =>
+  props.options.map((option) => {
+    const seen = new Set<string>();
+    const items = (option.children ?? []).map((item, index) => ({
+      item,
+      key: itemKeyOf(valueOf(option, item), index, seen),
+      label: labelOf(option, item),
+      selected: isSelected(option, item),
+    }));
+    return { option, items };
+  }),
+);
+
 /** 点击某个属性值 */
 function handleSelect(option: SkuOption, item: SkuOptionItem) {
   const val = valueOf(option, item);
-  const current = props.modelValue?.[option.key];
+  const current = model.value?.[option.key];
   let next: any;
 
   if (option.multiple) {
@@ -138,33 +201,33 @@ function handleSelect(option: SkuOption, item: SkuOptionItem) {
     next = isEqual(current, val) ? undefined : val;
   }
 
-  const newValue = { ...props.modelValue, [option.key]: next };
-  emit("update:modelValue", newValue);
+  // 对象整体替换；受控时赋值后同步读到的仍是旧值，事件载荷用本地算出的新值
+  model.value = { ...model.value, [option.key]: next };
   emit("change", option.key, next);
 }
 </script>
 
 <template>
   <div :class="[ui.wrapper, props.class]">
-    <template v-for="option in options" :key="option.key">
+    <template v-for="{ option, items } in groups" :key="option.key">
       <!-- slots 完全覆盖模式 -->
-      <slot v-if="option.slots && option.slotsCover" :name="option.slots" :option="option" :modelValue="modelValue" />
+      <slot v-if="option.slots && option.slotsCover" :name="option.slots" :option="option" :modelValue="model" />
 
       <!-- 默认渲染模式（可选插入自定义内容） -->
       <div v-else :class="ui.group">
         <div v-if="option.title" :class="ui.title">{{ option.title }}</div>
 
         <div :class="ui.list">
-          <RebornBadge v-for="(item, index) in option.children" :key="index" size="md"
-            :color="isSelected(option, item) ? 'primary' : 'neutral'" variant="soft" @click="handleSelect(option, item)"
-            :class="ui.item" :ui="{ label: isSelected(option, item) ? '' : 'text-gray-7' }">
-            <slot name="item" :item="item" :option="option" :selected="isSelected(option, item)">
-              {{ labelOf(option, item) }}
+          <RebornBadge v-for="row in items" :key="row.key" size="md"
+            :color="row.selected ? 'primary' : 'neutral'" variant="soft" @click="handleSelect(option, row.item)"
+            :class="ui.item" :ui="{ label: row.selected ? '' : 'text-gray-7' }">
+            <slot name="item" :item="row.item" :option="option" :selected="row.selected">
+              {{ row.label }}
             </slot>
           </RebornBadge>
 
           <!-- 如果没有完全覆盖 (slotsCover=false) 但提供了插槽，作为附加组件挂载在选项列表后方 (例如自定义输入框) -->
-          <slot v-if="option.slots" :name="option.slots" :option="option" :modelValue="modelValue" />
+          <slot v-if="option.slots" :name="option.slots" :option="option" :modelValue="model" />
         </div>
       </div>
     </template>

@@ -12,7 +12,9 @@
   ],
   "pitfalls": [
     "web 与 uniapp 双端均可用。",
-    "modelValue 为受控值，非受控场景用 defaultValue 设初始值。",
-    "loading 为加载态展示，与 disabled 是两个独立属性。"
+    "modelValue 为受控值，非受控场景用 defaultValue 设初始值；绑定值被置回 undefined 时同样回到 defaultValue（缺省 inactiveValue）。",
+    "loading 为加载态展示，与 disabled 是两个独立属性。",
+    "web 端未声明的 attrs 分两路：style 与 data-* 落到根节点 label，其余（id、name、aria-*、原生监听）落到隐藏的原生 checkbox；键盘聚焦后按空格切换，与点击同走 beforeChange。",
+    "UniApp的focus只设置is-focused样式标记，blur用于复位；beforeChange期间连点不会重复提交，表单禁用同样阻止切换。"
   ]
 }

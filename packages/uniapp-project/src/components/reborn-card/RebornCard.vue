@@ -1,10 +1,12 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
+interface Props {
   title?: string
   padding?: boolean
   customClass?: string
   overflowVisible?: boolean
-}>(), {
+}
+
+withDefaults(defineProps<Props>(), {
   padding: true,
   customClass: '',
   overflowVisible: false,

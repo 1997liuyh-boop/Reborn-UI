@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { TransitionName } from './reborn-transition.config';
-import { computed, normalizeStyle, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, normalizeStyle, onBeforeUnmount, shallowRef, useTemplateRef, watch } from 'vue';
 import { runMotion } from '@/lib/motion';
 import { transitionStyles } from './reborn-transition.config';
 
@@ -15,7 +15,7 @@ export const selectAnimations = {
 </script>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
+interface Props {
   show?: boolean;
   duration?: number | { enter?: number; leave?: number } | boolean;
   lazyRender?: boolean;
@@ -32,7 +32,9 @@ const props = withDefaults(defineProps<{
   leaveFromClass?: string;
   leaveActiveClass?: string;
   leaveToClass?: string;
-}>(), {
+}
+
+const props = withDefaults(defineProps<Props>(), {
   show: false,
   duration: 300,
   lazyRender: false,
@@ -261,8 +263,8 @@ onBeforeUnmount(() => {
   }
 });
 
-const renderReady = ref(!props.lazyRender);
-const elRef = ref<HTMLElement | null>(null);
+const renderReady = shallowRef(!props.lazyRender);
+const elRef = useTemplateRef<HTMLElement>('elRef');
 
 watch(() => props.show, (val) => {
   if (val) {

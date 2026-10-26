@@ -1,6 +1,6 @@
 import type { DOMKeyframesDefinition } from 'motion-v';
 import type { ObjectDirective } from 'vue';
-import { onBeforeUnmount } from 'vue';
+import { getCurrentScope, onScopeDispose } from 'vue';
 import { prefersReducedMotion, runMotion } from '@/lib/motion';
 
 interface MotionListOptions {
@@ -127,6 +127,7 @@ export function useMotionList(options: MotionListOptions = {}) {
     beforeUnmount(root) { for (const element of children(root)) cancel(element); },
   };
 
-  onBeforeUnmount(() => { for (const element of [...jobs.keys()]) cancel(element); });
+  // 动画属于调用方作用域，组件卸载与独立 effectScope 停止都要结束。
+  if (getCurrentScope()) onScopeDispose(() => { for (const element of [...jobs.keys()]) cancel(element); });
   return { directive, enter, leave, cancel };
 }

@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { DemoBlock, DemoNote, DemoSection } from '#components';
+import { shallowRef } from 'vue';
+import RebornSku from '~/components/reborn/ui/reborn-sku/RebornSku.vue';
 /** 选中结果：key 为属性组的 key，value 为选中项的 value 字段值（多选时为数组） */
-const selected = ref<Record<string, any>>({
+const selected = shallowRef<Record<string, any>>({
   color: "black",
   size: "M",
   services: [],
@@ -40,7 +43,7 @@ const options = [
 ];
 
 /** 自定义渲染场景：通过 #item 插槽附带展示价格 */
-const priceSelected = ref<Record<string, any>>({ plan: "pro" });
+const priceSelected = shallowRef<Record<string, any>>({ plan: "pro" });
 const priceOptions = [
   {
     title: "套餐版本",
@@ -54,7 +57,7 @@ const priceOptions = [
 ];
 
 /** 最近一次 change 事件的参数，展示在选中结果下方 */
-const lastChange = ref("");
+const lastChange = shallowRef("");
 
 /** 单个属性组选中值变化时触发 */
 function onChange(key: string, value: any) {

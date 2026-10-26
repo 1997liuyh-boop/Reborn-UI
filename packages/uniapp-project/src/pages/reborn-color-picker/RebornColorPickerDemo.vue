@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornColorPicker from '@/components/reborn-color-picker/RebornColorPicker.vue'
 
-const color1 = ref('#4D80F0')
-const color2 = ref('#10B981')
-const color3 = ref('#F43F5E')
-const colorHex = ref('#4D80F0')
-const colorRgb = ref('rgb(16, 185, 129)')
-const colorRgba = ref('rgba(244, 63, 94, 0.50)')
+const color1 = shallowRef('#4D80F0')
+const color2 = shallowRef('#10B981')
+const color3 = shallowRef('#F43F5E')
+const arrowColor = shallowRef('#4D80F0')
+const smallColor = shallowRef('#10B981')
+const colorHex = shallowRef('#4D80F0')
+const colorRgb = shallowRef('rgb(16, 185, 129)')
+const colorRgba = shallowRef('rgba(244, 63, 94, 0.50)')
 </script>
 
 <template>
@@ -45,7 +47,7 @@ const colorRgba = ref('rgba(244, 63, 94, 0.50)')
                     <text class="text-sm font-medium">右侧弹出 (Right Side)</text>
                 </view>
                 <view class="flex items-center space-x-4">
-                    <RebornColorPicker v-model="color1" :arrow="false" />
+                    <RebornColorPicker v-model="arrowColor" :arrow="false" />
                     <text class="text-sm font-medium">隐藏箭头 (No Arrow)</text>
                 </view>
             </view>
@@ -54,7 +56,7 @@ const colorRgba = ref('rgba(244, 63, 94, 0.50)')
         <RebornCard title="不同尺寸" overflowVisible>
             <view class="flex flex-col space-y-4">
                 <view class="flex items-center space-x-4">
-                    <RebornColorPicker v-model="color2" size="sm" />
+                    <RebornColorPicker v-model="smallColor" size="sm" />
                     <text class="text-sm font-medium">小尺寸 (sm)</text>
                 </view>
                 <view class="flex items-center space-x-4">

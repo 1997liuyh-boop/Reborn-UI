@@ -1,23 +1,13 @@
-<script lang="ts">
-export default {
-  name: 'reborn-popup',
-  options: {
-    virtualHost: true,
-    addGlobalClass: true,
-    styleIsolation: 'shared'
-  }
-}
-</script>
-
 <script lang="ts" setup>
-import { computed, onBeforeMount, ref, reactive, nextTick, type PropType } from 'vue'
-import RebornOverlay from '../reborn-overlay/RebornOverlay.vue'
-import RebornTransition from '../reborn-transition/RebornTransition.vue'
-import RebornRootPortal from '../reborn-root-portal/RebornRootPortal.vue'
 import type { TransitionName } from '../reborn-transition/RebornTransition.vue'
+import type { PopupColor, PopupPosition } from './reborn-popup.config'
+import { computed, nextTick, onBeforeUnmount, reactive, shallowRef } from 'vue'
+import { useBooleanModel } from '@/composables/useBooleanModel'
 import { tv } from '@/lib/tv'
 import { getSystemInfo } from '@/lib/device'
-import theme, { PopupPosition, PopupColor } from './reborn-popup.config'
+import RebornRootPortal from '../reborn-root-portal/RebornRootPortal.vue'
+import theme from './reborn-popup.config'
+import RebornPopupPanel from './RebornPopupPanel.vue'
 
 interface PopupProps {
   /** 自定义根元素类名 */
@@ -25,7 +15,6 @@ interface PopupProps {
   /** 自定义根元素样式 */
   customStyle?: string
   /** 是否显示弹出层 (v-model) */
-  modelValue?: boolean
   /** 弹出位置：top, bottom, left, right, center */
   position?: PopupPosition
   /** 自定义过渡动画名称 */
@@ -85,18 +74,22 @@ interface PopupProps {
   round?: boolean
 }
 
+defineOptions({
+  name: 'reborn-popup',
+  options: { virtualHost: true, addGlobalClass: true, styleIsolation: 'shared' }
+})
+
 const props = withDefaults(defineProps<PopupProps>(), {
   customClass: '',
   customStyle: '',
-  modelValue: false,
   position: 'bottom',
   closeOnClickModal: true,
-  maskClosable: true,
+  maskClosable: undefined,
   duration: 300,
   modal: true,
-  showMask: true,
+  showMask: undefined,
   zIndex: 25,
-  overlayZIndex: 25,
+  overlayZIndex: undefined,
   modalStyle: '',
   safeAreaInsetBottom: true,
   safeAreaInsetTop: true,
@@ -105,7 +98,7 @@ const props = withDefaults(defineProps<PopupProps>(), {
   title: '',
   showHeader: true,
   showClose: true,
-  size: '30%',
+  size: undefined,
   swipeClose: true,
   swipeCloseThreshold: 120,
   rootPortal: false,
@@ -114,25 +107,26 @@ const props = withDefaults(defineProps<PopupProps>(), {
   round: true,
 })
 
-const emit = defineEmits([
-  'update:modelValue', // 显隐状态变化时触发，参数为最新的显示状态（v-model 同步）
-  'before-enter',
-  'enter', // 进入过渡进行中触发（面板开始滑入）
-  'before-leave',
-  'leave', // 离开过渡进行中触发（面板开始滑出）
-  'after-leave',
-  'after-enter',
-  'click-modal',
-  'close',
-  'open',
-  'opened',
-  'closed'
-])
+const emit = defineEmits<{
+  'before-enter': []
+  'enter': []
+  'before-leave': []
+  'leave': []
+  'after-leave': []
+  'after-enter': []
+  'click-modal': []
+  'close': []
+  'open': []
+  'opened': []
+  'closed': []
+}>()
+defineModel<boolean>({ default: undefined })
+const model = useBooleanModel('modelValue')
 
 const actualPosition = computed(() => props.position)
 const actualModal = computed(() => props.showMask ?? props.modal)
 const actualCloseOnClick = computed(() => props.maskClosable ?? props.closeOnClickModal)
-const actualZIndex = computed(() => props.overlayZIndex || props.zIndex)
+const actualZIndex = computed(() => props.overlayZIndex ?? props.zIndex)
 const actualRootPortal = computed(() => props.enablePortal || props.rootPortal)
 
 const transitionName = computed<TransitionName | TransitionName[]>(() => {
@@ -145,8 +139,27 @@ const transitionName = computed<TransitionName | TransitionName[]>(() => {
   return 'slide-up'
 })
 
-const safeTop = ref<number>(0)
-const safeBottom = ref<number>(0)
+const systemInfo = getSystemInfo()
+const safeTop = computed(() => {
+  if (!props.safeAreaInsetTop || !systemInfo.safeArea || actualPosition.value !== 'top') return 0
+  // #ifdef MP-WEIXIN
+  return systemInfo.safeArea.top || 44
+  // #endif
+  // #ifndef MP-WEIXIN
+  return systemInfo.safeAreaInsets?.top || 44
+  // #endif
+})
+const safeBottom = computed(() => {
+  if (!props.safeAreaInsetBottom || !systemInfo.safeArea || actualPosition.value !== 'bottom') return 0
+  // #ifdef MP-WEIXIN
+  return systemInfo.screenHeight - (systemInfo.safeArea.bottom || 0)
+  // #endif
+  // #ifndef MP-WEIXIN
+  return systemInfo.safeAreaInsets?.bottom ?? 0
+  // #endif
+})
+let disposed = false
+let exitTimer: ReturnType<typeof setTimeout> | undefined
 
 const swipe = reactive({
   isTouch: false,
@@ -175,7 +188,7 @@ function clearReleaseTimer() {
  * 动画结束后以 duration=0 静默调用 close，跳过 RebornTransition 的离场效果。
  * 这样可彻底避免"先跳回 0 再离场"的闪现问题。
  */
-const internalDuration = ref<number | boolean | null>(null)
+const internalDuration = shallowRef<number | boolean | null>(null)
 const effectiveDuration = computed(() =>
   internalDuration.value !== null ? internalDuration.value : props.duration
 )
@@ -201,6 +214,7 @@ const EXIT_DURATION = 220
 const isHorizontal = computed(() => actualPosition.value === 'left' || actualPosition.value === 'right')
 const targetSize = computed(() => (typeof props.size === 'number' ? `${props.size}px` : props.size))
 const sizeStyle = computed(() => {
+  if (props.size == null || props.size === '') return ''
   if (actualPosition.value === 'center' || isHorizontal.value) {
     return `width: ${targetSize.value};`
   }
@@ -208,7 +222,7 @@ const sizeStyle = computed(() => {
 })
 
 const style = computed(() => {
-  const base = `z-index:${actualZIndex.value}; padding-top: ${safeTop.value}px; padding-bottom: ${safeBottom.value}px;`
+  const base = `${sizeStyle.value} z-index:${actualZIndex.value}; padding-top: ${safeTop.value}px; padding-bottom: ${safeBottom.value}px;`
   if (swipe.exiting) {
     // 退场：ease-in 加速滑出屏幕，offsetY 会被设为超大值驱动此动画
     return `${base} transition: transform ${EXIT_DURATION}ms ease-in; transform: translateY(${swipe.offsetY}px); ${props.customStyle}`
@@ -266,27 +280,6 @@ const rootClass = computed(() => {
   }
 })
 
-onBeforeMount(() => {
-  const { safeArea, screenHeight, safeAreaInsets } = getSystemInfo()
-  if (props.safeAreaInsetTop && safeArea && actualPosition.value === 'top') {
-    // #ifdef MP-WEIXIN
-    safeTop.value = safeArea.top || 44
-    // #endif
-    // #ifndef MP-WEIXIN
-    safeTop.value = safeAreaInsets?.top || 44
-    // #endif
-  }
-  if (props.safeAreaInsetBottom && safeArea && actualPosition.value === 'bottom') {
-    // #ifdef MP-WEIXIN
-    safeBottom.value = screenHeight - (safeArea.bottom || 0)
-    // #endif
-    // #ifndef MP-WEIXIN
-    safeBottom.value = safeAreaInsets ? safeAreaInsets.bottom : 0
-    // #endif
-  }
-})
-
-
 /**
  * 点击遮罩层回调
  */
@@ -302,7 +295,7 @@ function handleClickModal() {
  */
 function close() {
   emit('close')
-  emit('update:modelValue', false)
+  model.value = false
 }
 
 /**
@@ -350,6 +343,7 @@ function onAfterLeave() {
   emit('closed')
   if (swipe.exiting) {
     nextTick(() => {
+      if (disposed) return
       swipe.exiting = false
       swipe.offsetY = 0
       internalDuration.value = null
@@ -438,8 +432,9 @@ function finishDrag() {
     swipe.exiting = true
     // offsetY 此时仍保持拖拽位置，待下一帧再设置目标值
     nextTick(() => {
+      if (disposed) return
       swipe.offsetY = 1500
-      setTimeout(() => {
+      exitTimer = setTimeout(() => {
         // 弹窗已在屏幕外：以 duration=0 静默关闭，跳过 RebornTransition 离场动画。
         // 拖拽状态的重置由 handleAfterLeave 通过 nextTick 完成，
         // 确保 RebornTransition 的 display:none setData 先于 exiting=false 到达渲染层，
@@ -456,6 +451,7 @@ function finishDrag() {
     swipe.releasing = true
     // 等下一帧渲染出惯性位置后，再将 offsetY 归零触发 spring 动画
     nextTick(() => {
+      if (disposed) return
       swipe.offsetY = 0
       clearReleaseTimer()
       releaseTimer = setTimeout(() => {
@@ -473,8 +469,14 @@ function onTouchEnd(e: any) {
 
 /** 真机专属事件：误触发时不能当作松手，否则手指还在屏幕上弹窗就回弹 */
 function onTouchCancel() {
-  // intentionally noop
+  // 触摸取消时保持手势状态，等待真正的抬起事件。
 }
+
+onBeforeUnmount(() => {
+  disposed = true
+  clearReleaseTimer()
+  clearTimeout(exitTimer)
+})
 
 defineExpose({
   /** 手动关闭弹出层（等价于把 v-model 置为 false，会正常走关闭事件与动画） */
@@ -485,85 +487,75 @@ defineExpose({
 
 
 <template>
-  <!-- 渲染到根节点门户 (Root Portal) -->
-  <!-- 解决小程序中原生组件层级过高（如 map, video）、或被父级 overflow:hidden 截断的问题 -->
-  <reborn-root-portal v-if="actualRootPortal">
-    <view class="rb-popup-wrapper">
-      <reborn-overlay v-if="actualModal" :model-value="modelValue" :z-index="actualZIndex" :lock-scroll="lockScroll"
-        :duration="duration" :custom-style="overlayDragStyle" @click="handleClickModal" />
-      <reborn-transition :lazy-render="lazyRender" :custom-class="rootClass.base()" :custom-style="style"
-        :duration="effectiveDuration" :show="modelValue" :name="transitionName" @before-enter="onBeforeEnter"
-        @enter="onEnter" @after-enter="onAfterEnter" @before-leave="onBeforeLeave" @leave="onLeave"
-        @after-leave="onAfterLeave">
-        <view :class="rootClass.inner()">
-          <view
-            v-if="isSwipeClose"
-            class="rb-popup-drag-zone"
-            @touchstart="onTouchStart"
-            @touchmove.stop="onTouchMove"
-            @touchend="onTouchEnd"
-            @touchcancel="onTouchCancel"
-          >
-            <view class="flex w-full justify-center py-2">
-              <view :class="rootClass.draw()" />
-            </view>
-            <view v-if="showHeader" :class="rootClass.header()">
-              <slot name="header">
-                <text :class="rootClass.title()">{{ title }}</text>
-              </slot>
-              <text v-if="showClose" :class="rootClass.closeIcon()" class="i-lucide-x" @click.stop="close" />
-            </view>
-          </view>
-          <view v-else-if="showHeader" :class="rootClass.header()">
-            <slot name="header">
-              <text :class="rootClass.title()">{{ title }}</text>
-            </slot>
-            <text v-if="showClose" :class="rootClass.closeIcon()" class="i-lucide-x" @click="close" />
-          </view>
-          <slot />
-        </view>
-      </reborn-transition>
-    </view>
-  </reborn-root-portal>
-
-
-  <!-- 当禁用 portal 功能或在某些不支持 portal 的渲染引擎下，保持在 DOM 流的当前位置渲染 -->
-  <view v-else class="rb-popup-wrapper">
-    <reborn-overlay v-if="actualModal" :model-value="modelValue" :z-index="actualZIndex" :lock-scroll="lockScroll"
-      :duration="duration" :custom-style="overlayDragStyle" @click="handleClickModal" />
-    <reborn-transition :lazy-render="lazyRender" :custom-class="rootClass.base()" :custom-style="style"
-      :duration="effectiveDuration" :show="modelValue" :name="transitionName" @before-enter="onBeforeEnter"
-      @enter="onEnter" @after-enter="onAfterEnter" @before-leave="onBeforeLeave" @leave="onLeave"
-      @after-leave="onAfterLeave">
-      <view :class="rootClass.inner()">
-        <view
-          v-if="isSwipeClose"
-          class="rb-popup-drag-zone"
-          @touchstart="onTouchStart"
-          @touchmove.stop="onTouchMove"
-          @touchend="onTouchEnd"
-          @touchcancel="onTouchCancel"
-        >
-          <view class="flex w-full justify-center py-2">
-            <view :class="rootClass.draw()" />
-          </view>
-          <view v-if="showHeader" :class="rootClass.header()">
-            <slot name="header">
-              <text :class="rootClass.title()">{{ title }}</text>
-            </slot>
-            <text v-if="showClose" :class="rootClass.closeIcon()" class="i-lucide-x" @click.stop="close" />
-          </view>
-        </view>
-        <view v-else-if="showHeader" :class="rootClass.header()">
-          <slot name="header">
-            <text :class="rootClass.title()">{{ title }}</text>
-          </slot>
-          <text v-if="showClose" :class="rootClass.closeIcon()" class="i-lucide-x" @click="close" />
-        </view>
-        <slot />
-      </view>
-    </reborn-transition>
-  </view>
+  <RebornRootPortal v-if="actualRootPortal">
+    <RebornPopupPanel
+      :model="model"
+      :modal="actualModal"
+      :z-index="actualZIndex"
+      :lock-scroll="lockScroll"
+      :duration="duration"
+      :panel-duration="effectiveDuration"
+      :overlay-style="overlayDragStyle"
+      :panel-style="style"
+      :lazy-render="lazyRender"
+      :transition-name="transitionName"
+      :root-class="rootClass"
+      :swipe-close="isSwipeClose"
+      :show-header="showHeader"
+      :show-close="showClose"
+      :title="title"
+      :has-header-slot="!!$slots.header"
+      @click-modal="handleClickModal"
+      @before-enter="onBeforeEnter"
+      @enter="onEnter"
+      @after-enter="onAfterEnter"
+      @before-leave="onBeforeLeave"
+      @leave="onLeave"
+      @after-leave="onAfterLeave"
+      @swipe-start="onTouchStart"
+      @swipe-move="onTouchMove"
+      @swipe-end="onTouchEnd"
+      @swipe-cancel="onTouchCancel"
+      @close="close"
+    >
+      <template #header><slot name="header" /></template>
+      <slot />
+    </RebornPopupPanel>
+  </RebornRootPortal>
+  <RebornPopupPanel
+    v-else
+    :model="model"
+    :modal="actualModal"
+    :z-index="actualZIndex"
+    :lock-scroll="lockScroll"
+    :duration="duration"
+    :panel-duration="effectiveDuration"
+    :overlay-style="overlayDragStyle"
+    :panel-style="style"
+    :lazy-render="lazyRender"
+    :transition-name="transitionName"
+    :root-class="rootClass"
+    :swipe-close="isSwipeClose"
+    :show-header="showHeader"
+    :show-close="showClose"
+    :title="title"
+    :has-header-slot="!!$slots.header"
+    @click-modal="handleClickModal"
+    @before-enter="onBeforeEnter"
+    @enter="onEnter"
+    @after-enter="onAfterEnter"
+    @before-leave="onBeforeLeave"
+    @leave="onLeave"
+    @after-leave="onAfterLeave"
+    @swipe-start="onTouchStart"
+    @swipe-move="onTouchMove"
+    @swipe-end="onTouchEnd"
+    @swipe-cancel="onTouchCancel"
+    @close="close"
+  >
+    <template #header><slot name="header" /></template>
+    <slot />
+  </RebornPopupPanel>
 </template>
 
 <style lang="scss">

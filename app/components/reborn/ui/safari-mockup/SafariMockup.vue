@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { useId } from "vue";
+
 interface SafariMockupProps {
   url?: string;
   src?: string;
@@ -10,18 +12,26 @@ withDefaults(defineProps<SafariMockupProps>(), {
   width: 1203,
   height: 753,
 });
+
+/**
+ * 裁剪路径的唯一 id：写死的 id 在同页多实例时重复，HTML 不合法，
+ * 第一个实例卸载或被 display:none 包住时，其他实例的引用可能失效
+ */
+const uid = useId();
+const frameClipId = `${uid}-safari-frame`;
+const roundedBottomId = `${uid}-safari-rounded-bottom`;
 </script>
 
 <template>
   <svg fill="none" xmlns="http://www.w3.org/2000/svg" :width="width" :height="height"
     :viewBox="`0 0 ${width} ${height}`">
-    <g clipPath="url(#path0)">
+    <g :clip-path="`url(#${frameClipId})`">
       <path d="M0 52H1202V741C1202 747.627 1196.63 753 1190 753H12C5.37258 753 0 747.627 0 741V52Z"
         class="fill-[#E5E5E5] dark:fill-[#404040]" />
-      <path fillRule="evenodd" clipRule="evenodd"
+      <path fill-rule="evenodd" clip-rule="evenodd"
         d="M0 12C0 5.37258 5.37258 0 12 0H1190C1196.63 0 1202 5.37258 1202 12V52H0L0 12Z"
         class="fill-[#E5E5E5] dark:fill-[#404040]" />
-      <path fillRule="evenodd" clipRule="evenodd"
+      <path fill-rule="evenodd" clip-rule="evenodd"
         d="M1.06738 12C1.06738 5.92487 5.99225 1 12.0674 1H1189.93C1196.01 1 1200.93 5.92487 1200.93 12V51H1.06738V12Z"
         class="fill-white dark:fill-[#262626]" />
       <circle cx="27" cy="25" r="6" class="fill-[#E5E5E5] dark:fill-[#404040]" />
@@ -36,7 +46,7 @@ withDefaults(defineProps<SafariMockupProps>(), {
           fill="#A3A3A3" />
       </g>
       <g class="mix-blend-luminosity">
-        <text x="580" y="30" fill="#A3A3A3" fontSize="12" fontFamily="Arial, sans-serif">
+        <text x="580" y="30" fill="#A3A3A3" font-size="12" font-family="Arial, sans-serif">
           {{ url }}
         </text>
       </g>
@@ -80,15 +90,15 @@ withDefaults(defineProps<SafariMockupProps>(), {
           d="M168.422 32.8594C168.68 32.8594 168.891 32.7656 169.07 32.5938L175.148 26.6562C175.359 26.4375 175.469 26.2109 175.469 25.9297C175.469 25.6562 175.367 25.4141 175.148 25.2109L169.07 19.2656C168.891 19.0938 168.68 19 168.422 19C167.898 19 167.492 19.4062 167.492 19.9219C167.492 20.1719 167.602 20.4141 167.773 20.5938L173.25 25.9375L167.773 31.2656C167.594 31.4531 167.492 31.6797 167.492 31.9375C167.492 32.4531 167.898 32.8594 168.422 32.8594Z"
           fill="#A3A3A3" />
       </g>
-      <foreignObject width="1200" height="700" x="1" y="52" style="clip-path: url(#roundedBottom)">
+      <foreignObject width="1200" height="700" x="1" y="52" :style="{ clipPath: `url(#${roundedBottomId})` }">
         <iframe v-if="src" :src="src" class="size-full bg-white border-none" />
       </foreignObject>
     </g>
     <defs>
-      <clipPath id="path0">
+      <clipPath :id="frameClipId">
         <rect fill="white" :width="width" :height="height" />
       </clipPath>
-      <clipPath id="roundedBottom">
+      <clipPath :id="roundedBottomId">
         <path d="M1 52H1201V741C1201 747.075 1196.08 752 1190 752H12C5.92486 752 1 747.075 1 741V52Z" fill="white" />
       </clipPath>
     </defs>

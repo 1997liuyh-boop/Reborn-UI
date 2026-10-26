@@ -14,8 +14,7 @@ Thank you for your interest in contributing to the **Reborn UI** project! Your c
    - [Component Format](#component-format)
    - [Commit Messages](#commit-messages)
 6. [Documentation Guidelines](#documentation-guidelines)
-   - [Single-File Components](#single-file-components)
-   - [Multi-File Components](#multi-file-components)
+   - [Steps to Add a New Component](#steps-to-add-a-new-component)
 7. [Testing](#testing)
 8. [License](#license)
 
@@ -64,12 +63,13 @@ We appreciate contributions that add new components to the library. Please ensur
 
 Understanding the project structure is crucial for effective contribution:
 
-- **Components Directory**:
-  - Main components should be placed in `components/content/reborn/ui/<component-folder-name>/`.
-  - Example components should be placed in `components/content/reborn/examples/<component-folder-name>/`.
-- **Documentation**:
-  - Documentation files are located in the `content/2.components/` directory.
-  - After adding a component, write its documentation in this directory.
+- **Web components**: `app/components/reborn/ui/<component-folder-name>/` (component SFCs, `index.ts`, and the `*.config.ts` theme file).
+- **UniApp components**: `packages/uniapp-project/src/components/<component-folder-name>/`. Components that exist on both platforms must keep their props, events, and slots aligned.
+- **Web demos**: `app/components/reborn/examples/<component-folder-name>/` (`<Name>Demo.vue` and the `<Name>Overview.vue` thumbnail).
+- **Playground configs**: `app/components/reborn/configs/<component-folder-name>/`.
+- **UniApp demo pages**: `packages/uniapp-project/src/pages/<component-folder-name>/`.
+- **Documentation**: `content/2.components/<category>/<component-folder-name>.md`.
+- **Knowledge base overrides**: `knowledge/overrides/<component-folder-name>.json`.
 
 ## Style Guidelines
 
@@ -114,230 +114,28 @@ Your Vue components should adhere to the following structure:
 
 ## Documentation Guidelines
 
-Proper documentation is crucial for users to understand and effectively use the components. Follow these guidelines when adding documentation for new components.
+Component documentation and demos follow the repository's authoring specs. Read them before writing a page; they are the single source of truth:
+
+- **Component docs**: [docs/authoring/component-doc.md](docs/authoring/component-doc.md). The reference page is [content/2.components/button/reborn-button.md](content/2.components/button/reborn-button.md).
+- **Component demos**: [docs/authoring/component-demo.md](docs/authoring/component-demo.md). The reference demo is [app/components/reborn/examples/reborn-button/RebornButtonDemo.vue](app/components/reborn/examples/reborn-button/RebornButtonDemo.vue).
 
 ### Steps to Add a New Component
 
-1. **Create the Component**
-   - Place the main component in `components/content/reborn/ui/<component-folder-name>/`.
-   - Follow the [Component Format](#component-format) specified above.
-   - If the component requires examples or demos, add demo components to `components/content/reborn/examples/<component-folder-name>/`.
+1. **Create the component** in `app/components/reborn/ui/<component-folder-name>/` (and in `packages/uniapp-project/src/components/` when it also targets UniApp).
+2. **Write the demo** `<Name>Demo.vue` in `app/components/reborn/examples/<component-folder-name>/`, plus an optional playground config in `app/components/reborn/configs/<component-folder-name>/`.
+3. **Write the documentation** in `content/2.components/<category>/<component-folder-name>.md`. The page embeds the live preview and source code with `ComponentViewer`:
 
-2. **Write Documentation**
-   - Add a new Markdown file in `content/2.components/` for your component's documentation.
-   - Use the appropriate template based on whether your component is single-file or multi-file (see below).
-   - Mention the **Credits** and source if the component is ported from any other UI library or taken reborntion from any other source.
-
-3. **Ensure Compatibility**
-   - Test your component in both **Nuxt** and **Vue** environments.
-
-### Single-File Components
-
-For components that are contained within a single `.vue` file, use the following template:
-
-1. **Front Matter**
-
-   Begin with YAML front matter that includes the `title` and `description`:
-
-   ```yaml
-   ---
-   title: Your Component Title
-   description: A brief description of what your component does.
-   ---
-   ```
-
-2. **Preview Section**
-
-   Use the `ComponentLoader` to display a live preview of the component. The `id` should be set to the folder name of your component in `components/content/reborn/examples/`. In case, there is no folder, then `id` is not required.
-
-   ```markdown
-   ::ComponentLoader{label="Preview" componentName="YourComponentDemo" type="examples" id="your-component-folder-name"}
+   ```md
+   ::ComponentViewer{demoFile="RebornButtonDemo.vue" config="RebornButtonConfig" componentId="reborn-button" :componentFiles='["RebornButton.vue", "reborn-button.config.ts"]' :uniappFiles='["RebornButton.vue", "reborn-button.config.ts"]'}
    ::
    ```
 
-3. **API Documentation**
+   - `demoFile`: the demo SFC in `app/components/reborn/examples/<componentId>/`.
+   - `config`: the playground config component, if any.
+   - `componentId`: the component folder name.
+   - `componentFiles` / `uniappFiles`: source files shown in the code tabs, relative to the Web and UniApp component folders. List only files that exist.
 
-   Provide a table listing all props:
-
-   ```markdown
-   ## API
-
-   | Prop Name | Type     | Default | Description           |
-   | --------- | -------- | ------- | --------------------- |
-   | `prop1`   | `string` | `''`    | Description of prop1. |
-   | `prop2`   | `number` | `0`     | Description of prop2. |
-   ```
-
-4. **Component Code**
-
-   Include the full code of the component using `CodeViewer`. The `id` should be set to the folder name of your component in `components/content/reborn/ui/`.
-
-   ```markdown
-   ## Component Code
-
-   You can copy and paste the following code to create this component:
-
-   ::CodeViewer{filename="YourComponent.vue" language="vue" componentName="YourComponent" type="ui" id="your-component-folder-name"}
-   ::
-   ```
-
-**Example:**
-
-```markdown
----
-title: Text Hover Effect
-description: A text hover effect that animates and outlines gradient on hover.
----
-
-::ComponentLoader{label="Preview" componentName="TextHoverEffectDemo" type="examples" id="text-hover-effect"}
-::
-
-## API
-
-| Prop Name     | Type     | Default  | Description                                               |
-| ------------- | -------- | -------- | --------------------------------------------------------- |
-| `text`        | `string` | Required | The text to be displayed with the hover effect.           |
-| `duration`    | `number` | `200`    | The duration of the mask transition animation in seconds. |
-| `strokeWidth` | `number` | `0.75`   | The width of the text stroke.                             |
-| `opacity`     | `number` | `null`   | The opacity of the text.                                  |
-
-## Component Code
-
-You can copy and paste the following code to create this component:
-
-::CodeViewer{filename="TextHoverEffect.vue" language="vue" componentName="TextHoverEffect" type="ui" id="text-hover-effect"}
-::
-```
-
-In this example, the `id` used in both `ComponentLoader` and `CodeViewer` is `text-hover-effect`, which matches the folder name where the component and its demo are stored.
-
-### Multi-File Components
-
-For components that consist of multiple files, such as a main component and several sub-components or variants, use the following template:
-
-1. **Front Matter**
-
-   Begin with YAML front matter:
-
-   ```yaml
-   ---
-   title: Your Components Group Title
-   description: A brief description of what this group of components does.
-   ---
-   ```
-
-2. **Preview Sections**
-
-   Include multiple `ComponentLoader` sections for each example or variant. The `id` should be set to the folder name of your component in `components/content/reborn/examples/`.
-
-   ```markdown
-   ::ComponentLoader{label="Preview" componentName="ComponentVariantDemo" type="examples" id="your-component-folder-name"}
-   ::
-   ```
-
-3. **API Documentation**
-
-   Provide comprehensive API documentation covering all components:
-
-   ```markdown
-   ## API
-
-   | Prop Name | Type     | Default | Description                             |
-   | --------- | -------- | ------- | --------------------------------------- |
-   | `prop1`   | `string` | `''`    | Description applicable to all variants. |
-   ```
-
-4. **Utility Classes**
-
-   If applicable, list any utility classes:
-
-   ```markdown
-   ### Utility Classes
-
-   - **Class Name:** `class-description`
-   ```
-
-5. **Component Code**
-
-   Use a `code-group` to group multiple `CodeViewerTab` components, one for each file. The `id` should be set to the folder name of your component in `components/content/reborn/ui/`.
-
-   ```markdown
-   ## Component Code
-
-   You can copy and paste the following code to create these components:
-
-   ::code-group
-
-   ::CodeViewerTab{label="MainComponent.vue" language="vue" componentName="MainComponent" type="ui" id="your-component-folder-name"}
-   ::
-
-   ::CodeViewerTab{filename="VariantOne.vue" language="vue" componentName="VariantOne" type="ui" id="your-component-folder-name"}
-   ::
-
-   ::CodeViewerTab{filename="VariantTwo.vue" language="vue" componentName="VariantTwo" type="ui" id="your-component-folder-name"}
-   ::
-
-   ::
-   ```
-
-**Example:**
-
-```markdown
----
-title: Pattern Backgrounds
-description: Simple animated pattern backgrounds to make your sections stand out.
----
-
-::ComponentLoader{label="Preview" componentName="DotBackgroundDemo" type="examples" id="pattern-backgrounds"}
-::
-
-## Examples
-
-Grid background without animation:
-
-::ComponentLoader{label="Preview" componentName="GridBackgroundDemo" type="examples" id="pattern-backgrounds"}
-::
-
-Small grid background with animation:
-
-::ComponentLoader{label="Preview" componentName="GridSmallBackgroundDemo" type="examples" id="pattern-backgrounds"}
-::
-
-## API
-
-| Prop Name   | Type                                                                                                     | Default | Description                           |
-| ----------- | -------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------- |
-| `animate`   | `boolean`                                                                                                | `false` | Set `true` to animate the background. |
-| `direction` | `'top' \| 'bottom' \| 'left' \| 'right' \| 'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right'` | `'top'` | Direction of the animation movement.  |
-
-### Utility Classes
-
-- **Dot Pattern:** `dark:bg-dot-white/[0.2] bg-dot-black/[0.2]`
-- **Grid Pattern:** `dark:bg-grid-white/[0.2] bg-grid-black/[0.2]`
-- **Small Grid Pattern:** `dark:bg-grid-small-white/[0.2] bg-grid-small-black/[0.2]`
-
-## Component Code
-
-You can copy and paste the following code to create these components:
-
-::code-group
-
-::CodeViewerTab{label="PatternBackground.vue" language="vue" componentName="PatternBackground" type="ui" id="pattern-backgrounds"}
-::
-
-::CodeViewerTab{filename="DotBackground.vue" language="vue" componentName="DotBackground" type="ui" id="pattern-backgrounds"}
-::
-
-::CodeViewerTab{filename="GridBackground.vue" language="vue" componentName="GridBackground" type="ui" id="pattern-backgrounds"}
-::
-
-::CodeViewerTab{filename="GridSmallBackground.vue" language="vue" componentName="GridSmallBackground" type="ui" id="pattern-backgrounds"}
-::
-
-::
-```
-
-In this example, the `id` used in `ComponentLoader` and all `CodeViewerTab` components is `pattern-backgrounds`, which matches the folder name where the components and their demos are stored.
+4. **Run the knowledge base check** (`pnpm kb:check`). API table rows must match the source member names exactly; CI enforces this.
 
 ## Testing
 
@@ -348,8 +146,8 @@ In this example, the `id` used in `ComponentLoader` and all `CodeViewerTab` comp
 ## Additional Notes
 
 - **Component Names**: Use `PascalCase` for component filenames and names.
-- **IDs**: In `CodeViewer`, `CodeViewerTab`, and `ComponentLoader`, the `id` parameter should be set to the **folder name** where the component is stored in `components/content/reborn/ui/<component-folder-name>/` and `components/content/reborn/examples/<component-folder-name>/`. This helps in correctly linking the code and examples in the documentation.
-- **Demo Components**: For each component, create a corresponding `Demo` component used in the `ComponentLoader` for previews, and place it in `components/content/reborn/examples/<component-folder-name>/`.
+- **Folder Names**: The component folder name (for example `reborn-button`) is shared by the component, demo, playground config, documentation file, and `componentId`.
+- **Demo Components**: For each component, create a corresponding `<Name>Demo.vue` and place it in `app/components/reborn/examples/<component-folder-name>/`.
 - **Localization**: If your component supports multiple languages, include details in the documentation.
 
 ## License

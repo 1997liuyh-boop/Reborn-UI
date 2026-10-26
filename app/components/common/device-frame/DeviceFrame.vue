@@ -1,59 +1,30 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { demoDevices as devices } from '~/utils/demoDevices'
 
-const props = defineProps<{
+interface Props {
     src: string
-}>()
+}
+const props = defineProps<Props>()
 
-// Use standard Nuxt color mode
-const colorMode = useColorMode()
-const iframeRef = ref<HTMLIFrameElement>()
-const isLoading = ref(true)
+const iframeRef = useTemplateRef<HTMLIFrameElement>('iframeRef')
+const isLoading = shallowRef(true)
+const { onFrameLoad } = useDemoFrameTheme(iframeRef)
 
-// Initial src
+// 地址变化时重新加载预览。
 const iframeSrc = computed(() => {
     return props.src
 })
 
-function syncTheme() {
-    if (!iframeRef.value?.contentWindow) return
-
-    // Post message to uniapp H5
-    iframeRef.value.contentWindow.postMessage({
-        type: 'theme-change',
-        theme: colorMode.value
-    }, '*')
-}
-
 function onIframeLoad() {
     isLoading.value = false;
-    syncTheme()
+    onFrameLoad()
 }
 
 watch(() => props.src, () => {
     isLoading.value = true;
 }, { immediate: true })
 
-watch(() => colorMode.value, () => {
-    syncTheme()
-})
-
-interface Device {
-    label: string
-    width: number
-    height: number
-}
-
-const devices: Device[] = [
-    { label: 'iPhone SE', width: 320, height: 568 },
-    { label: 'iPhone 12/13/14', width: 375, height: 812 },
-    { label: 'iPhone 14 Pro Max', width: 430, height: 932 },
-    { label: 'HUAWEI MATE 80', width: 366, height: 809 },
-    { label: 'HUAWEI MATE 70', width: 374, height: 827 },
-    { label: 'iPad', width: 768, height: 1024 },
-]
-
-const selectedDeviceName = ref(devices[1]!.label)
+const selectedDeviceName = shallowRef(devices[1]!.label)
 const selectedDevice = computed(() => devices.find(d => d.label === selectedDeviceName.value) || devices[0])
 </script>
 

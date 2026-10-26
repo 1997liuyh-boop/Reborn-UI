@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, shallowRef } from "vue";
 
 /** 单条埋点记录 */
 interface TrackedEvent {
@@ -13,15 +13,15 @@ interface TrackedEvent {
     id: string;
 }
 
-const events = ref<TrackedEvent[]>([]);
+const events = shallowRef<TrackedEvent[]>([]);
 
 /** 监听 v-track 指令派发的全局事件，把结果推到日志顶部 */
 const onTracked = (e: Event) => {
     const detail = (e as CustomEvent).detail;
-    events.value.unshift({
+    events.value = [{
         ...detail,
         id: Math.random().toString(36).substring(2, 9),
-    });
+    }, ...events.value].slice(0, 50);
 };
 
 /** 清空右侧事件流 */

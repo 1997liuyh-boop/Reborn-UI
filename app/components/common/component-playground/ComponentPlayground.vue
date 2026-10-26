@@ -2,12 +2,14 @@
 import { sandboxContextKey } from '../component-viewer/types'
 import DeviceFrame from '../device-frame/DeviceFrame.vue'
 
-const props = defineProps<{
+interface Props {
   /** 该组件是否有 UniApp 端 demo（配合 url 使用） */
   uniapp?: boolean
   /** UniApp H5 demo 地址（站内 /uni-render/ 下的 hash 路由） */
   url?: string
-}>()
+}
+
+const props = defineProps<Props>()
 
 // 注册移动端 demo 到页面级状态：面板是否真正展示由 useUniDemoPanel 结合平台开关决定
 if (props.uniapp && props.url) {

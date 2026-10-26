@@ -69,3 +69,19 @@ it('预设色允许节点配置覆盖，但自定义色值保留内联优先级'
   assert.doesNotMatch(html, /bg-success/);
   assert.match(await render({ color: '#123456', ui: { dot: 'bg-secondary' } }), /background-color:#123456/);
 });
+
+it('服务端首帧根据 items 与插槽节点生成左右轨道', async () => {
+  for (const items of [false, true]) {
+    assert.match(await render({ labelPosition: 'left' }, items), /grid-cols-\[1fr_auto_auto\]/);
+  }
+  const app = createSSRApp({ render: () => h(Timeline, {}, { default: () => [h(Item, { labelPosition: 'left' }), h(Item)] }) });
+  app.component('Icon', { render: () => h('i') });
+  assert.match(await renderToString(app), /grid-cols-\[1fr_auto_1fr\]/);
+});
+
+it('content 默认转义，只有显式开启 HTML 才生成元素', async () => {
+  const content = '<strong data-content="html">内容</strong>';
+  assert.match(await render({ content }, true), /&lt;strong/);
+  assert.doesNotMatch(await render({ content }, true), /<strong/);
+  assert.match(await render({ content, dangerouslyUseHTMLString: true }, true), /<strong data-content="html">/);
+});

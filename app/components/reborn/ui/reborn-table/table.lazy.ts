@@ -1,6 +1,6 @@
 import type { ComputedRef } from 'vue';
 import type { TableKey, TableProps, TableRow, TableVisibleRow } from './table.types';
-import { computed, getCurrentInstance, getCurrentScope, onMounted, onScopeDispose, reactive, ref, shallowRef, watch } from 'vue';
+import { computed, getCurrentInstance, getCurrentScope, onMounted, onScopeDispose, reactive, shallowRef, watch } from 'vue';
 import { getRowKey } from './table.utils';
 
 interface LazyEntry {
@@ -14,7 +14,7 @@ interface LazyEntry {
 export function useTableLazy(props: Readonly<TableProps>, expandedKeys: ComputedRef<TableKey[]>) {
   const entries = shallowRef(new Map<TableRow, LazyEntry>());
   const invalidated = new WeakSet<LazyEntry>();
-  const ready = ref(false);
+  const ready = shallowRef(false);
   let disposed = false;
   const childrenKey = computed(() => props.treeProps?.children ?? 'children');
   const hasChildrenKey = computed(() => props.treeProps?.hasChildren ?? 'hasChildren');

@@ -3,7 +3,7 @@
   "whenToUse": [
     "活动、日程页横向展示若干日期并预览当日事件时。",
     "需要点击日期后以弹性动画展开事件列表的交互。",
-    "需要通过 update:activeIndex 感知选中日期变化的场景。"
+    "需要通过 v-model:active-index 双向绑定或 update:activeIndex 感知选中日期的场景。"
   ],
   "whenNotToUse": [
     "表单中选择日期值，改用 reborn-date-picker 或 reborn-date-picker-panel。",
@@ -12,6 +12,7 @@
   "pitfalls": [
     "仅 web 端可用，依赖 motion-v。",
     "calendarData 必填，元素含 month/date/day 与可选 events（title/day/time）。",
-    "props 中的 text/morphTime/coolDownTime 来自内部 TextMorph 子组件的提取结果，示例中无需传入，常规用法只传 calendarData 与 initialIndex。"
+    "props 中的 text/morphTime/coolDownTime 来自内部 TextMorph 子组件的提取结果，示例中无需传入，常规用法只传 calendarData 与 initialIndex（或 v-model:active-index）。",
+    "activeIndex 绑定后由外部值决定选中项，initialIndex 只在未绑定时作为初值；越界下标会夹到 calendarData 范围内。"
   ]
 }

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 export interface Contact {
+    id: number
     name: string
     phone: string
     email: string
@@ -46,7 +47,9 @@ export const interestOptions = [
     { label: '其他', value: 'l' },
 ]
 
-export const initialForm: FormData = {
+/** 每次创建独立初值，避免联系人与数组跨页面实例共享。 */
+export function createInitialForm(): FormData {
+  return {
     username: '乐一番',
     gender: 1,
     password: 'aA123456789!',
@@ -61,6 +64,7 @@ export const initialForm: FormData = {
     interest: [],
     contacts: [],
     isAgree: false,
+  }
 }
 
 const emailRule = z.string().email('邮箱格式不正确').refine(val => val.endsWith('@qq.com') || val.endsWith('@163.com'), '仅支持 QQ 或 163 邮箱')
@@ -105,7 +109,9 @@ export const createRules = (form: FormData) => z.object({
         .min(3, '联系人至少需要3个')
         .refine((items) => {
             for (let i = 1; i < items.length; i++) {
-                if (items[i].no <= items[i - 1].no) {
+                const current = items[i]
+                const previous = items[i - 1]
+                if (current && previous && current.no <= previous.no) {
                     return false
                 }
             }

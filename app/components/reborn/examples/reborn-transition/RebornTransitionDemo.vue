@@ -1,18 +1,19 @@
 <script lang="ts" setup>
 import type { TransitionName } from "~/components/reborn/ui/reborn-transition/reborn-transition.config";
+import { computed, onBeforeUnmount, shallowRef } from "vue";
 import { transitionStyles } from "~/components/reborn/ui/reborn-transition/reborn-transition.config";
 
 /** 内置动画名称，直接取自组件配置，避免手工维护列表 */
 const transitionNames = Object.keys(transitionStyles) as TransitionName[];
 
-const state = ref<Record<string, any>>({
+const state = shallowRef<Record<string, any>>({
   name: "fade-up" as TransitionName,
   duration: 500,
   hold: 1500,
 });
 
 /** 演练场控制面板配置 */
-const controls = computed(() => [
+const controls = [
   {
     title: "动画配置",
     children: [
@@ -39,7 +40,7 @@ const controls = computed(() => [
       },
     ],
   },
-]);
+];
 
 /** 演练场右上角展示的等价代码 */
 const transitionCode = computed(
@@ -47,18 +48,21 @@ const transitionCode = computed(
     `<RebornTransition\n  :show="show"\n  name="${state.value.name}"\n  :duration="${state.value.duration}"\n>\n  <div class="...">内容</div>\n</RebornTransition>`,
 );
 
-const show = ref(false);
-const customShow = ref(false);
+const show = shallowRef(false);
+const customShow = shallowRef(false);
 
 let timer: ReturnType<typeof setTimeout> | null = null;
+let frame: number | null = null;
 
 /** 播放内置动画：显示后按停留时长自动收起 */
 function play() {
   if (timer) clearTimeout(timer);
+  if (frame !== null) cancelAnimationFrame(frame);
   show.value = false;
 
   // 下一帧再置为 true，保证连续点击时能重新触发入场
-  requestAnimationFrame(() => {
+  frame = requestAnimationFrame(() => {
+    frame = null;
     show.value = true;
     timer = setTimeout(() => {
       show.value = false;
@@ -77,7 +81,8 @@ function playCustom() {
   }, 1200);
 }
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
+  if (frame !== null) cancelAnimationFrame(frame);
   if (timer) clearTimeout(timer);
   if (customTimer) clearTimeout(customTimer);
 });

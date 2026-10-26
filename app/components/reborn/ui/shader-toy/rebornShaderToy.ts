@@ -27,7 +27,11 @@ export class rebornShaderToy {
   private program: Program | null = null;
   private mesh: Mesh | null = null;
 
-  // Timing
+  // 尺寸观察与逐帧循环的句柄：dispose 时必须释放，否则观察器与 rAF 回调会一直持有实例
+  private resizeObserver: ResizeObserver | null = null;
+  private rafId: number | null = null;
+
+  // 计时
   private isPlaying: boolean = false;
   private firstDrawTime: number = 0;
   private prevDrawTime: number = 0;
@@ -35,20 +39,20 @@ export class rebornShaderToy {
   private frameInterval: number = 1000 / 60;
   private lastFrameTime: number = 0;
 
-  // Callback
+  // 每帧绘制前的回调
   private onDrawCallback?: () => void;
 
-  // Uniforms
+  // 着色器 uniform 对应的状态
   private iFrame: number = 0;
   private iMouse: MouseState = { x: 0, y: 0, clickX: 0, clickY: 0 };
   private hsv: HSVControls = { hue: 0, saturation: 1, brightness: 1 };
   private _mouseMode: MouseMode = "click";
-  private _mouseSensitivity: number = 1.0; // New: mouse sensitivity multiplier
-  private _mouseDamping: number = 0.9; // New: mouse movement damping factor (0-1)
+  private _mouseSensitivity: number = 1.0; // 鼠标坐标灵敏度倍数
+  private _mouseDamping: number = 0.9; // 鼠标移动阻尼系数（0-1）
 
-  private _speed: number = 1; // Speed multiplier
+  private _speed: number = 1; // 播放速度倍数
 
-  // Shader source
+  // 用户传入的着色器源码
   private shaderSource: string = "";
 
   private readonly vertexShader = `#version 300 es
@@ -67,7 +71,7 @@ export class rebornShaderToy {
     precision highp float;
     precision highp int;
     #endif
-    
+
     uniform vec3      iResolution;     // viewport resolution (in pixels)
     uniform float     iTime;           // shader playback time (in seconds)
     uniform float     iTimeDelta;      // render time (in seconds)
@@ -77,16 +81,16 @@ export class rebornShaderToy {
     uniform vec4      iDate;           // (year, month, day, unixtime in seconds)
     uniform vec3      iHSV;            // HSV controls (hue, saturation, brightness)
     uniform float     iSpeed;          // speed multiplier
-    
+
     out vec4 fragColor;
-    
+
     // HSV to RGB conversion
     vec3 hsv2rgb(vec3 c) {
         vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
         vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
         return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
     }
-    
+
     // RGB to HSV conversion
     vec3 rgb2hsv(vec3 c) {
         vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -96,7 +100,7 @@ export class rebornShaderToy {
         float e = 1.0e-10;
         return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
     }
-    
+
     // Apply HSV adjustments
     vec3 applyHSV(vec3 color, vec3 hsvAdjust) {
         vec3 hsv = rgb2hsv(color);
@@ -105,18 +109,18 @@ export class rebornShaderToy {
         hsv.z = clamp(hsv.z * hsvAdjust.z, 0.0, 1.0);
         return hsv2rgb(hsv);
     }
-    
+
     void mainImage(out vec4 c, in vec2 f);
-    
+
     void main() {
         vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
         mainImage(color, gl_FragCoord.xy);
-        
+
         // Apply HSV adjustments if not default
         if (iHSV.x != 0.0 || iHSV.y != 1.0 || iHSV.z != 1.0) {
             color.rgb = applyHSV(color.rgb, iHSV);
         }
-        
+
         fragColor = color;
     }
   `;
@@ -133,7 +137,7 @@ export class rebornShaderToy {
       this.setFrameRate(fps);
     }
 
-    // Create renderer with WebGL 2 context
+    // 创建渲染器，要求 WebGL 2 上下文
     this.renderer = new Renderer({
       width: this.container.clientWidth,
       height: this.container.clientHeight,
@@ -145,22 +149,22 @@ export class rebornShaderToy {
       powerPreference: "high-performance",
     });
 
-    // Ensure WebGL 2 context
+    // 确认拿到的是 WebGL 2 上下文，旧浏览器或禁用 WebGL 时直接抛错，由调用方降级
     if (!this.renderer.gl || !(this.renderer.gl instanceof WebGL2RenderingContext)) {
       throw new Error("WebGL 2 not supported");
     }
 
-    // Append canvas to container
+    // 画布挂到容器里
     this.container.appendChild(this.renderer.gl.canvas);
 
-    // Setup camera (orthographic for full-screen quad)
+    // 正交相机，用于全屏四边形
     this.camera = new Camera(this.renderer.gl);
     this.camera.position.z = 1;
 
-    // Setup scene
+    // 场景根节点
     this.scene = new Transform();
 
-    // Setup geometry (full-screen quad)
+    // 全屏四边形几何体
     this.geometry = new Geometry(this.renderer.gl, {
       position: {
         size: 2,
@@ -184,25 +188,25 @@ export class rebornShaderToy {
       const rect = canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio;
 
-      // Get mouse position relative to canvas
+      // 指针相对画布的位置
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
 
-      // Scale by DPR, apply sensitivity, and flip Y-axis
+      // 按 DPR 换算为像素坐标、乘以灵敏度，并翻转 Y 轴
       return {
         x: x * dpr * this._mouseSensitivity,
-        y: (canvas.height - y * dpr) * this._mouseSensitivity, // Flip Y to match GLSL coordinates
+        y: (canvas.height - y * dpr) * this._mouseSensitivity, // 翻转 Y 轴，与 GLSL 坐标系一致
       };
     };
 
     canvas.addEventListener("mousemove", (event: MouseEvent) => {
       const { x: newX, y: newY } = getScaledMousePos(event);
 
-      // Apply damping with configurable factor
+      // 按阻尼系数平滑鼠标移动
       this.iMouse.x = this.iMouse.x * this._mouseDamping + newX * (1 - this._mouseDamping);
       this.iMouse.y = this.iMouse.y * this._mouseDamping + newY * (1 - this._mouseDamping);
 
-      // Handle click coordinates based on mode
+      // 按交互模式更新点击坐标
       if (this._mouseMode === "hover" && !isMouseDown) {
         this.iMouse.clickX = this.iMouse.x;
         this.iMouse.clickY = this.iMouse.y;
@@ -226,7 +230,7 @@ export class rebornShaderToy {
       isMouseDown = false;
     });
 
-    // Handle touch events for mobile
+    // 移动端触摸事件
     canvas.addEventListener("touchmove", (event: TouchEvent) => {
       event.preventDefault();
       const touch = event.touches[0];
@@ -259,14 +263,14 @@ export class rebornShaderToy {
   }
 
   private setupResizeHandler(): void {
-    const resizeObserver = new ResizeObserver(() => {
+    this.resizeObserver = new ResizeObserver(() => {
       const width = this.container.clientWidth;
       const height = this.container.clientHeight;
 
-      // Update renderer size
+      // 同步渲染器尺寸
       this.renderer.setSize(width, height);
 
-      // Update viewport
+      // 同步视口
       this.renderer.gl.viewport(
         0,
         0,
@@ -274,7 +278,7 @@ export class rebornShaderToy {
         height * window.devicePixelRatio,
       );
 
-      // Update resolution uniform if program exists
+      // 已有着色器程序时同步分辨率 uniform
       if (this.program) {
         this.program.uniforms.iResolution.value = [
           width * window.devicePixelRatio,
@@ -284,7 +288,7 @@ export class rebornShaderToy {
       }
     });
 
-    resizeObserver.observe(this.container);
+    this.resizeObserver.observe(this.container);
   }
 
   private compileProgram(): boolean {
@@ -315,6 +319,8 @@ export class rebornShaderToy {
         },
       });
 
+      // 新程序创建成功后再释放旧程序：反复切换着色器时 GPU 程序不会堆积，编译失败时保留旧画面
+      this.program?.remove();
       this.program = program;
       this.mesh = new Mesh(this.renderer.gl, {
         geometry: this.geometry,
@@ -334,11 +340,11 @@ export class rebornShaderToy {
 
     const now = this.isPlaying ? Date.now() : this.prevDrawTime;
 
-    // Frame rate limiting
+    // 帧率限制：未到帧间隔直接跳过，下一帧统一交给 animate 调度。
+    // 这里若再请求一次 rAF，会与 animate 的请求叠加，回调数逐帧翻倍
     if (this.isPlaying && this.targetFPS < 60) {
       const elapsed = now - this.lastFrameTime;
       if (elapsed < this.frameInterval) {
-        requestAnimationFrame(() => this.animate());
         return;
       }
       this.lastFrameTime = now - (elapsed % this.frameInterval);
@@ -359,7 +365,7 @@ export class rebornShaderToy {
     const iDate = [date.getFullYear(), date.getMonth(), date.getDate(), date.getTime() * 0.001];
 
     if (this.program && this.mesh) {
-      // Update uniforms
+      // 更新 uniform
       this.program.uniforms.iResolution.value = [
         this.container.clientWidth * window.devicePixelRatio,
         this.container.clientHeight * window.devicePixelRatio,
@@ -379,7 +385,7 @@ export class rebornShaderToy {
       this.program.uniforms.iHSV.value = [this.hsv.hue, this.hsv.saturation, this.hsv.brightness];
       this.program.uniforms.iSpeed.value = this._speed;
 
-      // Render
+      // 渲染
       this.renderer.render({ scene: this.mesh, camera: this.camera });
     }
 
@@ -388,18 +394,28 @@ export class rebornShaderToy {
   }
 
   private animate = (): void => {
-    if (this.isPlaying) {
-      this.draw();
-      requestAnimationFrame(this.animate);
+    if (!this.isPlaying) {
+      this.rafId = null;
+      return;
     }
+    this.draw();
+    this.rafId = requestAnimationFrame(this.animate);
   };
 
-  // Public methods
+  private cancelFrame(): void {
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+  }
+
+  // ─── 公开方法 ───
+
   public setShader(config: ShaderConfig): boolean {
     this.shaderSource = config.source;
     const success = this.compileProgram();
 
-    // If playing, trigger a redraw
+    // 播放中则立即重绘一帧
     if (success && this.isPlaying) {
       this.draw();
     }
@@ -412,7 +428,7 @@ export class rebornShaderToy {
     if (hsv.saturation !== undefined) this.hsv.saturation = hsv.saturation;
     if (hsv.brightness !== undefined) this.hsv.brightness = hsv.brightness;
 
-    // Update immediately if not playing
+    // 暂停时立即重绘，让调整马上可见
     if (!this.isPlaying && this.program && this.mesh) {
       this.draw();
     }
@@ -421,7 +437,7 @@ export class rebornShaderToy {
   public setHue(val: number) {
     this.hsv.hue = val;
 
-    // Update immediately if not playing
+    // 暂停时立即重绘，让调整马上可见
     if (!this.isPlaying && this.program && this.mesh) {
       this.draw();
     }
@@ -430,7 +446,7 @@ export class rebornShaderToy {
   public setSaturation(val: number) {
     this.hsv.saturation = val;
 
-    // Update immediately if not playing
+    // 暂停时立即重绘，让调整马上可见
     if (!this.isPlaying && this.program && this.mesh) {
       this.draw();
     }
@@ -439,7 +455,7 @@ export class rebornShaderToy {
   public setBrightness(val: number) {
     this.hsv.brightness = val;
 
-    // Update immediately if not playing
+    // 暂停时立即重绘，让调整马上可见
     if (!this.isPlaying && this.program && this.mesh) {
       this.draw();
     }
@@ -448,11 +464,12 @@ export class rebornShaderToy {
   public getHSV(): HSVControls {
     return { ...this.hsv };
   }
-  // New speed methods
+
+  // 播放速度
   public setSpeed(val: number): void {
     this._speed = Math.max(0, val);
 
-    // Update immediately if not playing
+    // 暂停时立即重绘，让调整马上可见
     if (!this.isPlaying && this.program && this.mesh) {
       this.draw();
     }
@@ -494,6 +511,8 @@ export class rebornShaderToy {
 
   public pause(): void {
     this.isPlaying = false;
+    // 取消已排队的帧：否则同一帧内暂停后再播放，旧回调看到 isPlaying 为 true 会与新循环并行
+    this.cancelFrame();
   }
 
   public play(): void {
@@ -508,14 +527,26 @@ export class rebornShaderToy {
     }
   }
 
+  /**
+   * 完整释放实例：停止循环、断开尺寸观察、删除 GPU 程序与几何体，并主动丢弃 WebGL 上下文。
+   * 浏览器同时存活的 WebGL 上下文有数量上限（Chrome 约 16 个），只移除画布要等 GC 才回收，
+   * 反复挂载会触发「Too many active WebGL contexts」，最早的上下文被强制丢失。
+   * dispose 之后实例不可再用
+   */
   public dispose(): void {
     this.pause();
-    if (this.renderer.gl.canvas.parentElement) {
-      this.renderer.gl.canvas.parentElement.removeChild(this.renderer.gl.canvas);
-    }
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+    this.program?.remove();
+    this.geometry.remove();
+    this.mesh = null;
+    this.program = null;
+    this.renderer.gl.getExtension("WEBGL_lose_context")?.loseContext();
+    this.renderer.gl.canvas.remove();
   }
 
-  // Getters and Setters
+  // ─── 读写属性 ───
+
   public get mouseMode(): MouseMode {
     return this._mouseMode;
   }
@@ -531,18 +562,18 @@ export class rebornShaderToy {
     this.setSpeed(val);
   }
 
-  // New mouse sensitivity methods
+  // 鼠标灵敏度
   public setMouseSensitivity(sensitivity: number): void {
-    this._mouseSensitivity = Math.max(0.1, Math.min(5.0, sensitivity)); // Clamp between 0.1 and 5.0
+    this._mouseSensitivity = Math.max(0.1, Math.min(5.0, sensitivity)); // 限制在 0.1 到 5.0 之间
   }
 
   public getMouseSensitivity(): number {
     return this._mouseSensitivity;
   }
 
-  // New mouse damping methods
+  // 鼠标阻尼
   public setMouseDamping(damping: number): void {
-    this._mouseDamping = Math.max(0, Math.min(0.99, damping)); // Clamp between 0 and 0.99
+    this._mouseDamping = Math.max(0, Math.min(0.99, damping)); // 限制在 0 到 0.99 之间
   }
 
   public getMouseDamping(): number {

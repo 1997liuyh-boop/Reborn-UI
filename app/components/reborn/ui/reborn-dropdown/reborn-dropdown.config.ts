@@ -1,4 +1,4 @@
-import type { ComputedRef } from 'vue';
+import type { InjectionKey, MaybeRefOrGetter } from 'vue';
 import type { Placement } from '~/lib/placement';
 import { placements } from '~/lib/placement';
 import { tv } from '~/lib/tv';
@@ -21,6 +21,12 @@ export type DropdownTrigger = (typeof dropdownTriggers)[number];
  */
 export const SUBMENU_POPUP_OFFSET = 9;
 
+/**
+ * 浮层与触发器的默认间距（px）：无箭头 4、带箭头 12，取值与理由见 SelectTrigger 配置。
+ * Dropdown 此前带箭头时取 8，比箭头伸出面板的 8.49px 还短，尖端会压进触发器
+ */
+export { ARROW_TRIGGER_OFFSET as ARROW_POPUP_OFFSET, TRIGGER_OFFSET as POPUP_OFFSET } from "../reborn-select-trigger/reborn-select-trigger.config";
+
 /** 选项值 */
 export type DropdownValue = string | number | Record<string, any>;
 
@@ -39,19 +45,26 @@ export interface DropdownOption {
 /** 上下文下发给子节点的样式键 */
 export type DropdownContextUIKey = 'item' | 'itemIcon' | 'itemLabel' | 'submenuIcon' | 'group' | 'groupTitle';
 
-/** RebornDoption / RebornDsubmenu / RebornDgroup 以及嵌套的 RebornDropdown 通过 inject 取得的上下文 */
+/**
+ * RebornDoption / RebornDsubmenu / RebornDgroup 以及嵌套的 RebornDropdown 通过 inject 取得的上下文。
+ * 只有 select 是必需的：Breadcrumb 等宿主为了复用 RebornDoption 也会提供本上下文，但不具备悬停链路与嵌套注册，
+ * 所以这三个方法是可选的，调用处必须用 `?.()`。
+ */
 export interface DropdownContext {
   /** 选项被点击时回调，由 Dropdown 触发 select 事件并按需收起；嵌套时逐级向上冒泡 */
   select: (value: DropdownValue, ev: Event) => void;
-  /** 子级面板的悬停进入 / 离开：子菜单面板已传送到 body，需向上通知父级维持展开 */
-  hoverEnter: () => void;
-  hoverLeave: () => void;
+  /** 子级面板的悬停进入：子菜单面板已传送到 body，需向上通知父级维持展开 */
+  hoverEnter?: () => void;
+  /** 子级面板的悬停离开 */
+  hoverLeave?: () => void;
   /** 注册子级的「节点是否在其内部」判定，父级外部点击判定据此排除子菜单面板；返回注销函数 */
-  registerNested: (contains: (node: Node) => boolean) => () => void;
-  /** 子节点样式 */
-  ui: ComputedRef<Record<DropdownContextUIKey, (opts?: { class?: any }) => string>>;
+  registerNested?: (contains: (node: Node) => boolean) => () => void;
+  /** 子节点样式；宿主只需提供用得到的键，缺的键由子组件退化为无样式 */
+  ui: MaybeRefOrGetter<Partial<Record<DropdownContextUIKey, (opts?: { class?: any }) => string>>>;
 }
-export const DROPDOWN_INJECTION_KEY = 'reborn-dropdown';
+
+/** 下拉上下文的注入键；Breadcrumb 等宿主复用 RebornDoption 时也必须 import 这个键，不能自己写字符串 */
+export const DROPDOWN_INJECTION_KEY: InjectionKey<DropdownContext> = Symbol('reborn-dropdown');
 
 /*
  * 视觉规格对齐 reborn-select 的下拉列表：

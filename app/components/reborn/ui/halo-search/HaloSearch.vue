@@ -5,12 +5,29 @@ interface Props {
   class?: HTMLAttributes["class"];
 }
 
+// 透传属性（placeholder、disabled、原生事件等）落到输入框而不是外层装饰容器
+defineOptions({ inheritAttrs: false });
+
 const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  /** 在输入框内按回车时触发，参数为当前关键词 */
+  search: [keyword: string];
+}>();
+
+/** 输入框的关键词，支持 v-model */
+const keyword = defineModel<string>({ default: "" });
+
+function handleEnter(event: KeyboardEvent) {
+  // 输入法组字过程中的回车只是确认候选词，不算提交
+  if (event.isComposing) return;
+  emit("search", keyword.value);
+}
 </script>
 
 <template>
   <div
-    id="halo-search"
+    class="halo-search"
     :class="props.class"
   >
     <div class="aurora-glow" />
@@ -22,14 +39,17 @@ const props = defineProps<Props>();
 
     <div class="main-border" />
 
-    <div id="search-wrapper">
+    <div class="search-wrapper">
       <input
+        v-model="keyword"
         placeholder="Search..."
         type="text"
         name="text"
         class="search-field"
-      />
-      <div id="text-mask" />
+        v-bind="$attrs"
+        @keydown.enter="handleEnter"
+      >
+      <div class="text-mask" />
       <div class="search-btn-border" />
       <span
         class="absolute top-2 right-2 isolate z-[2] flex size-full max-h-10 max-w-10 items-center justify-center overflow-hidden rounded-lg border border-solid border-transparent"
@@ -45,13 +65,13 @@ const props = defineProps<Props>();
 </template>
 
 <style scoped>
-#halo-search {
+.halo-search {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-#search-wrapper {
+.search-wrapper {
   position: relative;
 }
 
@@ -221,7 +241,7 @@ const props = defineProps<Props>();
    INPUT OVERLAY & ACCENT EFFECTS
    =========================================== */
 
-#text-mask {
+.text-mask {
   pointer-events: none;
   width: 100px;
   height: 20px;
@@ -231,7 +251,7 @@ const props = defineProps<Props>();
   left: 32px;
 }
 
-#accent-blur {
+.accent-blur {
   pointer-events: none;
   width: 30px;
   height: 20px;
@@ -277,47 +297,47 @@ const props = defineProps<Props>();
   animation: rotate 4s linear infinite;
 }
 
-#halo-search:hover > .outer-ring::before {
+.halo-search:hover > .outer-ring::before {
   transform: translate(-50%, -50%) rotate(-98deg);
 }
 
-#halo-search:hover > .aurora-glow::before {
+.halo-search:hover > .aurora-glow::before {
   transform: translate(-50%, -50%) rotate(-120deg);
 }
 
-#halo-search:hover > .inner-glow::before {
+.halo-search:hover > .inner-glow::before {
   transform: translate(-50%, -50%) rotate(-97deg);
 }
 
-#halo-search:hover > .main-border::before {
+.halo-search:hover > .main-border::before {
   transform: translate(-50%, -50%) rotate(-110deg);
 }
 
-#search-wrapper:hover > #accent-blur {
+.search-wrapper:hover > .accent-blur {
   opacity: 0;
 }
 
-#halo-search:focus-within > .outer-ring::before {
+.halo-search:focus-within > .outer-ring::before {
   transform: translate(-50%, -50%) rotate(442deg);
   transition: all 4s;
 }
 
-#halo-search:focus-within > .aurora-glow::before {
+.halo-search:focus-within > .aurora-glow::before {
   transform: translate(-50%, -50%) rotate(420deg);
   transition: all 4s;
 }
 
-#halo-search:focus-within > .inner-glow::before {
+.halo-search:focus-within > .inner-glow::before {
   transform: translate(-50%, -50%) rotate(443deg);
   transition: all 4s;
 }
 
-#halo-search:focus-within > .main-border::before {
+.halo-search:focus-within > .main-border::before {
   transform: translate(-50%, -50%) rotate(430deg);
   transition: all 4s;
 }
 
-#search-wrapper:focus-within > #text-mask {
+.search-wrapper:focus-within > .text-mask {
   display: none;
 }
 

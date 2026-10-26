@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PlaygroundControlGroup } from "~/components/common/play-ground/Playground.vue";
 import { DemoBlock, DemoNote, DemoSection, Playground } from "#components";
-import { computed, ref } from "vue";
+import { computed, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { launchScreenEffects } from "~/components/reborn/ui/reui-launch/reui-launch.config";
 import ReuiLaunchDoodle from "~/components/reborn/ui/reui-launch/ReuiLaunchDoodle.vue";
@@ -27,10 +27,10 @@ const screenEffectDescriptions: Record<ScreenEffect, string> = {
 // ─── 交互演练场 ─────────────────────────────────────────────────
 /** 演练场覆盖组件的文字、屏幕动效、取景和展开状态。 */
 const defaultState = { text: "REUI", screenText: "RE", screenEffect: "crt" as ScreenEffect, compact: false, expanded: false };
-const state = ref({ ...defaultState });
+const state = shallowRef({ ...defaultState });
 /** 原生点击次数与重新挂载序号，重置时同时清除内部固定状态。 */
-const clickCount = ref(0);
-const previewKey = ref(0);
+const clickCount = shallowRef(0);
+const previewKey = shallowRef(0);
 
 /** 恢复默认参数和交互状态。 */
 function resetState() {
@@ -73,7 +73,7 @@ const controls: PlaygroundControlGroup[] = [
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
 /** 保持展开示例可切回默认交互。 */
-const expanded = ref(true);
+const expanded = shallowRef(true);
 </script>
 
 <template>

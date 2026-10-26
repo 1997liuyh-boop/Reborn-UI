@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, shallowRef, useId, useTemplateRef } from "vue";
 
 interface Props {
   strokeWidth?: number;
@@ -15,25 +15,42 @@ const props = withDefaults(defineProps<Props>(), {
   opacity: 0.75,
 });
 
-const svgRef = ref<SVGSVGElement | null>(null);
-const cursor = reactive({ x: 0, y: 0 });
-const hovered = ref(false);
+const svgRef = useTemplateRef<SVGSVGElement>("svgRef");
+const hovered = shallowRef(false);
 
-// 过渡时长：秒转毫秒，duration 为 0 时回退 200ms
-const transitionDuration = props.duration ? props.duration * 1000 : 200;
+/**
+ * SVG 定义的 id 前缀：写死的 id 在同页多实例时，url(#…) 总是解析到文档里第一个同名定义，
+ * 第二个实例会用第一个实例的揭示圆与渐变
+ */
+const uid = useId();
+const textGradientId = `${uid}-text-gradient`;
+const revealMaskId = `${uid}-reveal-mask`;
+const textMaskId = `${uid}-text-mask`;
 
-// Reactive gradient position
-const maskPosition = computed(() => {
-  if (svgRef.value) {
-    const svgRect = svgRef.value.getBoundingClientRect();
-    const cxPercentage = ((cursor.x - svgRect.left) / svgRect.width) * 100;
-    const cyPercentage = ((cursor.y - svgRect.top) / svgRect.height) * 100;
-    return { cx: `${cxPercentage}%`, cy: `${cyPercentage}%` };
-  }
-  return { cx: "50%", cy: "50%" }; // Default position
-});
+// 过渡时长：秒转毫秒，duration 为 0 时回退 200ms；用 computed 让 duration 变化后生效
+const transitionDuration = computed(() => (props.duration ? props.duration * 1000 : 200));
 
-// Reactive style for stroke animation
+/** 揭示圆心相对 SVG 的百分比位置，在指针事件里结合当时的布局算好，computed 只负责格式化 */
+const maskPercent = shallowRef({ cx: 50, cy: 50 });
+
+const maskPosition = computed(() => ({
+  cx: `${maskPercent.value.cx}%`,
+  cy: `${maskPercent.value.cy}%`,
+}));
+
+/** 按指针坐标更新揭示圆心：每次实时读取 SVG 的位置，页面滚动后也准确 */
+function updateMaskPosition(clientX: number, clientY: number) {
+  const svg = svgRef.value;
+  if (!svg) return;
+  const svgRect = svg.getBoundingClientRect();
+  if (!svgRect.width || !svgRect.height) return;
+  maskPercent.value = {
+    cx: ((clientX - svgRect.left) / svgRect.width) * 100,
+    cy: ((clientY - svgRect.top) / svgRect.height) * 100,
+  };
+}
+
+// 描边动画的样式
 const strokeStyle = computed(() => ({
   strokeDashoffset: hovered.value ? "0" : "1000",
   strokeDasharray: "1000",
@@ -49,20 +66,19 @@ function handleMouseLeave() {
 }
 
 function handleMouseMove(e: MouseEvent) {
-  cursor.x = e.clientX;
-  cursor.y = e.clientY;
+  updateMaskPosition(e.clientX, e.clientY);
 }
 
-// Touch support
+// 触摸支持
 function handleTouchStart(e: TouchEvent) {
   hovered.value = true;
-  handleTouchMove(e); // Update the position on touch start
+  handleTouchMove(e); // 触摸开始时同步一次位置
 }
 
 function handleTouchMove(e: TouchEvent) {
   const touch = e.touches[0];
-  cursor.x = touch.clientX;
-  cursor.y = touch.clientY;
+  if (!touch) return;
+  updateMaskPosition(touch.clientX, touch.clientY);
 }
 
 function handleTouchEnd() {
@@ -87,7 +103,7 @@ function handleTouchEnd() {
   >
     <defs>
       <linearGradient
-        id="textGradient"
+        :id="textGradientId"
         gradientUnits="userSpaceOnUse"
         cx="50%"
         cy="50%"
@@ -120,9 +136,9 @@ function handleTouchEnd() {
         />
       </linearGradient>
 
-      <!-- Radial Gradient -->
+      <!-- 跟随指针的径向揭示渐变 -->
       <radialGradient
-        id="revealMask"
+        :id="revealMaskId"
         gradientUnits="userSpaceOnUse"
         r="20%"
         :cx="maskPosition.cx"
@@ -141,13 +157,13 @@ function handleTouchEnd() {
         />
       </radialGradient>
 
-      <mask id="textMask">
+      <mask :id="textMaskId">
         <rect
           x="0"
           y="0"
           width="100%"
           height="100%"
-          fill="url(#revealMask)"
+          :fill="`url(#${revealMaskId})`"
         />
       </mask>
     </defs>
@@ -164,7 +180,7 @@ function handleTouchEnd() {
       {{ text }}
     </text>
 
-    <!-- Animated Text Stroke -->
+    <!-- 描边动画文字 -->
     <text
       x="50%"
       y="50%"
@@ -182,9 +198,9 @@ function handleTouchEnd() {
       y="50%"
       text-anchor="middle"
       dominant-baseline="middle"
-      stroke="url(#textGradient)"
+      :stroke="`url(#${textGradientId})`"
       :stroke-width="strokeWidth"
-      mask="url(#textMask)"
+      :mask="`url(#${textMaskId})`"
       class="fill-transparent font-[helvetica] text-7xl font-bold"
     >
       {{ text }}

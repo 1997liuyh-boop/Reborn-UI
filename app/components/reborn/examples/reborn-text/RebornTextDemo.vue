@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { shallowRef } from "vue";
 import { textColors } from "~/components/reborn/ui/reborn-text/reborn-text.config";
 
 /** 演练场绑定值 */
-const state = ref({
+const state = shallowRef<{ color: (typeof textColors)[number] }>({
   color: "primary",
 });
 

@@ -209,8 +209,8 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | `portal`      | `boolean \| string`                                                                                            | `true`                                            | 是否用 Teleport 挂载到 `body`；传字符串时作为挂载目标选择器。                |
 | `dismissible` | `boolean`                                                                                                      | `true`                                            | 在触发器与气泡以外按下（含遮罩、iframe 内）时是否关闭；嵌套浮层内的点击不算外部。 |
 | `closeOnScroll` | `boolean`                                                                                                    | `true`                                            | 页面或触发器所在容器滚动时是否关闭；关闭后气泡跟随触发器重新定位。           |
-| `open`        | `boolean`                                                                                                      | -                                                 | 受控显隐，对应 `v-model:open`。                                              |
-| `defaultOpen` | `boolean`                                                                                                      | `false`                                           | 非受控模式下的初始显隐。                                                     |
+| `open`        | `boolean`                                                                                                      | -                                                 | 受控显隐，对应 `v-model:open`；初始为 `true` 时挂载即打开，优先于 `defaultOpen`。传入后交互只派发 `update:open`，父级不回写就保持父值。 |
+| `defaultOpen` | `boolean`                                                                                                      | `false`                                           | 非受控模式下的初始显隐；同时传了 `open` 时以 `open` 为准。                   |
 | `modal`       | `boolean`                                                                                                      | `false`                                           | 打开时是否铺半透明遮罩。                                                     |
 | `openDelay`   | `number`                                                                                                       | `0`                                               | hover 模式下悬停多久后打开（ms）。                                           |
 | `closeDelay`  | `number`                                                                                                       | `120`                                             | hover 模式下移出多久后关闭（ms）。                                           |
@@ -231,14 +231,13 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | `arrow`          | `boolean`                                                                                                      | `true`                                | 是否显示箭头。                                                                         |
 | `portal`         | `boolean \| string`                                                                                            | `false`                               | 为与 Web 保持 API 一致而保留，组件内未使用。                                           |
 | `dismissible`    | `boolean`                                                                                                      | `true`                                | 打开时是否铺一层透明遮罩，点击外部即关闭。                                             |
-| `open`           | `boolean`                                                                                                      | `false`                               | 受控显隐，对应 `v-model:open`。                                                        |
-| `defaultOpen`    | `boolean`                                                                                                      | `false`                               | 初始显隐。                                                                             |
+| `open`           | `boolean`                                                                                                      | `undefined`                           | 对应 `v-model:open`；未传时用 `defaultOpen` 初始化本地值，显式 `false` / `null` / `undefined` 均关闭。                                                        |
+| `defaultOpen`    | `boolean`                                                                                                      | `false`                               | 仅在未传 `open` 时初始化本地显隐；不覆盖显式空值，不在初始化时派发交互事件。                                                                             |
 | `modal`          | `boolean`                                                                                                      | `false`                               | 为与 Web 保持 API 一致而保留，组件内未使用，不会出现遮罩。                             |
 | `openDelay`      | `number`                                                                                                       | `0`                                   | 为与 Web 保持 API 一致而保留，组件内未使用。                                           |
 | `closeDelay`     | `number`                                                                                                       | `0`                                   | 为与 Web 保持 API 一致而保留，组件内未使用。                                           |
 | `disabled`       | `boolean`                                                                                                      | `false`                               | 禁用后点击触发器不再切换显隐（ref 调用 `open()` 不受影响）。                           |
 | `title`          | `string \| Record<string, any>[]`                                                                              | `''`                                  | 未使用 `content` 插槽时的气泡内容：`normal` 模式传字符串，`menu` 模式传对象数组。      |
-| `useContentSlot` | `boolean`                                                                                                      | `true`                                | 声明了但实际不生效：组件内部按是否传入 `content` 插槽自动判定。                        |
 | `displayMode`    | `'normal' \| 'menu'`                                                                                           | `'normal'`                            | 未使用 `content` 插槽时的展示模式。                                                    |
 | `customClass`    | `any`                                                                                                          | `''`                                  | 追加到根节点（`base`）的类名。                                                         |
 | `ui`             | `Record<string, any>`                                                                                          | `{}`                                  | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                           |
@@ -264,7 +263,6 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | 事件名              | 回调参数                                            | 描述                                          |
 | ------------------- | --------------------------------------------------- | --------------------------------------------- |
 | `update:open`       | `(value: boolean)`                                  | 显隐变化时触发，对应 `v-model:open`。         |
-| `update:modelValue` | `(value: boolean)`                                  | 与 `update:open` 同时触发，对应 `v-model`。   |
 | `change`            | `({ show }: { show: boolean })`                     | 显隐状态切换后触发。                          |
 | `open`              | -                                                   | 气泡打开后触发。                              |
 | `close`             | -                                                   | 气泡关闭后触发。                              |
@@ -391,7 +389,7 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | 多实例           | 各自独立                                                    | 自动互斥：打开一个会关闭其他实例                              |
 | 内置内容         | 只有 `content` 插槽                                         | `title` + `displayMode`（`normal` / `menu`）                  |
 | 禁用             | 无 `disabled`                                               | `disabled`                                                    |
-| 事件             | `update:open`                                               | 另有 `update:modelValue` / `change` / `open` / `close` / `menuclick` |
+| 事件             | `update:open`                                               | 另有 `change` / `open` / `close` / `menuclick` |
 | Expose           | `close`                                                     | `open` / `close`                                              |
 | 默认插槽作用域   | `{ open }`                                                  | 无                                                            |
 | 自定义类名       | `class`                                                     | `customClass`                                                 |
@@ -399,6 +397,9 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | `ui` 键位        | 7 个：`wrapper` / `trigger` / `contentWrapper` / `content` / `arrow` / `bridge` / `mask` | 10 个：`base` / `target` / `pos` / `hidden` / `container` / `inner` / `arrow` / `closeIcon` / `menu` / `menuInner` |
 
 ## 注意事项
+
+- **Web 端传入 `open` 后显隐归父级。** 点击触发器、点击外部、滚动关闭、`close()` 都只派发 `update:open`，等父级回写才变化；只传 `:open` 不接事件或在事件里拒收，气泡保持父值，与 UniApp 端一致。两端差异只在显式 `undefined`：Web 端不覆盖当前显隐（`RebornPopconfirm` 未受控时正是靠它沿用 `defaultOpen`），UniApp 端按关闭处理。
+- **UniApp 的显隐由是否传入 `open` 决定归属**。未传时内部管理，移除绑定后恢复本地值；传入后 `open()` / `close()` 请求更新父级，父级拒收就保持父值。初始化不派发 `update:open`、`change`、`open` 或 `close`。
 
 - **Web 端定位与 `reborn-tooltip`、`reborn-popconfirm` 共用同一套实现。** 主轴放不下时翻到对侧（对侧同样放不下则保持原方向），交叉轴挪回视口内；窗口缩放、滚动或气泡尺寸变化时会重新定位，所以气泡内容动态变高也不会错位。
 - **滚动关闭只针对会造成错位的滚动。** `closeOnScroll` 只在页面或包含触发器的容器滚动时关闭；气泡里的长列表滚动、无关容器的滚动不会关闭。需要气泡在滚动时一直可见，就设为 `false`，气泡会跟着触发器移动。
@@ -408,5 +409,4 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 - **hover 模式的关闭靠 `closeDelay` 和桥接层共同兜底。** 把 `closeDelay` 调成 `0` 后，鼠标只要在触发器与气泡之间的缝隙外稍有偏离就会立刻关闭。
 - **UniApp 端多个 Popover 自动互斥。** 打开一个会关闭其他已打开的实例，不需要自己维护「当前打开的是哪个」。
 - **UniApp 端 `modal`、`portal`、`openDelay`、`closeDelay` 只是为了与 Web 保持 API 一致而保留，传了也没有效果。** 跨端代码里可以照写，但不要依赖它们在小程序里的表现。
-- **UniApp 端 `useContentSlot` 设了不生效。** 组件内部用同名计算属性按是否传入 `content` 插槽判定，外部传值会被覆盖；想走 `title` 渲染就不要传 `content` 插槽。
 - **UniApp 端 `title` 的类型必须与 `displayMode` 匹配。** `menu` 模式传对象数组（每项含 `content` 或 `title` 字段），`normal` 模式传字符串；不匹配时控制台报错，菜单也不会渲染。

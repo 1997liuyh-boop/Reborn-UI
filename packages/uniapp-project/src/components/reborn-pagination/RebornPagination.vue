@@ -4,7 +4,7 @@
  * 支持布局组合、简洁模式、页码折叠与完整插槽定制。
  */
 import type { paginationSizes, PaginationUI } from './reborn-pagination.config'
-import { computed, ref, watch } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
 import RebornInput from '@/components/reborn-input/RebornInput.vue'
 import RebornSelect from '@/components/reborn-select/RebornSelect.vue'
 import { tv } from '@/lib/tv'
@@ -42,7 +42,7 @@ interface PaginationProps {
   /** 各部分 UI 自定义 */
   ui?: Partial<PaginationUI>
   /** 自定义类名 */
-  class?: any
+  customClass?: any
 }
 
 const props = withDefaults(defineProps<PaginationProps>(), {
@@ -200,12 +200,13 @@ const prevDisabled = computed(() => props.disabled || currentPage.value <= 1)
 const nextDisabled = computed(() => props.disabled || currentPage.value >= totalPages.value)
 
 /** 跳转输入框的值 */
-const jumperValue = ref<number | string>('')
+const jumperValue = shallowRef<number | string>('')
 
 /**
  * 设置当前页：钳制到有效范围，仅在实际变化时同步并触发事件
  */
 function setPage(page: number) {
+  if (pagerDisabled.value) return
   const next = Math.min(Math.max(Math.floor(page) || 1, 1), totalPages.value)
   const current = Math.floor(Number(modelValue.value)) || 1
   if (next === current) return
@@ -276,6 +277,14 @@ watch(pageSizeModel, () => clampPage())
 /**
  * 样式映射：按激活/禁用态逐项生成
  */
+const pagerItemClasses = computed(() => {
+  const options = { size: props.size, background: props.background, disabled: pagerDisabled.value, simple: props.simple }
+  return {
+    active: b({ ...options, active: true }).button({ class: cn(props.ui?.pagerItem, props.ui?.pagerItemActive) }),
+    inactive: b({ ...options, active: false }).button({ class: props.ui?.pagerItem }),
+  }
+})
+
 const ui = computed(() => {
   const overrides = props.ui || {}
   const base = (opts: { active?: boolean; disabled?: boolean } = {}) => ({
@@ -288,7 +297,7 @@ const ui = computed(() => {
   return {
     root: (opts?: { class?: any }) =>
       b({ ...base(), active: false, disabled: props.disabled }).root({
-        class: cn(opts?.class, props.class, overrides.root),
+        class: cn(opts?.class, props.customClass, overrides.root),
       }),
     pager: (opts?: { class?: any }) =>
       b({ ...base(), active: false, disabled: props.disabled }).pager({
@@ -394,8 +403,9 @@ defineExpose({
               :page="item.page"
               :active="item.active"
               :disabled="pagerDisabled"
+              :select="() => setPage(item.page)"
             >
-              <view :class="ui.pagerItem({ active: item.active, disabled: pagerDisabled })" @tap="setPage(item.page)">
+              <view :class="item.active ? pagerItemClasses.active : pagerItemClasses.inactive" @tap="setPage(item.page)">
                 <text>{{ item.page }}</text>
               </view>
             </slot>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { inputOtpColors, inputOtpSizes } from './reborn-input-otp.config'
 import type { AnimationEngine } from '@/lib/animation'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import RebornInput from '@/components/reborn-input/RebornInput.vue'
 import { createAnimation } from '@/lib/animation'
 import { tv } from '@/lib/tv'
@@ -9,24 +9,24 @@ import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-input-otp.config'
 
-defineOptions({
-  name: 'RebornInputOtp',
-})
-
-const props = withDefaults(defineProps<{
+interface Props {
   /** 细粒度样式覆盖对象，按 root/inner/list/item/value/cursor 键位重写对应节点类名 */
   ui?: any
   /** 追加到根节点的自定义类名（等价于 web 端的 class） */
   customClass?: any
-  modelValue?: string
   autofocus?: boolean
   length?: number
   disabled?: boolean
   inputType?: 'text' | 'number' | 'digit'
   size?: typeof inputOtpSizes[number]
   color?: typeof inputOtpColors[number]
-}>(), {
-  modelValue: '',
+}
+
+defineOptions({
+  name: 'RebornInputOtp',
+})
+
+const props = withDefaults(defineProps<Props>(), {
   autofocus: false,
   length: 4,
   disabled: false,
@@ -35,13 +35,13 @@ const props = withDefaults(defineProps<{
   color: 'primary',
   ui: () => ({}),
 })
-const emit = defineEmits(['update:modelValue', 'done', 'focus', 'blur'])
+const emit = defineEmits<{ done: [value: string]; focus: [event: any]; blur: [event: any] }>()
 const b = tv(theme)
 const inputRef = ref<InstanceType<typeof RebornInput> | null>(null)
 
 const cursorRef = ref<any[]>([])
 
-const value = ref(props.modelValue)
+const value = defineModel<string>({ default: '' })
 
 const ui = computed(() => {
   const style = b({
@@ -60,7 +60,7 @@ const ui = computed(() => {
   }
 })
 
-const isFocus = ref(false)
+const isFocus = shallowRef(false)
 
 const list = computed<string[]>(() => {
   const arr = [] as string[]
@@ -79,7 +79,7 @@ function last<T>(array: T[]): T | null {
 async function onCursor() {
   await nextTick()
 
-  if (!cursorRef.value) {
+  if (!isFocus.value || !cursorRef.value) {
     return
   }
 
@@ -102,7 +102,7 @@ async function onCursor() {
 }
 
 function onChange(val: string) {
-  emit('update:modelValue', val)
+  value.value = val
 
   // 输入完成时触发done事件
   if (val.length == props.length) {
@@ -143,18 +143,14 @@ onMounted(() => {
     })
   }
 
-  watch(
-    () => props.modelValue,
-    (val: string) => {
-      value.value = val
-      if (val && isFocus.value) {
-        onCursor()
-      }
-    },
-    {
-      immediate: true,
-    },
-  )
+
+})
+watch(value, (val) => {
+  if (val && isFocus.value) onCursor()
+})
+onBeforeUnmount(() => {
+  isFocus.value = false
+  animationEngine?.stop()
 })
 </script>
 
@@ -170,9 +166,9 @@ onMounted(() => {
     <view :class="ui.list()">
       <view
         v-for="(item, index) in list" :key="index" :class="ui.item()"
-        :data-active="value.length >= index && isFocus" :data-disabled="disabled" @tap="onTap"
+        :data-active="value.length >= index && isFocus" :data-disabled="disabled"
       >
-        <text :class="ui.value()" :style="{ color: value.length >= index && isFocus ? props.color : '' }">
+        <text :class="ui.value()">
           {{ item }}
         </text>
         <view

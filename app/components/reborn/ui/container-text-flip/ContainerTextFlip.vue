@@ -1,15 +1,19 @@
 <script lang="ts" setup>
+import type { ComponentPublicInstance } from "vue";
 import { useIntervalFn } from "@vueuse/core";
 import { Motion } from "motion-v";
+import { onMounted, shallowRef, useId, useTemplateRef, watch } from "vue";
+
+interface Props {
+  words?: string[];
+  interval?: number;
+  animationDuration?: number;
+  class?: string;
+  textClass?: string;
+}
 
 const props = withDefaults(
-  defineProps<{
-    words?: string[];
-    interval?: number;
-    animationDuration?: number;
-    class?: string;
-    textClass?: string;
-  }>(),
+  defineProps<Props>(),
   {
     words: () => ["better", "modern", "beautiful", "awesome"],
     interval: 3000,
@@ -19,19 +23,32 @@ const props = withDefaults(
 
 const id = useId();
 
-const currentWordIndex = ref(0);
-const textRef = useTemplateRef<HTMLElement>("textRef");
+const currentWordIndex = shallowRef(0);
+// 引用挂在 Motion 组件上，拿到的是组件实例，宽度要从它的根元素 $el 上量
+const textRef = useTemplateRef<ComponentPublicInstance>("textRef");
 
-const width = computed(() => {
-  if (textRef.value) {
-    return textRef.value.scrollWidth + 30;
-  }
-  return 100;
+// scrollWidth 不是响应式依赖，放在 computed 里只会在引用变化时重算；改为单词渲染完成后测量并写入状态
+const width = shallowRef(100);
+
+function measure() {
+  const el = textRef.value?.$el as HTMLElement | undefined;
+  if (el?.scrollWidth) width.value = el.scrollWidth + 30;
+}
+
+onMounted(measure);
+// 父组件替换 words 时下标不变：新数组更短就把下标夹回范围内，避免整个间隔里显示空内容
+watch(() => props.words, (words) => {
+  currentWordIndex.value %= words.length || 1;
 });
+// 单词轮换或 words 被替换后都重新测宽，外框宽度跟随当前显示的单词
+watch([currentWordIndex, () => props.words], measure, { flush: "post" });
 
+// 间隔读 getter，interval 变化后按新间隔重启
 useIntervalFn(() => {
-  currentWordIndex.value = (currentWordIndex.value + 1) % props.words.length;
-}, props.interval);
+  const total = props.words.length;
+  if (!total) return;
+  currentWordIndex.value = (currentWordIndex.value + 1) % total;
+}, () => props.interval);
 </script>
 
 <template>

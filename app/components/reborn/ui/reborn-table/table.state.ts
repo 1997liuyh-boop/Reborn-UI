@@ -43,7 +43,9 @@ export function useTableState(props: Readonly<TableProps>, columns: ComputedRef<
   const summary = computed(() => props.summaryMethod?.({ columns: leaves.value, data: processed.value }) ?? getSummary(leaves.value, processed.value, props.sumText ?? '合计'));
 
   /** 更新缓存只保留有效行或已选记录，避免翻页后无限保留历史数据。 */
+  let hasLoadedData = false;
   watch([sourceRows, () => selectionColumn.value?.reserveSelection], ([rows, reserve]) => {
+    hasLoadedData ||= rows.length > 0;
     const next = new Map<TableKey, TableRow>();
     if (reserve) for (const key of models.selectedKeys.value) {
       const row = cache.value.get(key);
@@ -51,7 +53,8 @@ export function useTableState(props: Readonly<TableProps>, columns: ComputedRef<
     }
     for (const item of rows) next.set(item.key, item.row);
     cache.value = next;
-    if (!reserve) {
+    // 首次空数据通常表示异步加载，预选键等第一批真实数据到达后再裁剪。
+    if (!reserve && hasLoadedData) {
       const keys = models.selectedKeys.value.filter(key => next.has(key));
       if (keys.length !== models.selectedKeys.value.length) models.selectedKeys.value = keys;
     }

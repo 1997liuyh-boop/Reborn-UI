@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DropdownOption, DropdownPlacement, DropdownValue } from "~/components/reborn/ui/reborn-dropdown/reborn-dropdown.config";
+import { computed, shallowRef } from 'vue';
 import { dropdownPlacements, dropdownTriggers } from "~/components/reborn/ui/reborn-dropdown/reborn-dropdown.config";
 import RebornDgroup from "~/components/reborn/ui/reborn-dropdown/RebornDgroup.vue";
 import RebornDoption from "~/components/reborn/ui/reborn-dropdown/RebornDoption.vue";
@@ -8,17 +9,31 @@ import RebornDsubmenu from "~/components/reborn/ui/reborn-dropdown/RebornDsubmen
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
+/**
+ * 菜单结构的两种写法：
+ * - flat（基础）：options 数组渲染成一层平铺列表；
+ * - tree（树形）：content 插槽里用 RebornDgroup 分组、RebornDsubmenu 逐级展开，插槽优先，options 不再渲染。
+ */
+type MenuStructure = "flat" | "tree";
+
+/** 演练场默认状态 */
+const defaultState: Record<string, any> = {
+  structure: "flat" satisfies MenuStructure,
   trigger: "click",
   placement: "bottom",
   showArrow: false,
   disabled: false,
   hideOnSelect: true,
-});
+};
+
+const state = shallowRef<Record<string, any>>({ ...defaultState });
+
+/** 当前是否为树形菜单 */
+const isTree = computed(() => state.value.structure === "tree");
 
 /** 最近一次选择的值与显隐状态，用于回显事件 */
-const lastSelected = ref<DropdownValue | null>(null);
-const visibleLog = ref("");
+const lastSelected = shallowRef<DropdownValue | null>(null);
+const visibleLog = shallowRef("");
 
 function handleSelect(value: DropdownValue) {
   lastSelected.value = value;
@@ -29,9 +44,9 @@ function handleVisibleChange(visible: boolean) {
 }
 
 /** 受控显隐演示：外部按钮与菜单自身的触发共用同一个状态 */
-const controlledVisible = ref(false);
-/** 受控显隐演示里 popup-visible-change 的触发次数，用于说明外部改值同样会触发该事件 */
-const visibleChangeCount = ref(0);
+const controlledVisible = shallowRef(false);
+/** 受控显隐演示里 popup-visible-change 的触发次数，外部直接改绑定值不会触发，计数只在菜单自身开合时增加 */
+const visibleChangeCount = shallowRef(0);
 
 /** 菜单配置项（options 数据驱动） */
 const options: DropdownOption[] = [
@@ -65,11 +80,32 @@ const triggerOptions = dropdownTriggers.map((t) => ({ label: triggerLabels[t], v
 
 const placementOptions = dropdownPlacements.map((p) => ({ label: p, value: p }));
 
+const structureOptions: { label: string; value: MenuStructure }[] = [
+  { label: "基础：options 单层平铺", value: "flat" },
+  { label: "树形：分组与多级子菜单", value: "tree" },
+];
+
+/** 两种结构的差异说明，随菜单结构切换显示在预览区 */
+const structureHints: Record<MenuStructure, string> = {
+  flat: "基础菜单由 options 数组渲染成一层平铺列表，每项 { label, value, disabled?, icon? }；增删命令只改数组，适合同一层级的几项操作。",
+  tree: "树形菜单改用 content 插槽：RebornDgroup 按标题分组，RebornDsubmenu 悬停后从右上角展开下一级并可继续嵌套；插槽优先，options 不再渲染。弹出位置与箭头只作用于第一层面板，任一层选中都冒泡到最外层的 select。",
+};
+
+/** 当前结构对应的说明 */
+const structureHint = computed(() => structureHints[state.value.structure as MenuStructure]);
+
 /** 演练场控制面板配置 */
 const controls: any = [
   {
     title: "基础属性",
     children: [
+      {
+        label: "菜单结构",
+        key: "structure",
+        component: "select" as const,
+        defaultValue: "flat",
+        props: { options: structureOptions },
+      },
       {
         label: "触发方式",
         key: "trigger",
@@ -96,16 +132,50 @@ const controls: any = [
   },
 ];
 
-/** 演练场右上角展示的等价代码 */
+/** 树形菜单的 content 插槽，与预览区的结构逐行对应 */
+const treeContentCode = [
+  "<template #content>",
+  "  <RebornDgroup title=\"文件\">",
+  "    <RebornDoption value=\"new\">新建</RebornDoption>",
+  "    <RebornDoption value=\"open\">打开</RebornDoption>",
+  "  </RebornDgroup>",
+  "  <RebornDgroup title=\"导出\">",
+  "    <RebornDsubmenu title=\"导出为\">",
+  "      <RebornDoption value=\"export-pdf\">PDF</RebornDoption>",
+  "      <RebornDoption value=\"export-png\">PNG</RebornDoption>",
+  "      <RebornDsubmenu title=\"更多格式\">",
+  "        <RebornDoption value=\"export-svg\">SVG</RebornDoption>",
+  "        <RebornDoption value=\"export-webp\">WebP</RebornDoption>",
+  "      </RebornDsubmenu>",
+  "    </RebornDsubmenu>",
+  "    <RebornDoption value=\"print\">打印</RebornDoption>",
+  "  </RebornDgroup>",
+  "</template>",
+];
+
+/** 演练场右上角展示的传参明细：完整列出当前所有参数（含默认值），菜单结构决定是 options 还是 content 插槽 */
 const dropdownCode = computed(() => {
   const s = state.value;
-  const attrs: string[] = [":options=\"options\""];
-  if (s.trigger !== "click") attrs.push(`trigger="${s.trigger}"`);
-  if (s.placement !== "bottom") attrs.push(`placement="${s.placement}"`);
-  if (s.showArrow) attrs.push("show-arrow");
-  if (!s.hideOnSelect) attrs.push(":hide-on-select=\"false\"");
-  if (s.disabled) attrs.push("disabled");
-  return `<RebornDropdown\n  ${attrs.join("\n  ")}\n  @select="handleSelect"\n>\n  <RebornButton label="下拉菜单" />\n</RebornDropdown>`;
+  const manual = s.trigger === "manual";
+  const attrs: string[] = [
+    ...(isTree.value ? [] : [":options=\"options\""]),
+    `trigger="${s.trigger}"`,
+    `placement="${s.placement}"`,
+    `:show-arrow="${s.showArrow}"`,
+    `:hide-on-select="${s.hideOnSelect}"`,
+    `:disabled="${s.disabled}"`,
+    "@select=\"handleSelect\"",
+  ];
+  // manual 下组件不响应点击，触发器要调用插槽下发的 toggle
+  const button = manual ? "<RebornButton label=\"下拉菜单\" @click=\"toggle\" />" : "<RebornButton label=\"下拉菜单\" />";
+  const body = isTree.value ? [button, ...treeContentCode] : [button];
+  const indent = (line: string) => `  ${line}`;
+  if (manual && isTree.value) {
+    // 默认插槽与具名插槽并存时，作用域参数只能写在 <template #default> 上
+    body.splice(0, 1, "<template #default=\"{ toggle }\">", indent(button), "</template>");
+  }
+  const open = manual && !isTree.value ? "<RebornDropdown v-slot=\"{ toggle }\"" : "<RebornDropdown";
+  return [open, ...attrs.map(indent), ">", ...body.map(indent), "</RebornDropdown>"].join("\n");
 });
 </script>
 
@@ -114,19 +184,50 @@ const dropdownCode = computed(() => {
     <Playground v-model="state" :controls="controls" :code="dropdownCode" component-name="RebornDropdown" title="交互演练场"
       description="调节触发方式、弹出位置与箭头，实时预览下拉菜单的展开表现。">
       <div class="flex flex-col items-center gap-4 py-16">
-        <RebornDropdown v-slot="{ toggle }" :options="options" :trigger="state.trigger" :placement="state.placement"
-          :show-arrow="state.showArrow" :hide-on-select="state.hideOnSelect" :disabled="state.disabled"
-          @select="handleSelect" @popup-visible-change="handleVisibleChange">
-          <!-- manual 触发方式下组件不响应点击，由插槽下发的 toggle 控制 -->
-          <RebornButton :disabled="state.disabled" label="下拉菜单" @click="state.trigger === 'manual' && toggle()">
-            <template #trailing>
-              <Icon name="lucide:chevron-down" class="size-4" />
-            </template>
-          </RebornButton>
+        <!-- 树形结构才提供 content 插槽；不提供时按 options 渲染单层列表 -->
+        <RebornDropdown
+          :options="isTree ? undefined : options"
+          :trigger="state.trigger"
+          :placement="state.placement"
+          :show-arrow="state.showArrow"
+          :hide-on-select="state.hideOnSelect"
+          :disabled="state.disabled"
+          @select="handleSelect"
+          @popup-visible-change="handleVisibleChange"
+        >
+          <template #default="{ toggle }">
+            <!-- manual 触发方式下组件不响应点击，由插槽下发的 toggle 控制 -->
+            <RebornButton :disabled="state.disabled" label="下拉菜单" @click="state.trigger === 'manual' && toggle()">
+              <template #trailing>
+                <Icon name="lucide:chevron-down" class="size-4" />
+              </template>
+            </RebornButton>
+          </template>
+          <template v-if="isTree" #content>
+            <RebornDgroup title="文件">
+              <RebornDoption value="new">新建</RebornDoption>
+              <RebornDoption value="open">打开</RebornDoption>
+            </RebornDgroup>
+            <RebornDgroup title="导出">
+              <RebornDsubmenu title="导出为">
+                <RebornDoption value="export-pdf">PDF</RebornDoption>
+                <RebornDoption value="export-png">PNG</RebornDoption>
+                <RebornDsubmenu title="更多格式">
+                  <RebornDoption value="export-svg">SVG</RebornDoption>
+                  <RebornDoption value="export-webp">WebP</RebornDoption>
+                </RebornDsubmenu>
+              </RebornDsubmenu>
+              <RebornDoption value="print">打印</RebornDoption>
+            </RebornDgroup>
+          </template>
         </RebornDropdown>
-        <DemoNote v-if="lastSelected !== null || visibleLog" tone="dimmed">
-          <span v-if="visibleLog">popup-visible-change：{{ visibleLog }}</span>
-          <span v-if="lastSelected !== null" class="ml-3">select：<code>{{ lastSelected }}</code></span>
+        <DemoNote tone="dimmed" class="max-w-xl text-center">
+          {{ structureHint }}
+        </DemoNote>
+        <!-- 回显行始终占位：首次展开时才插入的话，居中布局会把触发器顶上去一截 -->
+        <DemoNote tone="dimmed" class="font-mono text-xs">
+          <span>popup-visible-change：{{ visibleLog || "未触发" }}</span>
+          <span class="ml-3">select：{{ lastSelected ?? "未选择" }}</span>
         </DemoNote>
       </div>
     </Playground>

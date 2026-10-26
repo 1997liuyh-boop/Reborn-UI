@@ -2,7 +2,7 @@
 import { useHead, useRuntimeConfig } from "#imports";
 import { onClickOutside, useMediaQuery } from "@vueuse/core";
 import { motion } from "motion-v";
-import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from "vue";
+import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from "vue";
 import AppHeaderLogo from "~/components/app/AppHeaderLogo.vue";
 import ReuiLaunchDoodle from "~/components/reborn/ui/reui-launch/ReuiLaunchDoodle.vue";
 import { prefetchLandingModels } from "~/lib/three/modelAssets";
@@ -12,19 +12,28 @@ import RetargetingScene from "./RetargetingScene.vue";
 import { createHeroEntrance, landingNavigation } from "./videoHero.config";
 
 // 首屏保持一致，水合后再应用系统的减少动态效果偏好。
-const hydrated = ref(false);
+const hydrated = shallowRef(false);
 const desktop = useMediaQuery("(min-width: 768px)");
 const preference = useMediaQuery("(prefers-reduced-motion: reduce)");
 const reduced = computed(() => hydrated.value && preference.value);
 const menu = useTemplateRef<HTMLDetailsElement>("menu");
-const paused = ref(false);
-const menuOpen = ref(false);
-const sceneStatus = ref("loading");
-const sceneError = ref("");
-const sceneVersion = ref(0);
-const compatibility = ref(false);
-const copyStatus = ref("");
+const paused = shallowRef(false);
+const menuOpen = shallowRef(false);
+const sceneStatus = shallowRef("loading");
+const sceneError = shallowRef("");
+const sceneVersion = shallowRef(0);
+const compatibility = shallowRef(false);
+const copyStatus = shallowRef("");
 const animationPaused = computed(() => paused.value || reduced.value || menuOpen.value);
+/** 配置只随动态效果偏好变化，交互状态更新不会重建入场对象。 */
+const entrance = computed(() => ({
+  navigation: createHeroEntrance(-16, 0.8, 0, reduced.value),
+  footer: createHeroEntrance(20, 1, 0.5, reduced.value),
+  description: createHeroEntrance(16, 0.8, 0.6, reduced.value),
+  install: createHeroEntrance(20, 0.8, 0.7, reduced.value),
+  heading: createHeroEntrance(20, 0.8, 0.8, reduced.value),
+  action: createHeroEntrance(16, 0.8, 1, reduced.value),
+}));
 let copyTimer: ReturnType<typeof setTimeout> | undefined;
 
 /**
@@ -85,7 +94,7 @@ onBeforeUnmount(() => { clearTimeout(copyTimer); });
       REBORN UI
     </div>
 
-    <motion.nav aria-label="首页导航" v-bind="createHeroEntrance(-16, 0.8, 0, reduced)"
+    <motion.nav aria-label="首页导航" v-bind="entrance.navigation"
       class="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-3 p-4 md:px-8 md:py-6">
       <div class="flex min-w-0 items-center gap-3 md:gap-5">
         <NuxtLink to="/" aria-label="Reborn UI 首页"
@@ -191,15 +200,15 @@ onBeforeUnmount(() => { clearTimeout(copyTimer); });
       </div>
     </div>
 
-    <motion.footer v-bind="createHeroEntrance(20, 1, 0.5, reduced)"
+    <motion.footer v-bind="entrance.footer"
       class="relative z-30 flex shrink-0 flex-col gap-3 px-4 pt-[clamp(1rem,3dvh,2.5rem)] pb-4 md:flex-row md:items-end md:justify-between md:gap-5 md:px-8 md:pb-6">
       <div class="w-full max-w-full min-w-0 md:w-[clamp(18rem,38vw,36rem)]">
-        <motion.p v-bind="createHeroEntrance(16, 0.8, 0.6, reduced)"
+        <motion.p v-bind="entrance.description"
           class="mb-2 flex items-center gap-2.5 text-[13px] text-black/55">
           <span class="size-2 shrink-0 rounded-full bg-black" />Reborn UI · 为 Web 与 UniApp 而构建
         </motion.p>
         <!-- 复古电脑字标使用紧凑画布，透明背景与首页网格融为一体。 -->
-        <motion.div v-bind="createHeroEntrance(20, 0.8, 0.7, reduced)" class="mb-2">
+        <motion.div v-bind="entrance.install" class="mb-2">
           <ReuiLaunchDoodle
             text="REUI"
             screen-text="RE"
@@ -209,10 +218,10 @@ onBeforeUnmount(() => { clearTimeout(copyTimer); });
         </motion.div>
         <!-- R 的左边缘位于画布宽度的 105/820，文案整体随字标按比例缩进。 -->
         <div class="pl-[calc(100%*105/820)]">
-          <motion.h1 v-bind="createHeroEntrance(20, 0.8, 0.8, reduced)"
+          <motion.h1 v-bind="entrance.heading"
             class="text-[clamp(1.75rem,3.4vw,2.75rem)] leading-tight font-light tracking-[-0.02em] md:whitespace-nowrap">
             自由构建，不止一端。</motion.h1>
-          <motion.div v-bind="createHeroEntrance(16, 0.8, 1, reduced)">
+          <motion.div v-bind="entrance.action">
             <p class="mt-3 max-w-md text-[13px] leading-relaxed text-black/55">按需安装的 Vue 组件，源码可控，样式自由定制。</p>
             <div class="mt-3 flex flex-wrap gap-2.5">
               <NuxtLink to="/components"

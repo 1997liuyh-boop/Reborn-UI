@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
@@ -8,20 +8,21 @@ import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 import RebornSignature, { type SignatureSavePayload } from '@/components/reborn-signature/RebornSignature.vue'
 import RebornSignatureLandscape from '@/components/reborn-signature/RebornSignatureLandscape.vue'
 
-const signatureRef = ref<InstanceType<typeof RebornSignature> | null>(null)
-const signaturePath = ref('')
-const savedAt = ref('')
-const signatureImageJson = ref('')
-const signatureTraceJson = ref('')
-const selectedPenColor = ref('#111827')
+const signaturePath = shallowRef('')
+const savedAt = shallowRef('')
+const signatureImageJson = shallowRef('')
+const signatureTraceJson = shallowRef('')
+const savedStrokeCount = shallowRef(0)
+const savedPointCount = shallowRef(0)
+const selectedPenColor = shallowRef('#111827')
 const penColors = ['#111827', '#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6']
-const enablePenPressure = ref(true)
-const showUndoButton = ref(true)
-const showRedoButton = ref(true)
-const showSignaturePopup = ref(false)
-const popupSignaturePath = ref('')
-const showLandscapePopup = ref(false)
-const landscapeToolbarPosition = ref<'left' | 'right' | 'bottom'>('right')
+const enablePenPressure = shallowRef(true)
+const showUndoButton = shallowRef(true)
+const showRedoButton = shallowRef(true)
+const showSignaturePopup = shallowRef(false)
+const popupSignaturePath = shallowRef('')
+const showLandscapePopup = shallowRef(false)
+const landscapeToolbarPosition = shallowRef<'left' | 'right' | 'bottom'>('right')
 const landscapeToolbarPositions = ['left', 'right', 'bottom'] as const
 
 const penColorButtonClass = 'size-[52rpx] rounded-full ring-2 ring-transparent ring-offset-[4rpx] ring-offset-white transition-all duration-200'
@@ -29,6 +30,8 @@ const activePenColorButtonClass = 'scale-110 ring-gray-4'
 const inactivePenColorButtonClass = 'opacity-90'
 
 function updateSignatureRecord(payload: SignatureSavePayload) {
+    savedStrokeCount.value = payload.strokes.length
+    savedPointCount.value = payload.strokes.reduce((sum, stroke) => sum + stroke.points.length, 0)
     signaturePath.value = payload.tempFilePath
     savedAt.value = new Date().toLocaleTimeString()
     signatureImageJson.value = JSON.stringify({
@@ -41,6 +44,8 @@ function updateSignatureRecord(payload: SignatureSavePayload) {
 }
 
 function onClear() {
+    savedStrokeCount.value = 0
+    savedPointCount.value = 0
     signaturePath.value = ''
     savedAt.value = ''
     signatureImageJson.value = ''
@@ -104,7 +109,7 @@ function updatePopupSignatureRecord(payload: SignatureSavePayload) {
         </RebornCard>
 
         <RebornCard title="基础用法" custom-class="gap-[24rpx]">
-            <RebornSignature ref="signatureRef" v-model="signaturePath" :pen-color="selectedPenColor"
+            <RebornSignature v-model="signaturePath" v-model:pen-color="selectedPenColor"
                 :pen-colors="penColors" :pen-pressure="enablePenPressure" :line-width="5" :min-line-width="1.2"
                 :max-line-width="7" :show-undo="showUndoButton" :show-redo="showRedoButton" @clear="onClear"
                 @save="updateSignatureRecord" />
@@ -116,12 +121,12 @@ function updatePopupSignatureRecord(payload: SignatureSavePayload) {
                 <text class="text-[28rpx] font-medium text-gray-8">{{ signaturePath ? '已保存' : '未保存' }}</text>
             </view>
             <view class="flex flex-row items-center justify-between">
-                <text class="text-[28rpx] text-gray-5">笔画</text>
-                <text class="text-[28rpx] font-medium text-gray-8">{{ signatureRef?.strokeCount ?? 0 }}</text>
+                <text class="text-[28rpx] text-gray-5">已保存笔画</text>
+                <text class="text-[28rpx] font-medium text-gray-8">{{ savedStrokeCount }}</text>
             </view>
             <view class="flex flex-row items-center justify-between">
-                <text class="text-[28rpx] text-gray-5">采样点</text>
-                <text class="text-[28rpx] font-medium text-gray-8">{{ signatureRef?.pointCount ?? 0 }}</text>
+                <text class="text-[28rpx] text-gray-5">已保存采样点</text>
+                <text class="text-[28rpx] font-medium text-gray-8">{{ savedPointCount }}</text>
             </view>
             <view v-if="savedAt" class="flex flex-row items-center justify-between">
                 <text class="text-[28rpx] text-gray-5">保存时间</text>
@@ -164,7 +169,7 @@ function updatePopupSignatureRecord(payload: SignatureSavePayload) {
         </RebornCard>
 
         <RebornPopup v-model="showSignaturePopup" position="bottom" title="签名板" size="78%" color="primary"
-            :close-on-click-modal="false" :swipe-close="false">
+            :mask-closable="false" :swipe-close="false">
             <view class="flex h-full flex-col gap-[24rpx] bg-white px-[28rpx] pb-[32rpx] pt-[12rpx]">
                 <RebornSignature v-model="popupSignaturePath" v-model:pen-color="selectedPenColor" :show-pen-colors="false"
                     :pen-pressure="enablePenPressure" :line-width="5" :min-line-width="1.2" :max-line-width="7"

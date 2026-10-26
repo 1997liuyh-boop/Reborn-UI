@@ -1,83 +1,101 @@
 <script setup lang="ts">
-import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components"
-import { computed, ref } from "vue"
-import { buttonBorderStyles, buttonColors, buttonSizes, buttonVariants } from "~/components/reborn/ui/reborn-button/reborn-button.config"
-import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
-import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue"
-import RebornForm from "~/components/reborn/ui/reborn-form/RebornForm.vue"
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
+import { computed, ref, shallowRef } from "vue";
+import { buttonBorderStyles, buttonColors, buttonSizes, buttonVariants } from "~/components/reborn/ui/reborn-button/reborn-button.config";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
+import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
+import RebornForm from "~/components/reborn/ui/reborn-form/RebornForm.vue";
 
-const colorOptions = buttonColors.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }));
-const variantOptions = buttonVariants.map(v => ({ label: v.charAt(0).toUpperCase() + v.slice(1), value: v }));
-const sizeOptions = buttonSizes.map(s => ({ label: s.toUpperCase(), value: s as typeof buttonSizes[number] }));
-const borderStyleOptions = buttonBorderStyles.map(b => ({
-  label: b === 'solid' ? '实线 Solid' : '虚线 Dashed',
-  value: b as typeof buttonBorderStyles[number],
+const colorOptions = buttonColors.map((c) => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }));
+const variantOptions = buttonVariants.map((v) => ({ label: v.charAt(0).toUpperCase() + v.slice(1), value: v }));
+const sizeOptions = buttonSizes.map((s) => ({ label: s.toUpperCase(), value: s as (typeof buttonSizes)[number] }));
+const borderStyleOptions = buttonBorderStyles.map((b) => ({
+  label: b === "solid" ? "实线 Solid" : "虚线 Dashed",
+  value: b as (typeof buttonBorderStyles)[number],
 }));
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
 /** 演练场默认状态 */
 const defaultState: Record<string, any> = {
-  color: 'primary',
-  variant: 'filled',
-  size: 'md',
-  borderStyle: 'solid',
+  color: "primary",
+  variant: "filled",
+  size: "md",
+  borderStyle: "solid",
   disabled: false,
   loading: false,
   round: false,
   circle: false,
-}
+};
 
-const state = ref<Record<string, any>>({ ...defaultState })
+const state = shallowRef<Record<string, any>>({ ...defaultState });
 
 /** 点击计数，让预览区的交互「有回应」 */
-const clickCount = ref(0)
+const clickCount = shallowRef(0);
 function onClick() {
-  clickCount.value++
+  clickCount.value++;
 }
 
 /** 重置演练场配置 */
 function resetState() {
-  state.value = { ...defaultState }
-  clickCount.value = 0
+  state.value = { ...defaultState };
+  clickCount.value = 0;
 }
 
 /** 演练场控制面板配置 */
 const controls: any = [
   {
-    title: '基础属性',
+    title: "基础属性",
     children: [
-      { label: '配色方案', key: 'color', component: 'select' as const, defaultValue: 'primary', props: { options: colorOptions } },
-      { label: '风格变体', key: 'variant', component: 'select' as const, defaultValue: 'filled', props: { options: variantOptions } },
-      { label: '尺寸规格', key: 'size', component: 'select' as const, defaultValue: 'md', props: { options: sizeOptions } },
       {
-        label: '边框线型（对 outlined / subtle 生效）',
-        key: 'borderStyle',
-        component: 'select' as const,
-        defaultValue: 'solid',
+        label: "配色方案",
+        key: "color",
+        component: "select" as const,
+        defaultValue: "primary",
+        props: { options: colorOptions },
+      },
+      {
+        label: "风格变体",
+        key: "variant",
+        component: "select" as const,
+        defaultValue: "filled",
+        props: { options: variantOptions },
+      },
+      {
+        label: "尺寸规格",
+        key: "size",
+        component: "select" as const,
+        defaultValue: "md",
+        props: { options: sizeOptions },
+      },
+      {
+        label: "边框线型（对 outlined / subtle 生效）",
+        key: "borderStyle",
+        component: "select" as const,
+        defaultValue: "solid",
         props: { options: borderStyleOptions },
       },
     ],
   },
   {
-    title: '形状',
+    title: "形状",
     children: [
-      { label: '胶囊（round）', key: 'round', component: 'checkbox' as const, defaultValue: false },
-      { label: '圆形（circle，优先于 round）', key: 'circle', component: 'checkbox' as const, defaultValue: false },
+      { label: "胶囊（round）", key: "round", component: "checkbox" as const, defaultValue: false },
+      { label: "圆形（circle，优先于 round）", key: "circle", component: "checkbox" as const, defaultValue: false },
     ],
   },
   {
-    title: '状态',
+    title: "状态",
     children: [
-      { label: '禁用状态', key: 'disabled', component: 'checkbox' as const, defaultValue: false },
-      { label: '加载状态', key: 'loading', component: 'checkbox' as const, defaultValue: false },
+      { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
+      { label: "加载状态", key: "loading", component: "checkbox" as const, defaultValue: false },
     ],
   },
-]
+];
 
 /** 演练场右上角展示的传参明细（按钮无 v-model，需手动拼接）：完整列出当前所有参数（含默认值） */
 const buttonCode = computed(() => {
-  const s = state.value
+  const s = state.value;
   const props: string[] = [
     `color="${s.color}"`,
     `variant="${s.variant}"`,
@@ -87,26 +105,30 @@ const buttonCode = computed(() => {
     `:loading="${s.loading}"`,
     `:round="${s.round}"`,
     `:circle="${s.circle}"`,
-  ]
-  if (s.circle) props.push('aria-label="收藏"')
-  const content = s.circle ? '<Icon name="lucide:star" />' : '按钮'
-  return `<RebornButton\n  ${props.join('\n  ')}\n>\n  ${content}\n</RebornButton>`
-})
+  ];
+  if (s.circle) props.push('aria-label="收藏"');
+  const content = s.circle ? '<Icon name="lucide:star" />' : "按钮";
+  return `<RebornButton\n  ${props.join("\n  ")}\n>\n  ${content}\n</RebornButton>`;
+});
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
-const gap = ref(true)
+const gap = shallowRef(true);
 /** 仅演示表单尺寸继承，无需定义字段。 */
-const formModel = ref({})
+const formModel = ref({});
 /** 有边框的视觉风格。 */
-const borderedVariants = ['outlined', 'subtle'] as const
+const borderedVariants = ["outlined", "subtle"] as const;
 </script>
 
 <template>
   <div class="flex w-full flex-col">
     <Playground
-      v-model="state" :controls="controls" :code="buttonCode" component-name="RebornButton"
-      title="交互演练场" description="调节左侧参数，实时查看按钮表现。"
+      v-model="state"
+      :controls="controls"
+      :code="buttonCode"
+      component-name="RebornButton"
+      title="交互演练场"
+      description="调节上方参数，实时查看按钮表现。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -120,24 +142,40 @@ const borderedVariants = ['outlined', 'subtle'] as const
       <div class="flex w-full flex-col items-center gap-8">
         <div class="flex flex-wrap items-center justify-center gap-6">
           <RebornButton
-            :color="state.color" :variant="state.variant" :size="state.size" :disabled="state.disabled"
-            :loading="state.loading" :border-style="state.borderStyle" :round="state.round" :circle="state.circle"
-            :aria-label="state.circle ? `收藏（已点击 ${clickCount} 次）` : undefined" @click="onClick"
+            :color="state.color"
+            :variant="state.variant"
+            :size="state.size"
+            :disabled="state.disabled"
+            :loading="state.loading"
+            :border-style="state.borderStyle"
+            :round="state.round"
+            :circle="state.circle"
+            :aria-label="state.circle ? `收藏（已点击 ${clickCount} 次）` : undefined"
+            @click="onClick"
           >
             <Icon v-if="state.circle" name="lucide:star" />
             <template v-else>点我交互 ({{ clickCount }})</template>
           </RebornButton>
 
           <RebornButton
-            :color="state.color" variant="filled" circle aria-label="收藏" :size="state.size" :disabled="state.disabled"
+            :color="state.color"
+            variant="filled"
+            circle
+            aria-label="收藏"
+            :size="state.size"
+            :disabled="state.disabled"
             :loading="state.loading"
           >
             <Icon name="lucide:sparkles" />
           </RebornButton>
 
           <RebornButton
-            :color="state.color" variant="outlined" :size="state.size" :border-style="state.borderStyle"
-            :disabled="state.disabled" :loading="state.loading"
+            :color="state.color"
+            variant="outlined"
+            :size="state.size"
+            :border-style="state.borderStyle"
+            :disabled="state.disabled"
+            :loading="state.loading"
           >
             <template #leading>
               <Icon name="lucide:shopping-cart" />
@@ -154,19 +192,16 @@ const borderedVariants = ['outlined', 'subtle'] as const
     </Playground>
 
     <DemoSection title="基础用法">
-      <DemoBlock layout="row"><RebornButton label="确认提交" /><RebornButton>默认插槽文本</RebornButton></DemoBlock>
+      <DemoBlock layout="row">
+        <RebornButton label="确认提交" />
+        <RebornButton>默认插槽文本</RebornButton>
+      </DemoBlock>
     </DemoSection>
 
     <DemoSection title="颜色与变体">
       <DemoBlock layout="stack" class="gap-4">
         <div v-for="v in buttonVariants" :key="v" class="flex flex-wrap items-center gap-3">
           <p class="text-dimmed w-16 text-xs italic">{{ v }}</p>
-          <!-- circle 为纯图标按钮：展示时只放图标，不放文字 -->
-          <template v-if="v === 'circle'">
-            <RebornButton v-for="c in buttonColors" :key="c" variant="circle" :color="c" size="sm">
-              <Icon name="lucide:star" />
-            </RebornButton>
-          </template>
           <RebornButton v-for="c in buttonColors" :key="c" :variant="v" :color="c" size="sm">
             {{ c }}
           </RebornButton>
@@ -210,7 +245,15 @@ const borderedVariants = ['outlined', 'subtle'] as const
           </RebornButton>
         </div>
         <div>
-          <RebornButton v-for="s in sizeOptions" :key="s.value" :size="s.value" circle aria-label="收藏" color="secondary" gap>
+          <RebornButton
+            v-for="s in sizeOptions"
+            :key="s.value"
+            :size="s.value"
+            circle
+            aria-label="收藏"
+            color="secondary"
+            gap
+          >
             <Icon name="lucide:star" />
           </RebornButton>
         </div>
@@ -218,7 +261,13 @@ const borderedVariants = ['outlined', 'subtle'] as const
     </DemoSection>
 
     <DemoSection title="形状">
-      <template #description><code>round</code> 只改变圆角；<code>circle</code> 固定等宽高，二者同时开启时圆形优先，配色仍由 <code>variant</code> 决定。</template>
+      <template #description>
+        <code>round</code>
+        只改变圆角；<code>circle</code>
+        固定等宽高，二者同时开启时圆形优先，配色仍由
+        <code>variant</code>
+        决定。
+      </template>
       <DemoBlock layout="stack">
         <div v-for="v in buttonVariants" :key="v" class="flex items-center gap-3">
           <span class="text-muted w-16 text-sm">{{ v }}</span>
@@ -229,20 +278,35 @@ const borderedVariants = ['outlined', 'subtle'] as const
           <RebornButton :variant="v" circle disabled aria-label="不可收藏"><Icon name="lucide:star" /></RebornButton>
         </div>
       </DemoBlock>
-      <DemoNote>新用法不改变风格的禁用配色；旧 <code>variant="round"</code> / <code>variant="circle"</code> 仍保留原样式。</DemoNote>
+      <DemoNote>
+        新用法不改变风格的禁用配色；旧
+        <code>variant="round"</code>
+        /
+        <code>variant="circle"</code>
+        仍保留原样式。
+      </DemoNote>
     </DemoSection>
 
     <DemoSection title="加载与禁用">
       <DemoBlock layout="row">
-        <RebornButton loading>保存中</RebornButton><RebornButton disabled>不可用</RebornButton>
-        <RebornButton variant="outlined" circle loading aria-label="正在保存"><Icon name="lucide:check" /></RebornButton>
+        <RebornButton loading>保存中</RebornButton>
+        <RebornButton disabled>不可用</RebornButton>
+        <RebornButton variant="outlined" circle loading aria-label="正在保存">
+          <Icon name="lucide:check" />
+        </RebornButton>
       </DemoBlock>
     </DemoSection>
 
     <DemoSection title="图标插槽">
       <DemoBlock layout="row">
-        <RebornButton><template #leading><Icon name="lucide:mail" /></template>邮箱登录</RebornButton>
-        <RebornButton variant="outlined">下一步<template #trailing><Icon name="lucide:arrow-right" /></template></RebornButton>
+        <RebornButton>
+          <template #leading><Icon name="lucide:mail" /></template>
+          邮箱登录
+        </RebornButton>
+        <RebornButton variant="outlined">
+          下一步
+          <template #trailing><Icon name="lucide:arrow-right" /></template>
+        </RebornButton>
       </DemoBlock>
     </DemoSection>
 
@@ -285,12 +349,22 @@ const borderedVariants = ['outlined', 'subtle'] as const
     </DemoSection>
 
     <DemoSection title="与表单组联动">
-      <DemoBlock layout="row"><RebornForm :model-value="formModel" size="lg"><RebornButton size="sm" variant="outlined" circle aria-label="添加"><Icon name="lucide:plus" /></RebornButton></RebornForm></DemoBlock>
-      <DemoNote>表单尺寸覆盖自身 <code>size</code>，圆形按钮也跟随表单高度。</DemoNote>
+      <DemoBlock layout="row">
+        <RebornForm :model-value="formModel" size="lg">
+          <RebornButton size="sm" variant="outlined" circle aria-label="添加"><Icon name="lucide:plus" /></RebornButton>
+        </RebornForm>
+      </DemoBlock>
+      <DemoNote>
+        表单尺寸覆盖自身
+        <code>size</code>，圆形按钮也跟随表单高度。
+      </DemoNote>
     </DemoSection>
 
     <DemoSection title="小程序开放能力（UniApp）">
-      <DemoNote>本演练场运行于 Web；<code>openType</code> 仅在小程序生效，请切换到 UniApp 演示查看。</DemoNote>
+      <DemoNote>
+        本演练场运行于 Web；<code>openType</code>
+        仅在小程序生效，请切换到 UniApp 演示查看。
+      </DemoNote>
     </DemoSection>
   </div>
 </template>

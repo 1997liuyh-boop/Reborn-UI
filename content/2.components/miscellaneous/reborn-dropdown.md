@@ -76,7 +76,7 @@ function handleSelect(value: DropdownValue) {
 ```
 
 - **自动翻转**：默认 `auto-adjust-overflow` 开启，`placement` 指定的一侧空间不足时翻转到对侧；关闭后严格按 `placement` 弹出，适合必须固定方向的场景。
-- **间距**：浮层与触发器的间距未传 `popup-offset` 时，无箭头为 4px、带箭头为 8px，多出的 4px 留给箭头本身。
+- **间距**：浮层与触发器的间距未传 `popup-offset` 时，无箭头为 4px、带箭头为 12px。箭头是 12px 方块旋转 45°，骑在面板朝向触发器的边上，伸出面板约 8.5px；12px 让尖端与触发器之间再留约 3.5px，与无箭头时的间隙观感一致。自行传 `popup-offset` 且小于 9 时，尖端会压到触发器上。
 - **箭头落点**：跟随 `placement` 的对齐端，与 Popover / Tooltip 同一口径。`-start` 停在浮层起始端内缩 17px 处，`-end` 停在末端 17px 处，只有 `top` / `bottom` / `left` / `right` 才指向触发器中心。
   - 不让三档都指向触发器中心的原因：浮层最小宽度就是触发器宽度，内容不比触发器宽多少时，左右对齐的箭头会和居中的一样落在正中附近，看不出浮层靠哪边对齐。
   - 17px 是浮层圆角 8px 加半个箭头底边，再小箭头底边会压到圆角弧线上露出缺口。
@@ -105,6 +105,8 @@ function handleSelect(value: DropdownValue) {
 ### 多级菜单与选项组
 
 在 `content` 插槽里组合子组件：`RebornDgroup` 用标题把选项分组；`RebornDsubmenu` 作为入口展开下一级菜单，默认悬停触发、从右上角（`right-start`）弹出，可无限嵌套。
+
+`options` 只描述一层平铺列表，没有 `children` 字段，分组与多级子菜单只能写在 `content` 插槽里。最外层的 `placement` / `show-arrow` 只作用于第一层面板，子菜单按各自 `RebornDsubmenu` 的 `placement` 弹出，不带箭头。
 
 ```vue
 <template>
@@ -207,13 +209,13 @@ function onVisibleChange(v: boolean) {
 | `trigger` | `'click' \| 'hover' \| 'manual'` | `'click'` | 触发下拉的行为，移动端不支持 hover；`manual` 时组件不绑定任何触发行为，由默认插槽下发的 `open` / `close` / `toggle` 或 `v-model:popup-visible` 控制 |
 | `placement` | `'top' \| 'top-start' \| 'top-end' \| 'bottom' \| 'bottom-start' \| 'bottom-end' \| 'left' \| 'left-start' \| 'left-end' \| 'right' \| 'right-start' \| 'right-end'` | `'bottom'` | 菜单弹出位置，取值与 `reborn-tooltip` 的 `placement` 一致 |
 | `show-arrow` | `boolean` | `false` | 是否显示指向触发器的小箭头，落点见「弹出位置与箭头」 |
-| `popup-offset` | `number` | - | 浮层与触发器的间距（px）；未传时无箭头为 4、带箭头为 8 |
+| `popup-offset` | `number` | - | 浮层与触发器的间距（px）；未传时无箭头为 4、带箭头为 12（箭头伸出面板约 8.5px，尖端再留约 3.5px） |
 | `auto-adjust-overflow` | `boolean` | `true` | `placement` 指定的一侧空间不足时是否翻转到对侧；关闭后严格按 `placement` 弹出 |
 | `portal` | `boolean` | `true` | 浮层是否传送到 `body`；关闭后浮层留在触发器内，随父容器一起滚动与裁剪，且只支持 start 对齐 |
 | `close-on` | `'click' \| 'mousedown'` | `'mousedown'` | 外部关闭的时机：`mousedown` 在面板外按下、滚轮或页面滚动时收起，面板与子菜单内的操作不算外部；`click` 在面板外完成一次点击后才收起，期间页面滚动时面板跟随触发器 |
 | `disabled` | `boolean` | `false` | 菜单是否禁用；不改变触发元素外观 |
 | `hide-on-select` | `boolean` | `true` | 用户选择后是否自动收起菜单 |
-| `v-model:popup-visible` | `boolean` | `false` | 下拉框显隐（受控） |
+| `v-model:popup-visible` | `boolean` | `undefined` | 下拉框显隐；缺省关闭，显式空值按关闭处理 |
 | `class` | `any` | - | 并入最外层 `wrapper` 节点 |
 | `ui` | `DropdownUI` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
@@ -329,8 +331,10 @@ function onVisibleChange(v: boolean) {
 
 ## 注意事项
 
+- **显式模型不会借用非受控旧值。** 未绑定时由组件保存点击状态；绑定 `false`、`undefined`、`null` 后按关闭展示，每次交互仍发送 `update:popupVisible`，旧悬停延迟会被取消。
 - 仅 Web 端提供，UniApp 端暂无对应组件。若后续适配，Props 参数名与 Emit 事件名应保持一致。
 - 浮层基于 `RebornSelectTrigger`，与 Select 共用同一套浮层外壳、定位与外部点击边界。12 向 `placement` 映射为它的 `side` / `align`，`show-arrow` 即它的箭头。浮层宽度由菜单内容撑开，不跟随触发器。
+- **展开那一刻的布局变动会被跟上，展开之后的不会。** 在 `popup-visible-change` 里显示回显文字之类的改动与浮层插入处于同一次渲染，组件在入场钩子里按触发器挤动后的位置再写一次坐标，首帧就贴住触发器；浮层展开之后，只有页面滚动与窗口尺寸变化会重算位置，此时再改动触发器周围的布局，浮层会停在原处，需要先收起再展开。
 - `trigger="hover"` 基于鼠标移入 / 移出实现，移动端没有悬停，请使用默认的 `click`。
 - `RebornDoption` / `RebornDsubmenu` / `RebornDgroup` 通过 `provide/inject` 与 `RebornDropdown` 通信，嵌套层级不受限制；脱离 Dropdown 单独使用时不带样式，点击也不会派发任何事件。
 - Dropdown 不记录选中项，也不给选项加选中态。需要「当前选中哪一项」的高亮，请在 `content` 插槽里自行给对应 `RebornDoption` 传 `class`，或改用 `reborn-select`。

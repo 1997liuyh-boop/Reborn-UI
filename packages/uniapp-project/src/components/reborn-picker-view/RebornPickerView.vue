@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { pickerColors } from './reborn-picker-view.config'
-import { isEqual, isNull } from 'lodash-es'
-import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
-import { initTheme, isAppAndroid, isAppIOS } from '@/lib/device'
+import { isEqual } from 'lodash-es'
+import { computed, nextTick, onMounted, shallowRef, watch } from 'vue'
+import { useDarkMode } from '@/composables/useDarkMode'
+import { isAppAndroid, isAppIOS } from '@/lib/device'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-picker-view.config'
@@ -15,14 +16,12 @@ defineOptions({
 const props = withDefaults(defineProps<PickerViewProps>(), {
   color: 'primary',
   headers: () => [],
-  value: () => [],
   columns: () => [],
   itemHeight: isAppIOS() ? 50 : 42,
   height: 300,
 })
 
 const emit = defineEmits<{
-  (e: 'update:value', indexes: number[]): void
   (e: 'change-value', values: any[]): void
   (e: 'change-index', indexes: number[]): void
   (e: 'change-item', item: any): void
@@ -41,7 +40,6 @@ export interface PickerViewProps {
   /** 表头 */
   headers?: string[]
   /** 当前选中索引 */
-  value?: number[]
   /** 列数据 */
   columns?: SelectOption[][]
   /** 每项高度 */
@@ -89,7 +87,12 @@ const ui = computed(() => {
 
 // 获取窗口宽度，用于计算选择器列宽
 const { windowWidth } = uni.getWindowInfo()
-const isDark = ref(false)
+const { isDark } = useDarkMode()
+const indexes = defineModel<number[]>('value', { default: () => [] })
+const itemTextClasses = computed(() => ({
+  active: ui.value.itemText({ active: true, color: props.color }),
+  inactive: ui.value.itemText({ active: false, color: props.color }),
+}))
 
 // 顶部显示表头
 const computedHeaders = computed(() => {
@@ -111,7 +114,7 @@ function onChange(e: any) {
   })
 
   // 相同值不触发事件
-  if (isEqual(indexs, props.value)) {
+  if (isEqual(indexs, indexes.value)) {
     return
   }
 
@@ -122,7 +125,7 @@ function onChange(e: any) {
   const select = props.columns.map((c, i) => {
     return c?.[indexs[i]] ?? null
   })
-  emit('update:value', indexs)
+  indexes.value = indexs
   emit('change-value', values)
   emit('change-index', indexs)
   emit('change-item', select)
@@ -207,19 +210,8 @@ function render() {
   renderColumnItem()
 }
 
-onMounted(() => {
-  isDark.value = initTheme() === 'dark'
-  nextTick(() => {
-    render()
-  })
-
-  watch(
-    computed(() => [props.columns, props.itemHeight]),
-    () => {
-      render()
-    },
-  )
-})
+watch([() => props.columns, () => props.itemHeight, isDark], render, { flush: 'post', deep: true })
+onMounted(() => { nextTick(render) })
 </script>
 
 <template>
@@ -233,7 +225,7 @@ onMounted(() => {
 
     <view :class="ui.pickerContainer()" :style="{ height: `${height}px` }" @touchstart.stop @touchmove.stop
       @touchend.stop @touchcancel.stop>
-      <picker-view class="h-full" :value="value" :mask-style="maskStyle" :mask-top-style="maskStyle"
+      <picker-view class="h-full" :value="indexes" :mask-style="maskStyle" :mask-top-style="maskStyle"
         :indicator-class="ui.indicator()" :mask-bottom-style="maskStyle" :immediate-change="true"
         :indicator-style="indicatorStyle" @change="onChange">
         <picker-view-column v-for="(column, columnIndex) in columns" :key="columnIndex">
@@ -244,7 +236,7 @@ onMounted(() => {
           <!-- #ifndef APP-ANDROID -->
           <view v-for="(item, index) in column" :key="index" :class="ui.item()" :style="{ height: `${itemHeight}px` }">
             <slot :item="item" :index="index">
-              <text :class="ui.itemText({ active: index == value[columnIndex], color })">
+              <text :class="index === indexes[columnIndex] ? itemTextClasses.active : itemTextClasses.inactive">
                 {{ item.label }}
               </text>
             </slot>

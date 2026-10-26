@@ -1,40 +1,22 @@
 <script setup lang="ts">
+/* eslint vue/custom-event-name-casing: off -- 保留既有公开事件名 */
 import type { ClassValue } from "clsx";
-import type {
-  DatePickerCell,
-  DatePickerType,
-  ViewType,
-} from "../reborn-date-picker-panel/reborn-date-picker-panel.config";
+import type { DatePickerCell, DatePickerType, ViewType } from "../reborn-date-picker-panel/reborn-date-picker-panel.config";
 import type { DatePickerPanelProps } from "../reborn-date-picker-panel/RebornDatePickerPanel.vue";
 import type { SelectTriggerProps } from "../reborn-select-trigger/RebornSelectTrigger.vue";
-import type {
-  datePickerColors,
-  DatePickerFieldUI,
-  datePickerSizes,
-  datePickerVariants,
-} from "./reborn-date-picker.config";
-import dayjs from "dayjs";
-import advancedFormat from "dayjs/plugin/advancedFormat";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import { computed, ref, watch } from "vue";
+import type { datePickerColors, DatePickerFieldUI, datePickerSizes, datePickerVariants } from "./reborn-date-picker.config";
+import { computed, onBeforeUpdate, shallowRef, watch } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornBadge from "../reborn-badge/RebornBadge.vue";
 import { DATE_PANEL_NESTED_OVERLAY_CLASS } from "../reborn-date-picker-panel/reborn-date-picker-panel.config";
+import { dayjs, parseDateValue } from "../reborn-date-picker-panel/reborn-date-picker.utils";
 import RebornDatePickerPanel from "../reborn-date-picker-panel/RebornDatePickerPanel.vue";
 import RebornLoading from "../reborn-loading/RebornLoading.vue";
 import { splitTriggerUi } from "../reborn-select-trigger/reborn-select-trigger.config";
 import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
 import theme from "./reborn-date-picker.config";
-
-dayjs.extend(customParseFormat);
-// 季度的展示格式 YYYY-[Q]Q 依赖 Q 令牌，Q 由 advancedFormat 提供
-dayjs.extend(advancedFormat);
-
-const b = tv(theme);
-
-defineOptions({ inheritAttrs: false });
 
 /**
  * 日期选择器属性定义。
@@ -151,6 +133,18 @@ export interface DatePickerProps {
   }>;
 }
 
+/** 触发器内容插槽（cover / default）的作用域参数 */
+interface TriggerSlotProps {
+  /** 当前值格式化后的展示文本，多选以「、」连接，范围以分隔符连接 */
+  displayText: string;
+  /** 实际生效的占位文本 */
+  placeholder: string;
+  /** 下拉框是否展开 */
+  isOpen: boolean;
+  /** 样式函数表，可复用组件内置的触发器类名（键名即主题 slots，写死键名才能在插槽里直接调用而不必判空） */
+  ui: Record<keyof typeof theme.slots, (opts?: { class?: any }) => string>;
+}
+
 const props = withDefaults(defineProps<DatePickerProps>(), {
   type: "date",
   start: "1970-01-01",
@@ -199,18 +193,6 @@ const emit = defineEmits<{
   (e: "panel-change", date: Date | [Date, Date], mode: "month" | "year", view: ViewType): void;
 }>();
 
-/** 触发器内容插槽（cover / default）的作用域参数 */
-interface TriggerSlotProps {
-  /** 当前值格式化后的展示文本，多选以「、」连接，范围以分隔符连接 */
-  displayText: string;
-  /** 实际生效的占位文本 */
-  placeholder: string;
-  /** 下拉框是否展开 */
-  isOpen: boolean;
-  /** 样式函数表，可复用组件内置的触发器类名（键名即主题 slots，写死键名才能在插槽里直接调用而不必判空） */
-  ui: Record<keyof typeof theme.slots, (opts?: { class?: any }) => string>;
-}
-
 const slots = defineSlots<{
   /** 完全接管触发器内部（连同尾部图标区） */
   cover?: (props: TriggerSlotProps) => any;
@@ -239,6 +221,7 @@ const slots = defineSlots<{
  * 元素是 Date 对象还是字符串由 valueFormat 决定。未传入时回落为 null，与单值清空后的取值一致。
  */
 const model = defineModel<any>({ default: null });
+const b = tv(theme);
 
 const {
   disabled: fieldGroupDisabled,
@@ -250,14 +233,14 @@ const {
 const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
 
 /** 下拉框是否展开 */
-const isOpen = ref(false);
+const isOpen = shallowRef(false);
 
 /**
  * 面板上的草稿值。
  * 范围类型点完开始日期、还没点结束日期时，这个半成品只能留在面板里，不能写回 v-model——
  * 否则外部会收到 ["2024-01-01", ""] 这种不完整的值。提交时机见 onPanelUpdate / onPanelChange。
  */
-const draft = ref<any>(model.value);
+const draft = shallowRef<any>(model.value);
 watch(model, (v) => {
   draft.value = v;
 });
@@ -309,25 +292,7 @@ const startPlaceholderText = computed(
 );
 const endPlaceholderText = computed(() => props.endPlaceholder ?? placeholderByType.value[2]);
 
-/** 季度的起始日期：第 q 季度从 (q-1)*3 月 1 号开始 */
-function quarterStartDate(year: number, q: number): Date {
-  return new Date(year, (q - 1) * 3, 1);
-}
-
-/**
- * 把绑定值里的单个元素解析为 Date，规则与面板内部相同：
- * Date 原样返回；带 Q 令牌的 valueFormat 手动取年份与季号（customParseFormat 不认 Q）；其余交给 dayjs。
- */
-function parseValue(v: any): Date | null {
-  if (!v) return null;
-  if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v;
-  if (props.valueFormat && props.valueFormat.includes("Q")) {
-    const m = String(v).match(/(\d{4})\D*([1-4])/);
-    if (m) return quarterStartDate(Number(m[1]), Number(m[2]));
-  }
-  const d = props.valueFormat ? dayjs(v, props.valueFormat) : dayjs(v);
-  return d.isValid() ? d.toDate() : null;
-}
+function parseValue(v: unknown): Date | null { return parseDateValue(v, props.valueFormat); }
 
 /** 单个元素的展示文本；解析失败时原样转字符串，避免值被静默吞掉 */
 function formatItem(v: any): string {
@@ -407,7 +372,10 @@ const overlayUi = computed(() => ({
 }));
 const fieldUi = computed(() => splitUi.value.field as DatePickerFieldUI);
 /** 是否渲染前缀区：#prefix 插槽或 prefixIcon 任一存在 */
-const hasPrefix = computed(() => !!slots.prefix || !!props.prefixIcon);
+// 插槽存在性同步为原始状态，让样式变体和模板在同一轮更新。
+const prefixSlotPresent = shallowRef(!!slots.prefix);
+onBeforeUpdate(() => { prefixSlotPresent.value = !!slots.prefix; });
+const hasPrefix = () => prefixSlotPresent.value || !!props.prefixIcon;
 const uiOverrides = computed(() => props.ui || {});
 
 /**
@@ -428,7 +396,7 @@ const ui = computed(() => {
     disabled: isDisabled.value,
     loading: props.loading,
     error: isError.value,
-    prefix: hasPrefix.value,
+    prefix: hasPrefix(),
   });
   const field = fieldUi.value;
   return {
@@ -619,11 +587,7 @@ defineExpose({
     @close="onOutsideClose"
   >
     <template #trigger>
-      <div
-        :class="ui.trigger()"
-        :data-state="isOpen ? 'open' : 'closed'"
-        @click="toggle"
-      >
+      <div :class="ui.trigger()" :data-state="isOpen ? 'open' : 'closed'" @click="toggle">
         <slot
           v-if="$slots.cover"
           name="cover"
@@ -633,28 +597,14 @@ defineExpose({
           :ui="ui"
         />
         <template v-else>
-          <span
-            v-if="hasPrefix"
-            :class="ui.prefix()"
-          >
+          <span v-if="hasPrefix()" :class="ui.prefix()">
             <slot name="prefix">
-              <Icon
-                :name="prefixIcon!"
-                :class="ui.prefixIcon()"
-              />
+              <Icon :name="prefixIcon || ''" :class="ui.prefixIcon()" />
             </slot>
           </span>
-          <slot
-            :display-text="displayText"
-            :placeholder="placeholderText"
-            :is-open="isOpen"
-            :ui="ui"
-          >
+          <slot :display-text="displayText" :placeholder="placeholderText" :is-open="isOpen" :ui="ui">
             <!-- 多选类型：标签列表 -->
-            <div
-              v-if="isMultiple && tags.length"
-              :class="ui.tagList()"
-            >
+            <div v-if="isMultiple && tags.length" :class="ui.tagList()">
               <RebornBadge
                 v-for="item in visibleTags"
                 :key="`${item.index}-${item.label}`"
@@ -673,10 +623,7 @@ defineExpose({
                 }"
                 @close="removeTag(item.index, $event)"
               />
-              <RebornTooltip
-                v-if="collapsedTags.length && collapseTagsTooltip"
-                :content="collapsedText"
-              >
+              <RebornTooltip v-if="collapsedTags.length && collapseTagsTooltip" :content="collapsedText">
                 <RebornBadge
                   :label="`+${collapsedTags.length}`"
                   color="neutral"
@@ -703,10 +650,7 @@ defineExpose({
               />
             </div>
             <!-- 双面板范围类型：开始 / 结束两栏，未选的一栏显示对应占位 -->
-            <div
-              v-else-if="isDual"
-              :class="ui.rangeWrapper()"
-            >
+            <div v-else-if="isDual" :class="ui.rangeWrapper()">
               <span :class="ui.rangeText({ class: rangeTexts[0] ? undefined : ui.placeholder() })">
                 {{ rangeTexts[0] || startPlaceholderText }}
               </span>
@@ -715,19 +659,10 @@ defineExpose({
                 {{ rangeTexts[1] || endPlaceholderText }}
               </span>
             </div>
-            <span
-              v-else-if="displayText"
-              :class="ui.triggerText()"
-            >{{ displayText }}</span>
-            <span
-              v-else
-              :class="ui.placeholder()"
-            >{{ placeholderText }}</span>
+            <span v-else-if="displayText" :class="ui.triggerText()">{{ displayText }}</span>
+            <span v-else :class="ui.placeholder()">{{ placeholderText }}</span>
           </slot>
-          <div
-            v-if="showArrow || showClearButton || loading"
-            :class="ui.triggerIconWrapper()"
-          >
+          <div v-if="showArrow || showClearButton || loading" :class="ui.triggerIconWrapper()">
             <RebornLoading
               v-if="loading"
               type="ring"
@@ -735,20 +670,13 @@ defineExpose({
               size="100%"
               :class="ui.triggerLoadingIcon()"
             />
-            <Icon
-              v-else-if="showArrow"
-              :name="icon"
-              :class="ui.arrow()"
-            />
+            <Icon v-else-if="showArrow" :name="icon" :class="ui.arrow()" />
             <span
               v-if="showClearButton"
               :class="ui.clearBtn({ class: showArrow ? undefined : 'static flex' })"
               @click.stop="clear"
             >
-              <Icon
-                name="lucide:x"
-                class="size-full"
-              />
+              <Icon name="lucide:x" class="size-full" />
             </span>
           </div>
         </template>
@@ -756,10 +684,7 @@ defineExpose({
     </template>
 
     <template #content>
-      <div
-        v-if="$slots.header"
-        :class="ui.dropdownHeader()"
-      >
+      <div v-if="$slots.header" :class="ui.dropdownHeader()">
         <slot name="header" />
       </div>
       <div :class="ui.panel()">
@@ -790,45 +715,24 @@ defineExpose({
           @calendar-change="emit('calendar-change', $event)"
           @panel-change="(date, mode, view) => emit('panel-change', date, mode, view)"
         >
-          <template
-            v-if="$slots.cell"
-            #default="cell"
-          >
-            <slot
-              name="cell"
-              v-bind="cell"
-            />
+          <template v-if="$slots.cell" #default="cell">
+            <slot name="cell" v-bind="cell" />
           </template>
-          <template
-            v-if="$slots['prev-month']"
-            #prev-month
-          >
+          <template v-if="$slots['prev-month']" #prev-month>
             <slot name="prev-month" />
           </template>
-          <template
-            v-if="$slots['next-month']"
-            #next-month
-          >
+          <template v-if="$slots['next-month']" #next-month>
             <slot name="next-month" />
           </template>
-          <template
-            v-if="$slots['prev-year']"
-            #prev-year
-          >
+          <template v-if="$slots['prev-year']" #prev-year>
             <slot name="prev-year" />
           </template>
-          <template
-            v-if="$slots['next-year']"
-            #next-year
-          >
+          <template v-if="$slots['next-year']" #next-year>
             <slot name="next-year" />
           </template>
         </RebornDatePickerPanel>
       </div>
-      <div
-        v-if="$slots.footer"
-        :class="ui.dropdownFooter()"
-      >
+      <div v-if="$slots.footer" :class="ui.dropdownFooter()">
         <slot name="footer" />
       </div>
     </template>

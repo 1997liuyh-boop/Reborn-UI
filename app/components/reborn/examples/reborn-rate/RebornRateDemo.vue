@@ -1,15 +1,24 @@
 <script setup lang="ts">
-import {
-  rateColors,
-  rateSizes,
-  rateTriggers,
-} from "~/components/reborn/ui/reborn-rate/reborn-rate.config";
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
+import { ref, shallowRef, useTemplateRef } from 'vue';
+import { rateColors, rateSizes, rateTriggers } from "~/components/reborn/ui/reborn-rate/reborn-rate.config";
 import RebornRate from "~/components/reborn/ui/reborn-rate/RebornRate.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
 /** 演练场绑定值 */
-const state = ref({
+interface RatePlaygroundState {
+  size: typeof rateSizes[number];
+  color: typeof rateColors[number];
+  count: number;
+  trigger: typeof rateTriggers[number];
+  allowHalf: boolean;
+  clearable: boolean;
+  showValue: boolean;
+  disabled: boolean;
+  readonly: boolean;
+}
+const state = ref<RatePlaygroundState>({
   size: "md",
   color: "warning",
   count: 5,
@@ -21,7 +30,7 @@ const state = ref({
   readonly: false,
 });
 
-const val1 = ref(3);
+const val1 = shallowRef(3);
 
 /** 演练场控制面板配置 */
 const controls = [
@@ -73,34 +82,34 @@ const controls = [
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 基础用法：整星、半星与只读展示 */
-const basicScore = ref(3);
-const halfScore = ref(3.5);
+const basicScore = shallowRef(3);
+const halfScore = shallowRef(3.5);
 
 /** 触发方式：click 悬停仅预览、点击提交；hover 悬停即改分 */
-const clickScore = ref(3);
-const hoverScore = ref(3);
+const clickScore = shallowRef(3);
+const hoverScore = shallowRef(3);
 
 /** 可清空：默认再点同一分值不变，clearable 才清零 */
-const keepScore = ref(3);
-const clearScore = ref(3);
+const keepScore = shallowRef(3);
+const clearScore = shallowRef(3);
 
 /** 自定义文案：format-text 按当前分值返回要显示的文字，未评分时也能给出提示 */
-const textScore = ref(3);
-const slotScore = ref(4);
+const textScore = shallowRef(3);
+const slotScore = shallowRef(4);
 const levelTexts = ["很差", "较差", "还行", "推荐", "力荐"];
 const formatText = (value: number) => levelTexts[Math.ceil(value) - 1] ?? "未评分";
 
 /** 分段颜色：数组三段 / 对象自定义分段 */
-const colorArrayScore = ref(2);
-const colorMapScore = ref(4);
+const colorArrayScore = shallowRef(2);
+const colorMapScore = shallowRef(4);
 const segmentColors = ["#E47BF9", "#32EC95", "#1150D0"];
 const segmentColorMap = { 2: "#99a9bf", 4: { value: "#f7ba2a", excluded: true }, 5: "#ff9900" };
 
 /** 未选中颜色 */
-const voidScore = ref(3);
+const voidScore = shallowRef(3);
 
 /** 分段图标：按分值切换图标，高分段换成图片 */
-const iconMapScore = ref(2);
+const iconMapScore = shallowRef(2);
 const LOGO_URL = "https://mall.letaofun.com/static/h5/landingPage/logo.png?v=1";
 const segmentIcons = {
   3: { type: "icon" as const, url: "lucide:frown" },
@@ -109,22 +118,22 @@ const segmentIcons = {
 };
 
 /** 实例方法：非受控用法下 reset 会退回 modelValue */
-const rateRef = ref<InstanceType<typeof RebornRate>>();
-const lastChange = ref<number | null>(null);
+const rateRef = useTemplateRef<InstanceType<typeof RebornRate>>("rateRef");
+const lastChange = shallowRef<number | null>(null);
 
 /** 自定义图标：实心爱心走 icon / activeIcon 直接传图标名，火焰与点赞走 #icon 插槽 */
-const heartScore = ref(4);
-const flameScore = ref(3);
-const thumbScore = ref(5);
+const heartScore = shallowRef(4);
+const flameScore = shallowRef(3);
+const thumbScore = shallowRef(5);
 
 /** 图片图标：未选中层由组件固定为 30% 不透明度，这里再按 active 加一层灰度拉开对比 */
-const logoScore = ref(4);
-const logoHalf = ref(2.5);
+const logoScore = shallowRef(4);
+const logoHalf = shallowRef(2.5);
 
 /** 横版图片：208×52 的品牌横标按 4:1 覆盖成 20×80，避免被默认的 20px 正方形图标层压扁 */
 const BRAND_URL = "https://mall.letaofun.com/static/h5/site/MERCARI.png";
-const brandScore = ref(3);
-const brandHalf = ref(3.5);
+const brandScore = shallowRef(3);
+const brandHalf = shallowRef(3.5);
 const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
 </script>
 
@@ -135,7 +144,7 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
       :controls="controls"
       component-name="RebornRate"
       title="交互演练场"
-      description="调节尺寸、颜色与颗数，右侧评分实时响应；半星、可清空、禁用、只读可叠加。"
+      description="调节尺寸、颜色与颗数，下方评分实时响应；半星、可清空、禁用、只读可叠加。"
     >
       <RebornRate
         v-model="val1"

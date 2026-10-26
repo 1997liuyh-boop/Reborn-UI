@@ -191,6 +191,12 @@ function handleClick() {
   // ✅ 修复：把 route 透传给根节点，由根节点在 router 模式下优先使用它。
   menuContext?.handleSelect(props.index, indexPath.value, props.route);
 }
+/** 按配置变化重建绑定，避免每次悬停向 Tooltip 传入新对象 */
+const tooltipBindings = computed(() => tooltipConfig.value ? {
+  ...tooltipConfig.value,
+  disabled: tooltipDisabled.value,
+  ui: { wrapper: 'block w-full min-w-0', trigger: TOOLTIP_TRIGGER_CLASS, ...tooltipConfig.value.ui },
+} : { class: 'contents' });
 </script>
 
 <template>
@@ -201,17 +207,13 @@ function handleClick() {
     :title="tooltipConfig && !tooltipDisabled ? undefined : props.title"
     :aria-current="isActive ? 'page' : undefined"
     :aria-disabled="props.disabled || undefined"
-    @click.stop="handleClick"
+    @click="handleClick"
   >
     <!-- 提示包在 li 内而非 li 外，保住 ul > li 的结构与 role="menu" 语义；
          无提示时退化为 display: contents 的 div，不参与 li 的 flex 布局 -->
     <component
       :is="tooltipConfig ? RebornTooltip : 'div'"
-      v-bind="tooltipConfig ? {
-        ...tooltipConfig,
-        disabled: tooltipDisabled,
-        ui: { wrapper: 'block w-full min-w-0', trigger: TOOLTIP_TRIGGER_CLASS, ...tooltipConfig.ui },
-      } : { class: 'contents' }"
+      v-bind="tooltipBindings"
     >
       <div :class="itemUi.menuItemContent()">
         <div

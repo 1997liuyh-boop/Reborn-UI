@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import type { CascaderOption } from "~/components/reborn/ui/reborn-cascader/reborn-cascader.config";
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, shallowRef, watch } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
-import {
-  cascaderColors,
-  cascaderSizes,
-  cascaderVariants,
-} from "~/components/reborn/ui/reborn-cascader/reborn-cascader.config";
+import { cascaderColors, cascaderSizes, cascaderVariants } from "~/components/reborn/ui/reborn-cascader/reborn-cascader.config";
 import RebornCascader from "~/components/reborn/ui/reborn-cascader/RebornCascader.vue";
 import RebornCascaderPanel from "~/components/reborn/ui/reborn-cascader/RebornCascaderPanel.vue";
 
@@ -98,16 +94,13 @@ const defaultState: Record<string, any> = {
   loading: false,
 };
 
-const state = ref<Record<string, any>>({ ...defaultState });
-const playgroundValue = ref<any>(undefined);
+const state = shallowRef<Record<string, any>>({ ...defaultState });
+const playgroundValue = shallowRef<any>(undefined);
 
 // 值的形态由 multiple / path-mode 共同决定，切换后旧值必然对不上，直接清空
-watch(
-  () => [state.value.multiple, state.value.pathMode],
-  () => {
-    playgroundValue.value = state.value.multiple ? [] : undefined;
-  },
-);
+watch([() => state.value.multiple, () => state.value.pathMode], () => {
+  playgroundValue.value = state.value.multiple ? [] : undefined;
+});
 
 function resetState() {
   state.value = { ...defaultState };
@@ -121,7 +114,12 @@ const controls: any = [
     children: [
       { label: "多选（multiple）", key: "multiple", component: "checkbox" as const, defaultValue: false },
       { label: "绑定值为路径（path-mode）", key: "pathMode", component: "checkbox" as const, defaultValue: false },
-      { label: "严格选择（check-strictly）", key: "checkStrictly", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "严格选择（check-strictly）",
+        key: "checkStrictly",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
       {
         label: "展开方式（expand-trigger）",
         key: "expandTrigger",
@@ -134,7 +132,12 @@ const controls: any = [
           ],
         },
       },
-      { label: "自动展开子菜单（expand-child）", key: "expandChild", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "自动展开子菜单（expand-child）",
+        key: "expandChild",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
     ],
   },
   {
@@ -160,21 +163,21 @@ const controls: any = [
         key: "color",
         component: "select" as const,
         defaultValue: "primary",
-        props: { options: cascaderColors.map(c => ({ label: c, value: c })) },
+        props: { options: cascaderColors.map((c) => ({ label: c, value: c })) },
       },
       {
         label: "尺寸规格",
         key: "size",
         component: "select" as const,
         defaultValue: "md",
-        props: { options: cascaderSizes.map(s => ({ label: s.toUpperCase(), value: s })) },
+        props: { options: cascaderSizes.map((s) => ({ label: s.toUpperCase(), value: s })) },
       },
       {
         label: "形态变体",
         key: "variant",
         component: "select" as const,
         defaultValue: "outlined",
-        props: { options: cascaderVariants.map(v => ({ label: v, value: v })) },
+        props: { options: cascaderVariants.map((v) => ({ label: v, value: v })) },
       },
       { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
       { label: "错误状态", key: "error", component: "checkbox" as const, defaultValue: false },
@@ -196,46 +199,54 @@ const playgroundText = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 基础用法：值模式只存最末一级的值 */
-const basicValue = ref<any>("jiangbei");
+const basicValue = shallowRef<any>("jiangbei");
 /** 基础用法：路径模式存整条路径 */
-const pathValue = ref<any>(["zhejiang", "ningbo", "jiangbei"]);
+const pathValue = shallowRef<any>(["zhejiang", "ningbo", "jiangbei"]);
 /** 最近一次 change 的回显 */
-const lastChange = ref("");
+const lastChange = shallowRef("");
 
 /** 展开方式：悬停展开 */
-const hoverValue = ref<any>(undefined);
+const hoverValue = shallowRef<any>(undefined);
 /** 自动展开到最深一级 */
-const expandChildValue = ref<any>(undefined);
+const expandChildValue = shallowRef<any>(undefined);
 /** 可选任意层级 */
-const strictValue = ref<any>("hangzhou");
+const strictValue = shallowRef<any>("hangzhou");
 
 /** 多选：父子关联，绑定值落在叶子上 */
-const multipleValue = ref<any[]>(["xihu", "yuhang"]);
+const multipleValue = shallowRef<any[]>(["xihu", "yuhang"]);
 /** 多选：父子不关联，各级独立勾选 */
-const multipleStrictValue = ref<any[]>(["hangzhou", "xihu"]);
+const multipleStrictValue = shallowRef<any[]>(["hangzhou", "xihu"]);
 
 /** 自定义标签：单选触发器的回显内容 */
-const labelValue = ref<any>("xihu");
+const labelValue = shallowRef<any>("xihu");
 /** 自定义标签：多选的每个标签 */
-const labelTagsValue = ref<any[]>(["xihu", "yuhang"]);
+const labelTagsValue = shallowRef<any[]>(["xihu", "yuhang"]);
 
 /** 搜索：整条路径参与匹配 */
-const searchValue = ref<any>(undefined);
+const searchValue = shallowRef<any>(undefined);
 /** 搜索：只展示该级文本 */
-const searchLabelOnlyValue = ref<any>(undefined);
+const searchLabelOnlyValue = shallowRef<any>(undefined);
 /** 搜索关键词，受控展示 */
-const keyword = ref("");
+const keyword = shallowRef("");
 
-/** 异步加载的数据源，done 回传的子节点会写回这里的选项对象 */
-const lazyOptions = ref<CascaderOption[]>([
+/** 异步加载的数据源：done 回传的子节点由组件内部缓存，不改写这里的数据；替换这个数组会清空已加载的下级 */
+const lazyOptions: CascaderOption[] = [
   { label: "浙江省", value: "zhejiang", isLeaf: false },
   { label: "江苏省", value: "jiangsu", isLeaf: false },
-]);
-const lazyValue = ref<any>(undefined);
+];
+const lazyValue = shallowRef<any>(undefined);
+
+/** 并发模拟请求各自保存句柄，卸载时统一取消。 */
+const loadTimers = new Set<ReturnType<typeof setTimeout>>();
+onBeforeUnmount(() => {
+  loadTimers.forEach((timer) => clearTimeout(timer));
+  loadTimers.clear();
+});
 
 /** 模拟请求：第二级返回城市，第三级返回区县 */
 function loadMore(option: CascaderOption, done: (children?: CascaderOption[]) => void) {
-  setTimeout(() => {
+  const timer = setTimeout(() => {
+    loadTimers.delete(timer);
     if (option.value === "zhejiang") {
       done([
         { label: "杭州市", value: "hangzhou", isLeaf: false },
@@ -252,10 +263,11 @@ function loadMore(option: CascaderOption, done: (children?: CascaderOption[]) =>
       { label: `${option.label}·郊区`, value: `${option.value}-suburb`, isLeaf: true },
     ]);
   }, 600);
+  loadTimers.add(timer);
 }
 
 /** 独立面板的绑定值 */
-const panelValue = ref<any>("xihu");
+const panelValue = shallowRef<any>("xihu");
 
 function onChange(value: any) {
   lastChange.value = value === undefined ? "未选择" : JSON.stringify(value);
@@ -265,8 +277,12 @@ function onChange(value: any) {
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground
-      v-model="state" :controls="controls" :code-extras="codeExtras" component-name="RebornCascader"
-      title="交互演练场" description="调节左侧参数，实时查看级联选择器的表现。"
+      v-model="state"
+      :controls="controls"
+      :code-extras="codeExtras"
+      component-name="RebornCascader"
+      title="交互演练场"
+      description="调节上方参数，实时查看级联选择器的表现。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -279,13 +295,23 @@ function onChange(value: any) {
 
       <div class="flex w-full max-w-[360px] flex-col gap-3">
         <RebornCascader
-          v-model="playgroundValue" :options="options" :multiple="state.multiple"
-          :path-mode="state.pathMode" :check-strictly="state.checkStrictly"
-          :expand-trigger="state.expandTrigger" :expand-child="state.expandChild"
-          :allow-search="state.allowSearch" :allow-clear="state.allowClear"
-          :max-tag-count="state.maxTagCount" :color="state.color" :size="state.size"
-          :variant="state.variant" :disabled="state.disabled" :error="state.error"
-          :loading="state.loading" :placeholder="state.placeholder"
+          v-model="playgroundValue"
+          :options="options"
+          :multiple="state.multiple"
+          :path-mode="state.pathMode"
+          :check-strictly="state.checkStrictly"
+          :expand-trigger="state.expandTrigger"
+          :expand-child="state.expandChild"
+          :allow-search="state.allowSearch"
+          :allow-clear="state.allowClear"
+          :max-tag-count="state.maxTagCount"
+          :color="state.color"
+          :size="state.size"
+          :variant="state.variant"
+          :disabled="state.disabled"
+          :error="state.error"
+          :loading="state.loading"
+          :placeholder="state.placeholder"
         />
         <DemoNote tone="dimmed">当前值：{{ playgroundText }}</DemoNote>
       </div>
@@ -297,12 +323,13 @@ function onChange(value: any) {
     >
       <DemoBlock layout="stack">
         <RebornCascader
-          v-model="basicValue" :options="options" placeholder="请选择地区" allow-clear
+          v-model="basicValue"
+          :options="options"
+          placeholder="请选择地区"
+          allow-clear
           @change="onChange"
         />
-        <RebornCascader
-          v-model="pathValue" :options="options" path-mode placeholder="路径模式" allow-clear
-        />
+        <RebornCascader v-model="pathValue" :options="options" path-mode placeholder="路径模式" allow-clear />
         <DemoNote tone="dimmed">
           值模式：{{ JSON.stringify(basicValue) }} · 路径模式：{{ JSON.stringify(pathValue) }}
           {{ lastChange ? ` · 最近一次 change：${lastChange}` : "" }}
@@ -315,15 +342,9 @@ function onChange(value: any) {
       description="expand-trigger 决定下一级是点开还是悬停展开；check-strictly 放开「只能选叶子」的限制，非叶子节点点一下即选中、同时继续展开。"
     >
       <DemoBlock layout="stack">
-        <RebornCascader
-          v-model="hoverValue" :options="options" expand-trigger="hover" placeholder="悬停展开下一级"
-        />
-        <RebornCascader
-          v-model="strictValue" :options="options" check-strictly placeholder="任意层级都可选中"
-        />
-        <RebornCascader
-          v-model="expandChildValue" :options="options" expand-child placeholder="自动展开到最深一级"
-        />
+        <RebornCascader v-model="hoverValue" :options="options" expand-trigger="hover" placeholder="悬停展开下一级" />
+        <RebornCascader v-model="strictValue" :options="options" check-strictly placeholder="任意层级都可选中" />
+        <RebornCascader v-model="expandChildValue" :options="options" expand-child placeholder="自动展开到最深一级" />
       </DemoBlock>
     </DemoSection>
 
@@ -332,15 +353,20 @@ function onChange(value: any) {
       description="多选在选项前渲染 RebornCheckbox。默认父子关联：勾父节点会写入它名下全部叶子，只勾一部分时父节点显示半选；开启 check-strictly 后各级独立勾选，也就不再有半选。"
     >
       <DemoBlock layout="stack">
+        <RebornCascader v-model="multipleValue" :options="options" multiple allow-clear placeholder="父子关联" />
         <RebornCascader
-          v-model="multipleValue" :options="options" multiple allow-clear placeholder="父子关联"
-        />
-        <RebornCascader
-          v-model="multipleStrictValue" :options="options" multiple check-strictly allow-clear
+          v-model="multipleStrictValue"
+          :options="options"
+          multiple
+          check-strictly
+          allow-clear
           placeholder="父子不关联"
         />
         <RebornCascader
-          v-model="multipleValue" :options="options" multiple :max-tag-count="2"
+          v-model="multipleValue"
+          :options="options"
+          multiple
+          :max-tag-count="2"
           placeholder="最多显示 2 个标签"
         />
         <DemoNote tone="dimmed">
@@ -364,9 +390,7 @@ function onChange(value: any) {
           </template>
         </RebornCascader>
         <!-- 多选：每个标签都会走一遍插槽 -->
-        <RebornCascader
-          v-model="labelTagsValue" :options="options" multiple allow-clear placeholder="自定义多选标签"
-        >
+        <RebornCascader v-model="labelTagsValue" :options="options" multiple allow-clear placeholder="自定义多选标签">
           <template #label="{ data }">
             <span class="flex items-center gap-1">
               <Icon name="lucide:map-pin" size="12" />
@@ -383,11 +407,18 @@ function onChange(value: any) {
     >
       <DemoBlock layout="stack">
         <RebornCascader
-          v-model="searchValue" v-model:input-value="keyword" :options="options" allow-search
-          allow-clear placeholder="输入区县名试试"
+          v-model="searchValue"
+          v-model:input-value="keyword"
+          :options="options"
+          allow-search
+          allow-clear
+          placeholder="输入区县名试试"
         />
         <RebornCascader
-          v-model="searchLabelOnlyValue" :options="options" allow-search search-option-only-label
+          v-model="searchLabelOnlyValue"
+          :options="options"
+          allow-search
+          search-option-only-label
           placeholder="搜索结果只显示该级文本"
         />
         <DemoNote tone="dimmed">当前关键词：{{ keyword || "（空）" }}</DemoNote>
@@ -396,11 +427,14 @@ function onChange(value: any) {
 
     <DemoSection
       title="异步加载：load-more"
-      description="传入 load-more 即开启懒加载：展开非叶子节点时调用它，done 回传的子节点会写回该选项。数据未标 isLeaf 时组件无从判断能否继续展开，必须自己标。"
+      description="传入 load-more 即开启懒加载：展开非叶子节点时调用它，done 回传的子节点保存在组件内部，不会写回 options。数据未标 isLeaf 时组件无从判断能否继续展开，必须自己标。"
     >
       <DemoBlock layout="stack">
         <RebornCascader
-          v-model="lazyValue" :options="lazyOptions" :load-more="loadMore" allow-clear
+          v-model="lazyValue"
+          :options="lazyOptions"
+          :load-more="loadMore"
+          allow-clear
           placeholder="展开后异步取下一级"
         />
         <DemoNote tone="dimmed">当前值：{{ lazyValue ?? "未选择" }}</DemoNote>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from '#components';
+
 /**
  * 总览卡片缩略：滚动中的订单列表，分组标题条吸在框顶，下方条目从它底下滑过
  *

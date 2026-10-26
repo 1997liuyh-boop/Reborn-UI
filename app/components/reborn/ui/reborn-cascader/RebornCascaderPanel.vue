@@ -5,28 +5,15 @@
  * 只负责「多列选项 + 选中逻辑」，不带触发器与浮层，可直接嵌在页面里当一块常驻面板用；
  * RebornCascader 的下拉内容也正是它。列与列之间用 1px 的 gray-2 竖线分隔，不再各自成卡片。
  */
-import type {
-  cascaderColors,
-  CascaderFieldNames,
-  CascaderOption,
-  CascaderOptionValue,
-  CascaderPanelUI,
-  cascaderSizes,
-  CascaderValue,
-  VirtualListProps,
-} from "./reborn-cascader.config";
-import type { CascaderNode } from "./useCascaderTree";
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import type { cascaderColors, CascaderFieldNames, CascaderOption, CascaderOptionValue, CascaderPanelUI, cascaderSizes, CascaderValue, VirtualListProps } from "./reborn-cascader.config";
+import type { CascaderNode } from "./reborn-cascader.tree";
+import { computed, getCurrentInstance, inject, nextTick, onBeforeUpdate, onMounted, shallowRef, watch } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornCheckbox from "../reborn-checkbox/RebornCheckbox.vue";
 import theme from "./reborn-cascader.config";
-import {
-  buildCascaderTree,
-  findNodeByValue,
-  getCheckState,
-  nodeToValue,
-} from "./useCascaderTree";
+import { CASCADER_TREE_KEY, useCascaderState } from "./reborn-cascader.context";
+import { findNodeByValue, getCheckState, nodeToValue } from "./reborn-cascader.tree";
 
 export interface CascaderPanelProps {
   /** 绑定值是否为路径：开启后单选绑定值数组、多选绑定值数组的数组 */
@@ -68,8 +55,6 @@ export interface CascaderPanelProps {
   ui?: CascaderPanelUI;
 }
 
-defineOptions({ inheritAttrs: false });
-
 const props = withDefaults(defineProps<CascaderPanelProps>(), {
   pathMode: false,
   multiple: false,
@@ -95,34 +80,47 @@ const emit = defineEmits<{
   (e: "select", value: CascaderOptionValue | CascaderOptionValue[]): void;
 }>();
 
-const b = tv(theme);
+/**
+ * 绑定值（v-model）。未绑定时由 defaultValue 起始，内部自行维护。
+ * defineModel 只负责声明属性与 update 事件，读写都不经它的本地缓存：只传值时 useModel 会改写缓存；非受控时写进去的值
+ * 还会成为受控后「同值不派发」的去重基准，吞掉父级要收的事件。读取按严格受控取父级原始值，写入直接派发事件。
+ */
+defineModel<CascaderValue>({ default: undefined });
 
-/** 绑定值（v-model）。未绑定时由 defaultValue 起始，内部自行维护 */
-const model = defineModel<CascaderValue>({ default: undefined });
+const b = tv(theme);
+const instance = getCurrentInstance()!;
+/** 父级是否在 vnode 上写了 modelValue（含 kebab 写法）：据此区分「未绑定」与「显式绑定 undefined」 */
+function isBound() {
+  const vnodeProps = instance.vnode.props ?? {};
+  return Object.hasOwn(vnodeProps, "modelValue") || Object.hasOwn(vnodeProps, "model-value");
+}
+/**
+ * 受控判定。是否显式绑定也必须响应父级更新（包括未绑定切到 undefined），
+ * 但只存布尔结果：shallowRef 写入相同的值不会触发依赖，下游计算只在受控状态真的变化时重算。
+ */
+const bound = shallowRef(isBound());
+onBeforeUpdate(() => {
+  bound.value = isBound();
+});
+function isControlled() {
+  return bound.value;
+}
 
 /** 非受控状态下的内部值，与 RebornCheckbox 同一套写法 */
-const innerValue = ref<CascaderValue>(props.defaultValue);
+const innerValue = shallowRef<CascaderValue>(props.defaultValue);
 
-/** 当前实际生效的值：绑定了 v-model 取绑定值，否则取内部值 */
+/** 当前实际生效的值：绑定了 v-model 只认父级传入的原始值（严格受控，父级不回写就保持父值），否则取内部值 */
 const currentValue = computed<CascaderValue>(() =>
-  model.value === undefined ? innerValue.value : model.value,
+  isControlled() ? instance.props.modelValue as CascaderValue : innerValue.value,
 );
 
 /** 规范化后的选项树 */
-const tree = computed(() =>
-  buildCascaderTree(props.options, {
-    fieldNames: props.fieldNames,
-    valueKey: props.valueKey,
-    lazy: !!props.loadMore,
-  }),
-);
+const { tree, loadingKeys, loadChildren } = inject(CASCADER_TREE_KEY, undefined) ?? useCascaderState(props);
 
 /** 当前展开路径上各节点的 key，列表由它推导 */
-const activeKeys = ref<string[]>([]);
+const activeKeys = shallowRef<string[]>([]);
 /** 鼠标悬停的选项 key，只影响高亮，不影响展开 */
-const hoverKey = ref("");
-/** 正在懒加载子节点的选项 key */
-const loadingKeys = ref<Set<string>>(new Set());
+const hoverKey = shallowRef("");
 
 /** 展开路径对应的节点。选项换了一批时，失效的 key 会在这里被自动丢弃 */
 const activeNodes = computed(() => {
@@ -207,8 +205,8 @@ function isHighlighted(node: CascaderNode) {
 
 /** 写回绑定值：受控与非受控两份状态同时更新，非受控下才不会点一下弹回去 */
 function commitValue(value: CascaderValue) {
-  innerValue.value = value;
-  model.value = value;
+  if (!isControlled()) innerValue.value = value;
+  instance.emit("update:modelValue", value);
   emit("change", value);
 }
 
@@ -266,23 +264,6 @@ function toggleCheck(node: CascaderNode, checked: boolean) {
 }
 
 /* ---------------- 展开 ---------------- */
-
-/** 懒加载子节点。done 回传的数据直接写回原选项对象，交由响应式驱动重建 */
-function loadChildren(node: CascaderNode) {
-  if (!props.loadMore || node.isLeaf || node.children.length > 0) return;
-  if (loadingKeys.value.has(node.key)) return;
-
-  const childrenField = props.fieldNames?.children ?? "children";
-  loadingKeys.value = new Set(loadingKeys.value).add(node.key);
-
-  props.loadMore(node.raw, (children) => {
-    if (children?.length) node.raw[childrenField] = children;
-    else node.raw[props.fieldNames?.isLeaf ?? "isLeaf"] = true;
-    const next = new Set(loadingKeys.value);
-    next.delete(node.key);
-    loadingKeys.value = next;
-  });
-}
 
 /** 展开到某个节点；开启 expand-child 时继续沿第一个可用子项一路展开 */
 function expandTo(node: CascaderNode) {
@@ -352,8 +333,8 @@ const virtualThreshold = computed(() => props.virtualListProps?.threshold ?? 0);
  * 不走模板 ref 回调：内联箭头函数每次重渲染都会被 Vue 当成新的 ref 重新调用一遍，
  * 而回调里要写的正是 columnViews 依赖的这两个 ref，会绕成「渲染 → 写 ref → 再渲染」的死循环。
  */
-const scrollTops = ref<Record<string, number>>({});
-const viewHeights = ref<Record<string, number>>({});
+const scrollTops = shallowRef<Record<string, number>>({});
+const viewHeights = shallowRef<Record<string, number>>({});
 
 function onColumnScroll(key: string, event: Event) {
   const el = event.target as HTMLElement;
@@ -511,25 +492,37 @@ defineExpose({
             >
               <!-- 选中态优先于高亮态：两者都是 bg-*，同时挂上只能靠 CSS 顺序定胜负 -->
               <div
-                v-for="row in column.rows" :key="row.node.key" :class="[
+                v-for="row in column.rows"
+                :key="row.node.key"
+                :class="[
                   // 正在懒加载子级的节点显示等待光标，经 option 的 cn 合并顶替 cursor-pointer
-                  ui.option({ active: row.checked, class: loadingKeys.has(row.node.key) ? 'cursor-wait' : undefined }),
+                  ui.option({
+                    active: row.checked,
+                    class: loadingKeys.has(row.node.key) ? 'cursor-wait' : undefined,
+                  }),
                   row.checked ? ui.optionActive() : '',
                   !row.checked && isHighlighted(row.node) ? ui.optionHighlight() : '',
-                ]" :style="column.virtual ? { height: `${itemHeight - 4}px` } : undefined"
+                ]"
+                :style="column.virtual ? { height: `${itemHeight - 4}px` } : undefined"
                 :data-disabled="row.node.disabled || disabled ? 'true' : 'false'"
-                @click="onOptionClick(row.node)" @mouseenter="onOptionMouseEnter(row.node)"
+                @click="onOptionClick(row.node)"
+                @mouseenter="onOptionMouseEnter(row.node)"
               >
                 <slot
-                  name="option" :data="row.node.raw" :level="row.node.level"
-                  :checked="row.checked" :indeterminate="row.indeterminate"
+                  name="option"
+                  :data="row.node.raw"
+                  :level="row.node.level"
+                  :checked="row.checked"
+                  :indeterminate="row.indeterminate"
                 >
                   <div :class="ui.optionContent()">
                     <!-- 多选：勾选框只管切换勾选，点击不再冒泡给整行，免得顺带把子菜单也展开 -->
                     <!-- 严格模式没有半选、各级独立勾选，勾选框改成圆形与关联模式区分 -->
                     <span v-if="multiple" :class="ui.optionCheckbox()" @click.stop>
                       <RebornCheckbox
-                        size="sm" :color="color" :model-value="row.checked"
+                        size="sm"
+                        :color="color"
+                        :model-value="row.checked"
                         :indeterminate="row.indeterminate"
                         :disabled="row.node.disabled || disabled"
                         :ui="checkStrictly ? { control: 'rounded-full' } : undefined"
@@ -541,11 +534,13 @@ defineExpose({
                     <span v-else :class="ui.optionLabel()">{{ row.node.label }}</span>
 
                     <Icon
-                      v-if="loadingKeys.has(row.node.key)" name="lucide:loader-2"
+                      v-if="loadingKeys.has(row.node.key)"
+                      name="lucide:loader-2"
                       :class="ui.optionLoading()"
                     />
                     <Icon
-                      v-else-if="!row.node.isLeaf" name="lucide:chevron-right"
+                      v-else-if="!row.node.isLeaf"
+                      name="lucide:chevron-right"
                       :class="ui.optionArrow()"
                     />
                   </div>
@@ -562,6 +557,7 @@ defineExpose({
     </div>
   </div>
 </template>
+
 
 <style scoped>
 /*

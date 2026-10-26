@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import type { MultipleAnimationController } from "~/lib/three/multipleAnimationScene";
 import { useRuntimeConfig } from "#imports";
-import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from "vue";
 
 interface Props { paused: boolean; }
 const props = defineProps<Props>();
 const config = useRuntimeConfig();
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas");
-const version = ref(0);
-const shared = ref(false);
-const status = ref("loading");
-const error = ref("");
+const version = shallowRef(0);
+const shared = shallowRef(false);
+const status = shallowRef("loading");
+const error = shallowRef("");
 let controller: MultipleAnimationController | undefined;
 let abort: AbortController | undefined;
 let unmounted = false;

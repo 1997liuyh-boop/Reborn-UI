@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, shallowRef, useTemplateRef, watch } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import theme, { selectColors, selectSizes, selectVariants } from "./reborn-select.config";
@@ -12,9 +12,10 @@ import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
 import RebornLoading from "../reborn-loading/RebornLoading.vue";
 import { tv } from "~/lib/tv";
 
-const b = tv(theme);
 
-defineOptions({ inheritAttrs: false });
+// 未声明的属性与监听（id、aria-*、data-*、style、@focusin 等）按默认规则透传给根节点 RebornSelectTrigger，
+// 再由它落到带 tabindex 的外层 wrapper 上，aria-* 与测试选择器都作用在可聚焦元素上。
+// wrapper 是 div，不是可被 <label for> 关联的表单元素，点击 label 不会聚焦它；需要关联标签时改用 aria-labelledby
 
 /**
  * 下拉选择选项定义
@@ -192,11 +193,38 @@ const emit = defineEmits<{
   (e: "search", value: string): void;
 }>();
 
+defineSlots<{
+  /** 替换触发器内的标签区、搜索框与文本 / 占位符，尾部图标仍由组件渲染 */
+  default?: (props: SelectTriggerSlotProps) => any;
+  /** 接管触发器盒子内的全部内容，连尾部箭头与清空按钮一并不渲染 */
+  cover?: (props: SelectTriggerSlotProps) => any;
+  /** 自定义单个选项的渲染，active 为该项是否已选中 */
+  option?: (props: { option: SelectOption; active: boolean }) => any;
+  /** 下拉面板页头，位于滚动容器之外 */
+  header?: () => any;
+  /** 下拉面板页脚，位于滚动容器之外 */
+  footer?: () => any;
+}>();
+
+/** 触发器内容插槽的作用域参数，default 与 cover 共用 */
+interface SelectTriggerSlotProps {
+  /** 已选项的展示文本，多选时以逗号拼接 */
+  displayText: string;
+  /** 占位符文本 */
+  placeholder: string;
+  /** 下拉是否展开 */
+  isOpen: boolean;
+  /** 组件内部的类名函数表（文档已列出的公开参数），可复用 triggerText / placeholder 等样式 */
+  ui: (typeof ui)["value"];
+}
+
 /**
  * 选中值（v-model）：单选为选项的 value，多选为 value 组成的数组。
  * 未传入时回落为 null，与清空后的取值保持一致。
  */
 const model = defineModel<any>({ default: null });
+
+const b = tv(theme);
 
 const {
   disabled: fieldGroupDisabled,
@@ -208,17 +236,17 @@ const {
 const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
 
 /** 下拉框是否展开 */
-const isOpen = ref(false);
+const isOpen = shallowRef(false);
 /** 当前高亮（焦点）选项的索引 */
-const highlightIndex = ref(-1);
+const highlightIndex = shallowRef(-1);
 /** 选项列表滚动容器 */
-const listRef = ref<HTMLElement | null>(null);
+const listRef = useTemplateRef<HTMLElement>("listRef");
 /** 展开动画结束后才响应鼠标高亮 */
-const dropdownReady = ref(false);
+const dropdownReady = shallowRef(false);
 /** 搜索关键词（allowSearch 开启时由触发器内的输入框维护） */
-const searchValue = ref("");
-/** 触发器内的搜索输入框 */
-const searchInputRef = ref<HTMLInputElement | null>(null);
+const searchValue = shallowRef("");
+/** 触发器内的搜索输入框（单选 / 多选两处 v-if 互斥，同一时刻只有一个） */
+const searchInputRef = useTemplateRef<HTMLInputElement>("searchInputRef");
 
 /** 当前是否处于搜索输入态：开启 allowSearch 且下拉已展开 */
 const isSearching = computed(() => props.allowSearch && isOpen.value);
@@ -251,16 +279,70 @@ const normalizedOptions = computed<SelectOption[]>(() => {
   }));
 });
 
+/** 当前选中值列表：多选为绑定数组本身，单选包成单元素数组 */
+const selectedValues = computed<any[]>(() => {
+  if (props.multiple) return Array.isArray(model.value) ? model.value : [];
+  return [model.value];
+});
+
+/** 选中值集合：列表逐行判断选中态时 O(1) 查询，不再每行做一次 Array.includes */
+const selectedSet = computed(() => new Set(selectedValues.value));
+
 /**
- * 当前已选中的选项对象列表。
+ * 已选项缓存：值 → 选项对象。
+ * 远程搜索（filter-option=false 由外部替换 options）后，已选值可能不在当前 options 里，
+ * 只从当前 options 反查会让触发器上的已选文本 / 标签消失，而 v-model 仍是原值。
+ * 展示时优先取当前 options（拿到最新的 label），取不到再回落到缓存；与 Element Plus 的 cachedOptions 同一思路。
+ * 整体替换 Map 而不是就地修改，shallowRef 才能感知变化。
+ */
+const selectedCache = shallowRef(new Map<any, SelectOption>());
+
+/**
+ * 让缓存跟着已经生效的绑定值走：当前 options 里命中选中值的项写入（取最新对象），
+ * 既不在选中集合、也不在当前 options 里的项移除。
+ * 选中、取消、移除标签、清空的那一刻都不删缓存：父级拒收这次改动时绑定值仍是旧值，
+ * 旧值不在当前 options（远程搜索结果）里时，回显全靠缓存
+ */
+function syncSelectedCache() {
+  const values = selectedSet.value;
+  const listed = new Set<any>();
+  let next: Map<any, SelectOption> | undefined;
+  for (const option of normalizedOptions.value) {
+    listed.add(option.value);
+    if (!values.has(option.value) || selectedCache.value.get(option.value) === option) continue;
+    next ??= new Map(selectedCache.value);
+    next.set(option.value, option);
+  }
+  for (const value of selectedCache.value.keys()) {
+    if (values.has(value) || listed.has(value)) continue;
+    next ??= new Map(selectedCache.value);
+    next.delete(value);
+  }
+  if (next) selectedCache.value = next;
+}
+
+// options 被替换或绑定值变化时同步缓存：趁选项还在列表里记下来，不再选中且已不在列表里的清掉
+watch([normalizedOptions, selectedSet], syncSelectedCache, { immediate: true });
+
+/**
+ * 当前已选中的选项对象列表，按选中值的顺序排列（多选即选择先后）：
+ * 远程搜索换掉 options 后，标签不会因「在不在当前列表里」而前后跳动。
  * 必须先于 ui 声明：它同时决定 wrapTags 变体（多选标签是否换行铺开）。
  */
-const selectedOptions = computed(() => {
-  if (props.multiple && Array.isArray(model.value)) {
-    return normalizedOptions.value.filter((o) => model.value.includes(o.value));
+const selectedOptions = computed<SelectOption[]>(() => {
+  const values = selectedValues.value;
+  if (!values.length) return [];
+  // 同值的选项只取第一个，与此前 find 的语义一致
+  const current = new Map<any, SelectOption>();
+  for (const option of normalizedOptions.value) {
+    if (!current.has(option.value)) current.set(option.value, option);
   }
-  const opt = normalizedOptions.value.find((o) => o.value === model.value);
-  return opt ? [opt] : [];
+  const result: SelectOption[] = [];
+  for (const value of values) {
+    const option = current.get(value) ?? selectedCache.value.get(value);
+    if (option) result.push(option);
+  }
+  return result;
 });
 
 /**
@@ -295,9 +377,9 @@ const filteredOptions = computed(() => {
 /* ---------------- 虚拟滚动 ---------------- */
 
 /** 列表容器当前的滚动距离，虚拟模式下由 scroll 事件驱动窗口位移 */
-const scrollTop = ref(0);
+const scrollTop = shallowRef(0);
 /** 列表容器的可视高度，展开后实测；拿不到时退回 max-h-60 的 240px */
-const viewportHeight = ref(240);
+const viewportHeight = shallowRef(240);
 
 /** 虚拟列表的占位总高度：数据量 × 单项步长，撑出真实滚动条 */
 const virtualTotalHeight = computed(() => filteredOptions.value.length * props.virtualItemHeight);
@@ -318,16 +400,45 @@ const virtualRange = computed(() => {
 });
 
 /**
+ * 非虚拟模式下的行 key：值是原始类型时带上类型前缀（避免 1 与 "1"、true 与 "true" 撞 key），
+ * 值是对象或同值重复时才退回下标。用下标做 key 会在搜索过滤后把同一个 DOM 节点
+ * （连同 option 插槽里的有状态内容）复用给另一个选项。
+ */
+function optionKeyOf(value: any, index: number, seen: Set<string>) {
+  if (value !== null && (typeof value === "object" || typeof value === "function")) return `#${index}`;
+  const key = `${typeof value}:${String(value)}`;
+  if (seen.has(key)) return `${key}#${index}`;
+  seen.add(key);
+  return key;
+}
+
+/**
  * 真正进入 v-for 的行数据。
  * 一律带上真实索引：高亮、锚点、滚动定位都以 filteredOptions 的下标为准，
  * 虚拟模式下 DOM 顺序与数据下标不再一一对应，不能再用 v-for 的局部 index。
+ * 选中态在这里一次算好，模板里每行不再重复判断。
+ * 虚拟模式的 key 保持真实下标：窗口滑动时同一下标就是同一选项，节点按位复用。
  */
 const renderRows = computed(() => {
   const list = filteredOptions.value;
-  if (!props.virtual) return list.map((option, index) => ({ option, index }));
+  const selected = selectedSet.value;
+  if (!props.virtual) {
+    const seen = new Set<string>();
+    return list.map((option, index) => ({
+      option,
+      index,
+      key: optionKeyOf(option.value, index, seen),
+      selected: selected.has(option.value),
+    }));
+  }
 
   const { start, end } = virtualRange.value;
-  return list.slice(start, end).map((option, i) => ({ option, index: start + i }));
+  return list.slice(start, end).map((option, i) => ({
+    option,
+    index: start + i,
+    key: String(start + i),
+    selected: selected.has(option.value),
+  }));
 });
 
 /** 可视窗口相对占位层的偏移量：始终对齐到整项，避免半项抖动 */
@@ -447,14 +558,30 @@ const ui = computed(() => {
 });
 
 /**
- * 校验某个值是否处于选中状态
+ * 选项行的类名只有三种组合，在这里一次算好：
+ * 鼠标悬停只改 highlightIndex，逐行按状态取现成字符串，不再每行重跑 tv 与 cn。
+ * 用空格拼接而不是 cn 合并，与此前的数组绑定等价（选中与高亮都是 bg-*，不过 tailwind-merge，所以二者不同时挂）。
+ * 未选中的 gray-6 文字色收在 option 的 active 变体里，选中时不产出，不会与 optionActive 抢色。
  */
-const isSelected = (value: any) => {
-  if (props.multiple && Array.isArray(model.value)) {
-    return model.value.includes(value);
-  }
-  return value === model.value;
-};
+const optionClasses = computed(() => {
+  const normal = ui.value.option({ active: false });
+  return {
+    selected: `${ui.value.option({ active: true })} ${ui.value.optionActive()}`,
+    highlight: `${normal} ${ui.value.optionHighlight()}`,
+    normal,
+  };
+});
+
+/** 某一行应挂的类名：选中态优先于高亮态 */
+function optionClassOf(row: { index: number; selected: boolean }) {
+  if (row.selected) return optionClasses.value.selected;
+  return highlightIndex.value === row.index ? optionClasses.value.highlight : optionClasses.value.normal;
+}
+
+/** 多选标签的 key：带类型前缀，避免 1 与 "1" 撞 key */
+function tagKeyOf(value: any) {
+  return `${typeof value}:${String(value)}`;
+}
 
 /**
  * 拼装显示在触发器上的标签文本
@@ -614,6 +741,8 @@ function selectOption(option: SelectOption) {
       // 达到 multiple-limit 上限后不再接受新增，已选项仍可取消
       if (props.multipleLimit > 0 && newValue.length >= props.multipleLimit) return;
       newValue.push(option.value);
+      // 选中瞬间就写入缓存：父级若在同一轮里替换了 options，选项仍能回显
+      selectedCache.value = new Map(selectedCache.value).set(option.value, option);
     }
     model.value = newValue;
     emit("change", newValue);
@@ -625,6 +754,9 @@ function selectOption(option: SelectOption) {
       nextTick(() => searchInputRef.value?.focus());
     }
   } else {
+    // 选中瞬间追加写入，父级在收起时替换 options（如还原默认列表）也不丢回显；
+    // 不清掉原已选项：父级拒收时绑定值仍是它，旧项由 syncSelectedCache 在绑定值真正变化后清理
+    selectedCache.value = new Map(selectedCache.value).set(option.value, option);
     model.value = option.value;
     emit("change", option.value);
     validate("change");
@@ -766,7 +898,7 @@ function scrollToActive(instant = false) {
           <slot :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="ui">
             <!-- 多选：已选项以 RebornBadge 呈现，超出部分按 collapse-tags 折叠为 “+N” -->
             <div v-if="multiple && selectedOptions.length" :class="ui.tagList()">
-              <RebornBadge v-for="item in visibleTags" :key="String(item.value)" :label="item.label" color="neutral"
+              <RebornBadge v-for="item in visibleTags" :key="tagKeyOf(item.value)" :label="item.label" color="neutral"
                 variant="subtle" size="sm" :closable="!isDisabled" close-icon="lucide:x" :ui="{
                   root: 'min-w-0 shrink-0 max-w-full',
                   base: ui.tag(),
@@ -843,20 +975,16 @@ function scrollToActive(instant = false) {
             :style="virtual ? { height: `${virtualTotalHeight}px` } : undefined">
             <div :class="[ui.optionList(), virtual ? ui.virtualWindow() : '']"
               :style="virtual ? { transform: `translateY(${virtualOffset}px)` } : undefined">
-              <!-- 选中态优先于高亮态：两者都是 bg-*，数组绑定不过 tailwind-merge，同时挂上只能靠 CSS 顺序定胜负 -->
-              <!-- 文字色不在此列：未选中的 gray-6 已收进 option 的 active 变体，选中时根本不产出，不会与 optionActive 抢色 -->
+              <!-- 选中态优先于高亮态，类名组合见 optionClasses -->
               <!-- 下标一律取 row.index（filteredOptions 中的真实下标）：虚拟模式下 DOM 顺序不等于数据顺序 -->
-              <div v-for="row in renderRows" :key="row.index" :data-index="row.index" :class="[
-                ui.option({ active: isSelected(row.option.value) }),
-                isSelected(row.option.value) ? ui.optionActive() : '',
-                highlightIndex === row.index && !isSelected(row.option.value) ? ui.optionHighlight() : '',
-              ]" :style="virtual ? { height: `${virtualItemHeight - 4}px` } : undefined"
+              <div v-for="row in renderRows" :key="row.key" :data-index="row.index" :class="optionClassOf(row)"
+                :style="virtual ? { height: `${virtualItemHeight - 4}px` } : undefined"
                 :data-disabled="row.option.disabled ? 'true' : 'false'" @click="selectOption(row.option)"
-                @mouseenter="onOptionMouseEnter(row.index)">
-                <slot name="option" :option="row.option" :active="isSelected(row.option.value)">
+                   @mouseenter="onOptionMouseEnter(row.index)">
+                <slot name="option" :option="row.option" :active="row.selected">
                   <div :class="ui.optionContent()">
                     <span :class="ui.optionLabel()">{{ row.option.label }}</span>
-                    <Icon v-if="multiple && isSelected(row.option.value)" name="lucide:check"
+                    <Icon v-if="multiple && row.selected" name="lucide:check"
                       :class="ui.optionActiveIcon()" />
                   </div>
                 </slot>

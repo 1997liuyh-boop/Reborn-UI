@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, shallowRef } from 'vue';
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
 import RebornEmpty from "~/components/reborn/ui/reborn-empty/RebornEmpty.vue"
 
@@ -32,10 +33,10 @@ const defaultState: Record<string, any> = {
   showExtra: true,
 };
 
-const state = ref<Record<string, any>>({ ...defaultState });
+const state = shallowRef<Record<string, any>>({ ...defaultState });
 
 /** 操作区点击回显，让预览区的交互「有回应」 */
-const lastAction = ref("");
+const lastAction = shallowRef("");
 function onAction(name: string) {
   lastAction.value = name;
 }
@@ -122,7 +123,7 @@ const emptyCode = computed(() => {
   <div class="flex w-full flex-col">
     <Playground
       v-model="state" :controls="controls" :code="emptyCode" component-name="RebornEmpty"
-      title="交互演练场" description="调节左侧参数，观察图片、标题描述、操作区三段在不同插画与缺省组合下的排布。"
+      title="交互演练场" description="调节上方参数，观察图片、标题描述、操作区三段在不同插画与缺省组合下的排布。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">

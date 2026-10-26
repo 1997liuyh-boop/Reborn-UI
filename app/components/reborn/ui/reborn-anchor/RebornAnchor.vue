@@ -1,41 +1,12 @@
 <script setup lang="ts">
-import type {
-  AnchorColor,
-  AnchorDirection,
-  AnchorItem,
-  AnchorLinkMeta,
-  AnchorMarker,
-  AnchorType,
-  AnchorUI,
-} from "./reborn-anchor.config";
+import type { AnchorColor, AnchorDirection, AnchorItem, AnchorLinkMeta, AnchorMarker, AnchorType, AnchorUI } from "./reborn-anchor.config";
 import { useEventListener, useResizeObserver } from "@vueuse/core";
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, shallowRef, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, shallowRef, useTemplateRef, watch } from "vue";
 import { cn } from "~/lib/utils";
+import { tweenScroll } from "~/lib/scroll-tween";
 import theme, { ANCHOR_INJECTION_KEY } from "./reborn-anchor.config";
 // RebornAnchorItems 由 Nuxt 全局自动注册（nuxt.config 的 pathPrefix: false），这里刻意不写静态 import：
 // 它在子级里渲染自己，与 RebornAnchorLink 也互相引用，静态导入会形成 ESM 循环依赖。
-
-defineOptions({
-  name: "RebornAnchor",
-});
-
-const props = withDefaults(defineProps<RebornAnchorProps>(), {
-  offset: 0,
-  bound: 15,
-  duration: 300,
-  marker: true,
-  type: "default",
-  direction: "vertical",
-  color: "primary",
-  selectScrollTop: false,
-});
-
-const emit = defineEmits<{
-  /** 选中的链接改变时触发，载荷为新的 href；滚动到首个锚点之前为 undefined */
-  (e: "change", href: string | undefined): void;
-  /** 用户点击链接时触发，在滚动之前；在此调用 event.preventDefault() 可拦下组件的默认滚动 */
-  (e: "click", event: MouseEvent, href: string | undefined): void;
-}>();
 
 export interface RebornAnchorProps {
   /**
@@ -69,7 +40,29 @@ export interface RebornAnchorProps {
   ui?: AnchorUI;
 }
 
-const listRef = shallowRef<HTMLElement>();
+defineOptions({
+  name: "RebornAnchor",
+});
+
+const props = withDefaults(defineProps<RebornAnchorProps>(), {
+  offset: 0,
+  bound: 15,
+  duration: 300,
+  marker: true,
+  type: "default",
+  direction: "vertical",
+  color: "primary",
+  selectScrollTop: false,
+});
+
+const emit = defineEmits<{
+  /** 选中的链接改变时触发，载荷为新的 href；滚动到首个锚点之前为 undefined */
+  (e: "change", href: string | undefined): void;
+  /** 用户点击链接时触发，在滚动之前；在此调用 event.preventDefault() 可拦下组件的默认滚动 */
+  (e: "click", event: MouseEvent, href: string | undefined): void;
+}>();
+
+const listRef = useTemplateRef<HTMLElement>("listRef");
 /** 链接登记表，顺序即渲染顺序，挂载后按 DOM 先后校正 */
 const links = shallowRef<AnchorLinkMeta[]>([]);
 /** 当前选中的链接 href */
@@ -230,7 +223,7 @@ function setActive(href: string | undefined) {
 
 /** 补间期间置位，滚动监听据此跳过判定，避免程序滚动与滚动判定互相打架 */
 let scrolling = false;
-let tweenFrame: number | undefined;
+let stopTween: (() => void) | undefined;
 /**
  * 点击定位后的落点滚动值。落点之后高亮钉在被点的链接上，直到滚动位置真的变了才恢复按位置判定：
  * 落点线与触发线之间隔着 bound 的余量，紧随其后的小节（如 API 标题下面紧跟的 Props）此时已经越线，
@@ -239,22 +232,11 @@ let tweenFrame: number | undefined;
 let pinnedScroll: number | undefined;
 
 function cancelTween() {
-  if (tweenFrame !== undefined) cancelAnimationFrame(tweenFrame);
-  tweenFrame = undefined;
+  stopTween?.();
+  stopTween = undefined;
   scrolling = false;
 }
 
-/** ease-in-out：起步与收尾都慢，长距离滚动时不会突兀 */
-function easeInOut(t: number) {
-  return t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-}
-
-/** transition-none 只能关掉 CSS 过渡、关不掉 JS 补间，减弱动画的判定必须写在这里 */
-function prefersReducedMotion() {
-  return (
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
 
 /** 按当前滚动位置挑出选中的链接 */
 function updateActive() {
@@ -342,23 +324,11 @@ function scrollTo(href: string) {
   pinnedScroll = to;
   if (from === to) return;
 
-  if (props.duration <= 0 || prefersReducedMotion()) {
-    setScroll(to);
-    return;
-  }
-
   scrolling = true;
-  const start = performance.now();
-  const step = (now: number) => {
-    const progress = Math.min(1, (now - start) / props.duration);
-    setScroll(from + (to - from) * easeInOut(progress));
-    if (progress < 1) {
-      tweenFrame = requestAnimationFrame(step);
-      return;
-    }
-    cancelTween();
-  };
-  tweenFrame = requestAnimationFrame(step);
+  stopTween = tweenScroll({ from, to, duration: props.duration, setScroll, onComplete: () => {
+    scrolling = false;
+    stopTween = undefined;
+  } });
 }
 
 function handleClick(event: MouseEvent, meta: AnchorLinkMeta) {
@@ -384,6 +354,10 @@ watch([activeHref, links, () => props.type, () => props.direction, markerShape],
   await nextTick();
   updateMarker();
 });
+
+// 登记表变化（items 异步到达、换了一批锚点）后重新按位置判定选中项：
+// 否则容器没有滚动时，选中态会一直停在旧链接上。复用按帧合并，补间期间与点击落点仍会被 updateActive 跳过
+watch(links, () => nextTick(requestUpdateActive));
 
 watch(() => props.container, () => {
   resolveContainer();
@@ -425,12 +399,7 @@ defineExpose({
   <div data-reborn-anchor :class="ui.root({ class: props.class })">
     <div ref="listRef" :class="ui.list()">
       <!-- 标记跟随选中链接滑动，位置由测量写入行内样式 -->
-      <span
-        v-if="markerShape !== 'none'"
-        aria-hidden="true"
-        :class="ui.marker()"
-        :style="markerStyle"
-      />
+      <span v-if="markerShape !== 'none'" aria-hidden="true" :class="ui.marker()" :style="markerStyle" />
 
       <!-- items 模式：链接由组件递归渲染 -->
       <RebornAnchorItems v-if="props.items?.length" :items="props.items" />

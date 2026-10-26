@@ -34,6 +34,19 @@ export interface ButtonProps {
     gap?: boolean // 是否间隔按钮：为相邻的同级按钮自动添加左边距
 }
 
+/** 生成某个内部节点类名的函数，可追加 class */
+type ButtonClassFn = (opts?: { class?: any }) => string
+
+/** 插槽作用域里的 ui：按内部节点取类名，三个插槽拿到的是同一个对象 */
+export interface ButtonSlotUi {
+    base: ButtonClassFn
+    label: ButtonClassFn
+    leadingIcon: ButtonClassFn
+    leadingAvatar: ButtonClassFn
+    leadingAvatarSize: ButtonClassFn
+    trailingIcon: ButtonClassFn
+}
+
 const props = withDefaults(defineProps<ButtonProps>(), {
     color: 'primary',
     variant: 'filled',
@@ -46,13 +59,13 @@ const props = withDefaults(defineProps<ButtonProps>(), {
     gap: false
 })
 
-const slots = defineSlots<{
+defineSlots<{
     /** 前置内容（常放图标）；loading 时被加载动画替代 */
-    leading: (props: { ui: any }) => any
+    leading: (props: { ui: ButtonSlotUi }) => any
     /** 按钮主体内容，优先于 label prop 渲染 */
-    default: (props: { ui: any }) => any
-    /** 后置内容（常放图标）；loading 时不渲染 */
-    trailing: (props: { ui: any }) => any
+    default: (props: { ui: ButtonSlotUi }) => any
+    /** 后置内容（常放图标）；loading 时不渲染。与 leading、UniApp 一致传 ui 对象，图标类名用 ui.trailingIcon() */
+    trailing: (props: { ui: ButtonSlotUi }) => any
 }>()
 
 const { orientation, size: fieldGroupSize } = useFormInject(props)
@@ -74,14 +87,13 @@ const loadingSize = computed(() => {
     return '1.25em'
 })
 
-const isIconOnly = computed(() => {
-    return props.circle || props.variant === 'circle' || (!props.label && !slots.default)
-})
+/** 圆形按钮：加载时只显示加载动画。插槽不是响应式的，「有没有默认插槽」放到模板里按渲染期的 $slots 判断 */
+const isCircleShape = computed(() => props.circle || props.variant === 'circle')
 
 const b = tv(theme)
 const uiOverrides = computed(() => props.ui || {})
 
-const ui = computed(() => {
+const ui = computed<ButtonSlotUi>(() => {
     const styles = b({
         color: color.value,
         variant: variant.value,
@@ -114,7 +126,8 @@ const ui = computed(() => {
 </script>
 
 <template>
-  <button :disabled="isDisabled" :class="ui.base({ class: props.class })" v-bind="$attrs">
+  <button :disabled="isDisabled" :class="ui.base({ class: props.class })">
+    <!-- 单根组件，非 prop 属性与监听器由 Vue 自动透传到 button，无需再写 v-bind="$attrs" -->
     <div class="flex items-center justify-center gap-2 h-full w-full">
       <!-- 前置内容或加载动画 -->
       <template v-if="props.loading">
@@ -126,18 +139,17 @@ const ui = computed(() => {
       </template>
       <slot v-else name="leading" :ui="ui" />
 
-      <!-- 主体内容 -->
-      <template v-if="!isIconOnly || !props.loading">
+      <!-- 主体内容：纯图标（圆形，或既无 label 也无默认插槽）且加载中时不渲染，只留加载动画 -->
+      <template v-if="!props.loading || !(isCircleShape || (!props.label && !$slots.default))">
         <slot :ui="ui">
           <span v-if="label" :class="ui.label()">
             {{ label }}
           </span>
-          <slot v-else :ui="ui" />
         </slot>
       </template>
 
       <!-- 后置内容 -->
-      <slot v-if="!props.loading" name="trailing" :ui="ui.trailingIcon()" />
+      <slot v-if="!props.loading" name="trailing" :ui="ui" />
     </div>
   </button>
 </template>

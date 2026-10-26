@@ -13,6 +13,8 @@
     "web、uniapp 双端可用。",
     "scrollable 仅在内容溢出且非垂直模式时生效；wrapable 多行仅水平模式生效。",
     "speed 单位为 px/s（默认 60）；interval 为垂直轮播间隔毫秒（默认 3000）。",
-    "垂直模式下默认插槽提供 { item, index } 作用域参数；组件暴露 pause/resume/replay/goTo 方法。"
+    "垂直模式下默认插槽提供 { item, index } 作用域参数；组件暴露 pause/resume/replay/goTo 方法。",
+    "点击 right-icon 属性渲染的图标派发 close 并阻止冒泡（不再触发 click），组件不会自行隐藏，需在回调里用 v-if 移除；right-icon 插槽内容不参与关闭。",
+    "UniApp H5 垂直切换使用 Vue 进入与离开过渡；App / 小程序使用 CSS 入场动画，离场直接移除，需开发者工具与真机确认。"
   ]
 }

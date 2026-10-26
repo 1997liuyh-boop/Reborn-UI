@@ -18,9 +18,9 @@
  * 所以折叠态传 popup、展开态传 normal。
  *
  * 展开状态：各分区默认全部展开，用户收起过的分区记在 useState 里，
- * 路由切换（布局层 UPage 以 route.path 为 key 整体重挂载）后依然保持收起。
+ * 路由切换与布局再次挂载后依然保持收起。
  * 之所以显式绑定 open-keys 而不只靠 default-expand-all：后者是子菜单挂载后才逐个上报展开，
- * 每次重挂载都会从 0 高度撑开一遍，首屏与每次切页都能看到整列菜单「长」出来；
+ * 首次挂载会从 0 高度撑开整列菜单；
  * 有了初始值，子菜单首帧就是展开态，没有这段动画。default-expand-all 仍然传着，
  * 只在用户把所有分区都收起后的下一次挂载兜底，避免侧栏空着一片。
  * 折叠态下 open-keys 固定为空：浮层形态里「全部展开」等于所有浮层同时弹出、互相遮挡，
@@ -37,8 +37,9 @@
  */
 import type { ContentNavigationItem } from "@nuxt/content";
 import type { MenuUI } from "~/components/reborn/ui/reborn-menu/reborn-menu.config";
+import { navigationKey } from "~/utils/docsNavigation";
 
-const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
+const navigation = inject(navigationKey, undefined);
 const { nav } = useNavigation(navigation);
 const { platform } = useDocsPlatform();
 const route = useRoute();
@@ -90,9 +91,8 @@ const SERIES_ICONS: Record<string, string> = {
  */
 function sectionIcon(section: ContentNavigationItem): string {
   if (typeof section.icon === "string" && section.icon) return section.icon;
-  if (typeof section.series === "string" && SERIES_ICONS[section.series]) {
-    return SERIES_ICONS[section.series];
-  }
+  const seriesIcon = typeof section.series === "string" ? SERIES_ICONS[section.series] : undefined;
+  if (seriesIcon) return seriesIcon;
   const topPath = `/${route.path.split("/").filter(Boolean)[0] ?? ""}`;
   const top = toValue(navigation)?.find((item) => item.path === topPath);
   return typeof top?.icon === "string" && top.icon ? top.icon : "lucide:folder";
@@ -126,7 +126,7 @@ const pathIndex = computed(() => {
   return map;
 });
 
-const selectedKeys = ref<string[]>([]);
+const selectedKeys = shallowRef<string[]>([]);
 
 watch(
   [() => route.path, pathIndex],

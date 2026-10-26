@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import type { StyleValue } from 'vue';
+import { computed, nextTick, onMounted, shallowRef, useAttrs, useTemplateRef } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import theme, { inputOtpColors, inputOtpSizes } from "./reborn-input-otp.config";
@@ -10,7 +11,6 @@ const b = tv(theme);
 defineOptions({ inheritAttrs: false });
 
 export interface InputOtpProps {
-    modelValue?: string;
     autofocus?: boolean;
     length?: number;
     disabled?: boolean;
@@ -31,7 +31,6 @@ export interface InputOtpProps {
 }
 
 const props = withDefaults(defineProps<InputOtpProps>(), {
-    modelValue: "",
     autofocus: false,
     length: 4,
     disabled: false,
@@ -41,15 +40,35 @@ const props = withDefaults(defineProps<InputOtpProps>(), {
 });
 
 const emit = defineEmits<{
-    (e: "update:modelValue", value: string): void;
+    /** 输满 length 位时触发，回调为完整的值 */
     (e: "done", value: string): void;
+    /** 隐藏的原生输入框获得焦点时触发 */
     (e: "focus", event: FocusEvent): void;
+    /** 隐藏的原生输入框失去焦点时触发 */
     (e: "blur", event: FocusEvent): void;
 }>();
 
-const inputRef = ref<HTMLInputElement | null>(null);
-const isFocus = ref(false);
-const value = ref(props.modelValue);
+/** 输入值（v-model）；未绑定时由 defineModel 内部保存本地值 */
+const model = defineModel<string>({ default: "" });
+
+const attrs = useAttrs();
+/** 每次渲染读取最新透传样式，避免缓存非响应式 attrs。 */
+function rootStyle(): StyleValue {
+    return attrs.style as StyleValue;
+}
+/**
+ * 透传属性（id、name、aria-label、data-* 等）语义上属于隐藏的原生 input，落在 input 上；
+ * class 已是 prop，style 单独落在根节点
+ */
+function inputAttrs() {
+    const { style: _style, ...rest } = attrs;
+    return rest;
+}
+
+const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
+/** inputmode 随 inputType 切换：text 时要能弹出全键盘输入字母，不能写死 numeric */
+const nativeInputmode = computed(() => (props.inputType === "number" ? "numeric" : "text"));
+const isFocus = shallowRef(false);
 
 const uiOverrides = computed(() => props.ui || {});
 
@@ -72,7 +91,7 @@ const ui = computed(() => {
 const list = computed<string[]>(() => {
     const arr: string[] = [];
     for (let i = 0; i < props.length; i++) {
-        arr.push(value.value.charAt(i));
+        arr.push(model.value.charAt(i));
     }
     return arr;
 });
@@ -84,9 +103,9 @@ function onInput(e: Event) {
         val = val.replace(/\D/g, "");
     }
     val = val.slice(0, props.length);
-    value.value = val;
     target.value = val;
-    emit("update:modelValue", val);
+    // 受控绑定下赋值后同步读 model 仍是旧值，下面的判断与事件载荷都用本地的 val
+    model.value = val;
     if (val.length === props.length) {
         emit("done", val);
         inputRef.value?.blur();
@@ -112,27 +131,20 @@ onMounted(() => {
         nextTick(() => inputRef.value?.focus());
     }
 });
-
-watch(
-    () => props.modelValue,
-    (val) => {
-        value.value = val;
-    },
-);
 </script>
 
 <template>
-    <div :class="ui.root({ class: props.class })" @click="onClick">
+    <div :class="ui.root({ class: props.class })" :style="rootStyle()" @click="onClick">
         <div :class="ui.inner()">
-            <input ref="inputRef" :value="value" :type="inputType === 'number' ? 'tel' : 'text'" :maxlength="length"
-                :disabled="disabled" :autofocus="autofocus" autocomplete="one-time-code" inputmode="numeric"
+            <input v-bind="inputAttrs()" ref="inputRef" :value="model" :type="inputType === 'number' ? 'tel' : 'text'" :maxlength="length"
+                :disabled="disabled" :autofocus="autofocus" autocomplete="one-time-code" :inputmode="nativeInputmode"
                 class="h-full w-full opacity-0" @input="onInput" @focus="onFocus" @blur="onBlur" />
         </div>
         <div :class="ui.list()">
             <div v-for="(item, index) in list" :key="index" :class="ui.item()"
-                :data-active="value.length === index && isFocus" :data-disabled="disabled" @click="onClick">
+                :data-active="model.length === index && isFocus" :data-disabled="disabled" @click="onClick">
                 <span :class="ui.value()">{{ item }}</span>
-                <span v-if="value.length === index && isFocus && item === ''" class="otp-cursor" :class="ui.cursor()" />
+                <span v-if="model.length === index && isFocus && item === ''" class="otp-cursor" :class="ui.cursor()" />
             </div>
         </div>
     </div>

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-const completed = ref(false);
+import { shallowRef } from "vue";
+const completed = shallowRef(false);
 
 function handleComplete() {
   completed.value = true;

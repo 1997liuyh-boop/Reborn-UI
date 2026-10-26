@@ -28,31 +28,33 @@ Web 端源码在 `app/composables/useFieldGroup.ts`，UniApp 端在 `packages/un
 
 ```ts
 function useFieldGroup(): {
-  errors: Ref<Record<string, string>>
-  fields: Ref<Set<string>>
-  fieldInstances: Ref<any[]>
-  addField: (field: any) => void
-  removeField: (field: any) => void
+  errors: Readonly<Ref<Readonly<Record<string, string>>>>
+  fields: Readonly<Ref<ReadonlySet<string>>>
+  fieldInstances: Readonly<Ref<readonly FormFieldEntry[]>>
+  addField: (field: FormFieldEntry) => void
+  removeField: (field: Pick<FormFieldEntry, 'uid' | 'prop'>) => void
   setError: (prop: string, error: string) => void
   removeError: (prop: string) => void
   getError: (prop: string) => string
-  getErrors: () => Promise<FormValidateError[]>
+  getErrors: () => FormValidateError[]
   clearValidate: (fieldsToClear?: string | string[]) => void
 }
 ```
 
 | 成员 | 说明 |
 | :--- | :--- |
-| `errors` | 错误映射表 `{ [字段名]: 错误信息 }`，每次修改都替换为新对象。 |
-| `fields` | 已注册字段名的集合，`RebornForm` 校验整个表单时逐个校验其中的字段。 |
-| `fieldInstances` | 已注册的表单项条目，按注册先后排列，不代表页面上的先后顺序。 |
+| `errors` | 只读的错误映射表 `{ [字段名]: 错误信息 }`，每次修改都替换为新对象。 |
+| `fields` | 只读的已注册字段名集合，`RebornForm` 校验整个表单时逐个校验其中的字段。 |
+| `fieldInstances` | 只读的已注册表单项条目，按注册先后排列，不代表页面上的先后顺序。 |
 | `addField` | 追加一个条目；带 `prop` 时同时把字段名加入 `fields`。 |
 | `removeField` | 按 `uid` 与 `prop` 找回注册时的条目并移除；只有没有其他条目再使用同一 `prop` 时，才把字段名移出 `fields`。 |
 | `setError` | 写入字段错误；`prop` 为空字符串时忽略。 |
 | `removeError` | 删除字段错误；`prop` 为空字符串或该字段本无错误时不做任何事。 |
 | `getError` | 读取字段错误，无错误时返回空字符串。 |
-| `getErrors` | 把 `errors` 转成 `FormValidateError[]`，以 Promise 返回。 |
+| `getErrors` | 把 `errors` 转成 `FormValidateError[]` 同步返回。 |
 | `clearValidate` | 不传参数时清空全部错误；传字段名或字段名数组时只清这些字段。 |
+
+三个状态都只能读，修改一律走动作函数：`RebornForm` 通过 `defineExpose` 暴露的 `fields` 就是这个只读集合，使用方不能再 `fields.clear()` 把注册表清空、让整个表单不再校验。
 
 ### FormValidateError
 
@@ -62,6 +64,55 @@ interface FormValidateError {
   message: string
 }
 ```
+
+### 注入键与上下文类型
+
+```ts
+type FormTrigger = 'blur' | 'change' | 'none' | Array<'blur' | 'change'>
+
+interface FormFieldEntry {
+  uid?: number
+  prop: string
+  getBoundingClientRect?: (callback: (rect: DOMRect) => void) => void
+  getElement?: () => Element | null // 仅 Web 端
+}
+
+interface FormContextProps {
+  size?: string
+  disabled?: boolean
+  orientation?: string
+  labelPosition?: string
+  labelWidth?: string | number
+  trigger?: FormTrigger
+  showMessage?: boolean
+  inlineMessage?: boolean
+}
+
+interface FormContext {
+  props: FormContextProps
+  addField: (field: FormFieldEntry) => void
+  removeField: (field: Pick<FormFieldEntry, 'uid' | 'prop'>) => void
+  getError: (prop: string) => string
+  validateField: (prop: string) => Promise<string | null>
+}
+
+interface FormItemContext {
+  isError: Readonly<ComputedRef<boolean>>
+  validate: (trigger: 'blur' | 'change') => void
+}
+
+const FORM_KEY: InjectionKey<FormContext>
+const FORM_ITEM_KEY: InjectionKey<FormItemContext>
+```
+
+| 导出 | 说明 |
+| :--- | :--- |
+| `FORM_KEY` | `RebornForm` 提供表单上下文用的注入键（`Symbol`），`useFieldGroupItem` 与 `useFormInject` 用它注入。 |
+| `FORM_ITEM_KEY` | `RebornFormItem` 提供表单项上下文用的注入键（`Symbol`），`useFormInject` 用它注入。 |
+| `FormContext` / `FormItemContext` | 两层上下文的结构，提供方与注入方共用，字段改名会在编译期报错。 |
+| `FormFieldEntry` | 表单项注册到表单的条目。 |
+
+自己封装表单容器、需要让库内控件继承尺寸与禁用状态时，用 `provide(FORM_KEY, { props, addField, removeField, getError, validateField })` 提供上下文。
 
 ### useFieldGroupItem
 
@@ -83,18 +134,18 @@ interface UseFieldGroupItemProps {
   label?: string
   labelPosition?: string
   labelWidth?: string | number
-  trigger?: 'blur' | 'change' | 'none' | Array<'blur' | 'change'>
+  trigger?: FormTrigger
   ui?: any
 }
 ```
 
 | 成员 | 说明 |
 | :--- | :--- |
-| `form` | 通过 `inject('rebornForm')` 拿到的表单上下文，不在表单内时为 `undefined`。 |
+| `form` | 通过 `FORM_KEY` 注入的表单上下文，不在表单内时为 `undefined`。 |
 | `error` | 当前 `prop` 的错误信息；没有表单或没有 `prop` 时为空字符串。 |
 | `labelPosition` | 自身 `labelPosition` > 表单 `labelPosition` > `'left'`。 |
 | `labelWidth` | 标签在顶部（`'top'`）时固定为 `'auto'`；否则自身 `labelWidth` > 表单 `labelWidth` > `'auto'`。 |
-| `size` | 取表单的 `size`，只认 `'sm'` / `'md'` / `'lg'`，其他值（包括空字符串）以及不在表单内时都回退 `'sm'`。 |
+| `size` | 表单项自身样式用的尺寸：取表单的 `size`，只认 `'sm'` / `'md'` / `'lg'`，其他值（包括空字符串）以及不在表单内时都回退 `'sm'`。这个值不下发给内部控件。 |
 | `getBoundingClientRect` | 读取表单项根节点的位置尺寸并交给回调。 |
 | `validate` | 自身 `trigger` 优先，未设置时用表单的 `trigger`；值为 `'none'`、为空或与本次触发类型不匹配时跳过，命中时调用表单的 `validateField(prop)`。 |
 
@@ -104,7 +155,7 @@ interface UseFieldGroupItemProps {
 
 ```ts
 function useFormInject(props?: any): {
-  form: any
+  form: FormContext | null
   size: ComputedRef<any>
   disabled: ComputedRef<any>
   orientation: ComputedRef<any>
@@ -115,8 +166,8 @@ function useFormInject(props?: any): {
 
 | 成员 | 说明 |
 | :--- | :--- |
-| `form` | 通过 `inject('rebornForm')` 拿到的表单上下文，不在表单内时为 `null`。 |
-| `size` | 控件上显式写了 `size` 时用控件的值；否则依次取表单项下发的 `size`、表单的 `size`、控件自身 props 的 `size`（Web 端）。 |
+| `form` | 通过 `FORM_KEY` 注入的表单上下文，不在表单内时为 `null`。 |
+| `size` | 控件上显式写了 `size` 时用控件的值；否则取表单的 `size`，表单没有设置（含空字符串）时用控件自身 props 的 `size`。 |
 | `disabled` | `form.props.disabled \|\| props.disabled`，表单禁用时整体禁用。 |
 | `orientation` | `form.props.orientation \|\| props.orientation`；`RebornForm` 目前没有声明 `orientation`，实际取到的是控件自身的值。 |
 | `isError` | 所在表单项当前是否有错误，不在表单项内时为 `false`。 |
@@ -185,7 +236,6 @@ function onInput(event: Event) {
 
 | 项 | Web | UniApp |
 | :--- | :--- | :--- |
-| `useFormInject` 的 `size` | 显式传入 > 表单项 > 表单 > 控件默认值 | 显式传入 > 表单 > 控件默认值（UniApp 的 `RebornFormItem` 不下发 `size`） |
 | `useFormInject` 的参数 | 可省略，默认 `{}` | 必须传入 |
 | `getBoundingClientRect` | 同步读取根节点 `$el.getBoundingClientRect()` | 用 `uni.createSelectorQuery()` 异步查询组件内的 `.re-form-item` |
 | 注册到表单的条目 | `{ uid, prop, getBoundingClientRect, getElement }` | `{ uid, prop, getBoundingClientRect }` |
@@ -197,7 +247,9 @@ Web 端多出的 `getElement` 返回表单项根节点：`RebornForm` 校验失�
 
 - **`useFieldGroupItem` 要传组件的响应式 props 本身**：函数内部在 `computed` 和 `watch` 里读取 `props.xxx`。如果传入解构或拷贝出来的普通对象，只能拿到初始值：之后修改 `label-position`、`label-width`、`trigger` 不生效，`prop` 变化也不会重新注册；动态增删表单项后，下标前移的项仍按旧路径注册，校验会落到错误的字段上。
 - **注销按 `uid + prop` 匹配**：调用方注销时传的是新对象，按引用查找会找不到。同一路径可能已被另一个表单项接管（动态列表删掉中间项时，后面的项先改用这个路径注册，被删项随后才卸载），所以只要还有条目在用这个路径，就保留 `fields` 里的字段名，否则接管的项会被漏掉、不再参与校验。
-- **`size` 以控件显式传入为准**：组件的 `props.size` 已经带上了默认值，分不出是否显式传入，所以判断依据是控件 vnode 上有没有写 `size`。表单的 `size` 只是表单内控件的默认尺寸。
+- **`size` 以控件显式传入为准**：组件的 `props.size` 已经带上了默认值，分不出是否显式传入，所以判断依据是控件 vnode 上有没有写 `size`。vnode 本身不是响应式的，父级增删 `size` 属性时控件会随之更新，函数在更新前重新读一次，因此「写了与默认值相同的 `size` 再删掉」也会切回跟随表单。表单的 `size` 只是表单内控件的默认尺寸。
+- **控件尺寸不经过表单项**：`RebornFormItem` 没有自己的 `size`，`useFieldGroupItem` 算出的 `size` 只是表单 `size` 加上 `'sm'` 兜底，只用于表单项自身样式。控件直接读表单，所以表单项单独使用（外面没有 `RebornForm`）或表单 `size` 为空字符串时，控件保持自己的默认尺寸，放在表单项里与直接放在表单里的控件尺寸一致。
+- **注入键是 `Symbol`**：表单与表单项用 `FORM_KEY` / `FORM_ITEM_KEY` 提供上下文，不再使用字符串键 `'rebornForm'` / `'rebornFormItem'`，避免与使用方自己的同名 `provide` 冲突。自己按字符串 `inject('rebornForm')` 的代码要改为 `inject(FORM_KEY)`。
 - **`disabled` 原样透传**：结果是 `form.props.disabled || props.disabled` 的原值，不做布尔化。控件的 `disabled` 如果允许传数组之类的非布尔值（例如按滑块分别禁用），整体禁用要用 `=== true` 判断，否则数组本身为真值，会被当成整体禁用。
 - **默认不自动校验**：两端 `RebornForm` 的 `trigger` 默认都是 `'none'`，表单项也没写 `trigger` 时，控件调用 `validate('blur')` / `validate('change')` 都会被跳过，只有调用表单的 `validate()` 时才校验。
 - **校验只在表单项里生效**：`useFormInject` 的 `validate` 和 `isError` 都来自所在的 `RebornFormItem`；控件直接放在 `RebornForm` 下而没有包在表单项里时，仍能继承表单的 `size` / `disabled`，但不会触发校验。

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
-import { computed, nextTick, onBeforeUnmount, ref, useId, useSlots, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, shallowRef, useId, useTemplateRef, watch } from "vue";
 import { runMotion, stopMotion } from "@/lib/motion";
 import { provideFloatingHost } from "~/composables/useFloatingHost";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornButton from "../reborn-button/RebornButton.vue";
+import { isTopOverlay, registerOverlay, unregisterOverlay } from "../reborn-drawer/drawer.utils";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
 import RebornScrollbar from "../scrollbar/RebornScrollbar.vue";
 import theme from "./reborn-dialog.config";
@@ -85,7 +86,7 @@ export interface RebornDialogProps {
   modal?: boolean;
   /** 是否允许穿透遮罩层与背后页面交互；modal 必须为 false 才生效 */
   modalPenetrable?: boolean;
-  /** 对话框自身是否插入至 body 元素上（本实现默认已挂载 body，false 时渲染在组件当前位置） */
+  /** 对话框自身是否插入至 body 元素上；为 true 时忽略 appendTo 强制挂到 body，false 时按 appendTo 挂载（其默认值也是 body） */
   appendToBody?: boolean;
   /** 对话框挂载到哪个 DOM 元素（CSS 选择器或元素），会覆盖 append-to-body */
   appendTo?: string | HTMLElement;
@@ -125,7 +126,7 @@ export interface RebornDialogProps {
   cancelBtn?: DialogActionButton;
   /** 确认按钮配置：字符串为标签、false 隐藏、对象透传按钮属性 */
   confirmBtn?: DialogActionButton;
-  /** 层级 */
+  /** 基础层级：打开时生效，嵌套弹窗或与抽屉叠放时自动递增，保证后打开的在上层 */
   zIndex?: number;
   /** 自定义类名（作用于面板） */
   class?: any;
@@ -190,29 +191,46 @@ const emit = defineEmits<{
   (e: "cancel"): void;
 }>();
 
+const slots = defineSlots<{
+  /** 触发器：包裹层点击即打开对话框；open 为当前是否打开 */
+  trigger?: (props: { open: boolean }) => any;
+  /** 自定义头部，替换默认的标题与描述；close 走 beforeClose 拦截流程 */
+  header?: (props: { open: boolean; close: () => void }) => any;
+  /** 正文内容 */
+  default?: (props: { open: boolean; close: () => void }) => any;
+  /** 自定义底部，替换默认的取消 / 确认按钮；confirm、cancel 与默认按钮的行为一致 */
+  footer?: (props: { open: boolean; close: () => void; confirm: () => void; cancel: () => void }) => any;
+}>();
+
 /** 显隐双向绑定；未绑定时组件内部自管理（trigger 插槽点击即可打开） */
 const model = defineModel<boolean>({ default: undefined });
 
-const slots = useSlots();
 const b = tv(theme);
 
 /** Teleport 内容是否存在于 DOM（destroy-on-close 为 false 时首开后常驻） */
-const mounted = ref(false);
+const mounted = shallowRef(false);
 /** 一次打开生命周期是否进行中（滚动锁定 / 根层显示的依据，动画结束才熄灭） */
-const active = ref(false);
+const active = shallowRef(false);
 /** 面板与遮罩的过渡显隐 */
-const visible = ref(false);
+const visible = shallowRef(false);
 // 关闭时一并收起内部展开的下拉、气泡卡片与文字提示；不销毁内容时它们收不到别的通知，会留在页面上
 provideFloatingHost(() => visible.value);
-const triggerRef = ref<HTMLElement | null>(null);
-const panelRef = ref<HTMLElement | null>(null);
-const backdropRef = ref<HTMLElement | null>(null);
-const previousFocus = ref<HTMLElement | null>(null);
+const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
+const panelRef = useTemplateRef<HTMLElement>("panelRef");
+const backdropRef = useTemplateRef<HTMLElement>("backdropRef");
+const previousFocus = shallowRef<HTMLElement | null>(null);
 
 const titleId = `reborn-dialog-title-${useId().replace(/[^\w-]/g, "")}`;
 const descriptionId = `reborn-dialog-description-${useId().replace(/[^\w-]/g, "")}`;
 
-const dragOffset = ref({ x: 0, y: 0 });
+/** 拖拽偏移：每次整体替换，不需要深层响应 */
+const dragOffset = shallowRef({ x: 0, y: 0 });
+/** 弹层栈中的身份标识：嵌套时只有最上层响应 ESC，层级也由栈分配 */
+const overlayId = Symbol("dialog");
+/** 实际层级：打开时由弹层栈按 zIndex 基础值分配 */
+const layer = shallowRef(props.zIndex);
+/** 拖拽进行中用于移除 window 监听的函数，关闭或卸载时也要调用 */
+let stopDrag: (() => void) | null = null;
 
 let openTimer: ReturnType<typeof setTimeout> | null = null;
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -226,20 +244,37 @@ const mergedOpen = computed(() => Boolean(model.value));
 /** 遮罩穿透仅在 modal=false 时生效 */
 const penetrable = computed(() => !props.modal && props.modalPenetrable);
 
-/** Teleport 目标：appendTo 优先，appendToBody 强制 body；两者均未设时默认挂 body */
-const teleportTarget = computed<string | HTMLElement>(() => {
-  if (props.appendToBody) {
-    return "body";
+/**
+ * Teleport 实际目标：appendToBody 强制 body，否则取 appendTo（默认 body）。
+ * 在打开时解析而不是挂载时：目标节点可能在对话框之后才渲染；找不到或选择器非法时回退 body。
+ */
+const resolvedTarget = shallowRef<string | HTMLElement>("body");
+
+function resolveTeleportTarget() {
+  const requested = props.appendToBody ? "body" : props.appendTo || "body";
+  // 服务端没有 document，保留原值交给 Teleport 的 SSR 处理
+  if (typeof document === "undefined" || typeof requested !== "string") {
+    resolvedTarget.value = requested;
+    return;
   }
-  return props.appendTo || "body";
-});
+  try {
+    resolvedTarget.value = document.querySelector<HTMLElement>(requested) ?? document.body;
+  }
+  catch {
+    resolvedTarget.value = document.body;
+  }
+}
 
 /** 生效的描述文字：describe 优先，回退旧属性名 description */
 const mergedDescribe = computed(() => props.describe || props.description);
 
-const headerVisible = computed(() =>
-  Boolean(slots.header || props.title || mergedDescribe.value),
-);
+/**
+ * 头部是否渲染。插槽不是响应式数据，放进 computed 会在插槽动态增删后不刷新，
+ * 所以写成渲染期调用的普通函数。
+ */
+function isHeaderVisible() {
+  return Boolean(slots.header || props.title || mergedDescribe.value);
+}
 
 function normalizeActionButton(
   value: DialogActionButton,
@@ -282,9 +317,10 @@ const normalizedConfirmButton = computed(() =>
   }),
 );
 
-const footerVisible = computed(() =>
-  Boolean(slots.footer || normalizedCancelButton.value || normalizedConfirmButton.value),
-);
+/** 底部是否渲染，与 isHeaderVisible 同理在渲染期判断插槽 */
+function isFooterVisible() {
+  return Boolean(slots.footer || normalizedCancelButton.value || normalizedConfirmButton.value);
+}
 
 /** width 数字按 px 处理，字符串原样透传 */
 const normalizedWidth = computed(() => {
@@ -318,7 +354,7 @@ const shellStyle = computed(() => {
 });
 
 const rootStyle = computed(() => ({
-  zIndex: `${props.zIndex}`,
+  zIndex: `${layer.value}`,
 }));
 
 /** 激活类保留曲线入口，Motion 从计算样式读取，兼容自定义动画类。 */
@@ -489,6 +525,11 @@ function doOpen() {
   clearTimers();
   const request = openRevision;
   dragOffset.value = { x: 0, y: 0 };
+  resolveTeleportTarget();
+  // 关闭动画中再次打开时沿用原有的栈位置与层级
+  if (!active.value) {
+    layer.value = registerOverlay(overlayId, props.zIndex);
+  }
   mounted.value = true;
   active.value = true;
   emit("beforeOpen");
@@ -582,6 +623,8 @@ function onClosed() {
   }
 
   active.value = false;
+  unregisterOverlay(overlayId);
+  stopDrag?.();
   dragOffset.value = { x: 0, y: 0 };
 
   // destroy-on-close 时卸载 Teleport 内容，否则保留 DOM 供下次直接复用
@@ -599,9 +642,42 @@ function onClosed() {
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape" && visible.value && props.closeOnPressEscape) {
+  // 嵌套时每个可见实例都在 document 上监听，只让最上层响应，避免一次 ESC 关掉整串弹窗
+  if (event.key !== "Escape" || !visible.value || !isTopOverlay(overlayId)) {
+    return;
+  }
+  if (props.closeOnPressEscape) {
+    event.stopImmediatePropagation();
     requestClose();
   }
+}
+
+/** 事件路径上（根节点以内）是否有还能沿滚轮方向继续滚动的元素，如带最大高度的表格、textarea、下拉列表 */
+function canScrollInPath(event: WheelEvent): boolean {
+  const root = event.currentTarget as HTMLElement | null;
+  for (let el = event.target as HTMLElement | null; el && el !== root; el = el.parentElement) {
+    const style = getComputedStyle(el);
+    if (event.deltaY !== 0 && /auto|scroll/.test(style.overflowY) && el.scrollHeight > el.clientHeight) {
+      const canMove = event.deltaY > 0 ? el.scrollTop + el.clientHeight < el.scrollHeight - 1 : el.scrollTop > 0;
+      if (canMove) return true;
+    }
+    if (event.deltaX !== 0 && /auto|scroll/.test(style.overflowX) && el.scrollWidth > el.clientWidth) {
+      const canMove = event.deltaX > 0 ? el.scrollLeft + el.clientWidth < el.scrollWidth - 1 : el.scrollLeft > 0;
+      if (canMove) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * 未开 scrollable 时拦截滚轮，避免滚动穿透到背后页面。
+ * 面板里还能继续滚动的元素放行，交给它自己滚；滚到尽头后照常拦截，滚动不会再传到页面。
+ */
+function onRootWheel(event: WheelEvent) {
+  if (props.scrollable || penetrable.value || canScrollInPath(event)) {
+    return;
+  }
+  event.preventDefault();
 }
 
 function onHeaderMouseDown(event: MouseEvent) {
@@ -644,11 +720,20 @@ function onHeaderMouseDown(event: MouseEvent) {
   const onUp = () => {
     window.removeEventListener("mousemove", onMove);
     window.removeEventListener("mouseup", onUp);
+    stopDrag = null;
   };
 
+  // 上一次拖拽若没收到 mouseup（如在窗口外松开），先清理再开始新的
+  stopDrag?.();
+  stopDrag = onUp;
   window.addEventListener("mousemove", onMove);
   window.addEventListener("mouseup", onUp);
 }
+
+// 打开期间挂载目标变化时重新解析，Teleport 会把内容移到新目标
+watch([() => props.appendTo, () => props.appendToBody], () => {
+  if (mounted.value) resolveTeleportTarget();
+});
 
 watch(
   mergedOpen,
@@ -785,6 +870,9 @@ watch(
 onBeforeUnmount(() => {
   clearTimers();
   stopMotion(backdropRef.value);
+  // 拖拽中卸载时 window 上的监听等不到 mouseup，需要主动移除
+  stopDrag?.();
+  unregisterOverlay(overlayId);
 
   if (bodyLockTimer) {
     clearTimeout(bodyLockTimer);
@@ -815,11 +903,8 @@ defineExpose({
     <slot name="trigger" :open="mergedOpen" />
   </div>
 
-  <Teleport :to="teleportTarget">
-    <div
-      v-if="mounted" v-show="active" :class="ui.root()" :style="rootStyle"
-      @wheel="(e) => !props.scrollable && !penetrable && e.preventDefault()"
-    >
+  <Teleport v-if="mounted" :to="resolvedTarget">
+    <div v-show="active" :class="ui.root()" :style="rootStyle" @wheel="onRootWheel">
       <!-- 遮罩常驻 DOM，由 Motion 与面板同步驱动。 -->
       <div
         v-if="props.modal || !penetrable" ref="backdropRef" :class="ui.backdrop()"
@@ -833,12 +918,13 @@ defineExpose({
           :destroy="props.destroyOnClose" :custom-class="cn(ui.panelWrapper(), 'transform-gpu')"
           @after-enter="onOpened" @after-leave="onClosed"
         >
+          <!-- 关闭了自动继承：id、style、data-*、aria-* 等透传属性落在面板上，与 Drawer 一致 -->
           <div
-            ref="panelRef" :class="cn(ui.panel(), 'will-change-transform')" :style="panelStyle" tabindex="-1"
+            v-bind="$attrs" ref="panelRef" :class="cn(ui.panel(), 'will-change-transform')" :style="panelStyle" tabindex="-1"
             role="dialog" :aria-modal="true" :aria-labelledby="props.title && !$slots.header ? titleId : undefined"
             :aria-describedby="mergedDescribe && !$slots.header ? descriptionId : undefined" @click.stop
           >
-            <div v-if="headerVisible" :class="ui.header()" @mousedown="onHeaderMouseDown">
+            <div v-if="isHeaderVisible()" :class="ui.header()" @mousedown="onHeaderMouseDown">
               <div :class="ui.headerContent()">
                 <slot name="header" :open="mergedOpen" :close="handleClose">
                   <span
@@ -865,7 +951,7 @@ defineExpose({
               <slot v-else :open="mergedOpen" :close="handleClose" />
             </div>
 
-            <div v-if="footerVisible" :class="ui.footer()">
+            <div v-if="isFooterVisible()" :class="ui.footer()">
               <slot
                 name="footer" :open="mergedOpen" :close="handleClose" :confirm="onConfirmClick"
                 :cancel="onCancelClick"

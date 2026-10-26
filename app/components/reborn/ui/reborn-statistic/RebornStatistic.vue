@@ -3,7 +3,7 @@ import type { ClassValue } from 'tailwind-variants';
 import type { CSSProperties } from 'vue';
 import type { StatisticUI } from './reborn-statistic.config';
 import { animate } from 'motion-v';
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue';
 import { cn } from '~/lib/utils';
 import { statisticTheme } from './reborn-statistic.config';
 import { formatStatistic } from './reborn-statistic.utils';
@@ -48,10 +48,10 @@ const props = withDefaults(defineProps<StatisticProps>(), {
   ui: () => ({}),
 });
 
-const motionReady = ref(false);
-const reducedMotion = ref(false);
+const motionReady = shallowRef(false);
+const reducedMotion = shallowRef(false);
 const targetValue = computed(() => Number.isFinite(props.value) ? props.value : 0);
-const currentValue = ref(targetValue.value);
+const currentValue = shallowRef(targetValue.value);
 let media: MediaQueryList | undefined;
 let playback: ReturnType<typeof animate> | undefined;
 let generation = 0;

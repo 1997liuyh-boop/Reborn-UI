@@ -99,9 +99,11 @@ const items: AnchorItem[] = [
 
 横向下标记只有贴底的滑块一种形态，传 `dot` / `hollow` 会被收敛成 `bar` 渲染——圆点是骑在竖轨道上的形态，压到横轨道上没有对应的画法。
 
+横向的轨道线横贯列表全宽，列表宽度跟随根节点。根节点是块级元素，但放进 `items-start` / `items-center` 的纵向 flex 容器时会收缩到链接总宽，轨道线只铺到最后一个链接为止；要让它与下方内容区等宽，给锚点加 `class="w-full"`。
+
 ```vue
 <template>
-  <RebornAnchor direction="horizontal" container="#doc-body">
+  <RebornAnchor direction="horizontal" container="#doc-body" class="w-full">
     <RebornAnchorLink href="#install" title="安装" />
     <RebornAnchorLink href="#usage" title="基础用法" />
   </RebornAnchor>
@@ -136,7 +138,7 @@ const items: AnchorItem[] = [
 
 | `type` | 表现 | 典型用途 |
 | --- | --- | --- |
-| `default`（默认） | 列表上常驻一条 `gray-2` 轨道线 | 侧边目录，轨道线本身就是章节的视觉主轴 |
+| `default`（默认） | 列表上常驻一条 `gray-3` 轨道线 | 侧边目录，轨道线本身就是章节的视觉主轴 |
 | `underline` | 不画轨道，只剩标记本身 | 链接稀疏、或标记用圆点时，少一条常驻线更干净 |
 
 `type="default"` 配 `marker="none"` 会留下一条永远不亮的轨道线，想彻底去掉标记请同时把 `type` 设为 `underline`。
@@ -334,7 +336,7 @@ const anchorRef = ref<InstanceType<typeof RebornAnchor>>();
 | 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
 | --- | --- | --- | --- |
 | `root` | 根 `div`（带 `data-reborn-anchor`） | `min-w-0` | 始终渲染；`class` 与 `ui.root` 合并落在这里。 |
-| `list` | 链接列表 `div`，标记的定位基准 | `relative flex min-w-0`；纵向加 `flex-col gap-1`，横向加 `flex-row items-end gap-6` | 始终渲染。`type="default"` 时在 `before` 伪元素上画 2px 的 `bg-gray-2` 轨道线（纵向贴左、横向贴底），`underline` 不画。 |
+| `list` | 链接列表 `div`，标记的定位基准 | `relative flex min-w-0`；纵向加 `flex-col gap-1`，横向加 `flex-row items-end gap-6` | 始终渲染。`type="default"` 时在 `before` 伪元素上画 2px 的 `bg-gray-3` 轨道线（纵向贴左、横向贴底），`underline` 不画。 |
 | `marker` | 跟随选中项滑动的 `span` | `pointer-events-none absolute transition-all duration-300`；纵向 `bar` 为 `h-[22px] w-[2px]`，`dot` / `hollow` 为 `size-[6px]`，横向为 `bottom-0 h-[2px]`；底色 `bg-<color>`（`neutral` 为 `bg-gray-9`） | 归一化后的 `marker` 为 `none`（含 `false`）时节点不渲染，此键失效。位置（`top` 或 `left` / `width`）由组件测量后写成行内样式，类名改不动位置；尚无选中项时行内 `opacity: 0`。 |
 | `item` | 单个链接与其子链接共用的外层 `div` | `flex min-w-0 flex-col` | 每个 `RebornAnchorLink` 渲染一个；写在 `RebornAnchorLink` 上的 `class` 也落在这一层。 |
 | `link` | 链接 `a` 节点 | `flex min-w-0 cursor-pointer items-center text-base no-underline transition-colors`；纵向加 `py-1 pl-4.5`，横向加 `pb-1`；未选中 `text-gray-8`，选中 `font-medium text-<color>`，悬浮 `hover:text-<color>` | 始终渲染。选中与未选中共用同一个 `ui.link`，要单独改选中态请用 `data-[anchor-active=true]:` 前缀。 |
@@ -346,7 +348,7 @@ const anchorRef = ref<InstanceType<typeof RebornAnchor>>();
   <RebornAnchor
     container="#doc-body"
     :ui="{
-      list: 'before:bg-gray-3',
+      list: 'before:bg-gray-4',
       marker: 'w-[3px]',
       link: 'text-sm data-[anchor-active=true]:font-semibold',
       linkTitle: 'max-w-40',
@@ -368,7 +370,7 @@ const anchorRef = ref<InstanceType<typeof RebornAnchor>>();
 </template>
 ```
 
-`type="default"` 的轨道线固定用 `bg-gray-2`，不跟随 `color`——它是背景而非强调色。要改轨道颜色请用 `ui.list` 覆盖 `before:bg-*`。空心标记中间那个 2px 的「洞」同理，固定用 `bg-gray-1`（与浅色面板底色一致），换深色底时需要用 `ui.marker` 覆盖 `after:bg-*`。
+`type="default"` 的轨道线固定用 `bg-gray-3`，不跟随 `color`——它是背景而非强调色。没有用更浅的 `gray-2`：浅色主题里 `bg-elevated` 的底色就是 `gray-2`（或只差两三个色值），锚点放进填充面板时轨道线会与底色重合，`default` 与 `underline` 看不出区别。要改轨道颜色请用 `ui.list` 覆盖 `before:bg-*`，换色时同样要避开所在面板的底色。空心标记中间那个 2px 的「洞」同理，固定用 `bg-gray-1`（与浅色面板底色一致），换深色底时需要用 `ui.marker` 覆盖 `after:bg-*`。
 
 ## 注意事项
 
@@ -377,6 +379,7 @@ const anchorRef = ref<InstanceType<typeof RebornAnchor>>();
 - **点击定位后高亮钉在被点的链接上，直到滚动位置变化**。落点线与触发线之间隔着 `bound`，紧随其后的小节此时可能已经越线（点「API」时它下面紧跟的「Props」就是），若照常按位置判定，补间结束那一帧的滚动事件会把高亮抢走。因此组件记下落点的滚动值：滚动值没变就维持点击时的选中，用户一滚动即恢复按位置判定。`scrollTo(href)` 同样如此。
 - **容器滚到底时强制选中最后一项**。末尾区块不足一屏高时，它的顶部永远越不过触发线，按常规判定会停在倒数第二项。因此触底（`scrollTop >= maxScroll - 1`）时直接选中最后一个链接——这是有意为之，不是判定失灵。
 - **没有 `v-model`，选中态只能从 `change` 事件读**。与 Element Plus 一致：选中项是由滚动位置算出来的结果，从外部写回去没有意义。需要在别处显示当前章节，就在 `change` 回调里把 `href` 存下来。
+- **链接集合变化后会按当前位置重新判定一次选中项**。`items` 异步到达、或常驻布局里的锚点随路由换了一批链接时，即使容器没有滚动，组件也会在下一帧重新判定，不会把高亮留在旧链接上；结果与之前不同就会多触发一次 `change`。补间进行中和点击定位的落点上不做这次判定。
 - **`click` 在滚动之前触发，`event.preventDefault()` 可以接管**。组件先外发 `click`，再检查 `defaultPrevented`：被拦下就既不滚动也不改选中态，跳转完全交给使用方（比如改成路由跳转）。未被拦下时组件会自行 `preventDefault()`，不让浏览器再做一次原生锚点跳转。写了 `target` 的链接是第三条路：组件既不 `preventDefault()` 也不滚动，整个交给浏览器按 `target` 打开。
 - **默认不写地址栏，`replace` 才写，且只用 `replaceState`**。不填 `replace` 时点击链接地址栏不变。填了则滚动照做，发起滚动后立即用 `history.replaceState` 把 `href` 换上去（不等补间结束）。Ant Design 默认是 `pushState`、`replace` 只是换个写法，这里没有跟：组件此前从不动地址栏，改成默认 push 会让已经接入的页面突然开始堆历史记录，返回键要连按好几次才退得出去。
 - **`container` 传选择器时在客户端挂载后才解析，查不到就什么都不监听**。SSR 阶段不查询 DOM；挂载后 `document.querySelector` 落空时组件不会回落到窗口——宁可不动，也好过监听错对象。点了链接没反应，先确认这个选择器、以及 `href` 指向的 `id` 是否真的存在于页面上。

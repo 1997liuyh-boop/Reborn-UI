@@ -1,7 +1,8 @@
 <script lang="ts" setup>
+import { useId } from "vue";
+
 interface Props {
   tabs: string[];
-  activeTab: string;
   margin?: number;
   class?: string;
   blurStdDeviation?: number;
@@ -11,9 +12,9 @@ const props = withDefaults(defineProps<Props>(), {
   margin: 20,
   blurStdDeviation: 6,
 });
-const emit = defineEmits<{
-  (e: "update:activeTab", tab: string): void;
-}>();
+
+const activeTab = defineModel<string>("activeTab", { required: true });
+const filterId = `morphing-tabs-${useId()}`;
 </script>
 
 <template>
@@ -21,7 +22,7 @@ const emit = defineEmits<{
     v-if="props.tabs.length"
     class="relative"
     :class="[props.class]"
-    style="filter: url(&quot;#exclusionTabsGoo&quot;)"
+    :style="{ filter: `url(#${filterId})` }"
   >
     <button
       v-for="tab in props.tabs"
@@ -30,30 +31,23 @@ const emit = defineEmits<{
       :style="{
         margin: `0 ${activeTab === tab ? props.margin : 0}px`,
       }"
-      @click="emit('update:activeTab', tab)"
+      @click="activeTab = tab"
     >
       {{ tab }}
     </button>
 
     <div class="absolute w-full">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        version="1.1"
-      >
+      <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
         <defs>
           <filter
-            id="exclusionTabsGoo"
+            :id="filterId"
             x="-50%"
             y="-50%"
             width="200%"
             height="200%"
             color-interpolation-filters="sRGB"
           >
-            <feGaussianBlur
-              in="SourceGraphic"
-              :stdDeviation="blurStdDeviation"
-              result="blur"
-            />
+            <feGaussianBlur in="SourceGraphic" :stdDeviation="blurStdDeviation" result="blur" />
             <feColorMatrix
               in="blur"
               type="matrix"
@@ -64,16 +58,10 @@ const emit = defineEmits<{
               0 0 0 36 -12"
               result="goo"
             />
-            <feComposite
-              in="SourceGraphic"
-              in2="goo"
-              operator="atop"
-            />
+            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
           </filter>
         </defs>
       </svg>
     </div>
   </div>
 </template>
-
-<style></style>

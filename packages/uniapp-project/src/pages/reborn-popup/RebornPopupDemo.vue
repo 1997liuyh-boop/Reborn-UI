@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornImage from '@/components/reborn-image/RebornImage.vue'
@@ -9,14 +9,14 @@ import RebornPopup from '@/components/reborn-popup/RebornPopup.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 import type { PopupPosition } from '@/components/reborn-popup/reborn-popup.config'
 
-const direction = ref<PopupPosition>('bottom')
-const show = ref(false)
-const showMask = ref(true)
-const showHeader = ref(true)
-const showClose = ref(true)
-const swipeClose = ref(true)
-const rounded = ref(true)
-const src = ref('https://cms-image.leyifan.cn/img_reborn/ques-4.jpg')
+const direction = shallowRef<PopupPosition>('bottom')
+const show = shallowRef(false)
+const showMask = shallowRef(true)
+const showHeader = shallowRef(true)
+const showClose = shallowRef(true)
+const swipeClose = shallowRef(true)
+const round = shallowRef(true)
+const src = shallowRef('https://cms-image.leyifan.cn/img_reborn/ques-4.jpg')
 const directions: { label: string; value: PopupPosition }[] = [
   { label: '底部', value: 'bottom' },
   { label: '顶部', value: 'top' },
@@ -53,14 +53,14 @@ const directions: { label: string; value: PopupPosition }[] = [
         </view>
         <view class="text-sm text-gray-500 flex items-center gap-2 justify-between">
           是否圆角：
-          <RebornSwitch v-model="rounded" activeLabel="显示" inactiveLabel="隐藏" />
+          <RebornSwitch v-model="round" activeLabel="显示" inactiveLabel="隐藏" />
         </view>
         <RebornButton @click="show = true">打开弹窗</RebornButton>
       </view>
     </RebornCard>
 
     <RebornPopup v-model="show" :position="direction" :show-mask="showMask" :show-header="showHeader"
-      :show-close="showClose" :swipe-close="swipeClose" :rounded="rounded">
+      :show-close="showClose" :swipe-close="swipeClose" :round="round">
       <template #header>
         <text class="text-24 text-gray-9">方向：{{ direction }}</text>
       </template>

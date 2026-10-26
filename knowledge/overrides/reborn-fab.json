@@ -15,6 +15,7 @@
     "expandable 默认值双端不同（web 默认 true、uniapp 默认 false）：为 false 时点击直接触发 click 事件，不会展开动作面板。",
     "draggable 拖拽结束后按左右侧自动吸附并决定展开方向；attract 默认 true 自动吸边。",
     "inactiveIcon/activeIcon 在 Web 版默认依赖 nuxt-icon 图标体系。",
-    "展开状态可用 v-model 绑定；variant 支持 float/capsule/circle 三种形态。"
+    "展开状态可用 v-model 绑定，点击即立即写回（web 端不再延迟 400ms，与 uniapp 一致）；variant 支持 float/capsule/circle 三种形态。",
+    "两端 modelValue 默认 undefined；active 仅提供非受控初值，不发送初始化更新。显式 false/undefined/null 按收起处理，受控交互立即发送 update:modelValue，旧悬停关闭延迟失效。"
   ]
 }

@@ -13,7 +13,7 @@ import RebornAvatar from '~/components/reborn/ui/reborn-avatar/RebornAvatar.vue'
   <div class="flex items-center gap-4">
     <RebornAvatar
       :size="48"
-      :src="avatarPeople[0]!.src"
+      :src="(avatarPeople[0]?.src ?? '')"
       alt="林舟"
     />
     <RebornAvatar

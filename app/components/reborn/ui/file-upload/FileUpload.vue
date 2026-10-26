@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { HTMLAttributes } from "vue";
 import { Motion } from "motion-v";
-import { ref } from "vue";
+import { shallowRef, useTemplateRef } from "vue";
 
 interface FileUploadProps {
   class?: HTMLAttributes["class"];
@@ -10,16 +10,18 @@ interface FileUploadProps {
 defineProps<FileUploadProps>();
 
 const emit = defineEmits<{
-  (e: "onChange", files: File[]): void;
+  /** 选择或拖入文件后触发，参数为当前累计的全部文件（副本，修改它不影响组件内部列表） */
+  change: [files: File[]];
 }>();
 
-const fileInputRef = ref<HTMLInputElement | null>(null);
-const files = ref<File[]>([]);
-const isActive = ref<boolean>(false);
+const fileInputRef = useTemplateRef<HTMLInputElement>("fileInputRef");
+// 文件列表每次整体替换，不就地修改
+const files = shallowRef<File[]>([]);
+const isActive = shallowRef(false);
 
 function handleFileChange(newFiles: File[]) {
   files.value = [...files.value, ...newFiles];
-  emit("onChange", files.value);
+  emit("change", [...files.value]);
 }
 
 function onFileChange(e: Event) {
@@ -67,14 +69,14 @@ function handleDrop(e: DragEvent) {
           @change="onFileChange"
         />
 
-        <!-- Grid pattern -->
+        <!-- 背景网格（默认插槽） -->
         <div
           class="pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
         >
           <slot />
         </div>
 
-        <!-- Content -->
+        <!-- 提示文案与文件列表 -->
         <div class="flex flex-col items-center justify-center">
           <p
             class="relative z-20 font-sans text-base font-bold text-neutral-700 dark:text-neutral-300"
@@ -152,10 +154,10 @@ function handleDrop(e: DragEvent) {
                 :animate="
                   isActive
                     ? {
-                        x: 20,
-                        y: -20,
-                        opacity: 0.9,
-                      }
+                      x: 20,
+                      y: -20,
+                      opacity: 0.9,
+                    }
                     : {}
                 "
               >

@@ -1,13 +1,16 @@
 import type { ClassValue } from "clsx";
-import type { ComputedRef, ModelRef, VNodeChild } from "vue";
+import type { ComputedRef, InjectionKey, Ref, VNodeChild } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 import type { TooltipUI } from "../reborn-tooltip/reborn-tooltip.config";
 import type { Placement } from "~/lib/placement";
 import { Comment as CommentVNode, isVNode, Static as StaticVNode } from "vue";
 import { tv } from "~/lib/tv";
 
-/** 父子组件通信用的 provide/inject 键 */
-export const MENU_INJECTION_KEY = "reborn-menu";
+/**
+ * 父子组件通信用的 provide/inject 键。
+ * 用带类型的 Symbol：provide 一侧按 MenuContext 校验字段，inject 一侧直接拿到类型，不再靠泛型断言
+ */
+export const MENU_INJECTION_KEY: InjectionKey<MenuContext> = Symbol("reborn-menu");
 
 const menuModes = ["horizontal", "vertical"] as const;
 const menuTriggers = ["hover", "click"] as const;
@@ -189,10 +192,10 @@ export interface MenuTooltipConfig {
  * 唯一定义在此处，禁止在各子组件里内联重复声明。
  */
 export interface MenuContext {
-  /** 当前选中项的完整路径 */
-  selectedKeys: ModelRef<string[]>;
-  /** 当前展开的子菜单标识集合 */
-  openedMenus: { value: string[] };
+  /** 当前选中项的完整路径（只读；修改走 handleSelect） */
+  selectedKeys: Readonly<Ref<readonly string[]>>;
+  /** 当前展开的子菜单标识集合（只读；修改走 handleOpen / handleClose / toggleSubMenu） */
+  openedMenus: Readonly<Ref<readonly string[]>>;
   /** 当前层级之上的父级路径 */
   parentIndexPath: ComputedRef<string[]>;
   /** 菜单模式 */
@@ -236,8 +239,6 @@ export interface MenuContext {
   collapseTransition: ComputedRef<boolean>;
   /** 折叠态一级菜单项的文字提示配置，为 false 时关闭 */
   tooltip: ComputedRef<false | MenuTooltipConfig>;
-  /** 根节点计算出的样式函数集合 */
-  ui: ComputedRef<Record<string, (opts?: Record<string, unknown>) => string>>;
   /** 用户传入的样式覆盖对象 */
   uiOverrides: ComputedRef<MenuUI>;
   /** 选中菜单项 */
@@ -248,10 +249,10 @@ export interface MenuContext {
   handleClose: (index: string, indexPath: string[]) => void;
   /** 切换子菜单展开状态 */
   toggleSubMenu: (index: string, indexPath: string[]) => void;
-  /** 清除所有延时关闭定时器 */
+  /** 清除所有延时关闭任务 */
   clearCloseTimer?: () => void;
-  /** 注册一个延时关闭定时器 */
-  registerCloseTimer?: (timer: ReturnType<typeof setTimeout>) => void;
+  /** 安排一个延时关闭任务：定时器由根节点统一持有，触发后自删；返回取消函数 */
+  scheduleClose?: (task: () => void, delay: number) => () => void;
   /** 注册浮层元素，供点击外部判定使用 */
   registerPopup?: (el: HTMLElement) => void;
   /** 注销浮层元素 */
@@ -260,10 +261,10 @@ export interface MenuContext {
   scheduleCloseAll?: () => void;
   /** 取消全局兜底关闭 */
   cancelCloseAll?: () => void;
-  /** 通知父级重新计算高度 */
-  notifyResize?: () => void;
-  /** 子菜单挂载时向根节点报到，供「默认全部展开」判定使用 */
+  /** 子菜单挂载时向根节点报到：登记完整路径（供 expose 的 open / close 使用），并参与「默认全部展开」判定 */
   registerSubMenu?: (index: string, indexPath: string[], disabled: boolean) => void;
+  /** 子菜单卸载时注销登记的路径 */
+  unregisterSubMenu?: (index: string, indexPath: string[]) => void;
 }
 
 /** 平铺展开时每下沉一层子菜单增加的缩进量（像素） */

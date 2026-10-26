@@ -405,7 +405,7 @@ function beforeChange() {
 | 属性名          | 类型                                                                                   | 默认值      | 描述                                                                                                                              |
 | --------------- | -------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `modelValue`    | `any`                                                                                  | `-`         | 受控开关值，与 `activeValue` 严格相等时为开态。                                                                                   |
-| `defaultValue`  | `any`                                                                                  | `-`         | 非受控模式下的初始值（缺省取 `inactiveValue`）。                                                                                  |
+| `defaultValue`  | `any`                                                                                  | `-`         | 非受控模式下的初始值（缺省取 `inactiveValue`）；绑定值被父级置回 `undefined` 时也回到该值。                                       |
 | `activeValue`   | `any`                                                                                  | `true`      | 打开状态对应的绑定值，可为字符串/数字等任意值。                                                                                   |
 | `inactiveValue` | `any`                                                                                  | `false`     | 关闭状态对应的绑定值。                                                                                                            |
 | `activeLabel`   | `string`                                                                               | `-`         | 开启状态一侧显示的文案，字号固定 14px（`text-base`），不随 `size` 变化。                                                          |
@@ -419,7 +419,7 @@ function beforeChange() {
 | `size`          | `"sm" \| "md" \| "lg"`                                                                 | `"md"`      | 尺寸，三档规格见「尺寸：size」；显式设置时优先于所在表单的 `size`，未设置时跟随表单。                                                                      |
 | `color`         | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 语义色：开启态轨道与联动文案取该色。                                                                                              |
 | `beforeChange`  | `() => boolean \| Promise<boolean>`                                                    | `-`         | 切换前拦截钩子：返回 `false`、Promise 解析为 `false` 或被 reject 时停止切换。                                                     |
-| `class`         | `any`                                                                                  | `-`         | 追加到根节点的自定义类名；其余未声明的 attrs 透传到内部隐藏的原生 checkbox。                                                      |
+| `class`         | `any`                                                                                  | `-`         | 追加到根节点的自定义类名。未声明的 attrs 分两路：`style` 与 `data-*` 落到根节点，其余（`id`、`name`、`aria-*`、原生监听等）透传到内部隐藏的原生 checkbox。 |
 | `ui`            | `object`                                                                               | `-`         | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                                                                      |
 :::
 
@@ -429,7 +429,7 @@ function beforeChange() {
 | 属性名          | 类型                                                                                   | 默认值      | 描述                                                                                                                              |
 | --------------- | -------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `modelValue`    | `any`                                                                                  | `-`         | 受控开关值，与 `activeValue` 严格相等时为开态。                                                                                   |
-| `defaultValue`  | `any`                                                                                  | `-`         | 非受控模式下的初始值（缺省取 `inactiveValue`）。                                                                                  |
+| `defaultValue`  | `any`                                                                                  | `-`         | 非受控模式下的初始值（缺省取 `inactiveValue`）；绑定值被父级置回 `undefined` 时也回到该值。                                                                                  |
 | `activeValue`   | `any`                                                                                  | `true`      | 打开状态对应的绑定值，可为字符串/数字等任意值。                                                                                   |
 | `inactiveValue` | `any`                                                                                  | `false`     | 关闭状态对应的绑定值。                                                                                                            |
 | `activeLabel`   | `string`                                                                               | `-`         | 开启状态一侧显示的文案，字号固定 28rpx，不随 `size` 变化。                                                                        |
@@ -501,6 +501,7 @@ function beforeChange() {
 | 名称    | 签名         | 描述                                                                |
 | ------- | ------------ | ------------------------------------------------------------------- |
 | `focus` | `() => void` | 仅为根节点追加 `is-focused` 类名供样式联动，没有原生焦点行为。 |
+| `blur` | `() => void` | 移除 `is-focused` 样式标记，不操作原生焦点。 |
 :::
 
 ::
@@ -584,7 +585,7 @@ function beforeChange() {
 | 点内文本插槽     | 点内模式渲染 `#activeLabel` / `#inactiveLabel`                      | 点内模式只显示属性文本                                            |
 | `autoWidth`      | 容器与文案按内容定宽，文本不截断                                    | 只放宽轨道，文本仍带截断                                          |
 | `ui` 键          | 有 `inlineWrap`，`input` 对应隐藏 checkbox                          | 有 `loading`，`input` 无对应节点                                  |
-| 键盘焦点         | `focus()` 聚焦原生 input，`focus-visible` 有色环                    | `focus()` 仅添加 `is-focused` 类名                                |
+| 键盘操作         | `focus()` 聚焦原生 input，`focus-visible` 有色环；聚焦后按空格切换，与点击走同一入口（同样经过 `beforeChange`） | `focus()` 仅添加 `is-focused` 类名，无键盘切换 |
 | 波纹重播机制     | 自增 `:key` 重建波纹节点，扩散 8px                                  | 交替挂两组同构关键帧类（小程序端改 key 不重播），扩散 16rpx       |
 
 ## 注意事项

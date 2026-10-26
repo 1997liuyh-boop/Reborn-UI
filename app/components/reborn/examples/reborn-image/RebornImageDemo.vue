@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DemoBlock, DemoItem, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef } from 'vue';
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { imageMode, previewToolbarTokens } from "~/components/reborn/ui/reborn-image/reborn-image.config";
 import RebornImage from "~/components/reborn/ui/reborn-image/RebornImage.vue";
@@ -59,10 +59,10 @@ const defaultState: Record<string, any> = {
   magnifierSize: 100,
 };
 
-const state = ref<Record<string, any>>({ ...defaultState });
+const state = shallowRef<Record<string, any>>({ ...defaultState });
 
 /** 演练场实例的事件回显 */
-const lastEvent = ref("等待加载");
+const lastEvent = shallowRef("等待加载");
 
 /** load 事件回显原图尺寸：mode 的效果取决于原图与容器的宽高比 */
 function onPlaygroundLoad(e: Event) {
@@ -161,7 +161,7 @@ const imageCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 「加载与失败」里失败实例的 error 事件回显 */
-const errorEcho = ref("等待加载");
+const errorEcho = shallowRef("等待加载");
 
 /** 「懒加载」的图片，以及各自是否已触发 load */
 const lazyImages = [LANDSCAPE, PORTRAIT, LANDSCAPE_ALT, QR_CODE];
@@ -173,7 +173,7 @@ const lazyLoadedCount = computed(() => lazyLoaded.value.filter(Boolean).length);
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="imageCode" component-name="RebornImage"
-      title="交互演练场" description="调节左侧参数，查看裁剪模式、尺寸与圆角的效果；单击图片打开预览，开启放大镜后悬停查看局部。"
+      title="交互演练场" description="调节上方参数，查看裁剪模式、尺寸与圆角的效果；单击图片打开预览，开启放大镜后悬停查看局部。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">

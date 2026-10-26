@@ -4,12 +4,10 @@ import type { paginationSizes, PaginationUI } from "./reborn-pagination.config";
  * RebornPagination 分页组件 (Web 版)
  * 支持布局组合、简洁模式、页码折叠与完整插槽定制。
  */
-import { computed, ref, watch } from "vue";
+import { computed, shallowRef, watch } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import theme from "./reborn-pagination.config";
-
-defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<PaginationProps>(), {
   total: 0,
@@ -198,12 +196,13 @@ const prevDisabled = computed(() => props.disabled || currentPage.value <= 1);
 const nextDisabled = computed(() => props.disabled || currentPage.value >= totalPages.value);
 
 /** 跳转输入框的值 */
-const jumperValue = ref<number | null>(null);
+const jumperValue = shallowRef<number | null>(null);
 
 /**
  * 设置当前页：钳制到有效范围，仅在实际变化时同步并触发事件
  */
 function setPage(page: number) {
+  if (pagerDisabled.value) return;
   const next = Math.min(Math.max(Math.floor(page) || 1, 1), totalPages.value);
   const current = Math.floor(Number(modelValue.value)) || 1;
   if (next === current) return;
@@ -254,18 +253,23 @@ function handleJumperConfirm(value: number | null) {
   jumperValue.value = null;
 }
 
-/** 处理每页条数变化：同步 model、触发事件并钳制当前页 */
+/** 处理每页条数变化：同步 model 并触发事件，当前页的钳制交给下方唯一的钳制 watcher */
 function handleSizeChange(size: number) {
   pageSizeModel.value = size;
   emit("size-change", size);
-  clampPage();
 }
 
-/** 外部修改当前页越界时自动钳制 */
-watch(modelValue, () => clampPage());
-
-/** 外部修改每页条数时钳制当前页 */
-watch(pageSizeModel, () => clampPage());
+/**
+ * 当前页越界时钳制并回写 v-model：外部改当前页、改每页条数、total 变小都走这一个入口。
+ * 三个来源合成一个 watcher，一轮只钳制一次：totalPages 由每页条数派生，分开监听时同一轮会各钳制一次，
+ * 受控绑定下第二次读到的仍是旧页码，current-change 与 update:modelValue 就会各派发两次。
+ * 只有 total 变化且 total 为 0 时跳过：多半处在加载期，避免把页码拉回第 1 页。
+ */
+watch([modelValue, pageSizeModel, totalPages], ([page, size], [prevPage, prevSize]) => {
+  const onlyTotalChanged = page === prevPage && size === prevSize;
+  if (onlyTotalChanged && props.total <= 0) return;
+  clampPage();
+});
 
 /**
  * 样式映射：按激活/禁用态逐项生成
@@ -378,7 +382,7 @@ defineExpose({
               •••
             </span>
             <!-- 页码项：可通过 #pager-item 插槽自定义 -->
-            <slot v-else name="pager-item" :page="item.page" :active="item.active" :disabled="pagerDisabled">
+            <slot v-else name="pager-item" :page="item.page" :active="item.active" :disabled="pagerDisabled" :select="() => setPage(item.page)">
               <button type="button" :class="ui.pagerItem({ active: item.active, disabled: pagerDisabled })"
                 :disabled="pagerDisabled" @click="setPage(item.page)">
                 {{ item.page }}

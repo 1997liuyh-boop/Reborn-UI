@@ -7,7 +7,7 @@ tags: [vue, tailwind, time-picker, input]
 badge: Update
 ---
 
-::ComponentViewer{demoFile="RebornTimePickerDemo.vue" config="RebornTimePickerConfig" componentId="reborn-time-picker" dependencies="dayjs" :componentFiles='["RebornTimePicker.vue", "RebornTimePanel.vue", "reborn-time-picker.config.ts", "reborn-time-panel.config.ts", "time-picker.utils.ts", "index.ts"]'}
+::ComponentViewer{demoFile="RebornTimePickerDemo.vue" config="RebornTimePickerConfig" componentId="reborn-time-picker" dependencies="dayjs" :componentFiles='["RebornTimePicker.vue", "RebornTimePanel.vue", "TimePanelOptions.vue", "reborn-time-picker.config.ts", "reborn-time-panel.config.ts", "time-picker.utils.ts", "index.ts"]'}
 ::
 
 ## 简介
@@ -414,12 +414,16 @@ const disabledMinutes = (hour: number) => (hour === 12 ? [0, 1, 2] : []);
 
 面板事件为 `update:modelValue`、`change`、`clear`、`confirm`；实例暴露 `syncColumns()`、`clear()`、`confirm()`。面板在隐藏容器中挂载后，容器显示时可调用 `syncColumns()` 重新定位滚动列。选择器已在浮层进入完成后自动调用。
 
+空值时面板挂载前（包括服务端渲染与水合的首帧）选中 `00:00:00`（经禁用规则校正），挂载后再切到当前时刻，服务端与客户端的首帧选中项因此一致；选择器里的面板只在展开时挂载，不受影响。
+
 ## 注意事项
 
 - **打开不写值。** 空值打开时只以当前时刻初始化局部选择；选择选项、确认或点击「此刻」后才写入绑定值。
 - **选项变动即时提交。** 「确定」用于结束选择而不是事务提交；关闭面板或按 Escape 不撤销已经点击或滚动提交的值，只丢弃未提交的输入草稿。
 - **输入严格匹配格式。** `HH:mm:ss` 需要补齐两位数；`24:00:00`、超范围分秒和被禁用的时间均触发 `invalid`，外部关闭会恢复已提交值。
 - **「此刻」遵循限制。** 当前时间不可选时按列校正到可用项，没有可用组合则不确认、不写入；外部传入的不合法值不会在挂载时被自动改写。
+- **毫秒列的渲染量大。** 为了循环滚动，每列都渲染三份选项，毫秒列单列就有 3000 个节点，范围模式再翻倍；每次选择都要比对这些节点。只在确实需要毫秒精度时使用 `SSS` 格式。
+- **禁用回调请传稳定的函数。** 回调换成新函数时面板会按新规则重新校正当前选择；父级写内联箭头函数时每次重渲染都会触发一次校正，结果不变但多一次计算。
 - **时间不是跨日时长。** 小时为 0–23、分秒为 0–59；范围自动排序，不用于表达跨午夜的倒序区间。
 - **单点输入与范围模式不同。** `allowInput` 仅对默认单点触发器生效；`isRange=true` 或自定义触发器时通过面板选择。
 - **浮层默认脱离父容器。** `portal=true` 传送到 body；关闭后可能被父级 overflow 裁剪。默认 `closeOn='mousedown'` 下页面滚动会收起浮层，需要边滚动边对照时改用 `close-on="click"`。

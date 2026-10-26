@@ -5,11 +5,12 @@
  * 开启 hide-content 只留标签栏：面板内容在缩略图里没有信息量，还会撑高卡片。
  */
 import type { TabKey } from '~/components/reborn/ui/reborn-tabs/reborn-tabs.config'
-import { ref } from 'vue'
+import { shallowRef } from "vue";
+
 import RebornTabPane from '~/components/reborn/ui/reborn-tabs/RebornTabPane.vue'
 import RebornTabs from '~/components/reborn/ui/reborn-tabs/RebornTabs.vue'
 
-const activeKey = ref<TabKey>('overview')
+const activeKey = shallowRef<TabKey>('overview')
 </script>
 
 <template>
@@ -19,15 +20,15 @@ const activeKey = ref<TabKey>('overview')
       hide-content
     >
       <RebornTabPane
-        key="overview"
+        key="overview" pane-key="overview"
         title="概览"
       />
       <RebornTabPane
-        key="detail"
+        key="detail" pane-key="detail"
         title="明细"
       />
       <RebornTabPane
-        key="log"
+        key="log" pane-key="log"
         title="日志"
       />
     </RebornTabs>

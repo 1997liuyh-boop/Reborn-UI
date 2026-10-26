@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { uuid } from '@/lib/file'
 import { tv } from '@/lib/tv'
@@ -173,17 +173,24 @@ defineSlots<{
 const { proxy } = getCurrentInstance()!
 const { disabled: formDisabled, isError, validate } = useFormInject(props)
 
-const canvasId = ref(`reborn-signature-${uuid()}`)
-const canvasWidth = ref(0)
-const canvasHeight = ref(0)
+const canvasId = `reborn-signature-${uuid()}`
+const canvasWidth = shallowRef(0)
+const canvasHeight = shallowRef(0)
 const canvasRect = shallowRef<any>(null)
 const strokes = shallowRef<SignatureStroke[]>([])
 const undoneStrokes = shallowRef<SignatureStroke[]>([])
-const drawing = ref(false)
+const drawing = shallowRef(false)
 const currentStroke = shallowRef<SignatureStroke | null>(null)
 const canvasContext = shallowRef<any>(null)
 const canvasNode = shallowRef<any>(null)
-const pointCount = ref(0)
+const pointCount = shallowRef(0)
+let disposed = false
+let strokeVersion = 0
+let preparing = false
+let pendingEnd = false
+let pendingMoves: any[] = []
+let mountTimer: ReturnType<typeof setTimeout> | undefined
+const exportsPending = new Map<ReturnType<typeof setTimeout>, (error: Error) => void>()
 const b = tv(theme)
 const isDisabled = computed(() => formDisabled.value || props.disabled)
 const isReadonly = computed(() => props.readonly)
@@ -463,7 +470,7 @@ function createIncrementalContext() {
   // #endif
 
   // #ifndef MP-WEIXIN
-  return uni.createCanvasContext(canvasId.value, proxy)
+  return uni.createCanvasContext(canvasId, proxy)
   // #endif
 }
 
@@ -506,7 +513,7 @@ function drawAll() {
   // #endif
 
   // #ifndef MP-WEIXIN
-  const ctx = uni.createCanvasContext(canvasId.value, proxy)
+  const ctx = uni.createCanvasContext(canvasId, proxy)
   clearCanvas(ctx)
   strokes.value.forEach(stroke => drawStroke(ctx, stroke))
   ctx.draw(false)
@@ -519,6 +526,7 @@ function refreshCanvasRect(): Promise<boolean> {
       .in(proxy)
       .select('.reborn-signature__board')
       .boundingClientRect((rect: any) => {
+          if (disposed) { resolve(false); return }
         if (rect) {
           const prevWidth = canvasWidth.value
           const prevHeight = canvasHeight.value
@@ -538,14 +546,17 @@ function refreshCanvasRect(): Promise<boolean> {
 }
 
 async function initCanvas() {
+  if (disposed) return
   await nextTick()
   const sizeChanged = await refreshCanvasRect()
+  if (disposed) return
 
   // #ifdef MP-WEIXIN
   await new Promise<void>((resolve) => {
     const query = uni.createSelectorQuery().in(proxy)
-      ; (query.select(`#${canvasId.value}`) as any)
+      ; (query.select(`#${canvasId}`) as any)
         .fields({ node: true, size: true }, (res: any) => {
+          if (disposed) { resolve(); return }
           if (res?.node) {
             const canvas = res.node
             if (!canvasContext.value || canvasNode.value !== canvas || sizeChanged) {
@@ -573,8 +584,10 @@ async function initCanvas() {
 }
 
 async function prepareCanvasForStroke() {
+  if (disposed) return
   await nextTick()
   const sizeChanged = await refreshCanvasRect()
+  if (disposed) return
 
   // #ifdef MP-WEIXIN
   if (!canvasContext.value || sizeChanged) {
@@ -652,8 +665,14 @@ async function onTouchStart(event: any) {
     return
   }
 
-  // 横屏弹窗打开后布局可能变化，落笔前只同步坐标和必要的画布尺寸，避免反复重绘历史笔迹。
+  const version = ++strokeVersion
+  preparing = true
+  pendingEnd = false
+  pendingMoves = []
+  // 查询期间缓存移动和抬起事件，避免跨线程测量吞掉快速点按。
   await prepareCanvasForStroke()
+  if (disposed || version !== strokeVersion) return
+  preparing = false
 
   const point = getPoint(event)
   if (!point) {
@@ -678,6 +697,10 @@ async function onTouchStart(event: any) {
   pointCount.value += 1
   drawLatestStrokePart(stroke)
   emit('start', point)
+  const moves = pendingMoves
+  pendingMoves = []
+  for (const move of moves) onTouchMove(move)
+  if (pendingEnd) onTouchEnd()
 }
 
 function selectPenColor(color: string) {
@@ -689,6 +712,7 @@ function selectPenColor(color: string) {
 }
 
 function onTouchMove(event: any) {
+  if (preparing) { pendingMoves.push(event); return }
   if (!drawing.value || !currentStroke.value || !isInteractive.value) {
     return
   }
@@ -709,6 +733,7 @@ function onTouchMove(event: any) {
 }
 
 function onTouchEnd() {
+  if (preparing) { pendingEnd = true; return }
   if (!drawing.value || !currentStroke.value) {
     return
   }
@@ -726,6 +751,10 @@ function onTouchEnd() {
 }
 
 function clear() {
+  strokeVersion++
+  preparing = false
+  pendingMoves = []
+  pendingEnd = false
   strokes.value = []
   undoneStrokes.value = []
   currentStroke.value = null
@@ -818,17 +847,21 @@ function toPng(options?: { allowEmpty?: boolean }): Promise<string> {
 
   drawAll()
 
+  if (disposed) return Promise.reject(new Error('签名组件已卸载'))
   return new Promise((resolve, reject) => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      if (disposed) return
       const destWidth = canvasWidth.value * props.destScale
       const destHeight = canvasHeight.value * props.destScale
 
       // #ifdef MP-WEIXIN
       const query = uni.createSelectorQuery().in(proxy)
-        ; (query.select(`#${canvasId.value}`) as any)
+        ; (query.select(`#${canvasId}`) as any)
           .fields({ node: true }, (res: any) => {
+            if (disposed) return
             if (!res?.node) {
               const error = createError('未找到签名画布')
+              exportsPending.delete(timer)
               reject(error)
               return
             }
@@ -840,11 +873,13 @@ function toPng(options?: { allowEmpty?: boolean }): Promise<string> {
               destWidth,
               destHeight,
               success: (result: any) => {
+                exportsPending.delete(timer)
                 resolve(result.tempFilePath)
               },
               fail: (error: any) => {
                 createError(error?.errMsg || '签名导出失败')
-                reject(error)
+                exportsPending.delete(timer)
+              reject(error)
               },
             })
           })
@@ -854,30 +889,33 @@ function toPng(options?: { allowEmpty?: boolean }): Promise<string> {
       // #ifndef MP-WEIXIN
       uni.canvasToTempFilePath(
         {
-          canvasId: canvasId.value,
+          canvasId,
           fileType: props.fileType,
           quality: props.quality,
           destWidth,
           destHeight,
           success: (result) => {
-            resolve(result.tempFilePath)
+            exportsPending.delete(timer)
+                resolve(result.tempFilePath)
           },
           fail: (error) => {
             createError(error?.errMsg || '签名导出失败')
-            reject(error)
+            exportsPending.delete(timer)
+              reject(error)
           },
         },
         proxy,
       )
       // #endif
     }, 80)
+    exportsPending.set(timer, reject)
   })
 }
 
 async function save() {
   const tempFilePath = await toPng()
 
-  if (!tempFilePath) {
+  if (disposed || !tempFilePath) {
     return ''
   }
 
@@ -907,9 +945,22 @@ watch(
 )
 
 onMounted(() => {
-  setTimeout(() => {
-    initCanvas()
+  mountTimer = setTimeout(() => {
+    if (!disposed) initCanvas()
   }, 30)
+})
+
+onBeforeUnmount(() => {
+  disposed = true
+  strokeVersion++
+  preparing = false
+  pendingMoves = []
+  clearTimeout(mountTimer)
+  for (const [timer, reject] of exportsPending) {
+    clearTimeout(timer)
+    reject(new Error('签名组件已卸载'))
+  }
+  exportsPending.clear()
 })
 
 defineExpose({

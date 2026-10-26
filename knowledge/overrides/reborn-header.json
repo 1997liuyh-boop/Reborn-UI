@@ -13,6 +13,7 @@
     "仅 web 端可用。",
     "open 为双向绑定值（update:open 事件同步），控制移动端菜单开合。",
     "autoClose 默认 true，路由变化时自动关闭菜单；beforeToggle 可返回 boolean 或 Promise<boolean> 拦截切换。",
-    "通常与 reborn-main 配套使用，后者会自动适配 Header 高度。"
+    "通常与 reborn-main 配套使用，后者会自动适配 Header 高度。",
+    "open 默认 undefined；缺省关闭，显式 false/undefined/null 按关闭处理。受控交互发送 update:open；模型变化会作废等待中的 beforeToggle 结果。"
   ]
 }

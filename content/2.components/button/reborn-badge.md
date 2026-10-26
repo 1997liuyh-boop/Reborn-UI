@@ -143,7 +143,7 @@ const confirmClose = () => window.confirm('确认关闭标签？')
 
 | 属性名            | 类型               | 默认值      | 平台差异        | 说明                                                          |
 | :---------------- | :----------------- | :---------- | :-------------- | :------------------------------------------------------------ |
-| `show`    | `boolean`          | `true`      | -               | 控制徽标显示/隐藏，支持动画。                                 |
+| `show` | `boolean` | `undefined`（未绑定时可见） | - | 控制徽标显示/隐藏，支持动画；显式 `undefined` / `null` 按隐藏处理。绑定后严格受控：关闭只派发 `update:show`，父级不回写就保持父值。 |
 | `label`           | `string \| number` | -           | -               | 徽标显示的文本内容。                                          |
 | `color`           | `BadgeColor`       | `'primary'` | -               | 语义化颜色，详见下方配置。                                    |
 | `variant`         | `BadgeVariant`     | `'filled'`  | -               | 视觉风格：`filled`, `outlined`, `soft`, `subtle` 等。         |
@@ -153,15 +153,15 @@ const confirmClose = () => window.confirm('确认关闭标签？')
 | `round`           | `boolean`          | `false`     | -               | 圆角标签：与按钮组件一致变为全圆角胶囊。                      |
 | `circle` | `boolean` | `false` | **Web 专用** | 固定等宽高的圆形，优先于 `round` 与 `square`，不改变配色。 |
 | `check`           | `boolean`          | `false`     | -               | 可选中模式：作为类复选框的 Check Tag 使用。                   |
-| `checked` | `boolean`          | `false`     | -               | 可选中模式下的选中态；未选中时徽标退为灰阶。                  |
+| `checked` | `boolean` | `undefined`（未绑定时未选中） | - | 可选中模式下的选中态；未选中时徽标退为灰阶，显式 `undefined` / `null` 按未选中处理。绑定后严格受控，口径同 `show`。 |
 | `disabled`        | `boolean`          | `false`     | -               | 是否禁用（屏蔽选中切换与关闭交互）。                          |
 | `closable`        | `boolean`          | `false`     | -               | 是否显示关闭按钮。                                            |
 | `closeIcon`       | `string`           | -           | **默认值差异**  | Web 默认为 `i-lucide-x`；UniApp 默认为 `i-mdi-close-circle`。 |
 | `as`              | `any`              | `'span'`    | **Web 专用**    | 指定渲染的 HTML 标签或组件。                                  |
 | `beforeClose`     | `Function`         | -           | **Web 专用**    | 关闭前的钩子函数，支持异步阻断。                              |
 | `gap`             | `boolean`          | `false`     | -               | 多个徽标并排时是否自动添加左间距。                            |
-| `class`           | `any`              | -           | **Web 专用**    | 容器类名。                                                    |
-| `customClass`     | `any`              | -           | **UniApp 专用** | 容器类名（避免 UniApp 原生 class 冲突）。                     |
+| `class`           | `any`              | -           | **Web 专用**    | 徽标主体类名，与 `ui.base` 落在同一节点；外层动画容器的类名用 `ui.root`。 |
+| `customClass`     | `any`              | -           | **UniApp 专用** | 徽标主体类名（避免 UniApp 原生 class 冲突），与 `ui.base` 落在同一节点。 |
 | `ui`              | `object`           | `{}`        | -               | 深度定制内部各组件样式的对象。                                |
 
 ### Emits
@@ -197,7 +197,7 @@ const confirmClose = () => window.confirm('确认关闭标签？')
 
 | 键名           | 说明                                                                                                                                                                                      |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `root`         | 最外层动画容器（`RebornTransition`）。默认 `reborn-badge cursor-pointer`，显隐过渡与外边距、定位加在这里。                                                                                |
+| `root`         | 最外层动画容器（`RebornTransition`）。默认 `reborn-badge cursor-pointer`，显隐过渡与外边距、定位加在这里。`class` 不会落到这一层，要给容器加类只能用 `ui.root`。                                                                                |
 | `base`         | 徽标主体（标签名由 `as` 决定）。默认 `inline-flex items-center justify-center font-medium whitespace-nowrap overflow-hidden`，底色、圆角、内边距、字号都在这里，尺寸/配色变体也作用于它。 |
 | `label`        | 文本包裹层，默认 `inline-flex items-center justify-center truncate max-w-full min-w-0`。**仅有 label（包括数字 0）或 default 插槽时渲染，节点在 default 插槽外层**，因此填充 default 插槽后它依然存在，`ui.label` 仍生效。             |
 | `leadingIcon`  | 前置图标类名。模板本身不渲染前置图标，需要在 `leading` 插槽里自行取用：`<template #leading="{ ui }">`，再把 `ui.leadingIcon()` 挂到你的图标上。                                           |
@@ -268,4 +268,5 @@ UniApp 的高度与圆角令牌独立定义在 `packages/uniapp-project/src/styl
 - **形状不决定配色**。`round` 和 `circle` 只改变轮廓，选中与禁用仍遵循原有风格规则；两者同时启用时 `circle` 优先。
 - **两端 API 不完全相同**。`circle` 与 `beforeClose` 仅 Web 支持，不能直接传给 UniApp 组件期待相同行为。
 - **禁用会阻止交互**。`disabled` 屏蔽选中切换及关闭，`check` 未选中态退为灰阶，不会保留彩色背景。
+- **`class` 只作用于徽标主体**。它和 `ui.base` 落在同一个节点，不会再同时加到外层动画容器上，`ml-2`、`px-1` 这类盒模型类只生效一次；需要给外层容器做布局（如 `w-full`、外边距）时改用 `ui.root`。
 - **零也是有效内容**。Web `label=0` 会正常显示，纯图标且无默认内容时不渲染空文本节点，避免额外间距。

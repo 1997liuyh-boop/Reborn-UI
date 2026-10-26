@@ -4,7 +4,7 @@ import type { ButtonProps } from '../reborn-button/RebornButton.vue';
 import type { PopoverContentProps, PopoverProps } from '../reborn-popover/RebornPopover.vue';
 import type { PopconfirmUi } from './reborn-popconfirm.config';
 import type { Placement } from '~/lib/placement';
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, useTemplateRef } from 'vue';
 import { tv } from '~/lib/tv';
 import RebornButton from '../reborn-button/RebornButton.vue';
 import RebornPopover from '../reborn-popover/RebornPopover.vue';
@@ -109,7 +109,7 @@ const popoverUi = computed(() => ({
   content: ['p-[12px] shadow-[0_0_8px_rgb(0_0_0/0.12),0_8px_24px_rgb(0_0_0/0.12)]', props.ui?.popover?.content],
 }));
 
-const popoverRef = ref<InstanceType<typeof RebornPopover>>();
+const popoverRef = useTemplateRef<InstanceType<typeof RebornPopover>>('popoverRef');
 
 function close() {
   open.value = false;

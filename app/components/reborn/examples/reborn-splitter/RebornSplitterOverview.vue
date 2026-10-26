@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Icon } from '#components';
+import RebornSplitter from '~/components/reborn/ui/reborn-splitter/RebornSplitter.vue';
+import RebornSplitterPanel from '~/components/reborn/ui/reborn-splitter/RebornSplitterPanel.vue';
 /**
  * 总览卡片缩略：左右两栏分隔面板，左侧目录、右侧正文，中间分隔条带一枚拖拽手柄
  *

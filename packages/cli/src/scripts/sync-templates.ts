@@ -2,6 +2,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import fssync from "node:fs";
 import { fileURLToPath } from "node:url";
+import { WEB_SITE_COMPOSABLE_FILES } from "../utils/templates.js";
 
 async function getFilesRecursive(dir: string, baseDir: string, ignoreFileNames?: Set<string>): Promise<Record<string, string>> {
   const result: Record<string, string> = {};
@@ -52,7 +53,7 @@ async function main() {
   const webComposablesFiles = await getFilesRecursive(
     path.join(workspaceRoot, "app/composables"),
     path.join(workspaceRoot, "app"),
-    new Set(["useComponentCode.ts", "useCopyToClipboard.ts","getComponentCode.ts","getUniappCode.ts"])
+    WEB_SITE_COMPOSABLE_FILES
   );
 
   // 2. 获取 UniApp 模板

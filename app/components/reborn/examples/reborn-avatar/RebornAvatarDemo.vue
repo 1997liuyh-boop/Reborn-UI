@@ -2,7 +2,7 @@
 import type { PlaygroundControlGroup } from '~/components/common/play-ground/Playground.vue';
 import type { AvatarFit, AvatarShape, AvatarSize } from '~/components/reborn/ui/reborn-avatar/reborn-avatar.config';
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
-import { computed, h, ref } from 'vue';
+import { computed, h, ref, shallowRef } from 'vue';
 import { avatarFits, avatarShapes, avatarSizes } from '~/components/reborn/ui/reborn-avatar/reborn-avatar.config';
 import RebornAvatar from '~/components/reborn/ui/reborn-avatar/RebornAvatar.vue';
 import RebornBadge from '~/components/reborn/ui/reborn-badge/RebornBadge.vue';
@@ -23,7 +23,7 @@ const defaultState = {
   text: '林',
 };
 const state = ref({ ...defaultState });
-const lastEvent = ref('尚未发生图片错误');
+const lastEvent = shallowRef('尚未发生图片错误');
 const inputProps = { ui: { input: 'w-0' } };
 /** 重置配置和错误回显。 */
 function resetState() {
@@ -72,10 +72,10 @@ const ProfileIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke:
   h('path', { d: 'M4 22v-2a8 8 0 0 1 16 0v2' }),
 ]);
 const brokenImage = 'data:image/png;base64,broken';
-const errorSource = ref(brokenImage);
-const errorCount = ref(0);
-const unreadCount = ref(8);
-const isOnline = ref(true);
+const errorSource = shallowRef(brokenImage);
+const errorCount = shallowRef(0);
+const unreadCount = shallowRef(8);
+const isOnline = shallowRef(true);
 /** 徽标放在头像外层，避免被头像的圆形裁剪。 */
 const countBadgeUi = {
   root: 'absolute right-0 top-0 -translate-y-1/3 translate-x-1/3 cursor-default',
@@ -105,18 +105,18 @@ function toggleErrorImage() {
     <DemoSection title="头像内容">
       <template #description>优先显示 <code>src</code> 或 <code>srcSet</code> 图片，图片不可用时依次显示 <code>icon</code>、默认插槽。</template>
       <DemoBlock layout="row" class="gap-6">
-        <RebornAvatar :src="avatarPeople[0]!.src" alt="林舟" />
+        <RebornAvatar :src="(avatarPeople[0]?.src ?? '')" alt="林舟" />
         <RebornAvatar icon="lucide:user-round" alt="个人账号" />
         <RebornAvatar :icon="ProfileIcon" alt="组件图标" />
         <RebornAvatar alt="林舟">林</RebornAvatar>
-        <RebornAvatar :src-set="`${avatarPeople[1]!.src} 1x`" alt="响应式头像" />
+        <RebornAvatar :src-set="`${(avatarPeople[1]?.src ?? '')} 1x`" alt="响应式头像" />
       </DemoBlock>
     </DemoSection>
     <DemoSection title="尺寸">
       <template #description><code>size</code> 三档固定为 24、32、40px，数值表示自定义像素尺寸。</template>
       <DemoBlock layout="row" class="gap-6">
         <div v-for="size in avatarSizes" :key="size" class="flex flex-col items-center gap-2">
-          <RebornAvatar :size="size" :src="avatarPeople[0]!.src" alt="林舟" /><span class="text-sm text-gray-7">{{ size }}</span>
+          <RebornAvatar :size="size" :src="(avatarPeople[0]?.src ?? '')" alt="林舟" /><span class="text-sm text-gray-7">{{ size }}</span>
         </div>
         <div class="flex flex-col items-center gap-2"><RebornAvatar :size="56" icon="lucide:user-round" /><span class="text-sm text-gray-7">56px</span></div>
       </DemoBlock>
@@ -124,7 +124,7 @@ function toggleErrorImage() {
     <DemoSection title="形状">
       <template #description><code>shape</code> 控制圆形与方形，图片和回退内容共用同一外框。</template>
       <DemoBlock layout="row" class="gap-6">
-        <RebornAvatar v-for="shape in avatarShapes" :key="shape" :shape="shape" size="lg" :src="avatarPeople[1]!.src" alt="陈雨" />
+        <RebornAvatar v-for="shape in avatarShapes" :key="shape" :shape="shape" size="lg" :src="(avatarPeople[1]?.src ?? '')" alt="陈雨" />
         <RebornAvatar shape="square" size="lg" icon="lucide:building-2" alt="组织账号" />
       </DemoBlock>
     </DemoSection>
@@ -160,7 +160,7 @@ function toggleErrorImage() {
         </div>
         <div class="flex flex-col items-center gap-2">
           <RebornAvatar :src="errorSource" size="lg" alt="默认图片回退" :ui="{ fallback: 'size-full p-0' }">
-            <img :src="avatarPeople[4]!.src" alt="" class="size-full object-cover">
+            <img :src="(avatarPeople[4]?.src ?? '')" alt="" class="size-full object-cover">
           </RebornAvatar>
           <span class="text-sm text-gray-7">默认图片</span>
         </div>
@@ -175,21 +175,21 @@ function toggleErrorImage() {
       <DemoBlock layout="row" class="gap-8">
         <div class="flex flex-col items-center gap-3">
           <div class="relative inline-flex">
-            <RebornAvatar size="lg" :src="avatarPeople[0]!.src" alt="林舟" />
+            <RebornAvatar size="lg" :src="(avatarPeople[0]?.src ?? '')" alt="林舟" />
             <RebornBadge :show="unreadCount > 0" :label="unreadCount" size="sm" color="error" round :ui="countBadgeUi" />
           </div>
           <span class="text-sm text-gray-7">未读消息</span>
         </div>
         <div class="flex flex-col items-center gap-3">
           <div class="relative inline-flex">
-            <RebornAvatar size="lg" shape="square" :src="avatarPeople[1]!.src" alt="陈雨" />
+            <RebornAvatar size="lg" shape="square" :src="(avatarPeople[1]?.src ?? '')" alt="陈雨" />
             <RebornBadge label="99+" size="sm" color="error" round :ui="countBadgeUi" />
           </div>
           <span class="text-sm text-gray-7">超过上限</span>
         </div>
         <div class="flex flex-col items-center gap-3">
           <div class="relative inline-flex">
-            <RebornAvatar size="lg" :src="avatarPeople[2]!.src" alt="周宁" />
+            <RebornAvatar size="lg" :src="(avatarPeople[2]?.src ?? '')" alt="周宁" />
             <RebornBadge :color="isOnline ? 'success' : 'neutral'" size="sm" round :ui="statusBadgeUi" />
           </div>
           <span class="text-sm text-gray-7">{{ isOnline ? '在线' : '离线' }}</span>
@@ -205,7 +205,7 @@ function toggleErrorImage() {
       <DemoBlock layout="row" class="gap-6">
         <RebornAvatar size="lg" :ui="{ root: 'bg-primary/10 text-primary ring-2 ring-primary/30', fallback: 'font-semibold' }">RE</RebornAvatar>
         <RebornAvatar size="lg" icon="lucide:leaf" :ui="{ root: 'bg-success/10 text-success', icon: 'size-5' }" />
-        <RebornAvatar size="lg" :src="avatarPeople[3]!.src" alt="苏禾" :ui="{ root: 'rounded-xl ring-2 ring-warning/30', image: 'grayscale' }" />
+        <RebornAvatar size="lg" :src="(avatarPeople[3]?.src ?? '')" alt="苏禾" :ui="{ root: 'rounded-xl ring-2 ring-warning/30', image: 'grayscale' }" />
       </DemoBlock>
     </DemoSection>
   </div>

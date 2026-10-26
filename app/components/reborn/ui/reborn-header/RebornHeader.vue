@@ -2,6 +2,8 @@
 import { useRoute } from '#imports';
 import { createReusableTemplate } from '@vueuse/core';
 import { computed, watch } from 'vue';
+import { useBooleanModel } from '~/composables/useControlledModel';
+import { useRawProp } from '~/composables/useRawProp';
 import { tv } from '~/lib/tv';
 import { cn } from '~/lib/utils';
 import RebornDrawer from '../reborn-drawer/RebornDrawer.vue';
@@ -19,6 +21,31 @@ const props = withDefaults(defineProps<RebornHeaderProps>(), {
     autoClose: true,
     ui: () => ({}),
 });
+
+defineSlots<{
+    /** 移动端菜单切换按钮；open 为菜单是否展开，toggle 切换菜单（经过 beforeToggle） */
+    toggle?: (props: { open: boolean; toggle: () => void }) => any;
+    /** 左侧区域，默认渲染标题 */
+    left?: () => any;
+    /** 标题内容 */
+    title?: () => any;
+    /** 右侧区域 */
+    right?: () => any;
+    /** 导航栏上方的附加内容 */
+    top?: () => any;
+    /** 中间导航内容，移动端菜单未提供 body 时也用它 */
+    default?: () => any;
+    /** 导航栏下方的附加内容 */
+    bottom?: () => any;
+    /** 移动端菜单头部；close 关闭菜单 */
+    header?: (props: { close: () => void }) => any;
+    /** 整体替换移动端菜单内容；close 关闭菜单 */
+    content?: (props: { close: () => void }) => any;
+    /** 移动端菜单正文 */
+    body?: () => any;
+    /** 移动端菜单底部 */
+    footer?: () => any;
+}>();
 
 const b = tv(theme);
 
@@ -59,8 +86,15 @@ export interface RebornHeaderProps {
     }>;
 }
 
-const isMenuOpen = defineModel<boolean>('open', { default: false });
+/** defineModel 返回的引用只随父级传值变化（本地交互不写它），下方用它监听父级改写 */
+const isMenuOpenModel = defineModel<boolean>('open', { default: undefined });
+const { present: openBound } = useRawProp('open');
+// 显式空模型按关闭读取，缺省状态独立保留本地交互。
+const isMenuOpen = useBooleanModel('open');
 const route = useRoute();
+let toggleRequest = 0;
+// 父级改写模型后，旧的异步打开请求不再覆盖新状态。
+watch([openBound, isMenuOpenModel], () => { toggleRequest++; }, { flush: 'sync' });
 
 const [DefineLeftTemplate, ReuseLeftTemplate] = createReusableTemplate();
 const [DefineRightTemplate, ReuseRightTemplate] = createReusableTemplate();
@@ -96,6 +130,7 @@ const ui = computed(() => {
 });
 
 async function toggleMenu() {
+    const request = ++toggleRequest;
     if (isMenuOpen.value) {
         isMenuOpen.value = false;
         return;
@@ -109,7 +144,7 @@ async function toggleMenu() {
     try {
         const canOpen = await props.beforeToggle();
 
-        if (canOpen === true) {
+        if (canOpen === true && request === toggleRequest) {
             isMenuOpen.value = true;
         }
     } catch {

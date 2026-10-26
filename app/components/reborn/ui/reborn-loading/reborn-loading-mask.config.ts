@@ -1,7 +1,7 @@
 /**
  * 遮罩淡入淡出过渡时长（毫秒）
  * ⚠️ 修改此值时必须同步调整下方 maskTransition 中的 duration-* 类，二者需保持一致，
- * 否则 useLoading 的兜底销毁定时器与真实过渡不同步，可能出现提前卸载截断动画
+ * 否则 showLoading 的兜底销毁定时器与真实过渡不同步，可能出现提前卸载截断动画
  */
 export const LOADING_MASK_DURATION = 200
 
@@ -27,7 +27,7 @@ const config = {
         root: 'bg-gray-1/80',
         /**
          * 可视区容器：图标 / 文字的居中定位层。
-         * 局部模式下为 sticky，滚动时由合成器同步钉在宿主可视区域（尺寸由 useLoading 内联注入）
+         * 局部模式下为 sticky，滚动时由合成器同步钉在宿主可视区域（尺寸由 showLoading 内联注入）
          */
         viewport: 'flex items-center justify-center',
         /** 内容容器：图标在上、文字在下，垂直居中排列 */
@@ -39,7 +39,7 @@ const config = {
         /**
          * fixed=true：全屏遮罩 / body 挂载模式（fixed 定位覆盖视口或目标矩形）
          * fixed=false：局部遮罩（absolute 定位铺满宿主的整个滚动内容，宿主需为非 static 定位，
-         * 由 useLoading 自动修正；⚠️ 根节点不可加 overflow-hidden——overflow 非 visible 的祖先
+         * 由 showLoading 自动修正；⚠️ 根节点不可加 overflow-hidden——overflow 非 visible 的祖先
          * 会成为 viewport sticky 的粘附基准，导致图标区无法钉在宿主可视区域）
          */
         fixed: {

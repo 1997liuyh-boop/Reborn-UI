@@ -1,12 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref } from "vue";
-
-const props = withDefaults(defineProps<Props>(), {
-  morphTime: 1.5,
-  coolDownTime: 0.5,
-});
-
-const TEXT_CLASSES = "absolute inset-x-0 top-0 m-auto inline-block w-full";
+import { onMounted, onUnmounted, useId, useTemplateRef } from "vue";
 
 interface Props {
   class?: string;
@@ -14,16 +7,24 @@ interface Props {
   morphTime?: number;
   coolDownTime?: number;
 }
-const textIndex = ref(0);
-const morph = ref(0);
-const coolDown = ref(0);
-const time = ref(new Date());
 
-const text1Ref = ref<HTMLSpanElement>();
-const text2Ref = ref<HTMLSpanElement>();
+const props = withDefaults(defineProps<Props>(), {
+  morphTime: 1.5,
+  coolDownTime: 0.5,
+});
+const TEXT_CLASSES = "absolute inset-x-0 top-0 m-auto inline-block w-full";
+
+let textIndex = 0;
+let morph = 0;
+let coolDown = 0;
+let time = 0;
+const filterId = `morphing-text-${useId()}`;
+
+const text1Ref = useTemplateRef<HTMLSpanElement>("text1Ref");
+const text2Ref = useTemplateRef<HTMLSpanElement>("text2Ref");
 
 function setStyles(fraction: number) {
-  if (!text1Ref.value || !text2Ref.value) return;
+  if (!text1Ref.value || !text2Ref.value || !props.texts.length) return;
 
   text2Ref.value.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
   text2Ref.value.style.opacity = `${fraction ** 0.4 * 100}%`;
@@ -32,30 +33,30 @@ function setStyles(fraction: number) {
   text1Ref.value.style.filter = `blur(${Math.min(8 / invertedFraction - 8, 100)}px)`;
   text1Ref.value.style.opacity = `${invertedFraction ** 0.4 * 100}%`;
 
-  text1Ref.value.textContent = props.texts[textIndex.value % props.texts.length];
-  text2Ref.value.textContent = props.texts[(textIndex.value + 1) % props.texts.length];
+  text1Ref.value.textContent = props.texts[textIndex % props.texts.length] ?? "";
+  text2Ref.value.textContent = props.texts[(textIndex + 1) % props.texts.length] ?? "";
 }
 
 function doMorph() {
-  morph.value -= coolDown.value;
-  coolDown.value = 0;
+  morph -= coolDown;
+  coolDown = 0;
 
-  let fraction = morph.value / props.morphTime;
+  let fraction = morph / props.morphTime;
 
   if (fraction > 1) {
-    coolDown.value = props.coolDownTime;
+    coolDown = props.coolDownTime;
     fraction = 1;
   }
 
   setStyles(fraction);
 
   if (fraction === 1) {
-    textIndex.value++;
+    textIndex++;
   }
 }
 
 function doCoolDown() {
-  morph.value = 0;
+  morph = 0;
 
   if (text1Ref.value && text2Ref.value) {
     text2Ref.value.style.filter = "none";
@@ -69,13 +70,13 @@ let animationFrameId: number = 0;
 function animate() {
   animationFrameId = requestAnimationFrame(animate);
 
-  const newTime = new Date();
-  const dt = (newTime.getTime() - time.value.getTime()) / 1000;
-  time.value = newTime;
+  const newTime = performance.now();
+  const dt = (newTime - time) / 1000;
+  time = newTime;
 
-  coolDown.value -= dt;
+  coolDown -= dt;
 
-  if (coolDown.value <= 0) {
+  if (coolDown <= 0) {
     doMorph();
   } else {
     doCoolDown();
@@ -83,6 +84,7 @@ function animate() {
 }
 
 onMounted(() => {
+  time = performance.now();
   animate();
 });
 
@@ -93,25 +95,16 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="relative mx-auto h-16 w-full max-w-screen-md text-center font-sans text-[40pt] leading-none font-bold [filter:url(#threshold)_blur(0.6px)] md:h-24 lg:text-[6rem]"
+    class="relative mx-auto h-16 w-full max-w-screen-md text-center font-sans text-[40pt] leading-none font-bold md:h-24 lg:text-[6rem]"
     :class="[props.class]"
+    :style="{ filter: `url(#${filterId}) blur(0.6px)` }"
   >
-    <span
-      ref="text1Ref"
-      :class="[TEXT_CLASSES]"
-    />
-    <span
-      ref="text2Ref"
-      :class="[TEXT_CLASSES]"
-    />
+    <span ref="text1Ref" :class="[TEXT_CLASSES]" />
+    <span ref="text2Ref" :class="[TEXT_CLASSES]" />
 
-    <svg
-      id="filters"
-      class="fixed size-0"
-      preserveAspectRatio="xMidYMid slice"
-    >
+    <svg class="fixed size-0" preserveAspectRatio="xMidYMid slice">
       <defs>
-        <filter id="threshold">
+        <filter :id="filterId">
           <feColorMatrix
             in="SourceGraphic"
             type="matrix"

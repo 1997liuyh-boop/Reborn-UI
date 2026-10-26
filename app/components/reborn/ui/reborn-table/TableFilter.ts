@@ -1,6 +1,6 @@
 import type { PropType } from 'vue';
 import type { TableColumn, TableFilter } from './table.types';
-import { defineComponent, h, ref } from 'vue';
+import { defineComponent, h, ref, shallowRef } from 'vue';
 import RebornButton from '../reborn-button/RebornButton.vue';
 import RebornCheckbox from '../reborn-checkbox/RebornCheckbox.vue';
 import RebornPopover from '../reborn-popover/RebornPopover.vue';
@@ -15,7 +15,7 @@ export default defineComponent({
   },
   emits: { apply: (_values: TableFilter['value'][]) => true },
   setup(props, { emit }) {
-    const open = ref(false);
+    const open = shallowRef(false);
     const draft = ref<TableFilter['value'][]>([]);
     function changeOpen(value: boolean) {
       if (props.disabled) return;

@@ -42,6 +42,9 @@ function normalizeMarkerPart(value: string): string {
  */
 const FALLBACK_MARKER_NAME = 'Component';
 
+/** 静态主题按定义、所属组件及配置身份复用，避免列表里每个实例都重建主题函数。 */
+const themeCache = new WeakMap<object, Map<string, Map<unknown, unknown>>>();
+
 /** 优先使用显式组件名称，其次使用 Vue 单文件组件推导的名称。 */
 function currentComponentName(): string | undefined {
   const component = getCurrentInstance()?.type;
@@ -60,16 +63,28 @@ export function getThemeSlotSelector(key: string, themeId: string): string {
  * 标记类不提供视觉样式，用于文档站的节点定位与悬停高亮。
  */
 export const tv = ((options: any, config?: any) => {
+  const name = currentComponentName() || FALLBACK_MARKER_NAME;
+  const cacheable = options !== null && typeof options === 'object';
+  const owners = cacheable ? themeCache.get(options) : undefined;
+  const configs = owners?.get(name);
+  if (configs?.has(config)) return configs.get(config);
+
+  function remember(value: unknown) {
+    if (!cacheable) return value;
+    const nextOwners = owners ?? new Map<string, Map<unknown, unknown>>();
+    const nextConfigs = configs ?? new Map<unknown, unknown>();
+    nextConfigs.set(config, value);
+    nextOwners.set(name, nextConfigs);
+    themeCache.set(options, nextOwners);
+    return value;
+  }
+
   const themed = baseTv(options, config);
   const slots = options?.slots;
-  if (!slots || typeof slots !== 'object') return themed;
+  if (!slots || typeof slots !== 'object') return remember(themed);
 
   const themeId = fingerprintThemeSlots(slots);
-  // setup 中创建的主题保存所属组件名，避免响应式重算时丢失上下文。
-  const ownerName = currentComponentName();
-
-  /** 名字只认创建主题时的组件，求值时机不再影响类名，保证服务端与客户端一致。 */
-  const name = ownerName || FALLBACK_MARKER_NAME;
+  // 名字只认创建主题时的组件，求值时机不影响类名，保证服务端与客户端一致。
 
   const marked = (props?: any) => {
     const styles: unknown = themed(props);
@@ -91,10 +106,10 @@ export const tv = ((options: any, config?: any) => {
     return result;
   };
 
-  return Object.assign(marked, themed, {
+  return remember(Object.assign(marked, themed, {
     __rbThemeId: themeId,
     __rbSlots: { ...slots },
-  });
+  }));
 }) as typeof baseTv;
 
 export type { VariantProps } from 'tailwind-variants';

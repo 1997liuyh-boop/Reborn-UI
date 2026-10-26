@@ -1,5 +1,5 @@
-import type { CSSProperties } from 'vue'
-import { reactive } from 'vue'
+import type { AppContext, ComponentInternalInstance, CSSProperties } from 'vue'
+import { reactive, shallowRef } from 'vue'
 import { tv } from '@/lib/tv'
 
 /** 消息类型（level），与 Web 端一致 */
@@ -122,18 +122,92 @@ let seed = 0
 const LEAVE_DURATION = 240
 
 /**
- * 页面内已挂载的 <RebornToast /> 实例计数：
- * 小程序端组件必须写在页面里（RebornPage 已内置），H5 命令式调用据此判断是否还需动态挂载容器
+ * 渲染归属：
+ * - 页面实例（页面里的 <RebornToast />，RebornPage 已内置）各自渲染共享队列。tabBar 页面切换、
+ *   页面栈下层页面都不会卸载，隐藏页里的那份本来就看不见，各自渲染才能保证切回任何一页都能看到消息；
+ * - 命令式容器（仅 H5 动态挂载）与页面实例二选一：只在「当前显示的页面里没有页面实例」时渲染，避免同屏重复。
+ *   当前页面按 getCurrentPages() 栈顶判断，不能按挂载先后（切换 tabBar 不触发挂载 / 卸载）
  */
-let mountedInstances = 0
-export function markMessageMounted() {
-  mountedInstances++
+export const MESSAGE_CONTAINER_KEY = Symbol('reborn-message-container')
+
+/** 已挂载的页面实例：组件 uid → 所在页面的内部实例 */
+const pageInstances = new Map<number, ComponentInternalInstance>()
+/** 命令式容器是否已挂载；小程序端始终为 false */
+let containerMounted = false
+/** 命令式容器当前是否负责渲染 */
+const containerActive = shallowRef(false)
+let appContext: AppContext | null = null
+
+/**
+ * 解析组件实例所在页面：H5 端 uni 给页面及其后代实例都挂了 $pageInstance；
+ * 小程序端每个页面是组件树的根，直接取 root
+ */
+function resolvePageInstance(instance: ComponentInternalInstance) {
+  return (instance as { $pageInstance?: ComponentInternalInstance }).$pageInstance ?? instance.root
 }
-export function unmarkMessageMounted() {
-  mountedInstances--
+
+/** 当前显示的页面（页面栈栈顶）的内部实例；拿不到页面栈时返回 undefined */
+function activePageInstance(): ComponentInternalInstance | undefined {
+  if (typeof getCurrentPages !== 'function') {
+    return undefined
+  }
+  const pages = getCurrentPages()
+  // H5 的页面对象自身带 $vm（指向自己），小程序原生页面对象经 $vm 指向 Vue 页面实例
+  return pages[pages.length - 1]?.$vm?.$ as ComponentInternalInstance | undefined
 }
-export function hasMessageInstance() {
-  return mountedInstances > 0
+
+/** 当前显示的页面里是否已有页面实例；拿不到页面栈时退回「是否存在任何页面实例」 */
+function activePageHasInstance() {
+  const active = activePageInstance()
+  if (!active) {
+    return pageInstances.size > 0
+  }
+  for (const page of pageInstances.values()) {
+    if (page === active) {
+      return true
+    }
+  }
+  return false
+}
+
+/** 重新判定命令式容器是否渲染：挂载 / 卸载、页面显示、每次命令式调用时执行 */
+export function syncMessageRenderer() {
+  // 小程序端没有命令式容器，页面实例始终自己渲染，无需查询页面栈
+  containerActive.value = containerMounted && !activePageHasInstance()
+}
+
+/** 命令式容器是否负责渲染（供容器实例在 computed 里读取） */
+export function isMessageContainerActive() {
+  return containerActive.value
+}
+
+/** 当前页面没有页面实例、需要由命令式容器展示消息（H5 据此决定是否首次挂载容器） */
+export function needsMessageContainer() {
+  return !activePageHasInstance()
+}
+
+/** 登记实例：页面实例记下所在页面与应用上下文，命令式容器只记挂载状态 */
+export function markMessageMounted(instance: ComponentInternalInstance, container: boolean) {
+  if (container) {
+    containerMounted = true
+  }
+  else {
+    pageInstances.set(instance.uid, resolvePageInstance(instance))
+    appContext = instance.appContext
+  }
+  syncMessageRenderer()
+}
+export function unmarkMessageMounted(instance: ComponentInternalInstance, container: boolean) {
+  if (container) {
+    containerMounted = false
+  }
+  else {
+    pageInstances.delete(instance.uid)
+  }
+  syncMessageRenderer()
+}
+export function getMessageAppContext() {
+  return appContext
 }
 
 /** 计时器状态：支持 pauseOnHover 的暂停/续走 */

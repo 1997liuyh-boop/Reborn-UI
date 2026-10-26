@@ -21,9 +21,10 @@ import {
   nextTick,
   onBeforeUnmount,
   onMounted,
-  ref,
+  shallowRef,
   Text,
   unref,
+  useTemplateRef,
   watch,
 } from "vue";
 import { motionPresets, runMotion, stopMotion } from "@/lib/motion";
@@ -72,19 +73,30 @@ const modelValue = defineModel<number | null>("modelValue", {
   default: null,
 });
 
-/** 内部辅助组件：动态挂载和管理单个幻灯片插槽内容的渲染，以规避 Fragment 节点带来的不确定性 */
+/**
+ * 内部辅助组件：动态挂载和管理单个幻灯片插槽内容的渲染，以规避 Fragment 节点带来的不确定性。
+ * 每个原节点只交给真实片挂载一次，直接渲染、保留编译器的块优化；
+ * loop 克隆片与缩略图要同时挂载同一份内容，才走深拷贝（clone 为真）。
+ */
 // eslint-disable-next-line vue/one-component-per-file -- 内部节点桥接用于复用插槽快照，不是公共组件。
 const CarouselSlotItem = defineComponent({
   name: "CarouselSlotItem",
-  props: { node: { type: Object as PropType<VNode>, default: null } },
-  setup: localProps => () => localProps.node ? cloneSlideNode(localProps.node) : null,
+  props: {
+    node: { type: Object as PropType<VNode>, default: null },
+    clone: { type: Boolean, default: false },
+  },
+  setup: localProps => () => {
+    if (!localProps.node) return null;
+    return localProps.clone ? cloneSlideNode(localProps.node) : localProps.node;
+  },
 });
 
 /** 浅复制会共享动态子节点的 DOM 引用；完整复制子树并退出块优化，避免克隆污染真实片。 */
 function cloneSlideNode(node: VNode): VNode {
   const cloned = cloneVNode(node);
   if (Array.isArray(node.children)) cloned.children = node.children.map(cloneSlideChild);
-  // -2 是 Vue 的退出优化标记，渲染器会清理内部动态子节点引用并完整比较子树。
+  // -2 是 Vue 的退出优化标记（PatchFlags.BAIL），渲染器会清理内部动态子节点引用并完整比较子树。
+  // 改写 patchFlag 依赖 Vue 的内部实现，升级 Vue 时需列入回归清单（loop 克隆片、缩略图与真实片互不污染）。
   cloned.patchFlag = -2;
   return cloned;
 }
@@ -129,43 +141,55 @@ function normalizeNodes(nodes: VNode[] = []): VNode[] {
 
 /** 默认匿名插槽节点计算属性 */
 let slideNodes: VNode[] = [];
-const slideCount = ref(0);
-let hasRendered = false;
+const slideCount = shallowRef(0);
 /** 获取基于 Tailwind-Variants 构建的主题样式解析器 */
 const b = tv(theme);
 
 /** 视口滚动容器 DOM 引用 */
-const viewportRef = ref<HTMLDivElement | null>(null);
+const viewportRef = useTemplateRef<HTMLDivElement>("viewportRef");
 /** 缩略图滚动视口容器 DOM 引用 */
-const thumbsViewportRef = ref<HTMLDivElement | null>(null);
+const thumbsViewportRef = useTemplateRef<HTMLDivElement>("thumbsViewportRef");
 /** 轮播图主视觉根级 DOM 引用 */
-const mainRootRef = ref<HTMLDivElement | null>(null);
-const carouselRootRef = ref<HTMLDivElement | null>(null);
-/** 存储所有幻灯片 DOM 元素的数组引用 */
-const slideRefs = ref<HTMLElement[]>([]);
-/** 存储所有缩略图 DOM 元素的数组引用 */
-const thumbRefs = ref<HTMLElement[]>([]);
+const mainRootRef = useTemplateRef<HTMLDivElement>("mainRootRef");
+const carouselRootRef = useTemplateRef<HTMLDivElement>("carouselRootRef");
+/** 存储所有幻灯片 DOM 元素的数组；渲染里不读，用普通数组，免得每次渲染的 ref 回调都写一次响应式数组 */
+let slideRefs: HTMLElement[] = [];
+/** 存储所有缩略图 DOM 元素的数组；同上，用普通数组 */
+let thumbRefs: HTMLElement[] = [];
 
-/** 外部逻辑所知的当前激活真实索引值（对应 props 数据量） */
-const currentIndex = ref(0);
+const firstIndex = modelValue.value ?? props.initialSlide;
+/** 索引原值：首帧取 v-model / initialSlide 的整数部分，此后只写入经 clampIndex 钳制过的值 */
+const rawIndex = shallowRef(Number.isFinite(firstIndex) ? Math.trunc(firstIndex) : 0);
+/**
+ * 外部逻辑所知的当前激活真实索引值（对应 props 数据量）。
+ * 读取时按张数钳制：张数要到渲染里调用插槽才知道，watch(slideCount) 的统一钳制在服务端不执行、在客户端也晚一拍，
+ * 直接读原值时越界的初值（超出张数的 initialSlide、loop 下的 -1）会让 SSR 首屏与客户端首帧没有激活项。
+ * 钳制只是派生，不在渲染里写状态；张数未知（为 0）时保留原值，免得 setup 里的 v-model 同步把初值误判成 0。
+ */
+const currentIndex = computed({
+  get: () => (slideCount.value > 0 ? clampIndex(rawIndex.value) : rawIndex.value),
+  set: (value: number) => {
+    rawIndex.value = value;
+  },
+});
 /** 视口中当前所处的位置索引值（在 loop 复制后包含克隆项的渲染索引） */
-const currentRenderIndex = ref(0);
+const currentRenderIndex = shallowRef(0);
 /** 当前设备/窗口视口的实时宽度 */
-const viewportWidth = ref(0);
+const viewportWidth = shallowRef(0);
 /** 视口在滚动方向（主轴）上的实际像素尺寸 */
-const viewportMainSize = ref(0);
+const viewportMainSize = shallowRef(0);
 
 /** 鼠标是否正悬浮于轮播图整体容器上方 */
-const isHovering = ref(false);
+const isHovering = shallowRef(false);
 /** 焦点是否聚焦在轮播图区域内 */
-const isFocused = ref(false);
+const isFocused = shallowRef(false);
 /** 用户是否正按住鼠标/手势拖拽当前轨道 */
-const isDragging = ref(false);
+const isDragging = shallowRef(false);
 
 /** 环形克隆 (loop) 模式下：正处于静默首尾跨越跳转定位中，期间屏蔽并锁死二次滚动同步 */
-const isJumping = ref(false);
+const isJumping = shallowRef(false);
 /** 环形克隆 (loop) 模式下：处于平滑转场动画执行的生命周期中，锁定驱动同步以规避索引闪烁跳跃 */
-const isLoopTransitioning = ref(false);
+const isLoopTransitioning = shallowRef(false);
 /** 未结束转场的渲染目标；连点从同一克隆区续接，而不是退回真实区。 */
 let loopTargetRenderIndex: number | null = null;
 /** 连续指令迭代计数器，抛弃掉同帧微任务中积攒的过期 nextTick 响应 */
@@ -181,9 +205,9 @@ let resizeObserver: ResizeObserver | null = null;
 let scrollFrame = 0;
 /** 自动播放的间隔执行定时器 */
 let autoplayTimer: ReturnType<typeof setInterval> | null = null;
-const isPlaying = ref(false);
-const isPaused = ref(false);
-const isPageHidden = ref(false);
+const isPlaying = shallowRef(false);
+const isPaused = shallowRef(false);
+const isPageHidden = shallowRef(false);
 let isDisposed = false;
 let applyGeneration = 0;
 const pendingFrames = new Set<number>();
@@ -196,6 +220,12 @@ function scheduleFrame(callback: () => void) {
   });
   pendingFrames.add(id);
   return id;
+}
+
+/** 取消经 scheduleFrame 登记的帧，并同步移出登记表，避免被取消的 id 永远留在集合里 */
+function cancelFrame(id: number) {
+  cancelAnimationFrame(id);
+  pendingFrames.delete(id);
 }
 /** 布局防重入状态锁 */
 let isUpdatingLayout = false;
@@ -211,21 +241,22 @@ function isNavigationLocked() {
 }
 
 /** 自动高度 (height="auto") 模式下，组件当前依据活动项动态计算的像素高度 */
-const currentSlideHeight = ref(0);
+const currentSlideHeight = shallowRef(0);
 let heightGeneration = 0;
 /** 主图区域在视口中的物理宽高，用于联动计算并对齐缩略图面板 */
-const mainRootSize = ref({ width: 0, height: 0 });
+const mainRootSize = shallowRef({ width: 0, height: 0 });
 /** 针对主图最外层根节点的尺寸变化观察器 */
 let mainRootObserver: ResizeObserver | null = null;
 
-/** 在父组件渲染上下文读取插槽一次，真实片、克隆片和缩略图共享节点快照。 */
+/**
+ * 在父组件渲染上下文读取插槽一次，真实片、克隆片和缩略图共享节点快照。
+ * 注意：写 slideCount 是本组件唯一允许的渲染期写入——张数只能在调用插槽后得知，
+ * 只在张数变化时多一次渲染（watch(slideCount) 夹在两次渲染之间执行）。不要在这里再写其他随渲染变化的状态，
+ * 否则会触发 Vue 的递归更新上限。长期方案是子项登记（新增 RebornCarouselItem），需与 UniApp 端一起评估。
+ */
 function prepareSlides() {
   slideNodes = normalizeNodes(slots.default?.() ?? []);
   slideCount.value = slideNodes.length;
-  if (!hasRendered) {
-    currentIndex.value = clampIndex(modelValue.value ?? props.initialSlide);
-    hasRendered = true;
-  }
   return true;
 }
 
@@ -485,13 +516,28 @@ watch(effectiveHeight, () => {
   stopMotion(mainRootRef.value);
 }, { flush: 'sync' });
 
-/** 视口容器的核心滚动样式控制 */
+/**
+ * 视口容器的核心滚动样式控制。
+ * 吸附方式不在这里：它由主题按方向给出 snap-x / snap-y 类名，暂停吸附由 syncSnapType 直接写行内样式。
+ * 若放进这份响应式样式，Vue 每次补丁都会把整份 style 重写一遍，盖掉暂停用的 none
+ */
 const viewportStyle = computed<CSSProperties>(() => ({
   height: effectiveHeight.value === "auto" ? "auto" : "100%",
-  // 程序转场也暂停吸附，避免克隆区等价平移时被浏览器强行吸附到整张。
-  scrollSnapType: isDragging.value || isLoopTransitioning.value ? "none" : isVertical.value ? "y mandatory" : "x mandatory",
   scrollBehavior: "auto",
 }));
+
+/**
+ * 拖拽与程序转场期间暂停吸附，避免克隆区等价平移时被浏览器强行吸附到整张。
+ * 这只服务于滚动行为，直接写 DOM、不经过响应式：否则每次 isLoopTransitioning 翻转
+ * 都会让真实片、克隆片与缩略图整体重渲染一遍。同步触发，保证随后的程序滚动已经不受吸附干扰；
+ * 恢复时清空行内值，交回类名上的吸附方式。
+ */
+function syncSnapType() {
+  const viewport = viewportRef.value;
+  if (!viewport) return;
+  viewport.style.scrollSnapType = isDragging.value || isLoopTransitioning.value ? "none" : "";
+}
+watch([isDragging, isLoopTransitioning], syncSnapType, { flush: "sync" });
 
 /** 轨道容器的核心样式 */
 const trackStyle = computed(() => ({
@@ -593,7 +639,7 @@ function updateAutoHeight() {
   }
 
   const renderIdx = realToRenderIndex(currentIndex.value);
-  const slide = slideRefs.value[renderIdx];
+  const slide = slideRefs[renderIdx];
 
   if (slide) {
     // 读取内部首个子元素的实际滚动高度
@@ -755,7 +801,7 @@ function setSlideRef(el: Element | ComponentPublicInstance | null, index: number
   }
 
   const element = ("$el" in el ? el.$el : el) as HTMLElement;
-  slideRefs.value[index] = element;
+  slideRefs[index] = element;
 }
 
 /**
@@ -767,7 +813,7 @@ function setThumbRef(el: Element | ComponentPublicInstance | null, index: number
   }
 
   const element = ("$el" in el ? el.$el : el) as HTMLElement;
-  thumbRefs.value[index] = element;
+  thumbRefs[index] = element;
 }
 
 /**
@@ -786,7 +832,7 @@ function scheduleLayoutUpdate(force = false) {
   isUpdatingLayout = true;
   const generation = ++layoutGeneration;
   if (layoutFrame) {
-    cancelAnimationFrame(layoutFrame);
+    cancelFrame(layoutFrame);
   }
 
   layoutFrame = scheduleFrame(() => {
@@ -810,7 +856,7 @@ function scheduleLayoutUpdate(force = false) {
  */
 function getSlideTarget(renderIdx: number) {
   const viewport = viewportRef.value;
-  const slide = slideRefs.value[renderIdx];
+  const slide = slideRefs[renderIdx];
 
   if (!viewport || !slide) {
     return 0;
@@ -886,7 +932,7 @@ function syncCurrentFromScroll(emitChange = false) {
     });
   } else {
     // 非 loop 模式：直接在 slideRefs 中查找
-    slideRefs.value.forEach((_, index) => {
+    slideRefs.forEach((_, index) => {
       const distance = Math.abs(getSlideTarget(index) - currentOffset);
       if (distance < nearestDistance) {
         nearestDistance = distance;
@@ -1086,13 +1132,13 @@ function loopGoTo(targetReal: number, options: {
     if (isDisposed || generation !== loopGoToGeneration || !viewportRef.value) return;
     const viewport = viewportRef.value;
     const maxScroll = isVertical.value ? viewport.scrollHeight - viewport.clientHeight : viewport.scrollWidth - viewport.clientWidth;
-    const first = slideRefs.value[cloneCount.value];
-    const next = slideRefs.value[cloneCount.value + total];
+    const first = slideRefs[cloneCount.value];
+    const next = slideRefs[cloneCount.value + total];
     // 同一内容在真实区和后置克隆区的原始起点差才是完整周期，不能使用裁剪过的滚动目标。
     const period = first && next ? (isVertical.value ? next.offsetTop - first.offsetTop : next.offsetLeft - first.offsetLeft) : 0;
 
     while (true) {
-      const slide = slideRefs.value[targetRenderIdx];
+      const slide = slideRefs[targetRenderIdx];
       const viewportSize = isVertical.value ? viewport.clientHeight : viewport.clientWidth;
       const rawTarget = slide
         ? (isVertical.value ? slide.offsetTop : slide.offsetLeft) - (effectiveCenteredSlides.value ? (viewportSize - (isVertical.value ? slide.offsetHeight : slide.offsetWidth)) / 2 : 0)
@@ -1367,7 +1413,7 @@ function handleScroll() {
   }
 
   if (scrollFrame) {
-    cancelAnimationFrame(scrollFrame);
+    cancelFrame(scrollFrame);
   }
 
   scrollFrame = scheduleFrame(() => {
@@ -1487,7 +1533,7 @@ function nextThumb() {
 
 function scrollThumbIntoView(index: number, behavior: ScrollBehavior = "smooth") {
   const viewport = thumbsViewportRef.value;
-  const thumb = thumbRefs.value[index];
+  const thumb = thumbRefs[index];
 
   if (!viewport || !thumb) {
     return;
@@ -1556,8 +1602,8 @@ watch(
 /** 幻灯片内容（数量）变化时，同步 DOM 引用并重新修正滚动位置 */
 watch(slideCount, (_count, previousCount) => {
   abortLoopTransition();
-  slideRefs.value = slideRefs.value.slice(0, renderSlides.value.length);
-  thumbRefs.value = thumbRefs.value.slice(0, slideCount.value);
+  slideRefs = slideRefs.slice(0, renderSlides.value.length);
+  thumbRefs = thumbRefs.slice(0, slideCount.value);
   nextTick(() => {
     updateViewportMainSize();
     updateAutoHeight();
@@ -1702,10 +1748,10 @@ onBeforeUnmount(() => {
   pendingScrollEndCleanup?.();
   pendingScrollEndCleanup = null;
   if (scrollFrame) {
-    cancelAnimationFrame(scrollFrame);
+    cancelFrame(scrollFrame);
   }
   if (layoutFrame) {
-    cancelAnimationFrame(layoutFrame);
+    cancelFrame(layoutFrame);
   }
   if (resizeHandler) {
     window.removeEventListener("resize", resizeHandler);
@@ -1749,7 +1795,8 @@ defineExpose({
               @click="handleThumbClick(index - 1)" @keydown="(event) => handleThumbKeydown(index - 1, event)"
             >
               <div :class="ui.thumbPreview({ active: (index - 1) === currentIndex })" inert aria-hidden="true">
-                <CarouselSlotItem :node="slideNodes[index - 1]" />
+                <!-- 缩略图与真实片同时挂载同一份内容，必须深拷贝 -->
+                <CarouselSlotItem :node="slideNodes[index - 1]" clone />
               </div>
               <div :class="ui.thumbOverlay({ class: (index - 1) === currentIndex ? 'opacity-40' : 'opacity-10' })" />
             </div>
@@ -1793,7 +1840,8 @@ defineExpose({
                 ]" :aria-hidden="item.isClone ? 'true' : undefined" :inert="item.isClone" role="group" aria-roledescription="幻灯片" :aria-label="`${item.realIndex + 1} / ${slideCount}`"
               >
                 <div :class="ui.slideInner()">
-                  <CarouselSlotItem :node="slideNodes[item.realIndex]" />
+                  <!-- 真实片直接渲染原节点（保留块优化）；只有 loop 克隆片深拷贝 -->
+                  <CarouselSlotItem :node="slideNodes[item.realIndex]" :clone="item.isClone" />
                 </div>
               </div>
             </div>

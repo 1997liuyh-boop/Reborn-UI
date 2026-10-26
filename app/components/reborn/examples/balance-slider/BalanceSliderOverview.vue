@@ -4,9 +4,7 @@
  *
  * 初始值取 60 而非默认 50：两段宽度不等才看得出是在调配比例。
  *
- * 右侧色带与指示条要随明暗切换黑白，取色逻辑同 Demo；
- * 但 Demo 用的 @vueuse/core 版 useColorMode 会按系统偏好改写 html 的 class，
- * 总览页挂载后可能把站点主题切掉，这里改用 Nuxt 自动导入的只读版本。
+ * 右侧色带与指示条随明暗切换黑白，取色逻辑同 Demo：从 Nuxt 的 useColorMode 读取站点当前主题，只读不写。
  */
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')

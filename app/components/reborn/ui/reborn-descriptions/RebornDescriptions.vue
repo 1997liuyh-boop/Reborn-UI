@@ -1,42 +1,12 @@
 <script setup lang="ts">
 import type { VNode } from "vue";
-import type {
-  DescriptionsAlign,
-  DescriptionsLayout,
-  DescriptionsResponsive,
-  DescriptionsSize,
-  DescriptionsSpan,
-} from "./reborn-descriptions.config";
+import type { DescriptionsAlign, DescriptionsLayout, DescriptionsResponsive, DescriptionsSize, DescriptionsSpan } from "./reborn-descriptions.config";
 import { useResizeObserver } from "@vueuse/core";
-import { computed, Fragment, onMounted, ref, useSlots } from "vue";
+import { computed, Fragment, onBeforeUpdate, onMounted, shallowRef, useSlots, useTemplateRef } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import theme, { descriptionsBreakpointOrder, descriptionsBreakpoints } from "./reborn-descriptions.config";
-
-defineOptions({
-  name: "RebornDescriptions",
-});
-
-const props = withDefaults(defineProps<DescriptionsProps>(), {
-  bordered: false,
-  colon: true,
-  column: 3,
-  layout: "horizontal",
-  size: "md",
-  labelAlign: "left",
-  contentAlign: "left",
-});
-
-defineSlots<{
-  /** 自定义标题内容，优先于 title 属性 */
-  title?: (props: Record<string, never>) => any;
-  /** 自定义右上方操作区，优先于 extra 属性 */
-  extra?: (props: Record<string, never>) => any;
-  /** 放置 RebornDescriptionsItem 子组件 */
-  default?: (props: Record<string, never>) => any;
-  /** 由 item 的 slot / labelSlot 指向的 `content-{name}`、`label-{name}` 具名插槽 */
-  [name: string]: ((props: any) => any) | undefined;
-}>();
+import RebornDescriptionsItem from "./RebornDescriptionsItem.vue";
 
 export interface DescriptionsItem {
   /** 内容的描述，即左侧标签文字 */
@@ -100,13 +70,51 @@ export interface DescriptionsProps {
   }>;
 }
 
+interface ParsedItem extends DescriptionsItem {
+  /** 子组件 label 插槽的渲染函数 */
+  labelSlotFn?: () => any;
+  /** 子组件默认插槽的渲染函数 */
+  contentSlotFn?: () => any;
+}
+
+interface RowCell extends ParsedItem {
+  colStart: number;
+  colSpan: number;
+  rowSpan: number;
+  placeholder?: boolean;
+}
+
+defineOptions({
+  name: "RebornDescriptions",
+});
+
+const props = withDefaults(defineProps<DescriptionsProps>(), {
+  bordered: false,
+  colon: true,
+  column: 3,
+  layout: "horizontal",
+  size: "md",
+  labelAlign: "left",
+  contentAlign: "left",
+});
+
+defineSlots<{
+  /** 自定义标题内容，优先于 title 属性 */
+  title?: (props: Record<string, never>) => any;
+  /** 自定义右上方操作区，优先于 extra 属性 */
+  extra?: (props: Record<string, never>) => any;
+  /** 放置 RebornDescriptionsItem 子组件 */
+  default?: (props: Record<string, never>) => any;
+  /** 由 item 的 slot / labelSlot 指向的 `content-{name}`、`label-{name}` 具名插槽 */
+  [name: string]: ((props: any) => any) | undefined;
+}>();
 const slots = useSlots();
 
 // ─── 容器宽度与列数解析 ───────────────────────────────────────────────
 
-const containerRef = ref<HTMLElement | null>(null);
+const containerRef = useTemplateRef<HTMLElement>("containerRef");
 // 测量前按「足够宽」处理：宁可首帧多列再收窄，也好过宽屏下先闪一帧单列
-const containerWidth = ref(9999);
+const containerWidth = shallowRef(9999);
 
 /**
  * ResizeObserver 的回调挂在浏览器的渲染步骤上，页面不可见（后台标签页、display:none 的祖先）时不会派发，
@@ -163,20 +171,10 @@ const effectiveColumn = computed(() => {
 
 // ─── 子组件解析与分行 ────────────────────────────────────────────────
 
-interface ParsedItem extends DescriptionsItem {
-  /** 子组件 label 插槽的渲染函数 */
-  labelSlotFn?: () => any;
-  /** 子组件默认插槽的渲染函数 */
-  contentSlotFn?: () => any;
-}
+
 
 /** 实际落到表格里的一格，记录位置以避开前面跨行项占用的列 */
-interface RowCell extends ParsedItem {
-  colStart: number;
-  colSpan: number;
-  rowSpan: number;
-  placeholder?: boolean;
-}
+
 
 /** 从默认插槽的 VNode 树里挑出 RebornDescriptionsItem，Fragment（v-for / template）需要摊平一层 */
 function extractItems(vnodes: VNode[]): ParsedItem[] {
@@ -188,16 +186,16 @@ function extractItems(vnodes: VNode[]): ParsedItem[] {
       continue;
     }
 
-    if ((vnode.type as any)?.__name !== "RebornDescriptionsItem") continue;
+    if (vnode.type !== RebornDescriptionsItem) continue;
 
     const itemProps = (vnode.props ?? {}) as Record<string, any>;
     const children = (vnode.children ?? {}) as Record<string, any>;
 
     result.push({
       label: itemProps.label,
-      span: itemProps.span,
-      rowspan: itemProps.rowspan,
-      colon: itemProps.colon,
+      span: typeof itemProps.span === "string" && itemProps.span !== "filled" ? Number(itemProps.span) : itemProps.span,
+      rowspan: itemProps.rowspan === undefined ? undefined : Number(itemProps.rowspan),
+      colon: itemProps.colon === "" || itemProps.colon === "colon" ? true : itemProps.colon,
       labelClass: itemProps.labelClass ?? itemProps["label-class"],
       contentClass: itemProps.contentClass ?? itemProps["content-class"],
       labelSlotFn: typeof children.label === "function" ? children.label : undefined,
@@ -208,7 +206,11 @@ function extractItems(vnodes: VNode[]): ParsedItem[] {
   return result;
 }
 
+// 父级可以替换插槽函数，组件更新前使布局缓存失效。
+const slotVersion = shallowRef(0);
+onBeforeUpdate(() => { slotVersion.value++; });
 const allItems = computed<ParsedItem[]>(() => {
+  void slotVersion.value;
   if (props.items?.length) return props.items;
   return extractItems(slots.default?.() ?? []);
 });
@@ -298,17 +300,17 @@ const rows = computed<RowCell[][]>(() => {
 /** 标签渲染优先级：具名插槽 > 子组件 label 插槽 > label 文本 */
 function renderLabel(cell: RowCell) {
   const named = cell.labelSlot ? slots[`label-${cell.labelSlot}`] : undefined;
-  if (named) return () => named({ item: cell });
-  if (cell.labelSlotFn) return cell.labelSlotFn;
-  return () => cell.label ?? "";
+  if (named) return named({ item: cell });
+  if (cell.labelSlotFn) return cell.labelSlotFn();
+  return cell.label ?? "";
 }
 
 /** 内容渲染优先级：具名插槽 > 子组件默认插槽 > value 文本 */
 function renderContent(cell: RowCell) {
   const named = cell.slot ? slots[`content-${cell.slot}`] : undefined;
-  if (named) return () => named({ item: cell });
-  if (cell.contentSlotFn) return cell.contentSlotFn;
-  return () => (cell.value === null || cell.value === undefined ? "" : String(cell.value));
+  if (named) return named({ item: cell });
+  if (cell.contentSlotFn) return cell.contentSlotFn();
+  return cell.value === null || cell.value === undefined ? "" : String(cell.value);
 }
 
 /**
@@ -342,8 +344,9 @@ const labelFill = computed(() => (props.bordered ? "bg-gray-2" : undefined));
 
 const labelStyle = computed(() => (props.labelWidth ? { minWidth: props.labelWidth } : undefined));
 
-const hasExtra = computed(() => !!(props.extra || slots.extra));
-const hasHeader = computed(() => !!(props.title || slots.title || hasExtra.value));
+const hasExtra = () => !!(props.extra || slots.extra);
+const CellRenderer = (cell: { content: any }) => cell.content;
+const hasHeader = () => !!(props.title || slots.title || hasExtra());
 
 const b = tv(theme);
 const ui = computed(() => {
@@ -378,13 +381,13 @@ const ui = computed(() => {
 
 <template>
   <div ref="containerRef" :class="ui.root({ class: props.class })">
-    <div v-if="hasHeader" :class="ui.header()">
+    <div v-if="hasHeader()" :class="ui.header()">
       <div :class="ui.titleWrapper()">
         <div :class="ui.title()">
           <slot name="title">{{ props.title }}</slot>
         </div>
       </div>
-      <div v-if="hasExtra" :class="ui.extra()">
+      <div v-if="hasExtra()" :class="ui.extra()">
         <slot name="extra">{{ props.extra }}</slot>
       </div>
     </div>
@@ -399,22 +402,48 @@ const ui = computed(() => {
                 <td
                   v-if="cell.placeholder"
                   :colspan="cell.colSpan * 2"
-                  :class="cn(ui.cell(), cellBorder(rowIndex + 1 === rows.length, cell.colStart + cell.colSpan === effectiveColumn))"
+                  :class="
+                    cn(
+                      ui.cell(),
+                      cellBorder(
+                        rowIndex + 1 === rows.length,
+                        cell.colStart + cell.colSpan === effectiveColumn,
+                      ),
+                    )
+                  "
                 />
                 <template v-else>
                   <td
                     :rowspan="cell.rowSpan > 1 ? cell.rowSpan : undefined"
-                    :class="cn(ui.cell(), ui.label(), labelFill, cellBorder(rowIndex + cell.rowSpan === rows.length, false), cell.labelClass)"
+                    :class="
+                      cn(
+                        ui.cell(),
+                        ui.label(),
+                        labelFill,
+                        cellBorder(rowIndex + cell.rowSpan === rows.length, false),
+                        cell.labelClass,
+                      )
+                    "
                     :style="labelStyle"
                   >
-                    <component :is="renderLabel(cell)" />
+                    <CellRenderer :content="renderLabel(cell)" />
                   </td>
                   <td
                     :rowspan="cell.rowSpan > 1 ? cell.rowSpan : undefined"
                     :colspan="cell.colSpan * 2 - 1"
-                    :class="cn(ui.cell(), ui.content(), cellBorder(rowIndex + cell.rowSpan === rows.length, cell.colStart + cell.colSpan === effectiveColumn), cell.contentClass)"
+                    :class="
+                      cn(
+                        ui.cell(),
+                        ui.content(),
+                        cellBorder(
+                          rowIndex + cell.rowSpan === rows.length,
+                          cell.colStart + cell.colSpan === effectiveColumn,
+                        ),
+                        cell.contentClass,
+                      )
+                    "
                   >
-                    <component :is="renderContent(cell)" />
+                    <CellRenderer :content="renderContent(cell)" />
                   </td>
                 </template>
               </template>
@@ -433,10 +462,11 @@ const ui = computed(() => {
               >
                 <div v-if="!cell.placeholder" class="flex items-baseline gap-[4px]">
                   <span :class="cn(ui.label(), cell.labelClass)" :style="labelStyle">
-                    <component :is="renderLabel(cell)" /><span v-if="showColon(cell)" :class="ui.colon()">：</span>
+                    <CellRenderer :content="renderLabel(cell)" />
+                    <span v-if="showColon(cell)" :class="ui.colon()">：</span>
                   </span>
                   <span :class="cn(ui.content(), cell.contentClass)">
-                    <component :is="renderContent(cell)" />
+                    <CellRenderer :content="renderContent(cell)" />
                   </span>
                 </div>
               </td>
@@ -451,10 +481,19 @@ const ui = computed(() => {
                   v-for="(cell, cellIndex) in row"
                   :key="cellIndex"
                   :colspan="cell.colSpan"
-                  :class="cn(ui.cell(), ui.label(), labelFill, cellBorder(false, cell.colStart + cell.colSpan === effectiveColumn), cellGap(true, false), cell.labelClass)"
+                  :class="
+                    cn(
+                      ui.cell(),
+                      ui.label(),
+                      labelFill,
+                      cellBorder(false, cell.colStart + cell.colSpan === effectiveColumn),
+                      cellGap(true, false),
+                      cell.labelClass,
+                    )
+                  "
                   :style="labelStyle"
                 >
-                  <component :is="renderLabel(cell)" />
+                  <CellRenderer :content="renderLabel(cell)" />
                 </td>
               </tr>
               <tr>
@@ -463,9 +502,20 @@ const ui = computed(() => {
                   :key="cellIndex"
                   :rowspan="cell.rowSpan > 1 ? cell.rowSpan * 2 - 1 : undefined"
                   :colspan="cell.colSpan"
-                  :class="cn(ui.cell(), ui.content(), cellBorder(rowIndex + cell.rowSpan === rows.length, cell.colStart + cell.colSpan === effectiveColumn), cellGap(false, rowIndex + cell.rowSpan === rows.length), cell.contentClass)"
+                  :class="
+                    cn(
+                      ui.cell(),
+                      ui.content(),
+                      cellBorder(
+                        rowIndex + cell.rowSpan === rows.length,
+                        cell.colStart + cell.colSpan === effectiveColumn,
+                      ),
+                      cellGap(false, rowIndex + cell.rowSpan === rows.length),
+                      cell.contentClass,
+                    )
+                  "
                 >
-                  <component :is="renderContent(cell)" />
+                  <CellRenderer :content="renderContent(cell)" />
                 </td>
               </tr>
             </template>

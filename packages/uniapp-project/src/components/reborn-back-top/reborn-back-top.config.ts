@@ -3,7 +3,7 @@ const sizes = ['sm', 'md', 'lg'] as const
 export { color as backTopColors, sizes as backTopSizes }
 export default {
   slots: {
-    wrapper: 'fixed right-0 z-50 overflow-visible pointer-none transition-all duration-300 active:scale-95',
+    wrapper: 'fixed right-0 z-50 overflow-visible pointer-events-none transition-all duration-300 active:scale-95',
     base: 'flex flex-row items-center justify-center text-white shadow-lg rounded-full pointer-events-auto cursor-pointer transition-transform duration-300',
     icon: 'text-white',
   },

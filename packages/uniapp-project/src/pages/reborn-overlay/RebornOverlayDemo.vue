@@ -1,14 +1,15 @@
 <script setup lang="ts">
+import { shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
 import RebornOverlay from '@/components/reborn-overlay/RebornOverlay.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
-import pinyin from './components/pinyin.vue'
-import { ref } from 'vue'
-const show = ref(false)
-const show2 = ref(false)
-const closeOnClickOverlay = ref(true)
+import PinyinPoem from '@/demo/PinyinPoem.vue'
+import { overlayPoem } from '@/demo/poems'
+const show = shallowRef(false)
+const show2 = shallowRef(false)
+const closeOnClickOverlay = shallowRef(true)
 </script>
 <template>
     <RebornPage title="Overlay 遮罩层" description="创建一个遮罩层，用于强调特定的页面元素，并阻止用户进行其他操作。">
@@ -17,8 +18,8 @@ const closeOnClickOverlay = ref(true)
             <ReButton v-if="closeOnClickOverlay" block @click="show = true">显示遮罩层</ReButton>
             <ReButton block @click="show2 = true">嵌入内容</ReButton>
         </RebornCard>
-        <reborn-overlay v-model="show" :closeOnClickOverlay="closeOnClickOverlay" />
-        <reborn-overlay v-model="show2" :closeOnClickOverlay="closeOnClickOverlay">
+        <RebornOverlay v-model="show" :closeOnClickOverlay="closeOnClickOverlay" />
+        <RebornOverlay v-model="show2" :closeOnClickOverlay="closeOnClickOverlay">
             <view class="h-full w-full flex justify-center items-center">
                 <scroll-view
                     scroll-y
@@ -30,10 +31,10 @@ const closeOnClickOverlay = ref(true)
                         <view class="i-lucide-x size-6 text-gray-600" />
                     </view>
                     <view class="p-6">
-                        <pinyin />
+                        <PinyinPoem :poem="overlayPoem" />
                     </view>
                 </scroll-view>
             </view>
-        </reborn-overlay>
+        </RebornOverlay>
     </RebornPage>
 </template>

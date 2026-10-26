@@ -997,10 +997,11 @@ const formRules = z.object({
 - **`clear()` 不检查禁用状态**。点击清空按钮在禁用时不可达，但通过实例调用 `clear()` 仍会清空并抛出事件，调用方需自行判断。
 - **校验在写回与外部收起时触发**。写回时跑 `change` 校验，点击外部收起时跑 `blur` 校验；按 Esc 或再次点击触发器收起不触发 `blur`。
 - **`default-value` 不是初始值**。它只决定未选值时面板定位到哪个月，不写入绑定值；需要预填值请直接给 `v-model` 赋值。
-- **`style` 属性不生效**。组件关闭了属性继承且未转发 `$attrs`，宽度等尺寸请用 `class` 设置。
 - **不要写 `dark:` 前缀**。触发器与面板的颜色都来自会随主题切换的灰阶与语义色 token，覆盖样式时直接写 `bg-gray-2`、`text-primary` 即可。
 - **UniApp 端由 `reborn-select-date` 改名而来**。组件名改为 `RebornDatePicker`，路径改为 `components/reborn-date-picker/RebornDatePicker.vue`，`labelFormat` 改名为 `format`（与 Web 端同名同义）；其余参数、事件与 Expose 不变。旧名不再保留，升级时需替换导入路径与 `label-format` 写法，否则组件解析失败、展示格式回落为按 `type` 的默认值。
 - **两端的 `type` 不能共用同一个值**。Web 的 `type` 同时决定粒度与单选 / 多选 / 范围，UniApp 的 `type` 只决定滚轮列数；`date`、`month`、`year` 两端都有且含义接近，`daterange`、`dates` 等只在 Web 有效，`hour`、`minute`、`second` 只在 UniApp 有效，跨端共用代码时要按端分别传值。
 - **UniApp 端的范围值不在 `v-model` 上**。开启 `rangeable` 后起止值写进 `v-model:values` 并抛 `range-change`，`modelValue` 与 `change` 不再更新；表单规则要校验 `values` 字段。
 - **UniApp 端只在点「确定」时写回**。拨动滚轮、切换开始 / 结束卡片、点快捷项都只改弹出层内的状态，点「取消」或遮罩关闭会丢弃；需要即时联动时在 `open()` 的回调或 `change` / `range-change` 里处理。
 - **UniApp 端 `ui.wrapper` 与 `ui.popupOp` 是预留键**。它们在 `reborn-date-picker.config.ts` 里有默认类名，但模板里没有接到任何节点，写入不生效；改弹出层外壳请用 `popupUi`，改触发器宽度请包一层容器。
+
+- **Web 原生属性透传到触发器根节点。** `id`、`style`、`data-*`、`aria-*` 与未声明事件随父级更新，前缀插槽动态增删时也会同步触发器布局。

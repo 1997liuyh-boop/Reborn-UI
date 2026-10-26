@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { chipColors, chipPositions, chipSizes, chipVariants } from './reborn-chip.config'
 import { computed } from 'vue'
+import { useBooleanModel } from '@/composables/useBooleanModel'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-chip.config'
 
 defineOptions({
   name: 'RebornChip',
-  inheritAttrs: false,
 })
 
 const props = withDefaults(defineProps<ChipProps>(), {
@@ -49,7 +49,8 @@ export interface ChipProps {
 }
 
 /** 是否渲染角标节点，配合 `v-model:show` 同步；组件内部不会改写它 */
-const show = defineModel<boolean>('show', { default: true })
+defineModel<boolean>('show', { default: undefined })
+const show = useBooleanModel('show', true)
 
 /** 实际生效的变体：未指定时按有无文本自动选择，「传 text 显示计数、不传显示圆点」的用法保持不变 */
 const variant = computed<ChipVariant>(() => props.variant ?? (props.text ? 'textDot' : 'solid'))

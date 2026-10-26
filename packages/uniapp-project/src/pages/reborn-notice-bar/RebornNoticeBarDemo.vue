@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, shallowRef } from 'vue';
 import RebornPage from '@/components/reborn-page/RebornPage.vue';
 import RebornCard from '@/components/reborn-card/RebornCard.vue';
 import RebornNoticeBar from '@/components/reborn-notice-bar/RebornNoticeBar.vue';
 import RebornButton from '@/components/reborn-button/RebornButton.vue';
 
-const showNotice = ref(true);
-const noticeBarRef = ref<any>(null);
+const showNotice = shallowRef(true);
+const noticeBarRef = ref<InstanceType<typeof RebornNoticeBar> | null>(null);
 
 function handleReplay() {
     noticeBarRef.value?.replay();
@@ -23,7 +23,7 @@ function handleClick() {
 }
 
 function handleChange(index: number) {
-    console.log('当前索引:', index);
+    uni.showToast({ title: `当前消息：${index + 1}`, icon: 'none' });
 }
 </script>
 
@@ -81,12 +81,10 @@ function handleChange(index: number) {
 
         <RebornCard title="事件与方法">
             <view class="flex flex-col gap-[24rpx]">
-                <RebornNoticeBar ref="noticeBarRef" text="点击右侧图标重播动画" right-icon="i-lucide-refresh-cw"
-                    @replay="() => { }" @click="handleReplay" />
+                <RebornNoticeBar ref="noticeBarRef" text="点击通知栏重播动画" @click="handleReplay" />
 
                 <view v-if="showNotice">
-                    <RebornNoticeBar text="点击右侧图标关闭此通知" right-icon="i-lucide-x" @close="handleClose"
-                        @click="handleClose" />
+                    <RebornNoticeBar text="点击右侧图标关闭此通知" right-icon="i-lucide-x" @close="handleClose" />
                 </view>
 
                 <RebornButton v-if="!showNotice" size="sm" @click="showNotice = true">
@@ -101,5 +99,3 @@ function handleChange(index: number) {
 
     </RebornPage>
 </template>
-
-<style scoped></style>

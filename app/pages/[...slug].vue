@@ -1,69 +1,26 @@
 <script setup lang="ts">
-import type { Collections, ContentNavigationItem, DocsCollectionItem } from "@nuxt/content";
-import { findPageHeadline } from "@nuxt/content/utils";
-import { kebabCase } from "scule";
-import { addPrerenderPath } from "../utils/prerender";
 
 definePageMeta({
     layout: "docs",
 });
 
-const route = useRoute();
-const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
+
 
 const collectionName = computed(() => "docs");
 
-const [{ data: page, error: pageError }, { data: surround, error: surroundError }] = await Promise.all([
-    useAsyncData(
-        `content-${kebabCase(route.path || "index")}`,
-        () =>
-            queryCollection(collectionName.value as keyof Collections)
-                .path(route.path)
-                .first() as Promise<DocsCollectionItem>,
-    ),
-    useAsyncData(`content-${kebabCase(route.path || "index")}-surround`, () => {
-        return queryCollectionItemSurroundings(collectionName.value as keyof Collections, route.path, {
-            fields: ["description"],
-        });
-    }),
-]);
+// 先在组件 setup 中读取导航注入，再进入 Nuxt 的异步上下文。
+const pageRequest = useDocsPageData(collectionName);
+const { page, surround, headline } = await pageRequest;
 
-if (pageError.value) {
-    throw createError({
-        statusCode: 500,
-        statusMessage: pageError.value.message || "Internal Server Error",
-        fatal: true,
-    });
-}
-
-if (!page.value) {
-    throw createError({
-        statusCode: 404,
-        statusMessage: `Page not found: ${route.path} in collection ${collectionName.value}`,
-        fatal: true,
-    });
-}
-
-// Add the page path to the prerender list
-addPrerenderPath(`/raw${route.path}.md`);
-
-const title = page.value.seo?.title || page.value.title;
-const description = page.value.seo?.description || page.value.description;
+const title = computed(() => page.value?.seo?.title || page.value?.title);
+const description = computed(() => page.value?.seo?.description || page.value?.description);
 
 useSeoMeta({
     title,
-    ogTitle: title,
+    ogTitle: title.value,
     description,
-    ogDescription: description,
+    ogDescription: description.value,
 });
-
-const headline = ref(findPageHeadline(navigation?.value, page.value?.path));
-watch(
-    () => navigation?.value,
-    () => {
-        headline.value = findPageHeadline(navigation?.value, page.value?.path) || headline.value;
-    },
-);
 
 defineOgImageComponent("Docs", {
     headline: headline.value,

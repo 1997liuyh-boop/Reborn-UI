@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { TabKey, TabPaneMeta, TabsContext } from "./reborn-tabs.config";
+import type { TabKey, TabPaneRegistration } from "./reborn-tabs.config";
 import { animate } from "motion-v";
 import {
   computed,
-  getCurrentInstance,
   inject,
   onBeforeUnmount,
+  onBeforeUpdate,
   onMounted,
-  ref,
   shallowReactive,
   shallowRef,
   useSlots,
+  useTemplateRef,
   watch,
   watchEffect,
 } from "vue";
@@ -28,6 +28,10 @@ const props = withDefaults(defineProps<RebornTabPaneProps>(), {
 });
 
 export interface RebornTabPaneProps {
+  /** 业务选中标识；Vue key 只用于列表复用 */
+  paneKey?: TabKey
+  /** 显式序位；小程序动态列表所有项都应传入有限数值 */
+  order?: number
   /** 标题文本，需要富文本时改用 title 插槽 */
   title?: string;
   /** 是否禁用，禁用后点击与悬停都不会切换 */
@@ -39,38 +43,48 @@ export interface RebornTabPaneProps {
 }
 
 const slots = useSlots();
-const ctx = inject<TabsContext | null>(TABS_INJECTION_KEY, null);
+const ctx = inject(TABS_INJECTION_KEY, null);
 if (!ctx) throw new Error("[RebornTabPane] 必须作为 RebornTabs 的子组件使用");
 
-const instance = getCurrentInstance();
-const el = shallowRef<HTMLElement>();
+const el = useTemplateRef<HTMLElement>("el");
 
-/** 登记到父级的元信息，父级据此渲染头部；未写 key 时留空由父级补序号 */
-const meta = shallowReactive<TabPaneMeta>({
-  key: (instance?.vnode.key ?? undefined) as TabKey,
+/** 标题插槽的稳定包装：始终调用当前插槽，父级重渲染换了插槽函数也不会渲染到旧的 */
+const renderTitle = () => slots.title?.() ?? [];
+
+/** 登记到父级的元信息，父级据此渲染头部；未写 paneKey 时留空由父级补序号 */
+const meta = ctx.addPane(shallowReactive<TabPaneRegistration>({
+  key: props.paneKey,
+  order: props.order,
   title: props.title,
   disabled: props.disabled,
   closable: props.closable,
   destroyOnHidden: props.destroyOnHidden,
-  // 包一层始终调用当前插槽，避免父级重渲染后头部仍渲染旧的插槽函数
-  titleSlot: slots.title ? () => slots.title?.() : undefined,
+  titleSlot: slots.title ? renderTitle : undefined,
+}));
+
+/**
+ * useSlots() 在生产构建下不是响应式的，setup 里判断一次插槽是否存在，之后 v-if 增删 #title 就感知不到。
+ * 父级增删插槽会强制本组件更新，onBeforeUpdate 里把存在性同步到响应式的 meta，头部随之重渲染
+ */
+onBeforeUpdate(() => {
+  meta.titleSlot = slots.title ? renderTitle : undefined;
 });
 
 watchEffect(() => {
+  if (props.paneKey !== undefined) meta.key = props.paneKey
+  meta.order = props.order
   meta.title = props.title;
   meta.disabled = props.disabled;
   meta.closable = props.closable;
   meta.destroyOnHidden = props.destroyOnHidden;
 });
 
-ctx.addPane(meta);
-
 const isActive = computed(() => ctx.activeKey.value === meta.key);
 const destroyOnHidden = computed(() => props.destroyOnHidden || ctx.destroyOnHidden.value);
 const paneClass = computed(() => ctx.paneClass.value);
 
 /** 记录是否被展示过，lazy-load 据此决定首次挂载时机 */
-const shown = ref(false);
+const shown = shallowRef(false);
 watchEffect(() => {
   if (isActive.value) shown.value = true;
 });
@@ -82,7 +96,7 @@ const shouldRender = computed(() => {
 });
 
 /** 离场面板脱离文档流，与入场面板重叠；父级单独平滑调整内容高度。 */
-const leaving = ref(false);
+const leaving = shallowRef(false);
 let transitionRun = 0;
 let finishTransition: (() => void) | undefined;
 let motionMedia: MediaQueryList | undefined;
@@ -156,7 +170,7 @@ watch(() => ctx.animation.value, enabled => { if (!enabled) finishTransition?.()
 onMounted(() => {
   motionMedia = window.matchMedia?.("(prefers-reduced-motion: reduce)");
   motionMedia?.addEventListener("change", syncMotionPreference);
-  meta.el = el.value;
+  meta.el = el.value ?? undefined;
   // setup 顺序在标签被插入到中间时会失真，挂载后由父级按 DOM 先后重排
   ctx.sortPanes();
 });

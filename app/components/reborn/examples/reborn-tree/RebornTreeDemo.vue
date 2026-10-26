@@ -4,6 +4,7 @@ import type {
   TreeDataNode,
   TreeKey,
 } from "~/components/reborn/ui/reborn-tree/reborn-tree.config";
+import { computed, onBeforeUnmount, ref, shallowRef, useTemplateRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
 import { treeColors } from "~/components/reborn/ui/reborn-tree/reborn-tree.config";
@@ -73,20 +74,21 @@ const defaultState: Record<string, any> = {
   animated: true,
 };
 
-const state = ref<Record<string, any>>({ ...defaultState });
+const state = shallowRef<Record<string, any>>({ ...defaultState });
 
 /** 演练场的树数据：末尾带一个 disabled 节点，方便观察禁用态对点选/勾选/拖拽的屏蔽 */
-const playTreeData = ref<TreeDataNode[]>([
-  ...makeTreeData(),
-  { key: "archive", title: "历史归档（disabled）", icon: "lucide:archive", disabled: true },
-]);
+function makePlayTreeData(): TreeDataNode[] {
+  return [...makeTreeData(), { key: "archive", title: "历史归档（disabled）", icon: "lucide:archive", disabled: true }];
+}
+const playTreeData = ref<TreeDataNode[]>(makePlayTreeData());
 
 /** 最近一次事件回显，让预览区的交互「有回应」 */
-const lastEvent = ref("尚未交互");
+const lastEvent = shallowRef("尚未交互");
 
 /** 重置演练场配置 */
 function resetState() {
   state.value = { ...defaultState };
+  playTreeData.value = makePlayTreeData();
   lastEvent.value = "尚未交互";
 }
 
@@ -174,8 +176,17 @@ function makeColorTreeData(): TreeDataNode[] {
 }
 
 /** 受控展开：展开集合完全由外部持有 */
-const controlledExpandedKeys = ref<TreeKey[]>(["engineering"]);
+const controlledExpandedKeys = shallowRef<TreeKey[]>(["engineering"]);
 const controlledTreeData = makeTreeData();
+/** 各演示只创建自己的数据一次，重渲染时保持引用稳定。 */
+const basicTreeData = makeTreeData();
+const singleSelectTreeData = makeTreeData();
+const multiSelectTreeData = makeTreeData();
+const iconTreeData = makeTreeData();
+const blockTreeData = makeTreeData();
+const disabledTreeData = makeTreeData();
+const filterTreeData = makeTreeData();
+const colorTreeData = Object.fromEntries(treeColors.map(color => [color, makeColorTreeData()]));
 const { getPath } = useTree(() => controlledTreeData, {});
 
 /** 展开全部父节点 */
@@ -200,13 +211,13 @@ function expandToPayment() {
 }
 
 /** 点选与多选的选中回显 */
-const singleSelectedKeys = ref<TreeKey[]>([]);
-const multiSelectedKeys = ref<TreeKey[]>([]);
+const singleSelectedKeys = shallowRef<TreeKey[]>([]);
+const multiSelectedKeys = shallowRef<TreeKey[]>([]);
 
 /** 复选：父子联动模式的勾选集合 */
-const conductCheckedKeys = ref<TreeKey[]>(["frontend"]);
+const conductCheckedKeys = shallowRef<TreeKey[]>(["frontend"]);
 /** 复选：checkStrictly 严格模式的勾选集合（对象形态） */
-const strictCheckedKeys = ref<TreeCheckedKeys>({ checked: ["backend"], halfChecked: [] });
+const strictCheckedKeys = shallowRef<TreeCheckedKeys>({ checked: ["backend"], halfChecked: [] });
 
 /** 联动示例数据：混入禁用节点与仅禁复选框的节点 */
 const checkTreeData: TreeDataNode[] = [
@@ -241,7 +252,7 @@ const strictCheckedText = computed(() => {
 });
 
 /** 自定义标题：筛选关键字 */
-const filterKeyword = ref("");
+const filterKeyword = shallowRef("");
 
 /** 命中筛选关键字的节点标题高亮 */
 function filterByKeyword(node: TreeDataNode): boolean {
@@ -256,7 +267,7 @@ function childCount(node: TreeDataNode): number {
 }
 
 /** extra 插槽演示：收藏的节点集合 */
-const starredKeys = ref(new Set<TreeKey>());
+const starredKeys = shallowRef(new Set<TreeKey>());
 
 /** 切换收藏；extra 容器自带 click.stop，点星标不会触发点选 */
 function toggleStar(key: TreeKey) {
@@ -284,10 +295,18 @@ function findAsyncNode(list: TreeDataNode[], key: TreeKey): TreeDataNode | null 
   return null;
 }
 
+/** 保存异步任务，卸载时清定时器并完成 Promise。 */
+const loadTasks = new Map<ReturnType<typeof setTimeout>, () => void>();
+onBeforeUnmount(() => {
+  for (const [timer, resolve] of loadTasks) { clearTimeout(timer); resolve(); }
+  loadTasks.clear();
+});
+
 /** 模拟接口：600ms 后为目标节点写入两个子级，第二层直接标记 isLeaf 终止加载链 */
 function loadChildren(node: TreeDataNode): Promise<void> {
   return new Promise((resolve) => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      loadTasks.delete(timer);
       const target = findAsyncNode(asyncTreeData.value, node.key);
       if (target) {
         target.children = [
@@ -297,6 +316,7 @@ function loadChildren(node: TreeDataNode): Promise<void> {
       }
       resolve();
     }, 600);
+    loadTasks.set(timer, resolve);
   });
 }
 
@@ -305,7 +325,7 @@ function loadChildren(node: TreeDataNode): Promise<void> {
 /** 拖拽树的数据：drop 事件不代改数据，由这里的处理函数落库 */
 const dragTreeData = ref<TreeDataNode[]>(makeTreeData());
 /** 拖拽树的展开集合：放入内部后要把目标节点展开，让结果立刻可见 */
-const dragExpandedKeys = ref<TreeKey[]>(["engineering", "frontend", "backend", "operation"]);
+const dragExpandedKeys = shallowRef<TreeKey[]>(["engineering", "frontend", "backend", "operation"]);
 
 /** 从树里摘除指定 key 的节点并返回它 */
 function removeNode(list: TreeDataNode[], key: TreeKey): TreeDataNode | null {
@@ -401,7 +421,7 @@ const virtualTreeData: TreeDataNode[] = Array.from({ length: 50 }, (_, group) =>
 }));
 
 /** 虚拟滚动树的组件实例，用于调用 scrollTo */
-const virtualTreeRef = ref<InstanceType<typeof RebornTree> | null>(null);
+const virtualTreeRef = useTemplateRef<InstanceType<typeof RebornTree>>("virtualTreeRef");
 
 /** 滚动到第 25 组：autoExpand 先展开其父链（非受控模式下生效），behavior: "smooth" 走 rAF 平滑动画 */
 function scrollToGroup25() {
@@ -418,7 +438,7 @@ function scrollToGroup25() {
   <div class="flex w-full flex-col">
     <Playground
       v-model="state" :controls="controls" :code="treeCode" component-name="RebornTree"
-      title="交互演练场" description="调节左侧参数，实时查看树在勾选、点选、连接线与拖拽等模式下的表现。"
+      title="交互演练场" description="调节上方参数，实时查看树在勾选、点选、连接线与拖拽等模式下的表现。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -466,7 +486,7 @@ function scrollToGroup25() {
       <DemoBlock layout="stack">
         <RebornTree
           class="w-full max-w-sm"
-          :tree-data="makeTreeData()"
+          :tree-data="basicTreeData"
           :default-expanded-keys="['engineering', 'frontend']"
           selectable
         />
@@ -487,7 +507,7 @@ function scrollToGroup25() {
         >
           <RebornTree
             :color="c"
-            :tree-data="makeColorTreeData()"
+            :tree-data="colorTreeData[c]"
             default-expand-all
             checkable
             :default-checked-keys="['checked']"
@@ -534,7 +554,7 @@ function scrollToGroup25() {
           <RebornTree
             v-model:selected-keys="singleSelectedKeys"
             class="w-full"
-            :tree-data="makeTreeData()"
+            :tree-data="singleSelectTreeData"
             :default-expanded-keys="['engineering']"
             selectable
           />
@@ -544,7 +564,7 @@ function scrollToGroup25() {
           <RebornTree
             v-model:selected-keys="multiSelectedKeys"
             class="w-full"
-            :tree-data="makeTreeData()"
+            :tree-data="multiSelectTreeData"
             :default-expanded-keys="['engineering']"
             selectable
             multiple
@@ -599,7 +619,7 @@ function scrollToGroup25() {
         <DemoItem label="showLine" mono>
           <RebornTree
             class="w-full"
-            :tree-data="makeTreeData()"
+            :tree-data="iconTreeData"
             show-line
             default-expand-all
           />
@@ -607,7 +627,7 @@ function scrollToGroup25() {
         <DemoItem label="showLeafIcon 自定义" mono>
           <RebornTree
             class="w-full"
-            :tree-data="makeTreeData()"
+            :tree-data="blockTreeData"
             :show-line="{ showLeafIcon: 'lucide:file-text' }"
             default-expand-all
           />
@@ -615,7 +635,7 @@ function scrollToGroup25() {
         <DemoItem label="showIcon + switcherIcon" mono>
           <RebornTree
             class="w-full"
-            :tree-data="makeTreeData()"
+            :tree-data="disabledTreeData"
             show-icon
             switcher-icon="lucide:circle-chevron-right"
             default-expand-all
@@ -639,7 +659,7 @@ function scrollToGroup25() {
         />
         <RebornTree
           class="w-full max-w-sm"
-          :tree-data="makeTreeData()"
+          :tree-data="filterTreeData"
           :filter-tree-node="filterByKeyword"
           default-expand-all
           block-node

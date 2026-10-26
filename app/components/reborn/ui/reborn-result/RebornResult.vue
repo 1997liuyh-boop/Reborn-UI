@@ -43,10 +43,8 @@ const slots = useSlots();
  * 三段都按需渲染：没内容的段直接不出现在 DOM 里，
  * 这样段间的 24px 间距不会因为空段变成 48px。
  */
-const showIcon = computed(() => props.icon !== null || !!slots.icon);
-const showContent = computed(
-  () => !!props.title || !!props.subTitle || !!slots.title || !!slots["sub-title"],
-);
+function showIcon() { return props.icon !== null || !!slots.icon; }
+function showContent() { return !!props.title || !!props.subTitle || !!slots.title || !!slots["sub-title"]; }
 
 /** icon 为 null 时底板不着色，交给 icon 插槽自己决定样式 */
 const styles = computed(() =>
@@ -73,7 +71,7 @@ const ui = computed(() => {
 <template>
   <div :class="ui.root()">
     <div
-      v-if="showIcon"
+      v-if="showIcon()"
       :class="ui.icon()"
     >
       <slot name="icon">
@@ -86,7 +84,7 @@ const ui = computed(() => {
     </div>
 
     <div
-      v-if="showContent"
+      v-if="showContent()"
       :class="ui.content()"
     >
       <div

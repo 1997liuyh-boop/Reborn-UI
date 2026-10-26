@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornInputNumber from '@/components/reborn-input-number/RebornInputNumber.vue'
@@ -7,22 +7,22 @@ import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornSlider from '@/components/reborn-slider/RebornSlider.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 
-const val1 = ref(30)
+const val1 = shallowRef(30)
 const val2 = ref([50, 70])
-const isDisabled = ref(false)
-const isShowValue = ref(true)
-const step = ref(10)
-const max = ref(100)
+const isDisabled = shallowRef(false)
+const isShowValue = shallowRef(true)
+const step = shallowRef(10)
+const max = shallowRef(100)
 
 // 动态配置
-const currentSize = ref<any>('md')
-const currentColor = ref<any>('primary')
+const currentSize = shallowRef<typeof sizes[number]>('md')
+const currentColor = shallowRef<typeof colors[number]>('primary')
 
 const sizes = ['sm', 'md', 'lg'] as const
 const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', 'neutral'] as const
 
 /** 间断点演示 */
-const stopsValue = ref(30)
+const stopsValue = shallowRef(30)
 
 /** 刻度标记演示：50 分单独给了强调色 */
 const sliderMarks = {
@@ -32,26 +32,26 @@ const sliderMarks = {
   50: { style: { color: 'var(--color-error)' }, label: '50 分' },
   100: '100 分',
 }
-const marksFreeValue = ref(30)
-const markSnapValue = ref(37)
+const marksFreeValue = shallowRef(30)
+const markSnapValue = shallowRef(37)
 
 /** 自定义提示演示 */
-const tempValue = ref(26)
+const tempValue = shallowRef(26)
 /** 温度格式化：给数值补上单位 */
 function formatTemp(value: number) {
   return `${value}°C`
 }
 
 /** Tooltip 显隐控制演示 */
-const tipOpenValue = ref(60)
-const tipHiddenValue = ref(80)
+const tipOpenValue = shallowRef(60)
+const tipHiddenValue = shallowRef(80)
 
 /** 事件演示 */
-const eventValue = ref(50)
+const eventValue = shallowRef(50)
 /** change 触发次数（拖拽过程实时累加） */
-const changeCount = ref(0)
+const changeCount = shallowRef(0)
 /** 最近一次 changeComplete 载荷 */
-const lastComplete = ref('—')
+const lastComplete = shallowRef('—')
 function onSliderChange() {
   changeCount.value++
 }
@@ -60,7 +60,10 @@ function onSliderComplete(value: number | number[]) {
 }
 
 /** 垂直模式演示 */
-const verticalValue = ref(30)
+const verticalValue = shallowRef(30)
+const reverseValue = shallowRef(30)
+const iconValue = shallowRef(30)
+const customValue = shallowRef(30)
 const verticalRange = ref([20, 60])
 
 /** 范围整体拖拽演示 */
@@ -162,9 +165,9 @@ const partialDisabledRange = ref([30, 70])
     <RebornCard title="垂直模式" custom-class="space-y-4">
       <text class="text-24 text-gray-6">vertical 开启垂直方向，长度由 height 给出；reverse 后从上往下递增</text>
       <view class="flex flex-row items-start gap-12">
-        <RebornSlider v-model="verticalValue" vertical height="180px" />
-        <RebornSlider v-model:values="verticalRange" vertical height="180px" range color="success" />
-        <RebornSlider v-model="verticalValue" vertical height="180px" reverse color="info" />
+        <RebornSlider v-model="verticalValue" vertical height="360rpx" />
+        <RebornSlider v-model:values="verticalRange" vertical height="360rpx" range color="success" />
+        <RebornSlider v-model="reverseValue" vertical height="360rpx" reverse color="info" />
       </view>
     </RebornCard>
 
@@ -183,29 +186,25 @@ const partialDisabledRange = ref([30, 70])
     <!-- 图标 -->
     <RebornCard title="两侧图标" custom-class="space-y-4">
       <text class="text-24 text-gray-6">prefix-icon / suffix-icon 传 iconify 类名，#prefix / #suffix 插槽可完全接管</text>
-      <RebornSlider v-model="val1" prefix-icon="i-lucide-volume" suffix-icon="i-lucide-volume-2" />
+      <RebornSlider v-model="iconValue" prefix-icon="i-lucide-volume" suffix-icon="i-lucide-volume-2" />
     </RebornCard>
 
     <!-- 自定义样式 -->
     <RebornCard title="自定义样式" custom-class="space-y-4">
       <view class="space-y-2">
-        <text class="text-24 text-gray-6">自定义轨道与滑块（thumb 插槽的 style 是百分比定位，需自带 translate 居中）</text>
+        <text class="text-24 text-gray-6">定位与交互由组件处理，ui.thumb 修改外形，thumb 插槽只替换滑块中心内容。</text>
         <RebornSlider
-          v-model="val1" :ui="{
+          v-model="customValue" :ui="{
             track: 'bg-purple-100 dark:bg-purple-900',
             progress: 'bg-purple-500',
+            thumb: 'h-[40rpx] w-[60rpx] rounded-full border-2 border-white bg-warning',
           }"
         >
           <template #thumb="{ value }">
             <view
-              :style="{ ...value.style, width: '30px', height: '20px' }"
-              class="
-                pointer-events-none absolute top-1/2 z-[1] -translate-x-1/2
-                -translate-y-1/2 rounded-full border-2 border-solid border-white
-                bg-warning text-center text-24 text-white
-              "
+              class="flex size-full items-center justify-center text-[24rpx] text-white"
             >
-              {{ value.value }}
+              {{ value }}
             </view>
           </template>
         </RebornSlider>

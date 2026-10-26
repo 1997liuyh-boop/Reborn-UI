@@ -24,11 +24,12 @@ export default tv({
     item:
       "group/item relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-[6px] py-[4px] text-left text-base outline-none transition-colors",
     itemLeading: "flex size-4 shrink-0 items-center justify-center text-gray-5",
-    itemBody: "min-w-0 flex-1",
+    // 标题与描述上下排列、相隔 4px：两者原是行内 span，靠自然折行上下摆放，间距无法控制，标题的 truncate 也不生效
+    itemBody: "flex min-w-0 flex-1 flex-col gap-1",
     itemLabel: "truncate",
     // 描述行字号从原生 text-xs（0.75rem）改回七级令牌 text-sm：两者都是 12px，
     // 但令牌是 px 且自带 20px 行高，删掉 leading-[1.5] 后不会掉回 rem 行高
-    itemDescription: "mt-0.5 text-sm text-gray-5",
+    itemDescription: "text-sm text-gray-5",
     itemTrailing: "ml-auto flex items-center gap-1 pl-3",
     // 快捷键徽标：11px 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量。
     itemKbd: "rounded-sm border border-gray-3 bg-gray-2 px-1 py-px text-[11px] font-medium uppercase tracking-wide text-gray-5",

@@ -7,7 +7,7 @@ tags: [vue, css, tailwind, table, data]
 badge: New
 ---
 
-::ComponentViewer{demoFile="RebornTableDemo.vue" config="RebornTableConfig" componentId="reborn-table" :componentFiles='["RebornTable.vue", "RebornTableColumn.vue", "table.types.ts", "reborn-table.config.ts"]' :uniappFiles='[]'}
+::ComponentViewer{demoFile="RebornTableDemo.vue" config="RebornTableConfig" componentId="reborn-table" :componentFiles='["RebornTable.vue", "RebornTableColumn.vue", "TableView.ts", "TableOverflowTooltip.ts", "table.overflow.ts", "table.types.ts", "reborn-table.config.ts"]' :uniappFiles='[]'}
 ::
 
 ## 简介
@@ -412,6 +412,8 @@ const columns: TableColumn[] = [{ type: 'selection', reserveSelection: true, sel
 
 ::warning
 跨数据选择必须使用稳定且唯一的 `rowKey`，不能用随分页变化的数组索引。`reserveSelection` 配在选择列上，不是表格的 prop；`selection-change` 返回行对象，`selectedKeys` 保存行键。
+
+初始 `data=[]` 时保留预选键，等第一批非空数据到达后再匹配。未开启 `reserveSelection` 时，此后数据删除或清空会裁剪已不存在的选中键；开启后保留跨数据选择。
 ::
 
 ### 排序

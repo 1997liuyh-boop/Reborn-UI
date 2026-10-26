@@ -10,8 +10,9 @@
     "多行文本输入，改用 reborn-textarea。"
   ],
   "pitfalls": [
-    "仅 web 端可用，依赖 @vueuse/core。",
+    "仅 web 端可用。",
     "组件名为 IInput（文件 IInput.vue），与 reborn-input 不是同一组件。",
-    "样式分两层：class 作用于输入框本体，containerClass 作用于外层容器（宽度通常设在 containerClass 上）。"
+    "样式分两层：class 作用于输入框本体，containerClass 作用于外层容器（宽度通常设在 containerClass 上）。",
+    "Web 显式绑定 modelValue 为 undefined/null 时清空显示；仅未绑定时读写 defaultValue 起始的本地值。"
   ]
 }

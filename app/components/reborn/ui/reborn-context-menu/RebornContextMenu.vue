@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
+import type { ContextMenuRootController } from "./context-menu-singleton";
+import type { FloatingRect } from "~/lib/floating";
 import type { Placement } from "~/lib/placement";
-import { computed, getCurrentInstance, inject, onDeactivated, onMounted, onUnmounted, provide, ref, useSlots, watch } from "vue";
+import { computed, getCurrentInstance, inject, onDeactivated, onMounted, onUnmounted, provide, shallowRef, useId, useSlots, useTemplateRef, watch } from "vue";
+import { useFloatingDismiss } from "~/composables/useFloatingDismiss";
+import { FLOATING_VIEWPORT_PADDING, resolveFloatingPosition } from "~/lib/floating";
 import { resolvePlacement as splitPlacement } from "~/lib/placement";
 import { cn } from "~/lib/utils";
 import theme, {
@@ -11,7 +15,7 @@ import theme, {
 } from "./reborn-context-menu.config";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
 import {
-  createRootId,
+  CONTEXT_MENU_ROOT_KEY,
   setActiveRootMenu,
   clearActiveRootMenu,
   lockDocumentScroll,
@@ -79,7 +83,7 @@ export interface RebornContextMenuProps {
    * @deprecated 请改用 placement / sideOffset
    */
   content?: RebornContextMenuContentProps;
-  open?: boolean;
+  /** 非受控时的初始展开状态；绑定了 v-model:open 时以绑定值为准 */
   defaultOpen?: boolean;
   portal?: boolean | string;
   dismissible?: boolean;
@@ -112,14 +116,6 @@ export interface RebornContextMenuProps {
   }>;
 }
 
-interface ContextMenuRootController {
-  rootId: string;
-  closeAll: () => void;
-}
-
-const CONTEXT_MENU_ROOT_KEY = Symbol("reborn-context-menu-root");
-const ROOT_MENU_OPEN_EVENT = "reborn-context-menu:root-open";
-const VIEWPORT_OFFSET = 8;
 /** 展开 / 收起动画时长，与 select-collapse 过渡类的 duration-300 / duration-200 一致 */
 const ENTER_DURATION = 300;
 const LEAVE_DURATION = 200;
@@ -159,7 +155,6 @@ const props = withDefaults(defineProps<RebornContextMenuProps>(), {
 });
 
 const emit = defineEmits<{
-  (e: "update:open", value: boolean): void;
   /** 点击叶子菜单项时触发；context.selectionText 为划词触发时选中的文字 */
   (e: "select", item: RebornContextMenuItem, event: MouseEvent, context: RebornContextMenuSelectContext): void;
 }>();
@@ -167,72 +162,59 @@ const emit = defineEmits<{
 const slots = useSlots();
 const appProperties = getCurrentInstance()?.appContext.config.globalProperties;
 const groupedItems = computed(() => normalizeItems(props.items));
-const hasCustomContent = computed(() => !!slots.content);
+/** 插槽对象不是响应式的，不能缓存进 computed；渲染时求值，动态增删 content 插槽才能切换 */
+const hasCustomContent = () => !!slots.content;
 
-const internalOpen = ref(props.defaultOpen ?? props.open ?? false);
+/**
+ * 受控展开状态（v-model:open）。类型含 Boolean，必须写 default: undefined，
+ * 否则未传时被强转成 false，分不出「受控为 false」和「非受控」
+ */
+const openModel = defineModel<boolean | undefined>("open", { default: undefined });
 
-watch(
-  () => props.open,
-  (value) => {
-    if (value !== undefined) internalOpen.value = value;
-  },
-);
-
-const open = computed({
-  get: () => internalOpen.value,
+/**
+ * 实际展开状态：绑定了 v-model:open 时以绑定值为准，否则以 defaultOpen 为初值、由组件自己维护。
+ * 受控时赋值后要等父组件回流才变，需要新值的地方用本地算出的值，不要赋值后立刻回读
+ */
+const open = computed<boolean>({
+  get: () => openModel.value ?? props.defaultOpen ?? false,
   set: (value) => {
-    internalOpen.value = value;
-    emit("update:open", value);
+    openModel.value = value;
   },
 });
 
 function updateOpen(value: boolean) {
-  if (!props.nested) {
-    if (value) {
-      if (typeof document !== "undefined") {
-        document.dispatchEvent(
-          new CustomEvent(ROOT_MENU_OPEN_EVENT, {
-            detail: { rootId: rootController.rootId },
-          }),
-        );
-      }
-
-      setActiveRootMenu(rootController.rootId, () => {
-        updateOpen(false);
-      });
-    } else {
-      clearActiveRootMenu(rootController.rootId);
-    }
-  }
-
   open.value = value;
 }
 
-const injectedRoot = inject<ContextMenuRootController | null>(CONTEXT_MENU_ROOT_KEY, null);
-const rootController =
+// 只有递归渲染的子菜单接入根控制器；放在别的菜单触发区或面板里的独立菜单仍是各自的根
+const injectedRoot = props.nested ? inject(CONTEXT_MENU_ROOT_KEY, null) : null;
+const rootController: ContextMenuRootController =
   injectedRoot ??
-  ({
-    rootId: createRootId(),
+  {
+    // useId() 在服务端与客户端生成一致的 id；模块级计数器跨请求累加，水合后 data-* 属性与客户端对不上
+    rootId: `reborn-context-menu-${useId()}`,
     closeAll: () => {
       updateOpen(false);
     },
-  } satisfies ContextMenuRootController);
+    isOpen: () => open.value,
+  };
 
 provide(CONTEXT_MENU_ROOT_KEY, rootController);
 
-const triggerRef = ref<HTMLElement>();
-const contentRefComponent = ref<any>();
+const wrapperRef = useTemplateRef<HTMLElement>("wrapperRef");
+const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
+const contentRefComponent = useTemplateRef<any>("contentRefComponent");
 const contentRef = computed(() => contentRefComponent.value?.el as HTMLElement | undefined);
 
-const pointer = ref({ x: 0, y: 0 });
-const style = ref<Record<string, string>>({
+const pointer = shallowRef({ x: 0, y: 0 });
+const style = shallowRef<Record<string, string>>({
   left: "0px",
   top: "0px",
 });
 
 /** 划词触发：当前选区的矩形（作为定位锚点）与文字 */
-const selectionRect = ref<DOMRect | null>(null);
-const selectionText = ref("");
+const selectionRect = shallowRef<DOMRect | null>(null);
+const selectionText = shallowRef("");
 
 /** 按触发方式解析默认的弹出方向与对齐：划词在选区上方居中，子菜单贴右侧，其余在下方起点对齐 */
 function resolvePlacement() {
@@ -243,17 +225,20 @@ function resolvePlacement() {
   return {
     side: explicit?.side ?? props.content.side ?? defaultSide,
     align: explicit?.align ?? props.content.align ?? defaultAlign,
-    offset: props.sideOffset ?? props.content.sideOffset ?? 8,
+    // 右键以指针为锚点，未显式传间距时贴住指针（与系统右键菜单一致）；其余默认 8px
+    offset: props.sideOffset ?? props.content.sideOffset ?? (props.trigger === "contextmenu" && !props.nested ? 0 : 8),
   };
 }
 
-const resolvedSide = ref<ContextMenuSide>(resolvePlacement().side);
+const resolvedSide = shallowRef<ContextMenuSide>(resolvePlacement().side);
 
 let hoverCount = 0;
 let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 let reopenTimer: ReturnType<typeof setTimeout> | null = null;
 let selectionTimer: ReturnType<typeof setTimeout> | null = null;
 let frame: number | null = null;
+/** 展开后等两帧再定位（等内容与过渡类就位）的句柄，收起与卸载时取消 */
+let openFrame: number | null = null;
 let resizeObserver: ResizeObserver | null = null;
 
 function clearReopenTimer() {
@@ -281,72 +266,20 @@ function reopenAtAnchor() {
   schedulePositionUpdate();
 }
 
-function getHorizontalPosition(
-  rect: DOMRect,
-  width: number,
-  height: number,
-  side: ContextMenuSide,
-  align: ContextMenuAlign,
-  offset: number,
-) {
-  let x = rect.left;
-  let y = rect.bottom + offset;
-
-  if (side === "top") {
-    y = rect.top - height - offset;
+/** 定位锚点：右键为指针坐标（0×0 的矩形），划词为选区矩形，其余为触发器 */
+function getAnchorRect(): FloatingRect | null {
+  if (props.trigger === "contextmenu" && !props.nested) {
+    const { x, y } = pointer.value;
+    return { top: y, bottom: y, left: x, right: x, width: 0, height: 0 };
   }
-
-  if (side === "left") {
-    x = rect.left - width - offset;
-    y = rect.top + rect.height / 2 - height / 2;
-  }
-
-  if (side === "right") {
-    x = rect.right + offset;
-    y = rect.top + rect.height / 2 - height / 2;
-  }
-
-  if (side === "top" || side === "bottom") {
-    if (align === "center") {
-      x = rect.left + rect.width / 2 - width / 2;
-    } else if (align === "end") {
-      x = rect.right - width;
-    }
-  }
-
-  if (side === "left" || side === "right") {
-    if (align === "start") {
-      y = rect.top;
-    } else if (align === "end") {
-      y = rect.bottom - height;
-    }
-  }
-
-  return { x, y };
+  if (props.trigger === "selection") return selectionRect.value;
+  return triggerRef.value?.getBoundingClientRect() ?? null;
 }
 
-function getOverflow(x: number, y: number, width: number, height: number) {
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = document.documentElement.clientHeight;
-
-  return {
-    top: y < VIEWPORT_OFFSET,
-    bottom: y + height > viewportHeight - VIEWPORT_OFFSET,
-    left: x < VIEWPORT_OFFSET,
-    right: x + width > viewportWidth - VIEWPORT_OFFSET,
-  };
-}
-
-function clampPosition(x: number, y: number, width: number, height: number) {
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = document.documentElement.clientHeight;
-
-  return {
-    x: Math.min(Math.max(x, VIEWPORT_OFFSET), viewportWidth - width - VIEWPORT_OFFSET),
-    y: Math.min(Math.max(y, VIEWPORT_OFFSET), viewportHeight - height - VIEWPORT_OFFSET),
-  };
-}
-
+/**
+ * 按锚点计算面板位置：翻转与交叉轴贴边交给共享的 resolveFloatingPosition（与 Popover / Tooltip 同一套口径），
+ * 最后整体钳进视口——根菜单展开期间页面滚动被锁住，面板溢出视口就再也看不到了
+ */
 function calculatePosition(contentElement?: HTMLElement) {
   const currentContent = contentElement ?? contentRef.value;
   if (!currentContent) return;
@@ -354,61 +287,27 @@ function calculatePosition(contentElement?: HTMLElement) {
   const contentBox = currentContent.firstElementChild as HTMLElement | null;
   if (!contentBox) return;
 
+  const anchor = getAnchorRect();
+  if (!anchor) return;
+
   const width = contentBox.offsetWidth;
   const height = contentBox.offsetHeight;
-
-  if (props.trigger === "contextmenu") {
-    const clamped = clampPosition(pointer.value.x, pointer.value.y, width, height);
-    style.value = {
-      left: `${clamped.x}px`,
-      top: `${clamped.y}px`,
-    };
-    return;
-  }
-
-  // 划词触发以选区矩形为锚点，其余以触发器为锚点
-  const rect = props.trigger === "selection" ? selectionRect.value : triggerRef.value?.getBoundingClientRect();
-  if (!rect) return;
-
   const placement = resolvePlacement();
-  const offset = placement.offset;
-  let side: ContextMenuSide = placement.side;
-  let align: ContextMenuAlign = placement.align;
+  const { side, position } = resolveFloatingPosition({
+    triggerRect: anchor,
+    size: { width, height },
+    side: placement.side,
+    align: placement.align,
+    offset: placement.offset,
+  });
 
-  let position = getHorizontalPosition(rect, width, height, side, align, offset);
-  let overflow = getOverflow(position.x, position.y, width, height);
-
-  if (side === "bottom" && overflow.bottom) {
-    side = "top";
-    position = getHorizontalPosition(rect, width, height, side, align, offset);
-    overflow = getOverflow(position.x, position.y, width, height);
-  } else if (side === "top" && overflow.top) {
-    side = "bottom";
-    position = getHorizontalPosition(rect, width, height, side, align, offset);
-    overflow = getOverflow(position.x, position.y, width, height);
-  } else if (side === "right" && overflow.right) {
-    side = "left";
-    position = getHorizontalPosition(rect, width, height, side, align, offset);
-    overflow = getOverflow(position.x, position.y, width, height);
-  } else if (side === "left" && overflow.left) {
-    side = "right";
-    position = getHorizontalPosition(rect, width, height, side, align, offset);
-    overflow = getOverflow(position.x, position.y, width, height);
-  }
-
-  if ((side === "left" || side === "right") && overflow.bottom) {
-    align = "end";
-    position = getHorizontalPosition(rect, width, height, side, align, offset);
-  } else if ((side === "left" || side === "right") && overflow.top) {
-    align = "start";
-    position = getHorizontalPosition(rect, width, height, side, align, offset);
-  }
-
-  const clamped = clampPosition(position.x, position.y, width, height);
+  const padding = FLOATING_VIEWPORT_PADDING;
+  const left = Math.min(Math.max(position.left, padding), window.innerWidth - width - padding);
+  const top = Math.min(Math.max(position.top, padding), window.innerHeight - height - padding);
   resolvedSide.value = side;
   style.value = {
-    left: `${clamped.x}px`,
-    top: `${clamped.y}px`,
+    left: `${left}px`,
+    top: `${top}px`,
   };
 }
 
@@ -475,8 +374,10 @@ function onClickTrigger(event: MouseEvent) {
   if (props.disabled || props.trigger !== "click") return;
 
   event.stopPropagation();
-  updateOpen(!open.value);
-  if (open.value) schedulePositionUpdate();
+  // 受控时赋值后 open.value 要等父组件回流才变，用本地算出的新值判断
+  const next = !open.value;
+  updateOpen(next);
+  if (next) schedulePositionUpdate();
 }
 
 function onContextMenuTrigger(event: MouseEvent) {
@@ -562,15 +463,30 @@ function handleNestedSelect(item: RebornContextMenuItem, event: MouseEvent, cont
   emit("select", item, event, context);
 }
 
-function onClickOutside(event: MouseEvent) {
-  if (!open.value || !props.dismissible) return;
-  if (!(event.target instanceof HTMLElement)) return;
+/**
+ * 点击外部关闭交给共享的 useFloatingDismiss：全局监听只在展开期间挂载；
+ * 嵌套登记让子菜单（传送到 body 后不是根菜单的 DOM 后代）里的点击不算根菜单的外部，
+ * 菜单放进 Popover 等浮层时也会向外层登记，点菜单不会关掉外层。
+ * 根菜单展开期间页面滚动被锁住，残余的容器滚动只重新定位、不关闭；
+ * 重新定位复用它在展开期间挂的捕获阶段滚动监听，不再自己另挂一份
+ */
+useFloatingDismiss({
+  open: () => open.value,
+  elements: () => [wrapperRef.value, contentRef.value],
+  anchor: () => triggerRef.value,
+  closeOnClickOutside: () => props.dismissible,
+  closeOnScroll: false,
+  onViewportScroll: schedulePositionUpdate,
+  onDismiss: () => {
+    updateOpen(false);
+  },
+});
 
-  if (event.target.closest(`[data-reborn-context-menu-root="${rootController.rootId}"]`)) {
-    return;
-  }
-
-  updateOpen(false);
+// 子菜单跟随根菜单收起：根菜单因外部点击、Esc、选中叶子项等任何原因收起时，子菜单一并收起
+if (injectedRoot) {
+  watch(injectedRoot.isOpen, (value) => {
+    if (!value && open.value) updateOpen(false);
+  });
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -584,15 +500,6 @@ function onDocumentClick(event: MouseEvent) {
   if (event.button !== 0) return;
 
   rootController.closeAll();
-}
-
-function onRootMenuOpen(event: Event) {
-  if (props.nested || !open.value) return;
-
-  const detail = (event as CustomEvent<{ rootId?: string }>).detail;
-  if (!detail?.rootId || detail.rootId === rootController.rootId) return;
-
-  updateOpen(false);
 }
 
 const onBeforeEnter = (element: Element) => {
@@ -611,17 +518,73 @@ function syncScrollLock(value: boolean) {
   else unlockDocumentScroll();
 }
 
-watch(open, (value) => {
-  if (typeof window === "undefined") return;
+/** 展开期间才需要的全局监听：Esc 关闭、右键模式下左键点击任意处关闭、视口尺寸变化时重新定位（滚动见 useFloatingDismiss） */
+let openListenersBound = false;
+function syncOpenListeners(value: boolean) {
+  if (typeof window === "undefined" || openListenersBound === value) return;
+  openListenersBound = value;
+  if (value) {
+    document.addEventListener("click", onDocumentClick);
+    document.addEventListener("keydown", onKeydown);
+    window.addEventListener("resize", schedulePositionUpdate);
+  } else {
+    document.removeEventListener("click", onDocumentClick);
+    document.removeEventListener("keydown", onKeydown);
+    window.removeEventListener("resize", schedulePositionUpdate);
+  }
+}
 
-  syncScrollLock(value);
+/** 划词触发需要常驻监听 document 的 mouseup / keyup（拖选过程中鼠标可能在触发区外松开）；其他触发方式不挂 */
+const listensSelection = computed(() => props.trigger === "selection" && !props.nested);
+let selectionListenersBound = false;
+function syncSelectionListeners(value: boolean) {
+  if (typeof document === "undefined" || selectionListenersBound === value) return;
+  selectionListenersBound = value;
+  if (value) {
+    document.addEventListener("mouseup", onSelectionEnd);
+    document.addEventListener("keyup", onSelectionEnd);
+  } else {
+    document.removeEventListener("mouseup", onSelectionEnd);
+    document.removeEventListener("keyup", onSelectionEnd);
+  }
+}
 
-  if (!value) return;
+function cancelOpenFrame() {
+  if (openFrame === null) return;
+  window.cancelAnimationFrame(openFrame);
+  openFrame = null;
+}
 
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => calculatePosition());
-  });
-});
+/**
+ * 展开状态的副作用集中在这里，受控（父组件直接改 v-model:open）与组件内部打开走同一条路：
+ * 根菜单登记为当前唯一打开的根菜单（新开会关掉其他实例）、锁页面滚动、挂展开期监听、等两帧后定位
+ */
+watch(
+  open,
+  (value) => {
+    if (typeof window === "undefined") return;
+
+    if (!props.nested) {
+      if (value) setActiveRootMenu(rootController.rootId, () => updateOpen(false));
+      else clearActiveRootMenu(rootController.rootId);
+    }
+    syncScrollLock(value);
+    syncOpenListeners(value);
+    cancelOpenFrame();
+
+    if (!value) return;
+
+    openFrame = window.requestAnimationFrame(() => {
+      openFrame = window.requestAnimationFrame(() => {
+        openFrame = null;
+        calculatePosition();
+      });
+    });
+  },
+  { immediate: true },
+);
+
+watch(listensSelection, syncSelectionListeners);
 
 watch(
   () => props.content,
@@ -658,14 +621,7 @@ watch(
 );
 
 onMounted(() => {
-  document.addEventListener("mousedown", onClickOutside);
-  document.addEventListener("click", onDocumentClick);
-  document.addEventListener("keydown", onKeydown);
-  document.addEventListener("mouseup", onSelectionEnd);
-  document.addEventListener("keyup", onSelectionEnd);
-  document.addEventListener(ROOT_MENU_OPEN_EVENT, onRootMenuOpen as EventListener);
-  window.addEventListener("resize", schedulePositionUpdate);
-  window.addEventListener("scroll", schedulePositionUpdate, true);
+  syncSelectionListeners(listensSelection.value);
 });
 
 onUnmounted(() => {
@@ -673,22 +629,16 @@ onUnmounted(() => {
     clearActiveRootMenu(rootController.rootId);
   }
 
-  // 缓存组件销毁时可能先停用并关闭，不能依赖已停止的 watch 释放滚动锁。
+  // 缓存组件销毁时可能先停用并关闭，不能依赖已停止的 watch 释放滚动锁与全局监听。
   syncScrollLock(false);
-
-  document.removeEventListener("mousedown", onClickOutside);
-  document.removeEventListener("click", onDocumentClick);
-  document.removeEventListener("keydown", onKeydown);
-  document.removeEventListener("mouseup", onSelectionEnd);
-  document.removeEventListener("keyup", onSelectionEnd);
-  document.removeEventListener(ROOT_MENU_OPEN_EVENT, onRootMenuOpen as EventListener);
-  window.removeEventListener("resize", schedulePositionUpdate);
-  window.removeEventListener("scroll", schedulePositionUpdate, true);
+  syncOpenListeners(false);
+  syncSelectionListeners(false);
   clearHoverTimer();
   clearReopenTimer();
   clearSelectionTimer();
   if (resizeObserver) resizeObserver.disconnect();
   if (frame) window.cancelAnimationFrame(frame);
+  cancelOpenFrame();
 });
 
 const uiOverrides = computed(() => props.ui || {});
@@ -745,7 +695,8 @@ const ui = computed(() => {
 const transitionName = computed(() => (props.nested ? "zoom-in" : "select-collapse"));
 
 const bridgeStyle = computed(() => {
-  const gap = `${Math.max(props.content.sideOffset ?? 0, 0)}px`;
+  // 与定位共用同一份间距解析：只读已废弃的 content.sideOffset 时，按推荐写法传 sideOffset 桥接宽度为 0
+  const gap = `${Math.max(resolvePlacement().offset, 0)}px`;
 
   if (resolvedSide.value === "right") {
     return {
@@ -784,6 +735,7 @@ defineExpose({
 
 <template>
   <div
+    ref="wrapperRef"
     :class="ui.wrapper()"
     :data-reborn-context-menu-root="rootController.rootId"
     @contextmenu="onContextMenuTrigger"
@@ -825,7 +777,7 @@ defineExpose({
           role="menu"
           @mousedown="onContentMouseDown"
         >
-          <slot v-if="hasCustomContent" name="content" :close="rootController.closeAll" :selection-text="selectionText" />
+          <slot v-if="hasCustomContent()" name="content" :close="rootController.closeAll" :selection-text="selectionText" />
 
           <template v-else-if="groupedItems.length">
             <div

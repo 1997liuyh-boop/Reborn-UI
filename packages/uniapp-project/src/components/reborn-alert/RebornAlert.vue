@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { AlertColor, AlertDirection, AlertType, AlertUI, AlertVariant } from './reborn-alert.config'
-import { computed, getCurrentInstance, nextTick, onMounted, ref, useSlots, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, shallowRef, useSlots, watch } from 'vue'
 import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
+import { useBooleanModel } from '@/composables/useBooleanModel'
 import { cn } from '@/lib/utils'
 import { ALERT_TYPE_COLOR, ALERT_TYPE_ICON, alertTheme } from './reborn-alert.config'
 
@@ -32,6 +33,7 @@ const props = withDefaults(defineProps<AlertProps>(), {
 })
 
 const emit = defineEmits<{
+  'update:show': [value: boolean]
   /** 点击关闭按钮时触发 */
   close: [ev: unknown]
   /** 关闭动画结束后触发（模板中以 @after-close 监听，与 web 端声明保持一致） */
@@ -80,7 +82,8 @@ export interface AlertProps {
 const slots = useSlots()
 
 /** 关闭状态支持 v-model:show 受控 */
-const show = defineModel<boolean>('show', { default: true })
+defineModel<boolean>('show', { default: undefined })
+const show = useBooleanModel('show', true)
 
 /** 配色：显式 color 优先，否则由 type 映射 */
 const resolvedColor = computed(() => props.color ?? ALERT_TYPE_COLOR[props.type])
@@ -105,10 +108,10 @@ const ui = computed(() => {
     closeButton: () => styles.closeButton({ class: cn(props.ui.closeButton) }),
     closeIcon: () => styles.closeIcon({ class: cn(props.ui.closeIcon) }),
     carouselWrapper: () => styles.carouselWrapper({ class: cn(props.ui.carouselWrapper) }),
-    carouselItem: () => styles.carouselItem({ class: cn(props.ui.carouselItem) }),
+    carouselItem: styles.carouselItem({ class: cn(props.ui.carouselItem) }),
     marqueeWrapper: () => styles.marqueeWrapper({ class: cn(props.ui.marqueeWrapper) }),
     marquee: () => styles.marquee({ class: cn(props.ui.marquee) }),
-    marqueeItem: () => styles.marqueeItem({ class: cn(props.ui.marqueeItem) }),
+    marqueeItem: styles.marqueeItem({ class: cn(props.ui.marqueeItem) }),
   }
 })
 
@@ -134,22 +137,31 @@ function handleSwiperChange(e: { detail: { current: number } }) {
 
 const proxy = getCurrentInstance()?.proxy
 /** 起点为容器宽度（从右缘滚入），一轮时长按 speed 折算以保持匀速 */
-const marqueeFrom = ref(0)
-const marqueeDuration = ref(0)
+const marqueeFrom = shallowRef(0)
+const marqueeDuration = shallowRef(0)
 /** 测宽重试次数：入场过渡期间根节点仍为 display:none，会测到 0 宽 */
 const MARQUEE_MEASURE_RETRIES = 5
 
+let measureTimer: ReturnType<typeof setTimeout> | undefined
+let measureToken = 0
+let disposed = false
+onBeforeUnmount(() => { disposed = true; measureToken++; clearTimeout(measureTimer) })
 function measureMarquee(retries = MARQUEE_MEASURE_RETRIES) {
+  clearTimeout(measureTimer)
+  const token = ++measureToken
   if (!isHorizontal.value) {
     return
   }
   nextTick(() => {
+    if (disposed || token !== measureToken) return
     // 延时等布局完成后再测量（与 reborn-notice-bar 做法一致）
-    setTimeout(() => {
+    measureTimer = setTimeout(() => {
+      if (disposed || token !== measureToken) return
       const query = uni.createSelectorQuery().in(proxy)
       query.select('.reborn-alert__marquee-wrapper').boundingClientRect()
       query.select('.reborn-alert__marquee').boundingClientRect()
       query.exec((res) => {
+        if (disposed || token !== measureToken) return
         const wrapperWidth = Math.floor(res?.[0]?.width || 0)
         const textWidth = Math.ceil(res?.[1]?.width || 0)
         if (!wrapperWidth || !textWidth) {
@@ -216,7 +228,7 @@ function handleClose(e: unknown) {
           <!-- 水平跑马灯：全部消息拼成一行，从右向左匀速滚动 -->
           <view v-if="isHorizontal" :class="ui.marqueeWrapper()">
             <view :class="[ui.marquee(), marqueeAnimationClass]" :style="marqueeStyle">
-              <view v-for="(item, index) in messages" :key="index" :class="ui.marqueeItem()">
+              <view v-for="(item, index) in messages" :key="index" :class="ui.marqueeItem">
                 <slot name="message" :item="item" :index="index">
                   {{ item }}
                 </slot>
@@ -234,7 +246,7 @@ function handleClose(e: unknown) {
                 flex h-full items-center
               "
             >
-              <view :class="ui.carouselItem()">
+              <view :class="ui.carouselItem">
                 <slot name="message" :item="item" :index="index">
                   {{ item }}
                 </slot>

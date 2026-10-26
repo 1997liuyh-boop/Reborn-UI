@@ -6,8 +6,7 @@ import type { TimeRangeRole } from "./reborn-time-panel.config";
 import type { timePickerColors, timePickerSizes } from "./reborn-time-picker.config";
 import type { TimePanelProps } from "./RebornTimePanel.vue";
 import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import { computed, nextTick, ref, useAttrs, useId, watch } from "vue";
+import { computed, nextTick, shallowRef, useAttrs, useId, useTemplateRef, watch } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -62,8 +61,7 @@ const emit = defineEmits<{
   (e: "blur", event: FocusEvent): void;
 }>();
 
-dayjs.extend(customParseFormat);
-
+// customParseFormat 插件已在 time-picker.utils 模块级注册（本文件导入该模块），组件内不再重复 extend
 const b = tv(theme);
 
 type DisabledHours = (role?: TimeRangeRole, comparingValue?: string | null) => number[];
@@ -158,16 +156,16 @@ const isDisabled = computed(() => !!formDisabled.value || props.disabled);
 const mergedSize = computed(() => formSize.value || props.size);
 
 /** 下拉是否展开 */
-const isOpen = ref(false);
+const isOpen = shallowRef(false);
 const panelId = useId();
 const attrs = useAttrs();
 const inputLabel = computed(() =>
   typeof attrs["aria-label"] === "string" ? attrs["aria-label"] : props.placeholder,
 );
-const panelRef = ref<InstanceType<typeof RebornTimePanel> | null>(null);
-const inputRef = ref<HTMLInputElement | null>(null);
-const inputValue = ref("");
-const inputInvalid = ref(false);
+const panelRef = useTemplateRef<InstanceType<typeof RebornTimePanel>>("panelRef");
+const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
+const inputValue = shallowRef("");
+const inputInvalid = shallowRef(false);
 
 /**
  * 生成及管理样式映射表
@@ -282,6 +280,10 @@ function clear() {
   emit("clear");
 }
 
+/**
+ * 面板与手动输入写回绑定值的唯一入口。
+ * 面板只用 :model-value 单向接收，不再同时用 v-model 回写，否则受控绑定下父级会连续收到两次 update:modelValue
+ */
 function handlePanelChange(value: string | string[]) {
   if (isDisabled.value) return;
   modelValue.value = value;
@@ -478,7 +480,7 @@ function onOutsideClose() {
       <RebornTimePanel
         :id="panelId"
         ref="panelRef"
-        v-model="modelValue"
+        :model-value="modelValue"
         role="dialog"
         aria-label="时间选择"
         :format="format"

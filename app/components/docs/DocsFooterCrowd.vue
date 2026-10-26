@@ -6,7 +6,7 @@
  * 由 frontmatter 的 footerCrowd 开启（见 DocsPage），铺满屏幕宽度、上沿渐隐、底边贴住页脚。
  */
 import { useEventListener, useResizeObserver } from "@vueuse/core";
-import { onMounted, ref, useTemplateRef } from "vue";
+import { onMounted, shallowRef, useTemplateRef } from "vue";
 import RebornCrowd from "~/components/reborn/ui/reborn-crowd/RebornCrowd.vue";
 
 /** 精灵图：Open Peeps 15 列 × 7 行，来源与授权见 public/images/peeps/README.md */
@@ -21,7 +21,7 @@ const placeholder = useTemplateRef<HTMLElement>("placeholder");
  * 1600px 以上两侧会空出一截。也不用 100vw：它把纵向滚动条算在内，会多出滚动条那么宽，撑出横向滚动条。
  * clientWidth 不含滚动条，正好是可见宽度。挂载前沿用正文栏宽度，此时精灵图还没加载，不会看到跳动。
  */
-const bleedStyle = ref<{ left: string; width: string }>();
+const bleedStyle = shallowRef<{ left: string; width: string }>();
 
 function measureBleed() {
   const el = placeholder.value;
@@ -33,7 +33,7 @@ function measureBleed() {
 }
 
 // 视口变化会改容器宽度与居中位置；正文栏自身变宽变窄（如右侧面板开合）由占位的尺寸变化兜住
-useEventListener(window, "resize", measureBleed, { passive: true });
+useEventListener(() => import.meta.client ? window : undefined, "resize", measureBleed, { passive: true });
 useResizeObserver(placeholder, measureBleed);
 onMounted(measureBleed);
 </script>

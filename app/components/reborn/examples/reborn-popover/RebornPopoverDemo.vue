@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Placement } from "~/lib/placement";
-import { computed, ref } from "vue";
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
+import { computed, ref, shallowRef, useTemplateRef } from 'vue';
+import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue';
 import RebornPopconfirm from "~/components/reborn/ui/reborn-popconfirm/RebornPopconfirm.vue";
 import RebornPopover from "~/components/reborn/ui/reborn-popover/RebornPopover.vue";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
@@ -22,7 +24,7 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 演练场气泡的显隐，回显在预览区 */
-const playgroundOpen = ref(false);
+const playgroundOpen = shallowRef(false);
 
 /** 重置演练场配置 */
 function resetState() {
@@ -88,21 +90,21 @@ const placementGroups: Record<"top" | "left" | "right" | "bottom", Placement[]> 
 // ─── 点击外部、滚动与遮罩 ───────────────────────────────────────
 
 /** 嵌套浮层示例里的下拉框选值 */
-const nestedSelect = ref("week");
+const nestedSelect = shallowRef("week");
 const nestedOptions = [
   { label: "本周", value: "week" },
   { label: "本月", value: "month" },
   { label: "本年", value: "year" },
 ];
 /** 嵌套 Popconfirm 的确认次数 */
-const nestedConfirmCount = ref(0);
+const nestedConfirmCount = shallowRef(0);
 
 // ─── 受控与手动关闭 ─────────────────────────────────────────────
 
 /** v-model:open 绑定的显隐状态 */
-const controlledOpen = ref(false);
+const controlledOpen = shallowRef(false);
 /** 通过 ref 调用 expose 出来的 close() */
-const popoverRef = ref<{ close: () => void } | null>(null);
+const popoverRef = useTemplateRef<InstanceType<typeof RebornPopover>>("popoverRef");
 
 // ─── 场景演示数据 ───────────────────────────────────────────────
 
@@ -120,7 +122,7 @@ const colors = [
   "#f97316", "#eab308", "#22c55e", "#06b6d4",
 ];
 
-const selectedColor = ref(colors[0]);
+const selectedColor = shallowRef(colors[0]);
 
 const actions = [
   { icon: "lucide:edit-3", label: "编辑项目", color: "text-primary" },
@@ -276,11 +278,9 @@ const actions = [
             </div>
           </template>
         </RebornPopover>
-        <RebornButton
-          variant="outlined"
-          :label="controlledOpen ? '外部关闭' : '外部打开'"
-          @click="controlledOpen = !controlledOpen"
-        />
+        <RebornButton variant="outlined" label="外部打开" :disabled="controlledOpen" @click="controlledOpen = true" />
+        <RebornButton variant="outlined" label="外部关闭" @click="controlledOpen = false" />
+        <DemoNote tone="dimmed">点击外部会在 pointerdown 时先关闭气泡，外部按钮应写入明确的目标状态。</DemoNote>
       </DemoBlock>
     </DemoSection>
 
@@ -449,7 +449,7 @@ const actions = [
           >
             <RebornButton
               color="neutral"
-              variant="circle"
+              circle variant="filled"
               size="lg"
             >
               <template #leading>

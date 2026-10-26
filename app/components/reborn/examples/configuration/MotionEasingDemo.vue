@@ -24,9 +24,9 @@ const keyframes = [
 ];
 
 /** 位移到终点还是回到起点 */
-const moved = ref(false);
+const moved = shallowRef(false);
 /** 重播计数：改 key 让关键帧动画重新播一遍 */
-const playCount = ref(0);
+const playCount = shallowRef(0);
 
 function replay() {
   moved.value = !moved.value;

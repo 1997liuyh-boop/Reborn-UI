@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornFooter from '@/components/reborn-footer/RebornFooter.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 
-const counter = ref(0)
-const fixedHeight = ref<number | null>(null)
-const customBg = ref<boolean>(false)
+const counter = shallowRef(0)
+const fixedHeight = shallowRef<number | null>(null)
+const customBg = shallowRef<boolean>(false)
 </script>
 
 <template>

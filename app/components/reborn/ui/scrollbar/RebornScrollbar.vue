@@ -5,8 +5,14 @@
  * 原生滚动条被彻底隐藏（宽度为 0），滚动条视觉由绝对定位的浮层 DOM 承担，
  * 因此滚动条悬浮于内容之上，内容可视宽度不受有无滚动条影响，不产生布局抖动。
  * 粗细与 hover / 拖拽态颜色均由 CSS 变量驱动，不受浏览器原生滚动条限制。
+ *
+ * 两条滚动条的 DOM 放在内部子组件 RebornScrollbarBars 里，滚动几何与悬停、淡入、拖拽状态
+ * 存进一个引用不变的 reactive 对象、就地修改字段。本组件渲染时不读取这些状态，
+ * 滚动与悬停只让子组件更新，默认插槽不会随每次 scroll 重跑。
  */
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import type { ScrollbarBarsState, ScrollbarBarState } from "./RebornScrollbarBars.vue";
+import { computed, onBeforeUnmount, onMounted, reactive, shallowRef, useTemplateRef, watch } from "vue";
+import RebornScrollbarBars from "./RebornScrollbarBars.vue";
 
 interface Props {
   /** 滚动条粗细，可传 4 / 6 / 8 档位或任意像素数值，默认继承 CSS 变量的 6px */
@@ -69,34 +75,27 @@ const emit = defineEmits<{
   scroll: [payload: { scrollTop: number; scrollLeft: number }];
 }>();
 
-/** 单条滚动条的几何状态 */
-interface BarState {
-  /** 内容是否溢出，决定该方向滚动条是否存在 */
-  active: boolean;
-  /** thumb 长度（px） */
-  size: number;
-  /** thumb 相对轨道起点的偏移（px） */
-  offset: number;
-}
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
+const wrapRef = useTemplateRef<HTMLElement>("wrapRef");
+const contentRef = useTemplateRef<HTMLElement>("contentRef");
 
-const rootRef = ref<HTMLElement | null>(null);
-const wrapRef = ref<HTMLElement | null>(null);
-const contentRef = ref<HTMLElement | null>(null);
-
-const vertical = ref<BarState>({ active: false, size: 0, offset: 0 });
-const horizontalBar = ref<BarState>({ active: false, size: 0, offset: 0 });
+/**
+ * 两条滚动条的几何与交互状态，只由子组件 RebornScrollbarBars 在渲染时读取。
+ * 引用保持不变、字段就地修改；值未变化的写入不会触发更新
+ */
+const bars = reactive<ScrollbarBarsState>({
+  y: { active: false, size: 0, offset: 0 },
+  x: { active: false, size: 0, offset: 0 },
+  // 非零顶部偏移只覆盖纵轨；默认继续使用原有 CSS 内缩定位
+  yTrackTop: undefined,
+  yTrackHeight: undefined,
+  hovering: false,
+  scrolling: false,
+  dragging: null,
+});
 
 /** 轨道两端实际生效的内缩（px）：由 inset 属性指定，或按容器 border-radius 自动推算 */
-const insetValue = ref(0);
-/** 非零顶部偏移只覆盖纵轨；默认继续使用原有 CSS 内缩定位 */
-const verticalTrackStyle = ref<{ top?: string; height?: string }>({});
-
-/** 当前正在拖拽的方向，null 表示未拖拽 */
-const dragging = ref<"y" | "x" | null>(null);
-/** 鼠标悬停在容器上 */
-const hovering = ref(false);
-/** 正在滚动中（用于非常驻模式的淡入） */
-const scrolling = ref(false);
+const insetValue = shallowRef(0);
 
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
 let resizeObserver: ResizeObserver | null = null;
@@ -135,9 +134,6 @@ const rootStyle = computed(() => {
   if (typeof props.track === "string" && props.track) style["--reborn-scrollbar-track"] = props.track;
   return style;
 });
-
-/** 滚动条是否可见：常驻、悬停或滚动中，且拖拽过程中始终可见 */
-const barVisible = computed(() => props.always || hovering.value || scrolling.value || dragging.value !== null);
 
 /**
  * 计算轨道两端的圆角安全内缩。
@@ -190,6 +186,13 @@ function getVerticalGeometry(wrap: HTMLElement) {
   };
 }
 
+/** 就地写入单条滚动条的几何，值不变的字段不会触发子组件更新 */
+function setBar(bar: ScrollbarBarState, active: boolean, size: number, offset: number) {
+  bar.active = active;
+  bar.size = size;
+  bar.offset = offset;
+}
+
 /** 重新测量并计算两个方向 thumb 的长度与位置 */
 function update() {
   const wrap = wrapRef.value;
@@ -199,11 +202,9 @@ function update() {
   // 轨道两端各内缩一次，thumb 的长度与行程都以轨道长度为基准
   const shrink = insetValue.value * 2;
   const body = getVerticalGeometry(wrap);
-  verticalTrackStyle.value = {
-    top: body.offset > 0 ? `${insetValue.value + body.offset}px` : undefined,
-    // 正常零偏移保留上下内缩定位，极矮视窗则显式归零，避免轨道盒子反向撑开。
-    height: body.offset > 0 || clientHeight < shrink ? `${body.trackLength}px` : undefined,
-  };
+  bars.yTrackTop = body.offset > 0 ? `${insetValue.value + body.offset}px` : undefined;
+  // 正常零偏移保留上下内缩定位，极矮视窗则显式归零，避免轨道盒子反向撑开。
+  bars.yTrackHeight = body.offset > 0 || clientHeight < shrink ? `${body.trackLength}px` : undefined;
 
   // 纵向：容差 1px，规避亚像素导致的误判
   if (scrollHeight > clientHeight + 1) {
@@ -215,13 +216,9 @@ function update() {
     );
     const maxScroll = scrollHeight - clientHeight;
     const maxOffset = trackLength - thumbSize;
-    vertical.value = {
-      active: true,
-      size: thumbSize,
-      offset: maxScroll > 0 ? (scrollTop / maxScroll) * maxOffset : 0,
-    };
+    setBar(bars.y, true, thumbSize, maxScroll > 0 ? (scrollTop / maxScroll) * maxOffset : 0);
   } else {
-    vertical.value = { active: false, size: 0, offset: 0 };
+    setBar(bars.y, false, 0, 0);
   }
 
   // 横向
@@ -230,13 +227,9 @@ function update() {
     const thumbSize = Math.min(Math.max((clientWidth / scrollWidth) * trackLength, props.minThumbSize), trackLength);
     const maxScroll = scrollWidth - clientWidth;
     const maxOffset = trackLength - thumbSize;
-    horizontalBar.value = {
-      active: true,
-      size: thumbSize,
-      offset: maxScroll > 0 ? (scrollLeft / maxScroll) * maxOffset : 0,
-    };
+    setBar(bars.x, true, thumbSize, maxScroll > 0 ? (scrollLeft / maxScroll) * maxOffset : 0);
   } else {
-    horizontalBar.value = { active: false, size: 0, offset: 0 };
+    setBar(bars.x, false, 0, 0);
   }
 }
 
@@ -259,10 +252,10 @@ function onScroll() {
     return;
   }
   if (props.always) return;
-  scrolling.value = true;
+  bars.scrolling = true;
   if (hideTimer) clearTimeout(hideTimer);
   hideTimer = setTimeout(() => {
-    scrolling.value = false;
+    bars.scrolling = false;
   }, props.hideDelay);
 }
 
@@ -292,7 +285,7 @@ function onThumbMouseDown(event: MouseEvent, axis: "y" | "x") {
   // 用户接管滚动，中止未完成的动画
   stopScroll();
 
-  dragging.value = axis;
+  bars.dragging = axis;
   dragStartPos = axis === "y" ? event.clientY : event.clientX;
   dragStartScroll = axis === "y" ? wrap.scrollTop : wrap.scrollLeft;
   dragScale = getTrackGeometry(wrap, track, axis).scale;
@@ -306,20 +299,20 @@ function onThumbMouseDown(event: MouseEvent, axis: "y" | "x") {
 /** 拖拽中：把鼠标位移按「轨道可移动距离 : 内容可滚动距离」换算成滚动偏移 */
 function onDragMove(event: MouseEvent) {
   const wrap = wrapRef.value;
-  const axis = dragging.value;
+  const axis = bars.dragging;
   if (!wrap || !axis || dragScale <= 0) return;
 
   // 轨道被两端内缩，行程要按内缩后的轨道长度换算，否则拖拽与 thumb 会脱节
   const shrink = insetValue.value * 2;
 
   if (axis === "y") {
-    const maxOffset = getVerticalGeometry(wrap).trackLength - vertical.value.size;
+    const maxOffset = getVerticalGeometry(wrap).trackLength - bars.y.size;
     const maxScroll = wrap.scrollHeight - wrap.clientHeight;
     if (maxOffset <= 0) return;
     const target = dragStartScroll + ((event.clientY - dragStartPos) / dragScale / maxOffset) * maxScroll;
     wrap.scrollTop = Math.min(Math.max(target, 0), maxScroll);
   } else {
-    const maxOffset = wrap.clientWidth - shrink - horizontalBar.value.size;
+    const maxOffset = wrap.clientWidth - shrink - bars.x.size;
     const maxScroll = wrap.scrollWidth - wrap.clientWidth;
     if (maxOffset <= 0) return;
     wrap.scrollLeft = dragStartScroll + ((event.clientX - dragStartPos) / dragScale / maxOffset) * maxScroll;
@@ -328,7 +321,7 @@ function onDragMove(event: MouseEvent) {
 
 /** 结束拖拽，清理全局监听与文本选中限制 */
 function onDragEnd() {
-  dragging.value = null;
+  bars.dragging = null;
   document.removeEventListener("mousemove", onDragMove);
   document.removeEventListener("mouseup", onDragEnd);
   document.body.style.userSelect = "";
@@ -344,7 +337,7 @@ function onTrackMouseDown(event: MouseEvent, axis: "y" | "x") {
   stopScroll();
 
   const { length, start, scale } = getTrackGeometry(wrap, track, axis);
-  const thumbSize = axis === "y" ? vertical.value.size : horizontalBar.value.size;
+  const thumbSize = axis === "y" ? bars.y.size : bars.x.size;
   const maxOffset = length - thumbSize;
   if (maxOffset <= 0 || scale <= 0) return;
   // 鼠标与 rect 都是视口坐标，先还原为布局像素，再对齐滑块中心。
@@ -486,8 +479,9 @@ onBeforeUnmount(() => {
   resizeObserver = null;
   // 卸载时中止滚动动画，避免 rAF 回调访问已销毁的 DOM
   stopScroll();
-  // 组件在拖拽中被卸载时，兜底清理全局监听
-  onDragEnd();
+  // 组件在拖拽中被卸载时，兜底清理全局监听；未拖拽时不动 body 的 userSelect，
+  // 否则会解除其他实例或组件（如分割面板）正在施加的禁选
+  if (bars.dragging !== null) onDragEnd();
 });
 
 defineExpose({ update, refresh, scrollTo, setScrollTop, setScrollLeft, stopScroll, wrapRef });
@@ -499,8 +493,8 @@ defineExpose({ update, refresh, scrollTo, setScrollTop, setScrollLeft, stopScrol
     class="reborn-scrollbar"
     :class="{ 'reborn-scrollbar--track': track === true }"
     :style="rootStyle"
-    @mouseenter="hovering = true"
-    @mouseleave="hovering = false"
+    @mouseenter="bars.hovering = true"
+    @mouseleave="bars.hovering = false"
   >
     <!-- 滚动层：原生滚动条已隐藏，宽度为 0，内容可视宽度恒定 -->
     <!-- 滚轮 / 触摸表示用户接管滚动，需中止进行中的动画 -->
@@ -517,35 +511,12 @@ defineExpose({ update, refresh, scrollTo, setScrollTop, setScrollLeft, stopScrol
       </div>
     </div>
 
-    <!-- 纵向滚动条浮层 -->
-    <div
-      v-show="vertical.active"
-      class="reborn-scrollbar__bar reborn-scrollbar__bar--vertical"
-      :class="{ 'is-visible': barVisible }"
-      :style="verticalTrackStyle"
-      @mousedown="onTrackMouseDown($event, 'y')"
-    >
-      <div
-        class="reborn-scrollbar__thumb"
-        :class="{ 'is-dragging': dragging === 'y' }"
-        :style="{ height: `${vertical.size}px`, transform: `translateY(${vertical.offset}px)` }"
-        @mousedown="onThumbMouseDown($event, 'y')"
-      />
-    </div>
-
-    <!-- 横向滚动条浮层 -->
-    <div
-      v-show="horizontalBar.active"
-      class="reborn-scrollbar__bar reborn-scrollbar__bar--horizontal"
-      :class="{ 'is-visible': barVisible }"
-      @mousedown="onTrackMouseDown($event, 'x')"
-    >
-      <div
-        class="reborn-scrollbar__thumb"
-        :class="{ 'is-dragging': dragging === 'x' }"
-        :style="{ width: `${horizontalBar.size}px`, transform: `translateX(${horizontalBar.offset}px)` }"
-        @mousedown="onThumbMouseDown($event, 'x')"
-      />
-    </div>
+    <!-- 纵横两条滚动条浮层：几何与可见状态只在子组件里读取，滚动时本组件不重渲染 -->
+    <RebornScrollbarBars
+      :state="bars"
+      :always="always"
+      @track-down="onTrackMouseDown"
+      @thumb-down="onThumbMouseDown"
+    />
   </div>
 </template>

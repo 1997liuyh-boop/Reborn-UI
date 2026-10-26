@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import type { backTopColors, backTopSizes } from '@/components/reborn-back-top/reborn-back-top.config'
+import { onPageScroll } from '@dcloudio/uni-app'
+import { shallowRef } from 'vue'
 import RebornBackTop from '@/components/reborn-back-top/RebornBackTop.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornSticky from '@/components/reborn-sticky/RebornSticky.vue'
 
 const items = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`)
-const scrollTop = ref(0)
+const scrollTop = shallowRef(0)
 
-const color = ref<typeof backTopColors[number]>('primary')
-const size = ref<typeof backTopSizes[number]>('md')
+const color = shallowRef<typeof backTopColors[number]>('primary')
+const size = shallowRef<typeof backTopSizes[number]>('md')
 
 onPageScroll((e) => {
   scrollTop.value = e.scrollTop

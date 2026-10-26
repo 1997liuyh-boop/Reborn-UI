@@ -1,18 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { reactive, ref, shallowRef } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornInputNumber from '@/components/reborn-input-number/RebornInputNumber.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 
-const val1 = ref(1)
-const val2 = ref(10)
-const val3 = ref(5)
+const basicValue = shallowRef(1)
+const disabledValue = shallowRef(1)
+const stepValue = shallowRef(10)
+const dynamicValue = shallowRef(5)
+const colorValue = shallowRef(5)
+const fullWidthValue = shallowRef(5)
+const narrowValue = shallowRef(5)
+const wideValue = shallowRef(5)
+const customValue = shallowRef(5)
+const darkValue = shallowRef(5)
+const smallValue = shallowRef(5)
 
-// Dynamic Configuration
-const currentSize = ref<any>('sm')
-const currentColor = ref<any>('primary')
-const currentShape = ref<any>('circle')
+// 动态配置仅影响本卡片的输入框。
+const currentSize = shallowRef<typeof sizes[number]>('sm')
+const currentColor = shallowRef<typeof colors[number]>('primary')
+const currentShape = shallowRef<typeof shapes[number]>('circle')
 
 const sizes = ['sm', 'md', 'lg'] as const
 const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', 'neutral'] as const
@@ -20,14 +28,17 @@ const shapes = ['square', 'circle'] as const
 const variants = ['outlined', 'filled', 'borderless', 'underlined'] as const
 const cursors = ['start', 'end', 'all'] as const
 
-const variantValue = ref(3)
+const variantValues = reactive({ outlined: 3, filled: 3, borderless: 3, underlined: 3 })
 // 按钮位置（左 / 右堆叠）
-const positionValue = ref(5)
-const precisionValue = ref(1.5)
-const focusValue = ref(8)
+const rightPositionValue = shallowRef(5)
+const leftPositionValue = shallowRef(5)
+const precisionValue = shallowRef(1.5)
+const prefixValue = shallowRef(1.5)
+const keyboardValue = shallowRef(8)
+const focusValue = shallowRef(8)
 
 /** 组件实例引用，用于调用暴露出的 focus(cursor) */
-const focusInputRef = ref<any>(null)
+const focusInputRef = ref<InstanceType<typeof RebornInputNumber> | null>(null)
 
 /** 按指定落位方式聚焦输入框 */
 function focusAt(cursor: typeof cursors[number]) {
@@ -91,7 +102,7 @@ function focusAt(cursor: typeof cursors[number]) {
       </view>
 
       <view class="flex justify-center pt-4">
-        <RebornInputNumber v-model="val3" :size="currentSize" :color="currentColor" :shape="currentShape" />
+        <RebornInputNumber v-model="dynamicValue" :size="currentSize" :color="currentColor" :shape="currentShape" />
       </view>
     </RebornCard>
 
@@ -106,7 +117,7 @@ function focusAt(cursor: typeof cursors[number]) {
         >
           默认
         </text>
-        <RebornInputNumber v-model="val1" />
+        <RebornInputNumber v-model="basicValue" />
       </view>
       <view class="flex items-center justify-between">
         <text
@@ -117,7 +128,7 @@ function focusAt(cursor: typeof cursors[number]) {
         >
           禁用状态
         </text>
-        <RebornInputNumber v-model="val1" disabled />
+        <RebornInputNumber v-model="disabledValue" disabled />
       </view>
     </RebornCard>
 
@@ -132,7 +143,7 @@ function focusAt(cursor: typeof cursors[number]) {
         >
           Min 5, Max 20, Step 5
         </text>
-        <RebornInputNumber v-model="val2" :min="5" :max="20" :step="5" />
+        <RebornInputNumber v-model="stepValue" :min="5" :max="20" :step="5" />
       </view>
     </RebornCard>
 
@@ -150,7 +161,7 @@ function focusAt(cursor: typeof cursors[number]) {
         >
           右侧堆叠 right
         </text>
-        <RebornInputNumber v-model="positionValue" controls-position="right" shape="square" />
+        <RebornInputNumber v-model="rightPositionValue" controls-position="right" shape="square" />
       </view>
       <view class="flex items-center justify-between">
         <text
@@ -161,7 +172,7 @@ function focusAt(cursor: typeof cursors[number]) {
         >
           左侧堆叠 left
         </text>
-        <RebornInputNumber v-model="positionValue" controls-position="left" shape="square" />
+        <RebornInputNumber v-model="leftPositionValue" controls-position="left" shape="square" />
       </view>
     </RebornCard>
 
@@ -179,7 +190,7 @@ function focusAt(cursor: typeof cursors[number]) {
         >
           {{ v }}
         </text>
-        <RebornInputNumber v-model="variantValue" :variant="v" shape="square" color="primary" />
+        <RebornInputNumber v-model="variantValues[v]" :variant="v" shape="square" color="primary" />
       </view>
     </RebornCard>
 
@@ -205,7 +216,7 @@ function focusAt(cursor: typeof cursors[number]) {
         >
           prefix / suffix 插槽
         </text>
-        <RebornInputNumber v-model="precisionValue" :max="10" shape="square">
+        <RebornInputNumber v-model="prefixValue" :max="10" shape="square">
           <template #prefix>
             <text>¥</text>
           </template>
@@ -231,7 +242,7 @@ function focusAt(cursor: typeof cursors[number]) {
         >
           keyboard 关闭
         </text>
-        <RebornInputNumber v-model="focusValue" :keyboard="false" :max="99" />
+        <RebornInputNumber v-model="keyboardValue" :keyboard="false" :max="99" />
       </view>
       <view class="flex items-center justify-between">
         <text
@@ -263,7 +274,7 @@ function focusAt(cursor: typeof cursors[number]) {
           Purple Theme
         </text>
         <RebornInputNumber
-          v-model="val3" :ui="{
+          v-model="colorValue" :ui="{
             wrapper: 'ring-purple-500 dark:ring-purple-500 focus-within:ring-purple-500/20',
             divider: 'bg-purple-500 dark:bg-purple-500!',
             button: 'hover:text-purple-600 dark:hover:text-purple-600',
@@ -277,19 +288,19 @@ function focusAt(cursor: typeof cursors[number]) {
       <!-- Full Width -->
       <view class="space-y-2">
         <text class="text-sm text-slate-500">全宽 (Full Width)</text>
-        <RebornInputNumber v-model="val3" :ui="{ wrapper: 'w-full' }" />
+        <RebornInputNumber v-model="fullWidthValue" :ui="{ wrapper: 'w-full' }" />
       </view>
 
       <view class="flex gap-2">
         <!-- Narrow -->
         <view class="space-y-2">
           <text class="text-sm text-slate-500">窄 (Narrow)</text>
-          <RebornInputNumber v-model="val3" :ui="{ input: 'w-8' }" />
+          <RebornInputNumber v-model="narrowValue" :ui="{ input: 'w-8' }" />
         </view>
         <!-- Wide -->
         <view class="space-y-2">
           <text class="text-sm text-slate-500">宽 (Wide)</text>
-          <RebornInputNumber v-model="val3" :ui="{ input: 'w-24' }" />
+          <RebornInputNumber v-model="wideValue" :ui="{ input: 'w-24' }" />
         </view>
       </view>
     </RebornCard>
@@ -300,7 +311,7 @@ function focusAt(cursor: typeof cursors[number]) {
       <view class="space-y-2">
         <text class="text-sm text-slate-500">自定义按钮与图标大小</text>
         <RebornInputNumber
-          v-model="val3" :ui="{
+          v-model="customValue" :ui="{
             wrapper: 'h-12 border-indigo-100 bg-indigo-50/30 ring-indigo-200 focus-within:ring-indigo-300 rounded-lg',
             button: 'w-12 hover:bg-indigo-100 text-indigo-600 active:scale-90 transition-transform',
             input: 'w-20 text-indigo-700 font-bold text-lg',
@@ -322,7 +333,7 @@ function focusAt(cursor: typeof cursors[number]) {
         <view class="space-y-2">
           <text class="text-sm text-slate-500">紧凑深色主题</text>
           <RebornInputNumber
-            v-model="val3" :ui="{
+            v-model="darkValue" :ui="{
               wrapper: 'bg-slate-900 dark:bg-slate-900 border-slate-700 ring-slate-800 rounded-md h-8',
               input: 'text-white w-12 text-sm',
               button: 'text-slate-400 hover:text-white px-2',
@@ -335,17 +346,17 @@ function focusAt(cursor: typeof cursors[number]) {
         <view class="space-y-2">
           <text class="text-sm text-slate-500">超小高度主题 (h-7)</text>
           <RebornInputNumber
-            v-model="val3" :ui="{
+            v-model="smallValue" :ui="{
               wrapper: 'h-7 rounded bg-emerald-50 dark:bg-emerald-500 border-emerald-200 ring-emerald-200',
               input: 'text-emerald-700 text-xs w-10',
               button: 'text-emerald-600 dark:text-emerald-100 hover:text-emerald-800 dark:hover:text-warning px-1.5',
               divider: 'bg-emerald-200 w-px group-focus-within:bg-emerald-300',
             }"
           >
-            <template #decrease-icon>
+            <template #minus>
               <view class="i-lucide-heart-off size-3" />
             </template>
-            <template #increase-icon>
+            <template #plus>
               <view class="i-lucide-heart size-3" />
             </template>
           </RebornInputNumber>

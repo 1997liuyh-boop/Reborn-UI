@@ -1,25 +1,27 @@
 <script setup lang="ts">
+import { computed, shallowRef } from "vue";
 import {
   textareaColors,
   textareaSizes,
 } from "~/components/reborn/ui/reborn-textarea/reborn-textarea.config";
 
 /** 演练场绑定值 */
-const state = ref<Record<string, any>>({
+const state = shallowRef<Record<string, any>>({
   size: "md",
   color: "primary",
   border: true,
   showWordLimit: true,
+  maxlength: 200,
   customLimit: false,
   disabled: false,
   autoHeight: false,
 });
 
 /** 演练场中输入框的内容 */
-const value = ref("");
+const value = shallowRef("");
 
 /** 自定义 ui 示例的初始内容 */
-const poem = ref(
+const poem = shallowRef(
   "轻轻的我走了，正如我轻轻的来；我轻轻的招手，作别西天的云彩。那河畔的金柳，是夕阳中的新娘；波光里的艳影，在我的心头荡漾。",
 );
 
@@ -48,6 +50,7 @@ const controls = [
   {
     title: "行为",
     children: [
+      { label: "字数上限", key: "maxlength", component: "input-number" as const, defaultValue: 200, props: { min: 1, step: 10 } },
       { label: "字数统计", key: "showWordLimit", component: "checkbox" as const, defaultValue: true },
       { label: "自定义统计插槽", key: "customLimit", component: "checkbox" as const, defaultValue: false },
       { label: "高度自适应", key: "autoHeight", component: "checkbox" as const, defaultValue: false },
@@ -59,7 +62,7 @@ const controls = [
 /** 演练场右上角展示的等价代码 */
 const textareaCode = computed(
   () =>
-    `<RebornTextarea\n  v-model="value"\n  size="${state.value.size}"\n  color="${state.value.color}"\n  :border="${state.value.border}"\n  :show-word-limit="${state.value.showWordLimit}"\n  :auto-height="${state.value.autoHeight}"\n  :disabled="${state.value.disabled}"\n  placeholder="请输入内容..."\n/>`,
+    `<RebornTextarea\n  v-model="value"\n  size="${state.value.size}"\n  color="${state.value.color}"\n  :border="${state.value.border}"\n  :show-word-limit="${state.value.showWordLimit}"\n  :maxlength="${state.value.maxlength}"\n  :auto-height="${state.value.autoHeight}"\n  :disabled="${state.value.disabled}"\n  placeholder="请输入内容..."\n/>`,
 );
 </script>
 
@@ -79,6 +82,7 @@ const textareaCode = computed(
         :color="state.color"
         :border="state.border"
         :show-word-limit="state.showWordLimit"
+        :maxlength="state.maxlength"
         :auto-height="state.autoHeight"
         :disabled="state.disabled"
         placeholder="请输入内容..."

@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from "vue";
 
-// Define interfaces for props and data structures
 interface Props {
+  /** 轮换显示的占位文本 */
   placeholders?: string[];
+  /** 挂载后是否自动聚焦输入框；聚焦时不滚动页面 */
+  autofocus?: boolean;
 }
 
 interface PixelData {
@@ -16,42 +18,58 @@ interface AnimatedPixel extends PixelData {
   r: number;
 }
 
-// props
 const props = withDefaults(defineProps<Props>(), {
   placeholders: () => ["Placeholder 1", "Placeholder 2", "Placeholder 3"],
+  autofocus: false,
 });
-const emit = defineEmits(["submit", "change"]);
+const emit = defineEmits<{
+  /** 按回车或点击提交按钮时触发，参数为提交时的文本 */
+  submit: [value: string];
+  /** 输入值变化时触发，参数为模拟的事件对象；动画期间不触发 */
+  change: [event: { target: { value: string } }];
+}>();
 const vanishingText = defineModel<string>({
   default: "",
 });
 const canvasRef = useTemplateRef<HTMLCanvasElement>("canvasRef");
 const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
 
-// normal refs
-const currentPlaceholder = ref<number>(0);
-const animating = ref<boolean>(false);
-const intervalRef = ref<number | null>(null);
-const newDataRef = ref<AnimatedPixel[]>([]);
-const animationFrame = ref<number | null>(null);
+const currentPlaceholder = shallowRef(0);
+const animating = shallowRef(false);
 
-// Focus on input when mounted
+// 定时器句柄与像素数据只给逻辑和 canvas 绘制用、不参与渲染：用普通变量，
+// 放在深层 ref 里时，消散动画每帧逐个像素经过响应式代理读写，文本越长越容易掉帧
+let placeholderTimer: number | null = null;
+let animationFrame: number | null = null;
+let refocusTimer: ReturnType<typeof setTimeout> | null = null;
+let pixels: AnimatedPixel[] = [];
+
 onMounted(() => {
-  if (!inputRef.value) return;
-  inputRef.value.focus();
+  if (!props.autofocus || !inputRef.value) return;
+  // 不滚动页面：组件不在首屏时，挂载聚焦会把页面滚过去
+  inputRef.value.focus({ preventScroll: true });
 });
 
+function stopPlaceholderTimer(): void {
+  if (placeholderTimer !== null) {
+    clearInterval(placeholderTimer);
+    placeholderTimer = null;
+  }
+}
+
 function changePlaceholder(): void {
-  intervalRef.value = window.setInterval(() => {
+  // 先清除已有的定时器：连续收到 visible 时不会叠加出多个 interval
+  stopPlaceholderTimer();
+  placeholderTimer = window.setInterval(() => {
     currentPlaceholder.value = (currentPlaceholder.value + 1) % props.placeholders.length;
   }, 3000);
 }
 
 function handleVisibilityChange(): void {
-  if (document.visibilityState !== "visible" && intervalRef.value) {
-    clearInterval(intervalRef.value);
-    intervalRef.value = null;
-  } else if (document.visibilityState === "visible") {
+  if (document.visibilityState === "visible") {
     changePlaceholder();
+  } else {
+    stopPlaceholderTimer();
   }
 }
 
@@ -75,7 +93,7 @@ function draw(): void {
 
   const imageData = ctx.getImageData(0, 0, 800, 800);
   const pixelData = imageData.data;
-  const newData: PixelData[] = [];
+  const newData: AnimatedPixel[] = [];
 
   for (let t = 0; t < 800; t++) {
     const i = 4 * t * 800;
@@ -85,18 +103,20 @@ function draw(): void {
         newData.push({
           x: n,
           y: t,
+          r: 1,
           color: `rgba(${pixelData[e]}, ${pixelData[e + 1]}, ${pixelData[e + 2]}, ${pixelData[e + 3]})`,
         });
       }
     }
   }
-  newDataRef.value = newData?.map(({ x, y, color }) => ({ x, y, r: 1, color }));
+  pixels = newData;
 }
 
 function animate(start: number = 0): void {
-  animationFrame.value = requestAnimationFrame(() => {
+  animationFrame = requestAnimationFrame(() => {
+    animationFrame = null;
     const newArr: AnimatedPixel[] = [];
-    for (const current of newDataRef.value) {
+    for (const current of pixels) {
       if (current.x < start) {
         newArr.push(current);
       } else {
@@ -110,11 +130,11 @@ function animate(start: number = 0): void {
         newArr.push(current);
       }
     }
-    newDataRef.value = newArr;
+    pixels = newArr;
     const ctx = canvasRef.value?.getContext("2d");
     if (ctx) {
       ctx.clearRect(start, 0, 800, 800);
-      newDataRef.value.forEach(({ x, y, r, color }) => {
+      for (const { x, y, r, color } of pixels) {
         if (x > start) {
           ctx.beginPath();
           ctx.rect(x, y, r, r);
@@ -122,15 +142,16 @@ function animate(start: number = 0): void {
           ctx.strokeStyle = color;
           ctx.stroke();
         }
-      });
+      }
     }
-    if (newDataRef.value.length > 0) {
+    if (pixels.length > 0) {
       animate(start - 8);
     } else {
       vanishingText.value = "";
       animating.value = false;
-      setTimeout(() => {
-        // regain focus after animation
+      refocusTimer = setTimeout(() => {
+        refocusTimer = null;
+        // 动画结束后把焦点还给输入框
         inputRef.value?.focus();
       }, 100);
     }
@@ -144,12 +165,20 @@ function handleKeyDown(e: KeyboardEvent): void {
   }
 }
 
+/** 求像素最大横坐标：用循环而不是 Math.max(...arr)，数万个像素展开成参数可能栈溢出 */
+function maxPixelX(list: AnimatedPixel[]): number {
+  let max = Number.NEGATIVE_INFINITY;
+  for (const { x } of list) {
+    if (x > max) max = x;
+  }
+  return max;
+}
+
 function vanishAndSubmit(): void {
   animating.value = true;
   draw();
   if (vanishingText.value) {
-    const maxX = Math.max(...newDataRef.value?.map(({ x }) => x));
-    animate(maxX);
+    animate(maxPixelX(pixels));
     emit("submit", vanishingText.value);
   }
 }
@@ -158,7 +187,7 @@ function handleSubmit(): void {
   vanishAndSubmit();
 }
 
-// Watch for value changes
+// 输入值变化时派发 change（动画期间不派发）
 watch(vanishingText, (newVal: string) => {
   if (!animating.value) {
     emit("change", { target: { value: newVal } });
@@ -171,11 +200,14 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (intervalRef.value) {
-    clearInterval(intervalRef.value);
+  stopPlaceholderTimer();
+  if (animationFrame !== null) {
+    cancelAnimationFrame(animationFrame);
+    animationFrame = null;
   }
-  if (animationFrame.value) {
-    cancelAnimationFrame(animationFrame.value);
+  if (refocusTimer !== null) {
+    clearTimeout(refocusTimer);
+    refocusTimer = null;
   }
   document.removeEventListener("visibilitychange", handleVisibilityChange);
 });
@@ -184,42 +216,75 @@ onBeforeUnmount(() => {
 <template>
   <form
     class="relative mx-auto h-12 w-full max-w-xl overflow-hidden rounded-full bg-white shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),_0px_1px_0px_0px_rgba(25,28,33,0.02),_0px_0px_0px_1px_rgba(25,28,33,0.08)] transition duration-200 dark:bg-zinc-800"
-    :class="[vanishingText && 'bg-gray-50']" @submit.prevent="handleSubmit">
-    <!-- Canvas Element -->
-    <canvas ref="canvasRef"
+    :class="[vanishingText && 'bg-gray-50']"
+    @submit.prevent="handleSubmit"
+  >
+    <!-- 消散动画的画布 -->
+    <canvas
+      ref="canvasRef"
       class="pointer-events-none absolute top-[20%] left-2 origin-top-left scale-50 pr-20 text-base invert sm:left-8 dark:invert-0"
-      :class="[animating ? 'opacity-100' : 'opacity-0']" />
+      :class="[animating ? 'opacity-100' : 'opacity-0']"
+    />
 
-    <!-- Text Input -->
-    <input ref="inputRef" v-model="vanishingText" :disabled="animating" type="text"
+    <!-- 文本输入框 -->
+    <input
+      ref="inputRef"
+      v-model="vanishingText"
+      :disabled="animating"
+      type="text"
       class="relative z-50 size-full rounded-full border-none bg-transparent pr-20 pl-4 text-sm text-black focus:ring-0 focus:outline-none sm:pl-10 sm:text-base dark:text-white"
-      :class="{ 'text-transparent dark:text-transparent': animating }" @keydown.enter="handleKeyDown" />
+      :class="{ 'text-transparent dark:text-transparent': animating }"
+      @keydown.enter="handleKeyDown"
+    >
 
-    <!-- Submit Button -->
-    <button :disabled="!vanishingText" type="submit"
-      class="absolute top-1/2 right-2 z-50 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black transition duration-200 disabled:bg-gray-100 dark:bg-zinc-900 dark:disabled:bg-zinc-700">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="size-4 text-gray-300">
+    <!-- 提交按钮 -->
+    <button
+      :disabled="!vanishingText"
+      type="submit"
+      class="absolute top-1/2 right-2 z-50 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black transition duration-200 disabled:bg-gray-100 dark:bg-zinc-900 dark:disabled:bg-zinc-700"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="size-4 text-gray-300"
+      >
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M5 12l14 0" :style="{
-          strokeDasharray: '50%',
-          strokeDashoffset: vanishingText ? '0' : '50%',
-          transition: 'stroke-dashoffset 0.3s linear',
-        }" />
+        <path
+          d="M5 12l14 0"
+          :style="{
+            strokeDasharray: '50%',
+            strokeDashoffset: vanishingText ? '0' : '50%',
+            transition: 'stroke-dashoffset 0.3s linear',
+          }"
+        />
         <path d="M13 18l6 -6" />
         <path d="M13 6l6 6" />
       </svg>
     </button>
 
-    <!-- Placeholder Text -->
+    <!-- 轮换的占位文本 -->
     <div class="pointer-events-none absolute inset-0 flex items-center rounded-full">
-      <Transition v-show="!vanishingText" mode="out-in" enter-active-class="transition duration-300 ease-out"
-        leave-active-class="transition duration-300 ease-in" enter-from-class="opacity-0 translate-y-4"
-        enter-to-class="opacity-100 translate-y-0" leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 -translate-y-4">
-        <p :key="currentPlaceholder"
-          class="w-[calc(100%-2rem)] truncate pl-4 text-left text-sm font-normal text-neutral-500 sm:pl-10 sm:text-base dark:text-zinc-500">
+      <Transition
+        v-show="!vanishingText"
+        mode="out-in"
+        enter-active-class="transition duration-300 ease-out"
+        leave-active-class="transition duration-300 ease-in"
+        enter-from-class="opacity-0 translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-4"
+      >
+        <p
+          :key="currentPlaceholder"
+          class="w-[calc(100%-2rem)] truncate pl-4 text-left text-sm font-normal text-neutral-500 sm:pl-10 sm:text-base dark:text-zinc-500"
+        >
           {{ placeholders[currentPlaceholder] }}
         </p>
       </Transition>

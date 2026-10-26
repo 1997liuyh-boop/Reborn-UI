@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { formItemLabelPositions } from './reborn-form-item.config'
-import { computed, provide } from 'vue'
-import { useFieldGroupItem } from '@/composables/useFieldGroup'
+import { computed, provide, toRef } from 'vue'
+import { FORM_ITEM_KEY, useFieldGroupItem } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-form-item.config'
@@ -49,7 +49,7 @@ const {
   validate,
 } = useFieldGroupItem(props)
 
-provide('rebornFormItem', {
+provide(FORM_ITEM_KEY, {
   isError: computed(() => !!error.value),
   validate,
 })
@@ -91,7 +91,7 @@ const ui = computed(() => {
 
 defineExpose({
   /** 当前表单项绑定的字段名，供父级 Form 定位字段实例（validateField/scrollToField 等依赖它） */
-  prop: props.prop,
+  prop: toRef(props, 'prop'),
   /** `(callback: (rect) => void) => void` 以回调返回表单项根节点的位置与尺寸（基于 uni.createSelectorQuery），校验失败滚动定位时使用 */
   getBoundingClientRect,
 })

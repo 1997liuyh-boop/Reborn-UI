@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from "vue";
 import type { MouseMode } from "./rebornShaderToy";
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, shallowRef, useTemplateRef, watch } from "vue";
 import { rebornShaderToy } from "./rebornShaderToy";
 
 interface Props {
@@ -26,22 +26,35 @@ const props = withDefaults(defineProps<Props>(), {
   damping: 0,
 });
 
-const containerRef = ref<HTMLElement>();
+const emit = defineEmits<{
+  /** 当前环境不支持 WebGL 2、无法创建渲染器时触发，载荷为构造时抛出的错误 */
+  error: [error: unknown];
+}>();
+
+const containerRef = useTemplateRef<HTMLElement>("containerRef");
 let shader: rebornShaderToy | undefined;
+/** 渲染器创建失败（不支持 WebGL 2）时为 true，模板改为渲染 fallback 插槽 */
+const unsupported = shallowRef(false);
+
+/** 编译并切换着色器，成功后开始播放（已在播放时 play 不重复启动循环） */
+function applyShader(source: string) {
+  if (!shader) return;
+  if (shader.setShader({ source })) shader.play();
+}
 
 onMounted(() => {
   if (!containerRef.value) return;
 
-  shader = new rebornShaderToy(containerRef.value, props.mouseMode);
-
-  const success = shader.setShader({
-    source: props.shaderCode,
-  });
-
-  if (!success) {
+  try {
+    shader = new rebornShaderToy(containerRef.value, props.mouseMode);
+  } catch (error) {
+    // 旧浏览器或禁用 WebGL 时构造函数会抛错，在这里降级，不让错误冒泡到应用的错误处理
+    unsupported.value = true;
+    emit("error", error);
     return;
   }
 
+  // 参数先写入实例，编译着色器时会一并带上
   shader.setHSV({
     hue: props.hue,
     saturation: props.saturation,
@@ -53,12 +66,28 @@ onMounted(() => {
   shader.setMouseSensitivity(props.mouseSensitivity);
   shader.setMouseDamping(props.damping);
 
-  shader.play();
+  applyShader(props.shaderCode);
 });
 
 onUnmounted(() => {
   shader?.dispose();
+  shader = undefined;
 });
+
+// shaderCode 与 mouseMode 挂载后同样响应变更，切换着色器不需要重挂组件（重挂会多建一个 WebGL 上下文）
+watch(
+  () => props.shaderCode,
+  (source) => {
+    applyShader(source);
+  },
+);
+
+watch(
+  () => props.mouseMode,
+  (mode) => {
+    if (shader) shader.mouseMode = mode;
+  },
+);
 
 watch(
   () => props.hue,
@@ -116,7 +145,10 @@ watch(
 </script>
 
 <template>
-  <div ref="containerRef" class="shadertoy-container" :class="[props.class]" />
+  <div ref="containerRef" class="shadertoy-container" :class="[props.class]">
+    <!-- 不支持 WebGL 2 时的降级内容 -->
+    <slot v-if="unsupported" name="fallback" />
+  </div>
 </template>
 
 <style scoped>

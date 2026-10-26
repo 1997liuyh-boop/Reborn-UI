@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PlaygroundControlGroup } from '~/components/common/play-ground/Playground.vue'
 import type { DrawerDirection } from '~/components/reborn/ui/reborn-drawer'
-import { computed, ref } from 'vue'
+import { computed, shallowRef, useTemplateRef } from 'vue';
 import DemoNote from '~/components/common/demo/DemoNote.vue'
 import DemoSection from '~/components/common/demo/DemoSection.vue'
 import Playground from '~/components/common/play-ground/Playground.vue'
@@ -15,9 +15,9 @@ const defaults = {
   modal: true, modalPenetrable: false, lockScroll: true, closeOnClickModal: true,
   closeOnPressEscape: true, openDelay: 0, closeDelay: 0, destroyOnClose: false, resizable: false,
 }
-const state = ref({ ...defaults })
-const playgroundOpen = ref(false)
-const lastEvent = ref('尚未打开')
+const state = shallowRef({ ...defaults })
+const playgroundOpen = shallowRef(false)
+const lastEvent = shallowRef('尚未打开')
 const directions: { label: string, value: DrawerDirection }[] = [
   { label: '右侧', value: 'right' }, { label: '左侧', value: 'left' },
   { label: '顶部', value: 'top' }, { label: '底部', value: 'bottom' },
@@ -36,29 +36,29 @@ const controls: PlaygroundControlGroup[] = [
   ] },
 ]
 const code = computed(() => `<RebornDrawer v-model="open"\n${Object.entries(state.value).map(([key, value]) => `  ${typeof value === 'string' ? '' : ':'}${key.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`)}="${value}"`).join('\n')}\n>\n  抽屉内容\n</RebornDrawer>`)
-const directionOpen = ref(false)
-const direction = ref<DrawerDirection>('right')
+const directionOpen = shallowRef(false)
+const direction = shallowRef<DrawerDirection>('right')
 function openDirection(value: DrawerDirection) { direction.value = value; directionOpen.value = true }
-const slotsOpen = ref(false)
-const fullHeader = ref(false)
-const guardOpen = ref(false)
-const confirmation = ref(false)
+const slotsOpen = shallowRef(false)
+const fullHeader = shallowRef(false)
+const guardOpen = shallowRef(false)
+const confirmation = shallowRef(false)
 let pendingClose: ((cancel?: boolean) => void) | undefined
 /** 保留关闭回调，由抽屉内的确认操作决定是否继续。 */
 function beforeClose(done: (cancel?: boolean) => void) { pendingClose = done; confirmation.value = true }
 function decideClose(cancel: boolean) { pendingClose?.(cancel); pendingClose = undefined; confirmation.value = false }
-const delayOpen = ref(false)
-const destroy = ref(false)
-const delayEvent = ref('等待操作')
-const maskOpen = ref(false)
-const penetrate = ref(false)
-const outsideClicks = ref(0)
-const localOpen = ref(false)
-const localTarget = ref<HTMLElement>()
-const resizeOpen = ref(false)
-const resizeInfo = ref('拖动左边缘，或聚焦分隔条后按方向键')
-const parentOpen = ref(false)
-const childOpen = ref(false)
+const delayOpen = shallowRef(false)
+const destroy = shallowRef(false)
+const delayEvent = shallowRef('等待操作')
+const maskOpen = shallowRef(false)
+const penetrate = shallowRef(false)
+const outsideClicks = shallowRef(0)
+const localOpen = shallowRef(false)
+const localTarget = useTemplateRef<HTMLElement>("localTarget");
+const resizeOpen = shallowRef(false)
+const resizeInfo = shallowRef('拖动左边缘，或聚焦分隔条后按方向键')
+const parentOpen = shallowRef(false)
+const childOpen = shallowRef(false)
 </script>
 
 <template>
@@ -126,7 +126,7 @@ const childOpen = ref(false)
       <template #description><code>append-to</code> 指定已存在的定位容器，并优先于 <code>append-to-body</code>。</template>
       <div ref="localTarget" class="relative isolate h-72 overflow-hidden rounded-lg border border-gray-3 p-6">
         <RebornButton variant="outlined" @click="localOpen = true">在此容器打开</RebornButton>
-        <RebornDrawer v-model="localOpen" :append-to="localTarget" :lock-scroll="false" with-header title="局部任务" size="65%"><p>面板、遮罩和百分比尺寸都受本容器约束。</p></RebornDrawer>
+        <RebornDrawer v-model="localOpen" :append-to="localTarget ?? undefined" :lock-scroll="false" with-header title="局部任务" size="65%"><p>面板、遮罩和百分比尺寸都受本容器约束。</p></RebornDrawer>
       </div>
     </DemoSection>
 

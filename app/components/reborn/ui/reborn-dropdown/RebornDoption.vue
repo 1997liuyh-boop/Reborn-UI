@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { DropdownContext, DropdownValue } from './reborn-dropdown.config';
-import { computed, inject, useSlots } from 'vue';
+import type { DropdownValue } from './reborn-dropdown.config';
+import { computed, inject, toValue, useSlots } from 'vue';
 import { cn } from '~/lib/utils';
 import { DROPDOWN_INJECTION_KEY } from './reborn-dropdown.config';
 
@@ -24,7 +24,7 @@ export interface DoptionProps {
 
 const slots = useSlots();
 
-const dropdown = inject<DropdownContext | null>(DROPDOWN_INJECTION_KEY, null);
+const dropdown = inject(DROPDOWN_INJECTION_KEY, null);
 
 /** 脱离 Dropdown 单独使用时退化为无样式节点 */
 const fallbackUi = {
@@ -33,11 +33,8 @@ const fallbackUi = {
   itemLabel: (opts?: { class?: any }) => cn(opts?.class),
 };
 
-const ui = computed(() => {
-  // 上下文里的 ui 是 ComputedRef，需解包；Breadcrumb 等宿主自行 provide 时也兼容传普通对象
-  const raw = dropdown?.ui as any;
-  return (raw?.value ?? raw) || fallbackUi;
-});
+/** 上下文里的 ui 可以是 ref、getter 或普通对象（Breadcrumb 等宿主），toValue 统一解包；缺的键退化为无样式 */
+const ui = computed(() => ({ ...fallbackUi, ...toValue(dropdown?.ui) }));
 
 function onClick(ev: MouseEvent) {
   if (props.disabled || !dropdown) return;

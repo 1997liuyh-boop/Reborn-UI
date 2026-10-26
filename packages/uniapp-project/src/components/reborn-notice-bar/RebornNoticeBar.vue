@@ -3,7 +3,7 @@
  * RebornNoticeBar 通用版通知栏组件
  * 适配 UniApp 各端，支持水平滚动与垂直轮播
  */
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, getCurrentInstance } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, watch, getCurrentInstance } from 'vue';
 import { tv } from '@/lib/tv';
 import { cn } from '@/lib/utils';
 import theme, { type NoticeBarUI } from './reborn-notice-bar.config';
@@ -63,7 +63,7 @@ const emit = defineEmits<{
     (e: 'change', index: number): void;
 }>();
 
-const slots = defineSlots<{
+defineSlots<{
     default(props: { item?: string; index?: number }): any;
     'left-icon'(): any;
     'right-icon'(): any;
@@ -72,18 +72,21 @@ const slots = defineSlots<{
 const instance = getCurrentInstance();
 const b = tv(theme);
 
-const shouldScroll = ref(false);
-const animationDuration = ref(0);
-const scrollDistance = ref(0);
-const isPaused = ref(false);
+const shouldScroll = shallowRef(false);
+const animationDuration = shallowRef(0);
+const scrollDistance = shallowRef(0);
+const isPaused = shallowRef(false);
 
 /** 垂直滚动状态 */
-const verticalIndex = ref(0);
-let verticalTimer: any = null;
+const verticalIndex = shallowRef(0);
+let verticalTimer: ReturnType<typeof setInterval> | null = null;
+let measureTimer: ReturnType<typeof setTimeout> | undefined;
+let disposed = false;
+let measureVersion = 0;
 
 /** 文本列表 */
 const textList = computed(() => {
-    if (Array.isArray(props.text)) return props.text;
+    if (Array.isArray(props.text)) return [...props.text];
     if (props.text) return [props.text];
     return [];
 });
@@ -121,17 +124,22 @@ const textStyle = computed(() => {
 
 /** 检查是否需要水平滚动 */
 const checkOverflow = () => {
+    clearTimeout(measureTimer);
+    const version = ++measureVersion;
+    if (disposed) return;
     if (isVerticalScroll.value || !props.scrollable || props.wrapable || props.disabled) {
         shouldScroll.value = false;
         return;
     }
 
     // 延迟执行以确保布局完成
-    setTimeout(() => {
+    measureTimer = setTimeout(() => {
+        if (disposed || version !== measureVersion) return;
         const query = uni.createSelectorQuery().in(instance);
         query.select('.reborn-notice-bar__wrapper').boundingClientRect();
         query.select('.reborn-notice-bar__text').boundingClientRect();
         query.exec((res) => {
+            if (disposed || version !== measureVersion) return;
             if (res && res[0] && res[1]) {
                 const wrapperWidth = Math.floor(res[0].width || 0);
                 const textWidth = Math.ceil(res[1].width || 0);
@@ -212,32 +220,14 @@ const goTo = (index: number) => {
     }
 };
 
-// 监听内容变化
-watch(() => props.text, () => {
-    checkOverflow();
-    if (isVerticalScroll.value) {
-        verticalIndex.value = 0;
-        startVerticalTimer();
-    }
-}, { immediate: true });
-
-// 监听方向变化
-watch(() => props.direction, () => {
-    checkOverflow();
-    if (isVerticalScroll.value) {
-        startVerticalTimer();
-    } else {
-        stopVerticalTimer();
-    }
+watch([textList, () => props.direction, () => props.scrollable, () => props.wrapable, () => props.disabled, () => props.speed], checkOverflow, { flush: 'post' });
+// 只有消息列表变化才回到第一条；禁用、间隔、轮播模式变化只停 / 启计时器，保留当前条目
+watch(textList, () => {
+    verticalIndex.value = 0;
 });
-
-// 监听禁用状态
-watch(() => props.disabled, (disabled) => {
-    if (disabled) {
-        stopVerticalTimer();
-    } else if (isVerticalScroll.value) {
-        startVerticalTimer();
-    }
+watch([textList, isVerticalScroll, () => props.disabled, () => props.interval], () => {
+    stopVerticalTimer();
+    startVerticalTimer();
 });
 
 onMounted(() => {
@@ -248,6 +238,9 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+    disposed = true;
+    measureVersion++;
+    clearTimeout(measureTimer);
     stopVerticalTimer();
 });
 
@@ -266,54 +259,71 @@ defineExpose({
 </script>
 
 <template>
-    <view :class="ui.root()" :style="rootStyle" @tap="handleClick">
-        <!-- 左侧图标插槽 -->
-        <view v-if="$slots['left-icon'] || props.leftIcon" :class="ui.icon()">
-            <slot name="left-icon">
-                <view v-if="props.leftIcon" :class="props.leftIcon" />
-            </slot>
-        </view>
-
-        <!-- 内容区域 -->
-        <view class="reborn-notice-bar__wrapper" :class="ui.textWrapper()">
-            <!-- 垂直滚动模式 -->
-            <view v-if="isVerticalScroll" :class="ui.verticalWrapper()">
-                <transition name="notice-bar-vertical" mode="out-in">
-                    <view :key="verticalIndex" :class="ui.verticalItem()">
-                        <slot :item="textList[verticalIndex]" :index="verticalIndex">
-                            {{ textList[verticalIndex] }}
-                        </slot>
-                    </view>
-                </transition>
-            </view>
-
-            <!-- 水平滚动模式 -->
-            <view v-else class="reborn-notice-bar__text" :class="[
-                ui.text(),
-                shouldScroll && !wrapable ? 'animate-notice-bar-scroll' : '',
-                !props.scrollable && !wrapable && !isVerticalScroll ? 'truncate w-full' : ''
-            ]" :style="textStyle">
-                <slot>
-                    <template v-if="hasMultipleText">
-                        <text v-for="(item, index) in textList" :key="index" class="mr-[16rpx]">
-                            {{ item }}
-                        </text>
-                    </template>
-                    <template v-else>{{ props.text }}</template>
-                </slot>
-            </view>
-        </view>
-
-        <!-- 右侧图标插槽 -->
-        <view v-if="$slots['right-icon'] || props.rightIcon" :class="ui.icon()">
-            <slot name="right-icon">
-                <view v-if="props.rightIcon" :class="props.rightIcon" @tap.stop="handleClose" />
-            </slot>
-        </view>
+  <view :class="ui.root()" :style="rootStyle" @tap="handleClick">
+    <!-- 左侧图标插槽 -->
+    <view v-if="$slots['left-icon'] || props.leftIcon" :class="ui.icon()">
+      <slot name="left-icon">
+        <view v-if="props.leftIcon" :class="props.leftIcon" />
+      </slot>
     </view>
+
+    <!-- 内容区域 -->
+    <view class="reborn-notice-bar__wrapper" :class="ui.textWrapper()">
+      <!-- 垂直滚动模式 -->
+      <view v-if="isVerticalScroll" :class="ui.verticalWrapper()">
+        <!-- #ifdef H5 -->
+        <transition name="notice-bar-vertical" mode="out-in">
+          <view :key="verticalIndex" :class="ui.verticalItem()">
+            <slot :item="textList[verticalIndex]" :index="verticalIndex">
+              {{ textList[verticalIndex] }}
+            </slot>
+          </view>
+        </transition>
+        <!-- #endif -->
+        <!-- #ifndef H5 -->
+        <!-- 入场动画用本组件 scoped 样式里的类：关键帧与 animation 声明在同一样式块，scoped 改名时一起改写；
+             Tailwind 任意值类生成在全局样式里，引用不到被改名的关键帧 -->
+        <view :key="verticalIndex" :class="ui.verticalItem()" class="notice-bar-enter">
+          <slot :item="textList[verticalIndex]" :index="verticalIndex">{{ textList[verticalIndex] }}</slot>
+        </view>
+        <!-- #endif -->
+      </view>
+
+      <!-- 水平滚动模式 -->
+      <view v-else class="reborn-notice-bar__text" :class="[
+        ui.text(),
+        shouldScroll && !wrapable ? 'animate-notice-bar-scroll' : '',
+        !props.scrollable && !wrapable && !isVerticalScroll ? 'truncate w-full' : ''
+      ]" :style="textStyle">
+        <slot>
+          <template v-if="hasMultipleText">
+            <text v-for="(item, index) in textList" :key="index" class="mr-[16rpx]">
+              {{ item }}
+            </text>
+          </template>
+          <template v-else>{{ textList[0] }}</template>
+        </slot>
+      </view>
+    </view>
+
+    <!-- 右侧图标插槽 -->
+    <view v-if="$slots['right-icon'] || props.rightIcon" :class="ui.icon()">
+      <slot name="right-icon">
+        <view v-if="props.rightIcon" :class="props.rightIcon" @tap.stop="handleClose" />
+      </slot>
+    </view>
+  </view>
 </template>
 
 <style scoped>
+@keyframes notice-bar-enter {
+    from { opacity: 0; transform: translateY(100%); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.notice-bar-enter {
+    animation: notice-bar-enter 0.3s ease-out;
+}
 @keyframes notice-bar-scroll {
     0% {
         transform: translateX(var(--scroll-distance, 100%));

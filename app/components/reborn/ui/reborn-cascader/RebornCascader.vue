@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint vue/custom-event-name-casing: off -- 保留既有公开事件名 */
 /**
  * RebornCascader 级联选择器
  *
@@ -6,20 +7,9 @@
  * 多列之间用 1px 的 gray-2 竖线分隔，不再各自成卡片。
  */
 import type { SelectTriggerProps } from "../reborn-select-trigger/RebornSelectTrigger.vue";
-import type {
-  cascaderColors,
-  CascaderFieldNames,
-  CascaderFieldUI,
-  CascaderOption,
-  CascaderOptionValue,
-  cascaderSizes,
-  CascaderUI,
-  CascaderValue,
-  cascaderVariants,
-  VirtualListProps,
-} from "./reborn-cascader.config";
-import type { CascaderNode } from "./useCascaderTree";
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import type { cascaderColors, CascaderFieldNames, CascaderFieldUI, CascaderOption, CascaderOptionValue, cascaderSizes, CascaderUI, CascaderValue, cascaderVariants, VirtualListProps } from "./reborn-cascader.config";
+import type { CascaderNode } from "./reborn-cascader.tree";
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onBeforeUpdate, provide, shallowRef, useTemplateRef, watch } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -30,8 +20,9 @@ import { splitTriggerUi } from "../reborn-select-trigger/reborn-select-trigger.c
 import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
 import theme from "./reborn-cascader.config";
+import { CASCADER_TREE_KEY, useCascaderState } from "./reborn-cascader.context";
+import { findNodeByValue, getCheckState, valueToKey } from "./reborn-cascader.tree";
 import RebornCascaderPanel from "./RebornCascaderPanel.vue";
-import { buildCascaderTree, findNodeByValue, getCheckState, valueToKey } from "./useCascaderTree";
 
 /** 下拉浮层的触发器属性，透传给 RebornSelectTrigger */
 export type CascaderTriggerProps = Partial<
@@ -112,8 +103,6 @@ export interface CascaderProps {
   ui?: CascaderUI;
 }
 
-defineOptions({ inheritAttrs: false });
-
 const props = withDefaults(defineProps<CascaderProps>(), {
   pathMode: false,
   multiple: false,
@@ -159,19 +148,45 @@ const emit = defineEmits<{
   (e: "blur", ev: FocusEvent): void;
 }>();
 
-const b = tv(theme);
+/*
+ * 三个双向绑定：绑定值（v-model）、输入框的值（v-model:input-value）、是否显示下拉框（v-model:popup-visible）。
+ * defineModel 只负责声明属性与 update 事件，读写都不经它的本地缓存：只传值时 useModel 会改写缓存；非受控时写进去的值
+ * 还会成为受控后「同值不派发」的去重基准，吞掉父级要收的事件。读取按严格受控取父级原始值，写入直接派发事件。
+ */
+defineModel<CascaderValue>({ default: undefined });
+defineModel<string | undefined>("inputValue", { default: undefined });
+defineModel<boolean | undefined>("popupVisible", { default: undefined });
 
-/** 绑定值（v-model） */
-const model = defineModel<CascaderValue>({ default: undefined });
-/** 输入框的值（v-model:input-value） */
-const inputValueModel = defineModel<string | undefined>("inputValue", { default: undefined });
-/** 是否显示下拉框（v-model:popup-visible） */
-const popupVisibleModel = defineModel<boolean | undefined>("popupVisible", { default: undefined });
+const b = tv(theme);
+const instance = getCurrentInstance()!;
+/** 父级是否在 vnode 上写了该属性（含 kebab 写法）：据此区分「未绑定」与「显式绑定 undefined」 */
+function isBound(name: string) {
+  const vnodeProps = instance.vnode.props ?? {};
+  const kebab = name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+  return Object.hasOwn(vnodeProps, name) || Object.hasOwn(vnodeProps, kebab);
+}
+/**
+ * 三个 v-model 各自的受控判定。是否显式绑定也必须响应父级更新（包括未绑定切到 undefined），
+ * 但只存布尔结果：shallowRef 写入相同的值不会触发依赖，下游的 currentValue 与回显计算只在受控状态真的变化时重算。
+ */
+const bound = {
+  modelValue: shallowRef(isBound("modelValue")),
+  inputValue: shallowRef(isBound("inputValue")),
+  popupVisible: shallowRef(isBound("popupVisible")),
+};
+onBeforeUpdate(() => {
+  bound.modelValue.value = isBound("modelValue");
+  bound.inputValue.value = isBound("inputValue");
+  bound.popupVisible.value = isBound("popupVisible");
+});
+function isControlled(name: keyof typeof bound = "modelValue") {
+  return bound[name].value;
+}
 
 /** 三份非受控状态：未绑定对应 v-model 时由它们承载 */
-const innerValue = ref<CascaderValue>(props.defaultValue);
-const innerInputValue = ref(props.defaultInputValue);
-const innerPopupVisible = ref(props.defaultPopupVisible);
+const innerValue = shallowRef<CascaderValue>(props.defaultValue);
+const innerInputValue = shallowRef(props.defaultInputValue);
+const innerPopupVisible = shallowRef(props.defaultPopupVisible);
 
 const {
   disabled: fieldGroupDisabled,
@@ -183,17 +198,22 @@ const {
 const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
 const currentSize = computed(() => fieldGroupSize.value || props.size);
 
+/**
+ * 受控时只认父级传入的原始值（instance.props），不读 defineModel 的本地缓存：
+ * 只传值不接 update 事件时 useModel 会改写本地缓存，读它就成了「只读绑定点了照样变」。
+ * 统一按严格受控处理，父级不接收（不回写）就保持父值，与 Badge / Overlay / Menu 及 UniApp 端一致。
+ */
 const currentValue = computed<CascaderValue>(() =>
-  model.value === undefined ? innerValue.value : model.value,
+  isControlled() ? instance.props.modelValue as CascaderValue : innerValue.value,
 );
 const inputValue = computed(() =>
-  inputValueModel.value === undefined ? innerInputValue.value : inputValueModel.value,
+  isControlled("inputValue") ? (instance.props.inputValue as string | undefined) ?? "" : innerInputValue.value,
 );
 const isOpen = computed({
-  get: () => popupVisibleModel.value ?? innerPopupVisible.value,
+  get: () => isControlled("popupVisible") ? !!instance.props.popupVisible : innerPopupVisible.value,
   set: (visible: boolean) => {
-    innerPopupVisible.value = visible;
-    popupVisibleModel.value = visible;
+    if (!isControlled("popupVisible")) innerPopupVisible.value = visible;
+    instance.emit("update:popupVisible", visible);
   },
 });
 
@@ -204,20 +224,16 @@ const isSearching = computed(() => searchEnabled.value && isOpen.value);
 /** 是否用搜索结果顶掉级联面板：输入框有内容时才切换 */
 const isSearchMode = computed(() => isSearching.value && inputValue.value.trim() !== "");
 
-const panelRef = ref<InstanceType<typeof RebornCascaderPanel> | null>(null);
-const triggerRef = ref<InstanceType<typeof RebornSelectTrigger> | null>(null);
-const searchInputRef = ref<HTMLInputElement | null>(null);
+const panelRef = useTemplateRef<InstanceType<typeof RebornCascaderPanel>>("panelRef");
+const triggerRef = useTemplateRef<InstanceType<typeof RebornSelectTrigger>>("triggerRef");
+const searchInputRef = useTemplateRef<HTMLInputElement>("searchInputRef");
 
 /* ---------------- 选项与展示 ---------------- */
 
 /** 与面板同一套配置建出的选项树，用于回填标签文本与搜索 */
-const tree = computed(() =>
-  buildCascaderTree(props.options, {
-    fieldNames: props.fieldNames,
-    valueKey: props.valueKey,
-    lazy: !!props.loadMore,
-  }),
-);
+const treeContext = useCascaderState(props);
+provide(CASCADER_TREE_KEY, treeContext);
+const { tree } = treeContext;
 
 /** 当前值折算出的条目数组：单选最多一条，多选逐条 */
 const valueEntries = computed<(CascaderOptionValue | CascaderOptionValue[])[]>(() => {
@@ -353,13 +369,36 @@ function searchStateOf(node: CascaderNode) {
   return getCheckState(node, checkedKeys.value);
 }
 
+const searchScrollTop = shallowRef(0);
+const searchListRef = useTemplateRef<HTMLElement>("searchListRef");
+const searchHeight = shallowRef(240);
+const searchRows = computed(() => {
+  const nodes = searchResults.value;
+  const height = Math.max(1, props.virtualListProps?.height ?? 33);
+  const buffer = props.virtualListProps?.buffer ?? 4;
+  const virtual = !!props.virtualListProps && nodes.length > (props.virtualListProps.threshold ?? 0);
+  const start = virtual ? Math.max(0, Math.floor(searchScrollTop.value / height) - buffer) : 0;
+  const end = virtual ? start + Math.ceil(searchHeight.value / height) + buffer * 2 : nodes.length;
+  return { virtual, height, totalHeight: nodes.length * height, offset: start * height,
+    rows: nodes.slice(start, end).map(node => ({ node, ...searchStateOf(node) })) };
+});
+function onSearchScroll(event: Event) {
+  const element = event.target as HTMLElement;
+  searchScrollTop.value = element.scrollTop;
+  searchHeight.value = element.clientHeight || 240;
+}
+watch(searchResults, () => {
+  // 数据窗口与真实滚动位置一同复位，避免窗口回到首批而视口仍停在底部。
+  searchScrollTop.value = 0;
+  if (searchListRef.value) searchListRef.value.scrollTop = 0;
+}, { flush: "post" });
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
 /** 写回输入框的值。受控与非受控两份状态同时更新 */
 function setInputValue(value: string) {
   if (inputValue.value === value) return;
-  innerInputValue.value = value;
-  inputValueModel.value = value;
+  if (!isControlled("inputValue")) innerInputValue.value = value;
+  instance.emit("update:inputValue", value);
   emit("input-value-change", value);
 }
 
@@ -378,8 +417,8 @@ function onSearchInput(event: Event) {
 /* ---------------- 值的写回 ---------------- */
 
 function updateValue(value: CascaderValue) {
-  innerValue.value = value;
-  model.value = value;
+  if (!isControlled()) innerValue.value = value;
+  instance.emit("update:modelValue", value);
   emit("change", value);
   validate("change");
 }
@@ -433,6 +472,7 @@ const showClearButton = computed(() => {
 function clear(event: Event) {
   event.stopPropagation();
   if (isDisabled.value) return;
+  clearTimeout(searchTimer);
   updateValue(props.multiple ? [] : undefined);
   setInputValue("");
   emit("clear");
@@ -475,9 +515,9 @@ function onKeydown(event: KeyboardEvent) {
 }
 
 /**
- * 焦点事件挂在 RebornSelectTrigger 的根节点上。
- * 它声明了 inheritAttrs: false 且没有回绑 $attrs，模板上写 @focus 落不下去，
- * 只能拿到 DOM 后自己监听；用 focusin / focusout 才能覆盖到内部的搜索输入框。
+ * 焦点事件经 RebornSelectTrigger 透传到它的根节点（模板上的 @focusin / @focusout）。
+ * 用 focusin / focusout 而不是 focus / blur：它们会冒泡，才能覆盖到内部的搜索输入框；
+ * 焦点在根节点内部移动时不派发，避免在触发器与搜索框之间切换时误报失焦。
  */
 function onFocusIn(event: FocusEvent) {
   const root = triggerRef.value?.$el as HTMLElement | undefined;
@@ -492,18 +532,7 @@ function onFocusOut(event: FocusEvent) {
   validate("blur");
 }
 
-onMounted(() => {
-  const root = triggerRef.value?.$el as HTMLElement | undefined;
-  root?.addEventListener("focusin", onFocusIn);
-  root?.addEventListener("focusout", onFocusOut);
-});
-
-onBeforeUnmount(() => {
-  const root = triggerRef.value?.$el as HTMLElement | undefined;
-  root?.removeEventListener("focusin", onFocusIn);
-  root?.removeEventListener("focusout", onFocusOut);
-  if (searchTimer) clearTimeout(searchTimer);
-});
+onBeforeUnmount(() => clearTimeout(searchTimer));
 
 watch(isOpen, async (visible) => {
   emit("popup-visible-change", visible);
@@ -516,6 +545,7 @@ watch(isOpen, async (visible) => {
     return;
   }
 
+  clearTimeout(searchTimer);
   // 收起时清掉关键词，下次展开是干净的初始态；此处不再抛 search，避免多一次无谓的远程请求
   setInputValue("");
 });
@@ -665,12 +695,24 @@ defineExpose({
 
 <template>
   <RebornSelectTrigger
-    ref="triggerRef" :class="props.class" :is-open="isOpen" :disabled="isDisabled"
-    :size="currentSize" :ui="overlayUi" :container="popupContainer ?? 'body'"
-    :portal="triggerOptions.portal" :close-on="triggerOptions.closeOn" :side="triggerOptions.side"
-    :align="triggerOptions.align" :offset="triggerOptions.offset" :arrow="triggerOptions.arrow"
-    :auto-adjust-overflow="triggerOptions.autoAdjustOverflow" @keydown="onKeydown"
+    ref="triggerRef"
+    :class="props.class"
+    :is-open="isOpen"
+    :disabled="isDisabled"
+    :size="currentSize"
+    :ui="overlayUi"
+    :container="popupContainer ?? 'body'"
+    :portal="triggerOptions.portal"
+    :close-on="triggerOptions.closeOn"
+    :side="triggerOptions.side"
+    :align="triggerOptions.align"
+    :offset="triggerOptions.offset"
+    :arrow="triggerOptions.arrow"
+    :auto-adjust-overflow="triggerOptions.autoAdjustOverflow"
+    @keydown="onKeydown"
     @close="onOutsideClose"
+    @focusin="onFocusIn"
+    @focusout="onFocusOut"
   >
     <template #trigger>
       <!-- 触发器盒子：样式与 reborn-select 同源，多选时装标签、搜索时装输入框 -->
@@ -682,14 +724,22 @@ defineExpose({
         <!-- 多选：已选路径以 RebornBadge 呈现，超出 max-tag-count 的部分折叠为 “+N” -->
         <div v-if="multiple && displayEntries.length" :class="ui.tagList()">
           <RebornBadge
-            v-for="item in visibleTags" :key="item.key" color="neutral" variant="subtle" size="sm"
-            :closable="!isDisabled" close-icon="lucide:x" :ui="{
+            v-for="item in visibleTags"
+            :key="item.key"
+            color="neutral"
+            variant="subtle"
+            size="sm"
+            :closable="!isDisabled"
+            close-icon="lucide:x"
+            :ui="{
               root: 'min-w-0 shrink-0 max-w-full',
               base: ui.tag(),
               label: ui.tagLabel(),
               closeButton: ui.tagClose(),
               closeIcon: ui.tagCloseIcon(),
-            }" v-bind="item.tagProps" @close="removeTag(item.key, $event)"
+            }"
+            v-bind="item.tagProps"
+            @close="removeTag(item.key, $event)"
           >
             <slot name="label" :data="item.raw">{{ item.label }}</slot>
           </RebornBadge>
@@ -700,7 +750,11 @@ defineExpose({
           -->
           <RebornTooltip v-if="collapsedTags.length" :content="collapsedText" class="flex shrink-0">
             <RebornBadge
-              :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" size="sm" :ui="{
+              :label="`+${collapsedTags.length}`"
+              color="neutral"
+              variant="subtle"
+              size="sm"
+              :ui="{
                 root: 'min-w-0 shrink-0',
                 base: ui.tag({ class: ui.collapseTag() }),
                 label: ui.tagLabel(),
@@ -714,10 +768,16 @@ defineExpose({
           -->
           <span v-if="searchEnabled" :class="ui.tagSearch()">
             <!-- 隐形镜像：按关键词撑开搜索位宽度，超出本行余量时整格换行；末尾的不换行空格给光标留位 -->
-            <span aria-hidden="true" :class="ui.tagSearchMirror()">{{ isSearching ? inputValue : "" }}&nbsp;</span>
+            <span aria-hidden="true" :class="ui.tagSearchMirror()">
+              {{ isSearching ? inputValue : "" }}&nbsp;
+            </span>
             <input
-              v-if="isSearching" ref="searchInputRef" type="text" :value="inputValue"
-              :placeholder="searchPlaceholder" :class="ui.searchInput({ class: ui.tagSearchInput() })"
+              v-if="isSearching"
+              ref="searchInputRef"
+              type="text"
+              :value="inputValue"
+              :placeholder="searchPlaceholder"
+              :class="ui.searchInput({ class: ui.tagSearchInput() })"
               @input="onSearchInput"
             >
           </span>
@@ -725,8 +785,13 @@ defineExpose({
 
         <!-- 单选搜索态：输入框顶掉展示文本，已选文本降级为 placeholder 继续提示 -->
         <input
-          v-else-if="isSearching" ref="searchInputRef" type="text" :value="inputValue"
-          :placeholder="searchPlaceholder" :class="ui.searchInput()" @input="onSearchInput"
+          v-else-if="isSearching"
+          ref="searchInputRef"
+          type="text"
+          :value="inputValue"
+          :placeholder="searchPlaceholder"
+          :class="ui.searchInput()"
+          @input="onSearchInput"
         >
 
         <span v-else-if="displayEntries.length" :class="ui.triggerText()">
@@ -738,9 +803,7 @@ defineExpose({
         <div :class="ui.triggerIconWrapper()">
           <slot v-if="loading" name="loading-icon">
             <!-- size 必须给 100%：RebornLoading 会把 size 写成行内宽高，行内样式压过 class 上的尺寸 -->
-            <RebornLoading
-              type="ring" color="currentColor" size="100%" :class="ui.triggerLoadingIcon()"
-            />
+            <RebornLoading type="ring" color="currentColor" size="100%" :class="ui.triggerLoadingIcon()" />
           </slot>
           <slot v-else-if="isSearching" name="search-icon">
             <Icon name="lucide:search" :class="ui.searchIcon()" />
@@ -765,32 +828,48 @@ defineExpose({
 
         <template v-else>
           <!-- 搜索结果：把命中的选项拍平成一列，行样式与面板一致 -->
-          <div v-if="isSearchMode" :class="ui.searchList()">
-            <div v-if="searchResults.length" :class="ui.optionList()">
+          <div v-if="isSearchMode" ref="searchListRef" :class="ui.searchList()" @scroll="onSearchScroll">
+            <div
+              v-if="searchResults.length"
+              :class="searchRows.virtual ? 'relative shrink-0' : undefined"
+              :style="searchRows.virtual ? { height: `${searchRows.totalHeight}px` } : undefined"
+            >
               <div
-                v-for="node in searchResults" :key="node.key" :class="[
-                  ui.option({ active: searchStateOf(node).checked }),
-                  searchStateOf(node).checked ? ui.optionActive() : '',
-                ]" :data-disabled="node.disabled ? 'true' : 'false'" @click="onSearchPick(node)"
+                :class="searchRows.virtual ? 'absolute inset-x-0 top-0 flex flex-col gap-0' : ui.optionList()"
+                :style="searchRows.virtual ? { transform: `translateY(${searchRows.offset}px)`, gap: '0px' } : undefined"
               >
-                <slot
-                  name="option" :data="node.raw" :level="node.level"
-                  :checked="searchStateOf(node).checked"
-                  :indeterminate="searchStateOf(node).indeterminate"
+                <div
+                  v-for="{ node, checked, indeterminate } in searchRows.rows"
+                  :key="node.key"
+                  :class="[ui.option({ active: checked }), checked ? ui.optionActive() : '', searchRows.virtual && 'm-0 box-border shrink-0']"
+                  :style="searchRows.virtual ? { height: `${searchRows.height}px`, boxSizing: 'border-box' } : undefined"
+                  :data-disabled="node.disabled ? 'true' : 'false'"
+                  @click="onSearchPick(node)"
                 >
-                  <div :class="ui.optionContent()">
-                    <!-- 搜索结果没有「展开下一级」这回事，勾选交回整行，勾选框只负责显示 -->
-                    <!-- 严格模式下勾选框与面板同步改成圆形，两处形状不一致会像是两个组件 -->
-                    <span v-if="multiple" :class="ui.optionCheckbox({ class: 'pointer-events-none' })">
-                      <RebornCheckbox
-                        size="sm" :color="color" :model-value="searchStateOf(node).checked"
-                        :indeterminate="searchStateOf(node).indeterminate" :disabled="node.disabled"
-                        :ui="checkStrictly ? { control: 'rounded-full' } : undefined"
-                      />
-                    </span>
-                    <span :class="ui.optionLabel()">{{ searchLabelOf(node) }}</span>
-                  </div>
-                </slot>
+                  <slot
+                    name="option"
+                    :data="node.raw"
+                    :level="node.level"
+                    :checked="checked"
+                    :indeterminate="indeterminate"
+                  >
+                    <div :class="ui.optionContent()">
+                      <!-- 搜索结果没有「展开下一级」这回事，勾选交回整行，勾选框只负责显示 -->
+                      <!-- 严格模式下勾选框与面板同步改成圆形，两处形状不一致会像是两个组件 -->
+                      <span v-if="multiple" :class="ui.optionCheckbox({ class: 'pointer-events-none' })">
+                        <RebornCheckbox
+                          size="sm"
+                          :color="color"
+                          :model-value="checked"
+                          :indeterminate="indeterminate"
+                          :disabled="node.disabled"
+                          :ui="checkStrictly ? { control: 'rounded-full' } : undefined"
+                        />
+                      </span>
+                      <span :class="ui.optionLabel()">{{ searchLabelOf(node) }}</span>
+                    </div>
+                  </slot>
+                </div>
               </div>
             </div>
             <div v-else :class="ui.empty()">
@@ -800,16 +879,33 @@ defineExpose({
 
           <!-- 级联面板常驻挂载：搜索时只是被盖住，回到面板才不会丢掉展开路径 -->
           <RebornCascaderPanel
-            v-show="!isSearchMode" ref="panelRef" :model-value="panelValue" :options="options"
-            :path-mode="pathMode" :multiple="multiple" :expand-trigger="expandTrigger"
-            :check-strictly="checkStrictly" :load-more="loadMore" :field-names="fieldNames"
-            :value-key="valueKey" :expand-child="expandChild" :size="currentSize" :color="color"
-            :bordered="false" :disabled="isDisabled" :virtual-list-props="virtualListProps"
-            :ui="uiOverrides" @change="onPanelChange" @select="onPanelSelect"
+            v-show="!isSearchMode"
+            ref="panelRef"
+            :model-value="panelValue"
+            :options="options"
+            :path-mode="pathMode"
+            :multiple="multiple"
+            :expand-trigger="expandTrigger"
+            :check-strictly="checkStrictly"
+            :load-more="loadMore"
+            :field-names="fieldNames"
+            :value-key="valueKey"
+            :expand-child="expandChild"
+            :size="currentSize"
+            :color="color"
+            :bordered="false"
+            :disabled="isDisabled"
+            :virtual-list-props="virtualListProps"
+            :ui="uiOverrides"
+            @change="onPanelChange"
+            @select="onPanelSelect"
           >
             <template v-if="$slots.option" #option="scope">
               <slot
-                name="option" :data="scope.data" :level="scope.level" :checked="scope.checked"
+                name="option"
+                :data="scope.data"
+                :level="scope.level"
+                :checked="scope.checked"
                 :indeterminate="scope.indeterminate"
               />
             </template>

@@ -4,12 +4,13 @@ import RebornDialog from "~/components/reborn/ui/reborn-dialog/RebornDialog.vue"
 /**
  * 拖拽演示对话框
  */
-const open = defineModel<boolean>("open", { default: false });
+const open = defineModel<boolean>("open", { default: undefined });
 
-const props = defineProps<{
+interface Props {
   title?: string;
   description?: string;
-}>();
+}
+defineProps<Props>();
 
 const emit = defineEmits<{
   confirm: [];
@@ -29,7 +30,7 @@ function handleCancel() {
   <RebornDialog
     v-model="open"
     :title="title || '自由拖拽'"
-    :description="description || '按住标题区域即可平移位置。'"
+    :describe="description || '按住标题区域即可平移位置。'"
     draggable
     confirm-btn="确定"
     cancel-btn="取消"

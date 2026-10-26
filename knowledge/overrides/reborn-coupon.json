@@ -11,6 +11,7 @@
   "pitfalls": [
     "仅 web 端可用。",
     "券面内容通过 left/right 两个插槽传入（分别对应左侧/顶部与右侧/底部区域）。",
-    "sm/md/lg/xl/xxl props 均为 RebornCouponBaseProps 类型的断点覆盖参数，用于在对应屏宽下覆盖基础配置。"
+    "sm/md/lg/xl/xxl props 均为 RebornCouponBaseProps 类型的断点覆盖参数，用于在对应屏宽下覆盖基础配置。",
+    "断点覆盖项在组件挂载后才生效：挂载前只按基础 props 渲染，保证服务端渲染时水合首帧一致，宽屏下挂载后会切换一次尺寸。"
   ]
 }

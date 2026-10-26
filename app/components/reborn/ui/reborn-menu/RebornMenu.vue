@@ -14,17 +14,21 @@ import {
   Comment,
   computed,
   Fragment,
+  getCurrentInstance,
   nextTick,
   onBeforeUnmount,
   onMounted,
   provide,
-  ref,
+  readonly,
   Text,
   useSlots,
+  useTemplateRef,
   watch,
 } from "vue";
 import { cn } from "~/lib/utils";
-import theme, { MENU_INJECTION_KEY } from "./reborn-menu.config";
+import theme, { isMenuGroup, isSubMenu, MENU_INJECTION_KEY } from "./reborn-menu.config";
+import { useMenuEllipsis } from "./useMenuEllipsis";
+import { useScrollIntoContainer } from "./useScrollIntoContainer";
 // RebornMenuItems / RebornSubMenu 由 Nuxt 全局自动注册（nuxt.config 的 pathPrefix: false），
 // 这里刻意不写静态 import：三个组件互为递归引用，静态导入会形成 ESM 循环依赖。
 
@@ -189,12 +193,17 @@ const b = theme;
 const slots = useSlots();
 const appRouter = useRouter();
 
-/** 当前展开的子菜单索引列表（优先使用 openKeys 模型值，否则使用 defaultOpeneds） */
-const openedMenus = ref<MenuValue[]>(
-  openKeys.value.length > 0 ? [...openKeys.value] : [...props.defaultOpeneds],
-);
-/** 记录已展开子菜单的完整路径关系：记录 key 为菜单 index，value 为路径数组 */
-const openedMenuPaths = ref<Record<string, string[]>>({});
+/** 受控时始终读取父级值，拒收更新不能留下本地展开副本 */
+const instance = getCurrentInstance();
+const hasOpenKeys = () => {
+  const raw = instance?.vnode.props ?? {};
+  return "openKeys" in raw || "open-keys" in raw;
+};
+if (!openKeys.value.length && props.defaultOpeneds.length) openKeys.value = [...props.defaultOpeneds];
+const openedMenus = computed<readonly string[]>(() => hasOpenKeys() ? (instance?.props.openKeys as string[] ?? []) : openKeys.value);
+/** 完整路径只作内部簿记，不参与渲染 */
+let openedMenuPaths: Record<string, string[]> = {};
+const subMenuPaths = new Map<string, string[]>();
 /**
  * 是否执行「默认全部展开」。
  * 初始化时判定一次即可：openKeys 与 defaultOpeneds 任一给出了初始值，
@@ -204,9 +213,9 @@ const shouldExpandAll = props.defaultExpandAll && openedMenus.value.length === 0
 /** 已自动展开过的子菜单 index，保证每个节点只自动展开一次，用户手动收起后不会被重新展开 */
 const autoExpandedMenus = new Set<string>();
 /** 记录延时关闭的定时器，用于防抖或平滑过渡 */
-const closeTimers = ref<Set<ReturnType<typeof setTimeout>>>(new Set());
+const closeTimers = new Set<ReturnType<typeof setTimeout>>();
 /** 记录所有 teleport 的 popup 元素，防止点击外部误判 */
-const popupRefs = ref<Set<HTMLElement>>(new Set());
+const popupRefs = new Set<HTMLElement>();
 
 // --- 辅助方法 ---
 
@@ -214,24 +223,23 @@ const popupRefs = ref<Set<HTMLElement>>(new Set());
  * 清除所有的关闭定时器
  */
 function clearCloseTimers() {
-  closeTimers.value.forEach((timer) => clearTimeout(timer));
-  closeTimers.value.clear();
+  closeTimers.forEach((timer) => clearTimeout(timer));
+  closeTimers.clear();
 }
 
-/**
- * 注册一个关闭定时器
- * @param timer 定时器实例
- */
-function registerCloseTimer(timer: ReturnType<typeof setTimeout>) {
-  closeTimers.value.add(timer);
+/** 延时任务在触发或取消后立即移出集合 */
+function scheduleClose(task: () => void, delay: number) {
+  const timer = setTimeout(() => { closeTimers.delete(timer); task(); }, delay);
+  closeTimers.add(timer);
+  return () => { clearTimeout(timer); closeTimers.delete(timer); };
 }
 
 function registerPopup(el: HTMLElement) {
-  popupRefs.value.add(el);
+  popupRefs.add(el);
 }
 
 function unregisterPopup(el: HTMLElement) {
-  popupRefs.value.delete(el);
+  popupRefs.delete(el);
 }
 
 /**
@@ -267,8 +275,6 @@ const effectiveMenuTrigger = computed<MenuTrigger>(() =>
 
 /** 收起全部子菜单并同步模型 */
 function closeAllMenus() {
-  openedMenus.value = [];
-  openedMenuPaths.value = {};
   openKeys.value = [];
 }
 
@@ -280,20 +286,10 @@ function keepAncestorMenus(indexPath: string[]) {
   // 选中项自身是叶子而非子菜单，去掉末位后剩下的就是应当保持展开的那条祖先链
   const ancestorPath = indexPath.slice(0, -1);
 
-  openedMenus.value = openedMenus.value.filter((openedIndex) => {
-    const openedPath = openedMenuPaths.value[openedIndex] ?? [openedIndex];
+  openKeys.value = openedMenus.value.filter((openedIndex) => {
+    const openedPath = openedMenuPaths[openedIndex] ?? pathOf(openedIndex);
     return isPathPrefix(openedPath, ancestorPath);
   });
-
-  // 清除被收起分支的路径记录，避免下次展开时读到过期路径
-  Object.keys(openedMenuPaths.value).forEach((openedIndex) => {
-    const openedPath = openedMenuPaths.value[openedIndex];
-    if (!openedPath || !isPathPrefix(openedPath, ancestorPath)) {
-      delete openedMenuPaths.value[openedIndex];
-    }
-  });
-
-  openKeys.value = [...openedMenus.value];
 }
 
 // --- 全局兜底关闭 ---
@@ -344,48 +340,7 @@ const ui = computed(() => {
   return {
     root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, overrides.value.root) }),
     menu: (opts?: { class?: any }) => styles.menu({ class: cn(opts?.class, overrides.value.menu) }),
-    menuItem: (opts?: {
-      class?: any;
-      active?: boolean;
-      color?: MenuColor;
-      opened?: boolean;
-      disabled?: boolean;
-    }) =>
-      styles.menuItem({
-        active: opts?.active,
-        color: opts?.color,
-        opened: opts?.opened,
-        disabled: opts?.disabled,
-        class: cn(opts?.class, overrides.value.menuItem),
-      }),
-    menuItemContent: (opts?: { class?: any }) =>
-      styles.menuItemContent({ class: cn(opts?.class, overrides.value.menuItemContent) }),
-    menuItemTitle: (opts?: { class?: any }) =>
-      styles.menuItemTitle({ class: cn(opts?.class, overrides.value.menuItemTitle) }),
-    menuItemIcon: (opts?: { class?: any }) =>
-      styles.menuItemIcon({ class: cn(opts?.class, overrides.value.menuItemIcon) }),
-    menuItemExtra: (opts?: { class?: any }) =>
-      styles.menuItemExtra({ class: cn(opts?.class, overrides.value.menuItemExtra) }),
-    menuItemArrow: (opts?: { class?: any; opened?: boolean }) =>
-      styles.menuItemArrow({
-        opened: opts?.opened,
-        class: cn(opts?.class, overrides.value.menuItemArrow),
-      }),
-    subMenu: (opts?: { class?: any }) =>
-      styles.subMenu({ class: cn(opts?.class, overrides.value.subMenu) }),
-    subMenuPopup: (opts?: { class?: any }) =>
-      styles.subMenuPopup({ class: cn(opts?.class, overrides.value.subMenuPopup) }),
-    subMenuContent: (opts?: { class?: any }) =>
-      styles.subMenuContent({ class: cn(opts?.class, overrides.value.subMenuContent) }),
-    menuItemGroup: (opts?: { class?: any }) =>
-      styles.menuItemGroup({ class: cn(opts?.class, overrides.value.menuItemGroup) }),
-    menuItemGroupTitle: (opts?: { class?: any }) =>
-      styles.menuItemGroupTitle({ class: cn(opts?.class, overrides.value.menuItemGroupTitle) }),
-    menuDivider: (opts?: { class?: any; dashed?: boolean }) =>
-      styles.menuDivider({
-        dashed: opts?.dashed,
-        class: cn(opts?.class, overrides.value.menuDivider),
-      }),
+
   };
 });
 
@@ -476,26 +431,16 @@ function isCurrentRoute(target: RouteLocationRaw) {
  * @param indexPath 展开项的路径
  */
 function handleOpen(index: string, indexPath: string[]) {
-  openedMenuPaths.value[index] = [...indexPath];
+  let next = [...openedMenus.value];
 
-  // expandMutex 同级别互斥：关闭同级其他展开菜单
+  // 同级互斥同时移除旧分支的后代，仅按父级实际接受的展开集合生成提案
   if (props.expandMutex) {
     const parentPath = indexPath.slice(0, -1);
-    const toClose: string[] = [];
-    for (const [openedIndex, openedPath] of Object.entries(openedMenuPaths.value)) {
-      if (openedIndex === index) continue;
-      const openedParent = openedPath.slice(0, -1);
-      if (
-        openedParent.length === parentPath.length &&
-        openedParent.every((seg, i) => seg === parentPath[i])
-      ) {
-        toClose.push(openedIndex);
-      }
-    }
-    for (const idx of toClose) {
-      delete openedMenuPaths.value[idx];
-    }
-    openedMenus.value = openedMenus.value.filter((idx) => !toClose.includes(idx));
+    const toClose = next
+      .filter(key => key !== index)
+      .map(key => openedMenuPaths[key] ?? pathOf(key))
+      .filter(path => isSameKeys(path.slice(0, -1), parentPath));
+    next = next.filter(key => !toClose.some(path => isPathPrefix(path, openedMenuPaths[key] ?? pathOf(key))));
   }
 
   // ⚠️ 根因：浮层 + 点击触发走的是下面的累加分支，openedMenus 只增不减，
@@ -508,14 +453,13 @@ function handleOpen(index: string, indexPath: string[]) {
   // effectiveMenuTrigger 为 hover 时必然是浮层形态，已被 isPopupExpand 覆盖，这里不再单列
   if (props.uniqueOpened || isPopupExpand.value) {
     // 手风琴模式或浮层展开（含悬停触发）时，只保留当前路径的展开状态
-    openedMenus.value = [...indexPath];
+    openKeys.value = [...indexPath];
   } else {
     // 否则将新展开的项加入到展开列表中
-    openedMenus.value = Array.from(new Set([...openedMenus.value, ...indexPath]));
+    openKeys.value = Array.from(new Set([...next, ...indexPath]));
   }
 
   // 同步到 openKeys 模型
-  openKeys.value = [...openedMenus.value];
 
   emit("open", index, indexPath);
 }
@@ -526,24 +470,15 @@ function handleOpen(index: string, indexPath: string[]) {
  * @param indexPath 收起项的路径
  */
 function handleClose(index: string, indexPath: string[]) {
-  const currentPath = openedMenuPaths.value[index] ?? indexPath;
+  const currentPath = openedMenuPaths[index] ?? indexPath;
 
   // 过滤掉当前菜单及其所有子菜单的展开状态
-  openedMenus.value = openedMenus.value.filter((openedIndex) => {
-    const openedPath = openedMenuPaths.value[openedIndex] ?? [openedIndex];
+  openKeys.value = openedMenus.value.filter((openedIndex) => {
+    const openedPath = openedMenuPaths[openedIndex] ?? pathOf(openedIndex);
     return !isPathPrefix(currentPath, openedPath);
   });
 
-  // 清除已收起菜单的路径记录
-  Object.keys(openedMenuPaths.value).forEach((openedIndex) => {
-    const openedPath = openedMenuPaths.value[openedIndex];
-    if (openedPath && isPathPrefix(currentPath, openedPath)) {
-      delete openedMenuPaths.value[openedIndex];
-    }
-  });
-
   // 同步到 openKeys 模型
-  openKeys.value = [...openedMenus.value];
 
   emit("close", index, indexPath);
 }
@@ -570,6 +505,9 @@ function toggleSubMenu(index: string, indexPath: string[]) {
  * @param disabled 子菜单是否禁用
  */
 function registerSubMenu(index: string, indexPath: string[], disabled: boolean) {
+  subMenuPaths.set(index, [...indexPath]);
+  // 插槽结构在挂载时才可知，为实际展开项补全路径
+  if (openedMenus.value.includes(index)) openedMenuPaths[index] = [...indexPath];
   if (!shouldExpandAll) return;
   // 判定口径与 RebornSubMenu 的 effectiveExpandType 一致：折叠态与水平态强制浮层展开。
   // 浮层形态下全部展开会让所有浮层同时弹出并互相遮挡，直接跳过。
@@ -580,47 +518,48 @@ function registerSubMenu(index: string, indexPath: string[], disabled: boolean) 
   if (autoExpandedMenus.has(index)) return;
   autoExpandedMenus.add(index);
 
-  // 先写路径再写 openKeys：openKeys 的 watch 会据此重建 openedMenuPaths，顺序与 handleOpen 保持一致
-  openedMenuPaths.value[index] = [...indexPath];
-  openedMenus.value = Array.from(new Set([...openedMenus.value, index]));
-  openKeys.value = [...openedMenus.value];
+  openKeys.value = Array.from(new Set([...openedMenus.value, ...autoExpandedMenus]));
 }
 
-/** 监听外部 openKeys 模型变化，同步展开状态 */
-watch(
-  openKeys,
-  (val) => {
-    openedMenus.value = [...val];
-    // 重建路径映射
-    const newPaths: Record<string, string[]> = {};
-    for (const idx of val) {
-      if (openedMenuPaths.value[idx]) {
-        newPaths[idx] = [...openedMenuPaths.value[idx]];
-      } else {
-        newPaths[idx] = [idx];
+function unregisterSubMenu(index: string, indexPath: string[]) {
+  if (isSameKeys(subMenuPaths.get(index) ?? [], indexPath)) subMenuPaths.delete(index);
+}
+const itemPaths = computed(() => {
+  const paths = new Map<string, string[]>();
+  function visit(items: ItemType[], parent: string[] = []) {
+    for (const item of items) {
+      if (isMenuGroup(item)) visit(item.children, parent);
+      else if (isSubMenu(item)) {
+        const path = [...parent, item.key];
+        paths.set(item.key, path);
+        visit(item.children, path);
       }
     }
-    openedMenuPaths.value = newPaths;
-  },
-  { deep: true },
-);
+  }
+  visit(props.items ?? []);
+  return paths;
+});
+function pathOf(index: string) { return itemPaths.value.get(index) ?? subMenuPaths.get(index) ?? [index]; }
+// 初值、外部替换及结构变化都从真实路径重建，拒收提案不改簿记
+watch([openedMenus, itemPaths], ([keys]) => {
+  openedMenuPaths = Object.fromEntries(keys.map(key => [key, pathOf(key)]));
+}, { deep: true, immediate: true });
 
 // --- 水平模式溢出折叠（ellipsis） ---
 
 /** 菜单列表元素引用，溢出测量的基准容器 */
-const menuRef = ref<HTMLElement | null>(null);
-/**
- * 溢出切分下标：-1 表示不折叠（全量展示）。
- * 大于等于 0 时，下标之后的条目移入「更多」子菜单。
- */
-const sliceIndex = ref(-1);
-/** 缓存「更多」触发器的实测宽度，重置测量时它已从 DOM 移除，需用上次的值预留空间 */
-const ellipsisWidth = ref(56);
-
+const menuRef = useTemplateRef<HTMLElement>("menuRef");
 /** 溢出折叠是否生效：仅水平、非折叠态下开启 */
 const ellipsisEnabled = computed(
   () => props.ellipsis && props.mode === "horizontal" && !props.collapse,
 );
+
+const { sliceIndex, calcEllipsis, recordSlotCount } = useMenuEllipsis(menuRef, {
+  enabled: ellipsisEnabled,
+  slotMode: () => !props.items?.length,
+  sources: () => [props.items, props.mode],
+});
+const { scrollIntoContainer } = useScrollIntoContainer();
 
 /**
  * 把插槽返回的节点展平：模板里的 v-for / v-if 会产出 Fragment，
@@ -640,20 +579,25 @@ function flattenNodes(nodes: VNode[]): VNode[] {
   return result;
 }
 
-/** 取插槽里的顶层菜单节点（每次调用重新求值，避免复用旧 vnode） */
+/**
+ * 取插槽里的顶层菜单节点（每次调用重新求值，避免复用旧 vnode）。
+ * 顺带登记条目数：溢出测量据此判断组件更新后要不要补量，登记的是普通变量，渲染期写入不会引发渲染。
+ */
 function slotNodes(): VNode[] {
-  return flattenNodes(slots.default?.() ?? []);
+  const nodes = flattenNodes(slots.default?.() ?? []);
+  recordSlotCount(nodes.length);
+  return nodes;
 }
 
 /** 插槽模式：留在菜单栏内的节点 */
-function VisibleSlotNodes() {
-  const nodes = slotNodes();
+function VisibleSlotNodes(renderProps: { nodes: VNode[] }) {
+  const nodes = renderProps.nodes;
   return sliceIndex.value < 0 ? nodes : nodes.slice(0, sliceIndex.value);
 }
 
 /** 插槽模式：被折叠进「更多」的节点 */
-function OverflowSlotNodes() {
-  const nodes = slotNodes();
+function OverflowSlotNodes(renderProps: { nodes: VNode[] }) {
+  const nodes = renderProps.nodes;
   return sliceIndex.value < 0 ? [] : nodes.slice(sliceIndex.value);
 }
 
@@ -670,112 +614,10 @@ const overflowItems = computed(() =>
 /** 是否需要渲染「更多」触发器 */
 const showEllipsis = computed(() => ellipsisEnabled.value && sliceIndex.value >= 0);
 
-/** 测量是否正在进行，用于阻断重入 */
-let measuring = false;
-/** 测量期间收到的新一轮请求，结束后补算一次 */
-let measurePending = false;
-
-/**
- * 重新计算溢出切分点。
- *
- * ⚠️ 根因：折叠后被隐藏的条目已从 DOM 移除，直接在折叠态下测量拿不到真实总宽，
- * 会导致窗口变宽后无法还原（折叠点单调不可逆）。
- * ✅ 修复：采用「重置 → 测量 → 应用」三拍，每次先全量渲染再量。
- *
- * 「重置」这一拍会改动 DOM，可能反过来惊动 ResizeObserver，
- * 因此用 measuring 阻断重入、用 measurePending 保证期间的请求不丢失。
- */
-async function calcEllipsis(): Promise<void> {
-  if (measuring) {
-    measurePending = true;
-    return;
-  }
-  measuring = true;
-
-  try {
-    await runEllipsisMeasure();
-  } finally {
-    measuring = false;
-  }
-
-  if (measurePending) {
-    measurePending = false;
-    await calcEllipsis();
-  }
-}
-
-/** 单轮「重置 → 测量 → 应用」，仅供 calcEllipsis 调用 */
-async function runEllipsisMeasure() {
-  if (!ellipsisEnabled.value) {
-    sliceIndex.value = -1;
-    return;
-  }
-
-  // 第一拍：重置为全量渲染
-  if (sliceIndex.value !== -1) {
-    sliceIndex.value = -1;
-    await nextTick();
-  }
-
-  const menuEl = menuRef.value;
-  if (!menuEl) return;
-
-  // 第二拍：在全量状态下测量
-  const children = Array.from(menuEl.children) as HTMLElement[];
-  if (children.length === 0) return;
-
-  const menuStyles = window.getComputedStyle(menuEl);
-  const paddingRight = Number.parseFloat(menuStyles.paddingRight) || 0;
-  // clientWidth 含内边距，减去右侧内边距得到内容区可用右边界
-  const available = menuEl.clientWidth - paddingRight;
-
-  // 未溢出则保持全量展示
-  if (menuEl.scrollWidth <= menuEl.clientWidth) {
-    sliceIndex.value = -1;
-    return;
-  }
-
-  // 子元素与 ul 共享同一个 offsetParent（根容器为 relative），换算成相对 ul 的右边界
-  const originLeft = menuEl.offsetLeft;
-  const limit = available - ellipsisWidth.value;
-
-  let nextSlice = -1;
-  for (let i = 0; i < children.length; i++) {
-    const child = children[i]!;
-    const right = child.offsetLeft + child.offsetWidth - originLeft;
-    if (right > limit) {
-      nextSlice = i;
-      break;
-    }
-  }
-
-  // 至少保留一项，避免容器极窄时整条菜单只剩「更多」
-  sliceIndex.value = nextSlice === 0 ? 1 : nextSlice;
-
-  // 第三拍：应用后回读「更多」触发器的真实宽度，供下次测量预留
-  if (sliceIndex.value >= 0) {
-    await nextTick();
-    const last = menuEl.lastElementChild as HTMLElement | null;
-    if (last?.dataset.rebornMenuEllipsis === "true") {
-      ellipsisWidth.value = last.offsetWidth;
-    }
-  }
-}
-
-let resizeObserver: ResizeObserver | null = null;
-
-watch(
-  () => [ellipsisEnabled.value, props.items, props.mode] as const,
-  () => {
-    void calcEllipsis();
-  },
-  { deep: true },
-);
-
 // --- 点击外部关闭 ---
 
 /** 菜单根元素引用，用于判断点击是否在菜单内部 */
-const rootRef = ref<HTMLElement | null>(null);
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
 
 /** 点击菜单外部时关闭所有展开的子菜单 */
 function handleClickOutside(event: MouseEvent) {
@@ -791,7 +633,7 @@ function handleClickOutside(event: MouseEvent) {
   if (rootRef.value.contains(target)) return;
 
   // 检查是否在任何浮层内部
-  for (const popup of popupRefs.value) {
+  for (const popup of popupRefs) {
     if (popup.contains(target)) return;
   }
 
@@ -805,113 +647,6 @@ function handleClickOutside(event: MouseEvent) {
 function isRendered(el: HTMLElement) {
   const rect = el.getBoundingClientRect();
   return rect.width > 0 && rect.height > 0;
-}
-
-/** 自下而上找到在指定轴上真正可滚动的最近祖先；到 body 为止，页面本身不算 */
-function findScrollContainer(el: HTMLElement, axis: "x" | "y") {
-  let node = el.parentElement;
-  while (node && node !== document.body && node !== document.documentElement) {
-    const style = getComputedStyle(node);
-    const overflow = axis === "y" ? style.overflowY : style.overflowX;
-    const overflowing =
-      axis === "y" ? node.scrollHeight > node.clientHeight : node.scrollWidth > node.clientWidth;
-    if (overflowing && /auto|scroll|overlay/.test(overflow)) return node;
-    node = node.parentElement;
-  }
-  return null;
-}
-
-/** 按原生 scrollIntoView 的对齐规则，算出容器在单个轴上需要滚动的距离 */
-function getScrollDelta(
-  position: ScrollLogicalPosition,
-  itemStart: number,
-  itemSize: number,
-  boxStart: number,
-  boxSize: number,
-) {
-  const itemEnd = itemStart + itemSize;
-  const boxEnd = boxStart + boxSize;
-  if (position === "start") return itemStart - boxStart;
-  if (position === "end") return itemEnd - boxEnd;
-  if (position === "center") return itemStart + itemSize / 2 - (boxStart + boxSize / 2);
-  // nearest：已完整可见就不动；比容器还大时与原生一样优先对齐起始边
-  if (itemStart < boxStart || itemSize > boxSize) return itemStart - boxStart;
-  if (itemEnd > boxEnd) return itemEnd - boxEnd;
-  return 0;
-}
-
-/** 平滑滚动的时长，与 RebornAnchor 的默认补间时长一致 */
-const SCROLL_TWEEN_DURATION = 300;
-
-/** 每个轴各自一条补间，新的滚动开始时先停掉同轴上还没跑完的那条 */
-const scrollTweenFrames: Record<"x" | "y", number | undefined> = { x: undefined, y: undefined };
-
-function cancelScrollTween(axis: "x" | "y") {
-  const frame = scrollTweenFrames[axis];
-  if (frame !== undefined) cancelAnimationFrame(frame);
-  scrollTweenFrames[axis] = undefined;
-}
-
-/** ease-in-out：起步与收尾都慢，与 RebornAnchor 的滚动曲线相同 */
-function easeInOut(t: number) {
-  return t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-}
-
-/** JS 补间不受 CSS 的减弱动画设置约束，需要自己判断 */
-function prefersReducedMotion() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-/**
- * 在单个轴上把元素滚进最近的滚动容器。
- * 平滑滚动用 rAF 补间而不交给原生 behavior: 'smooth'：原生平滑滚动的时长与曲线由浏览器各自决定，
- * 部分环境（如关闭了平滑滚动的系统设置）还会直接跳到终点，自己补间才能保证各端观感一致。
- * ⚠️ 不用原生 scrollIntoView：它会连带滚动所有祖先滚动容器（包括页面），
- * 菜单一挂载就把整页拽到菜单所在位置，侧栏与内容区各自滚动的布局里尤其突兀。
- */
-function scrollAxisIntoView(
-  el: HTMLElement,
-  axis: "x" | "y",
-  position: ScrollLogicalPosition,
-  behavior?: ScrollBehavior,
-) {
-  const container = findScrollContainer(el, axis);
-  if (!container) return;
-
-  const itemRect = el.getBoundingClientRect();
-  const boxRect = container.getBoundingClientRect();
-  // 可视区从边框内侧算起，clientWidth / clientHeight 已排除滚动条
-  const delta =
-    axis === "y"
-      ? getScrollDelta(position, itemRect.top, itemRect.height, boxRect.top + container.clientTop, container.clientHeight)
-      : getScrollDelta(position, itemRect.left, itemRect.width, boxRect.left + container.clientLeft, container.clientWidth);
-  cancelScrollTween(axis);
-  if (Math.abs(delta) < 1) return;
-
-  const setScroll = (value: number) => {
-    if (axis === "y") container.scrollTop = value;
-    else container.scrollLeft = value;
-  };
-  const from = axis === "y" ? container.scrollTop : container.scrollLeft;
-  const max =
-    axis === "y"
-      ? container.scrollHeight - container.clientHeight
-      : container.scrollWidth - container.clientWidth;
-  // 终点先夹到可滚范围内，否则补间后半段会一直顶着边界空跑
-  const to = Math.min(Math.max(0, from + delta), max);
-
-  if (behavior !== "smooth" || prefersReducedMotion()) {
-    setScroll(to);
-    return;
-  }
-
-  const start = performance.now();
-  const step = (now: number) => {
-    const progress = Math.min(1, (now - start) / SCROLL_TWEEN_DURATION);
-    setScroll(from + (to - from) * easeInOut(progress));
-    scrollTweenFrames[axis] = progress < 1 ? requestAnimationFrame(step) : undefined;
-  };
-  scrollTweenFrames[axis] = requestAnimationFrame(step);
 }
 
 /**
@@ -944,8 +679,7 @@ async function scrollActiveIntoView(initial = false) {
     inline = "nearest",
     behavior = initial ? "instant" : "smooth",
   } = props.scrollConfig ?? {};
-  scrollAxisIntoView(anchor, "y", block, behavior);
-  scrollAxisIntoView(anchor, "x", inline, behavior);
+  scrollIntoContainer(anchor, { block, inline, behavior });
 }
 
 watch(
@@ -960,21 +694,11 @@ onMounted(() => {
   document.addEventListener("click", handleClickOutside, true);
   void scrollActiveIntoView(true);
 
-  if (menuRef.value) {
-    resizeObserver = new ResizeObserver(() => {
-      void calcEllipsis();
-    });
-    resizeObserver.observe(menuRef.value);
-  }
-  void calcEllipsis();
+
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside, true);
-  resizeObserver?.disconnect();
-  resizeObserver = null;
-  cancelScrollTween("x");
-  cancelScrollTween("y");
   clearCloseTimers();
   cancelCloseAll();
 });
@@ -985,7 +709,7 @@ onBeforeUnmount(() => {
  * 向下提供给子组件的上下文和方法
  */
 provide(MENU_INJECTION_KEY, {
-  selectedKeys,
+  selectedKeys: readonly(selectedKeys),
   openedMenus,
   parentIndexPath: computed(() => [] as string[]),
   mode: computed(() => props.mode),
@@ -1011,21 +735,19 @@ provide(MENU_INJECTION_KEY, {
     if (props.tooltip === false) return false;
     return props.tooltip === true ? {} : props.tooltip;
   }),
-  ui,
   uiOverrides: overrides,
   handleSelect,
   handleOpen,
   handleClose,
   toggleSubMenu,
   clearCloseTimer: clearCloseTimers,
-  registerCloseTimer,
+  scheduleClose,
   registerPopup,
   unregisterPopup,
   scheduleCloseAll,
   cancelCloseAll,
   registerSubMenu,
-  /** 通知父级需要重新计算高度（根级无需操作） */
-  notifyResize: () => {},
+  unregisterSubMenu,
 });
 
 /**
@@ -1034,11 +756,11 @@ provide(MENU_INJECTION_KEY, {
 defineExpose({
   /** 展开指定菜单 */
   open: (index: string) => {
-    handleOpen(index, [index]);
+    handleOpen(index, pathOf(index));
   },
   /** 收起指定菜单 */
   close: (index: string) => {
-    handleClose(index, [index]);
+    handleClose(index, pathOf(index));
   },
   /** 主动触发一次溢出折叠测量 */
   handleResize: () => calcEllipsis(),
@@ -1066,10 +788,12 @@ defineExpose({
         v-if="props.items?.length"
         :items="visibleItems"
       />
+      <slot v-else-if="!ellipsisEnabled" />
       <!-- 插槽模式：ellipsis 开启时按测量结果切分 vnode -->
       <component
         :is="VisibleSlotNodes"
         v-else
+        :nodes="slotNodes()"
       />
 
       <!-- 溢出折叠触发器 -->
@@ -1091,6 +815,7 @@ defineExpose({
         <component
           :is="OverflowSlotNodes"
           v-else
+          :nodes="slotNodes()"
         />
       </RebornSubMenu>
     </ul>

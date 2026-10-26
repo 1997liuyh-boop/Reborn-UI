@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import { imageMode } from '@/components/reborn-image/reborn-image.config'
 import RebornImage from '@/components/reborn-image/RebornImage.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 
-const src = ref('https://cms-image.leyifan.cn/img_reborn/ques-4.jpg')
+const src = shallowRef('https://cms-image.leyifan.cn/img_reborn/ques-4.jpg')
 const previewList = ref(['https://cms-image.leyifan.cn/resources/image/2026/01/27/767453852479557.png', 'https://cms-image.leyifan.cn/resources/image/2026/01/30/768516482351173.png'])
 </script>
 
@@ -36,7 +36,8 @@ const previewList = ref(['https://cms-image.leyifan.cn/resources/image/2026/01/2
     </RebornCard>
     <RebornCard title="状态" custom-class="grid grid-cols-4 gap-2 text-24 text-gray-7 dark:text-gray-1">
       <view class="flex flex-col items-center justify-center">
-        <RebornImage src="src" />
+        <!-- 使用明确不存在的资源演示加载失败。 -->
+        <RebornImage src="/static/missing-demo-image.png" />
         失败
       </view>
       <view class="flex flex-col items-center justify-center">

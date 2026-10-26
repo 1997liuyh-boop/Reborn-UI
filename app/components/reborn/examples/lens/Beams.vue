@@ -1,3 +1,10 @@
+<script setup lang="ts">
+import { useId } from "vue";
+
+/** 每个舞台实例独立持有滤镜与渐变标识 */
+const uid = useId();
+</script>
+
 <template>
   <svg
     width="380"
@@ -7,7 +14,7 @@
     xmlns="http://www.w3.org/2000/svg"
     class="pointer-events-none absolute top-0 left-1/2 w-full -translate-x-1/2"
   >
-    <g filter="url(#filter0_f_120_7473)">
+    <g :filter="`url(#filter0_f_120_7473-${uid})`">
       <circle
         cx="34"
         cy="52"
@@ -15,7 +22,7 @@
         fill="#6925E7"
       />
     </g>
-    <g filter="url(#filter1_f_120_7473)">
+    <g :filter="`url(#filter1_f_120_7473-${uid})`">
       <circle
         cx="332"
         cy="24"
@@ -23,7 +30,7 @@
         fill="#8A4BFF"
       />
     </g>
-    <g filter="url(#filter2_f_120_7473)">
+    <g :filter="`url(#filter2_f_120_7473-${uid})`">
       <circle
         cx="191"
         cy="53"
@@ -33,7 +40,7 @@
     </g>
     <defs>
       <filter
-        id="filter0_f_120_7473"
+        :id="`filter0_f_120_7473-${uid}`"
         x="-192"
         y="-174"
         width="452"
@@ -57,7 +64,7 @@
         />
       </filter>
       <filter
-        id="filter1_f_120_7473"
+        :id="`filter1_f_120_7473-${uid}`"
         x="70"
         y="-238"
         width="524"
@@ -81,7 +88,7 @@
         />
       </filter>
       <filter
-        id="filter2_f_120_7473"
+        :id="`filter2_f_120_7473-${uid}`"
         x="-71"
         y="-209"
         width="524"

@@ -1,48 +1,3 @@
-<template>
-    <div :class="ui.root()" :style="rootStyle">
-        <div v-if="props.type === 'ring' || props.type === 'outline'" :key="props.type" :class="ui.container()"
-            :style="containerStyle">
-            <svg v-if="props.type === 'outline'" class="absolute inset-0 size-full" :class="ui.outlineTrack()"
-                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" />
-            </svg>
-            <svg class="absolute inset-0 size-full" :class="ui.indicator()" :style="ringIndicatorStyle"
-                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- 两种类型共用长弧时仅底圈不同，难以辨认；outline 改用四分之一短弧。 -->
-                <path
-                    :d="props.type === 'outline' ? 'M12 2a10 10 0 0 1 10 10' : 'M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 9.27455 20.9097 6.80375 19.1414 5'"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-            </svg>
-        </div>
-
-        <div v-else-if="props.type === 'spinner'" key="loading-spinner" :class="ui.container()" :style="containerStyle">
-            <div v-for="i in 12" :key="i" :class="ui.spinnerItem()" :style="{ '--i': (i as any) }" />
-        </div>
-
-        <div v-else-if="props.type === 'bars-scale'" key="loading-bars-scale" :class="ui.container()"
-            :style="containerStyle">
-            <div v-for="i in 5" :key="i" :class="ui.barItem()" :style="{ '--i': (i as any) }" />
-        </div>
-
-        <div v-else-if="props.type === 'blocks-shuffle'" key="loading-blocks-shuffle" :class="ui.container()"
-            :style="containerStyle">
-            <div :class="ui.blockItem()" class="rb-shuffle-1" />
-            <div :class="ui.blockItem()" class="rb-shuffle-2" />
-        </div>
-
-        <div v-else-if="props.type === 'blocks-wave'" key="loading-blocks-wave" :class="ui.container()"
-            :style="containerStyle">
-            <div v-for="i in 9" :key="i" :class="ui.waveItem()" :style="{ '--d': getWaveDelay(i) }" />
-        </div>
-
-        <div v-else-if="props.type === 'gooey-balls'" key="loading-gooey-balls" :class="ui.container()"
-            :style="containerStyle">
-            <div :class="ui.gooeyItem()" class="rb-gooey-1" />
-            <div :class="ui.gooeyItem()" class="rb-gooey-2" />
-        </div>
-    </div>
-</template>
-
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { tv } from '~/lib/tv'
@@ -125,9 +80,54 @@ function getWaveDelay(index: number) {
 }
 </script>
 
+<template>
+    <div :class="ui.root()" :style="rootStyle">
+        <div v-if="props.type === 'ring' || props.type === 'outline'" :key="props.type" class="rb-loading-layer" :class="ui.container()"
+            :style="containerStyle">
+            <svg v-if="props.type === 'outline'" class="absolute inset-0 size-full" :class="ui.outlineTrack()"
+                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" />
+            </svg>
+            <svg class="absolute inset-0 size-full" :class="ui.indicator()" :style="ringIndicatorStyle"
+                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 两种类型共用长弧时仅底圈不同，难以辨认；outline 改用四分之一短弧。 -->
+        <path
+                    :d="props.type === 'outline' ? 'M12 2a10 10 0 0 1 10 10' : 'M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 9.27455 20.9097 6.80375 19.1414 5'"
+                    stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+            </svg>
+        </div>
+
+        <div v-else-if="props.type === 'spinner'" key="loading-spinner" class="rb-loading-layer" :class="ui.container()" :style="containerStyle">
+            <div v-for="i in 12" :key="i" class="rb-loading-layer" :class="ui.spinnerItem()" :style="{ '--i': i }" />
+        </div>
+
+        <div v-else-if="props.type === 'bars-scale'" key="loading-bars-scale" class="rb-loading-layer" :class="ui.container()"
+            :style="containerStyle">
+            <div v-for="i in 5" :key="i" class="rb-loading-layer" :class="ui.barItem()" :style="{ '--i': i }" />
+        </div>
+
+        <div v-else-if="props.type === 'blocks-shuffle'" key="loading-blocks-shuffle" class="rb-loading-layer" :class="ui.container()"
+            :style="containerStyle">
+            <div :class="ui.blockItem()" class="rb-loading-layer rb-shuffle-1" />
+            <div :class="ui.blockItem()" class="rb-loading-layer rb-shuffle-2" />
+        </div>
+
+        <div v-else-if="props.type === 'blocks-wave'" key="loading-blocks-wave" class="rb-loading-layer" :class="ui.container()"
+            :style="containerStyle">
+            <div v-for="i in 9" :key="i" class="rb-loading-layer" :class="ui.waveItem()" :style="{ '--d': getWaveDelay(i) }" />
+        </div>
+
+        <div v-else-if="props.type === 'gooey-balls'" key="loading-gooey-balls" class="rb-loading-layer" :class="ui.container()"
+            :style="containerStyle">
+            <div :class="ui.gooeyItem()" class="rb-loading-layer rb-gooey-1" />
+            <div :class="ui.gooeyItem()" class="rb-loading-layer rb-gooey-2" />
+        </div>
+    </div>
+</template>
+
 <style scoped>
-/* 1. 性能基础设置 */
-.rb-loading div {
+/* 1. 性能基础设置：每个动画节点都带 rb-loading-layer，提升为独立合成层（scoped 下不再用 div 元素选择器） */
+.rb-loading-layer {
     box-sizing: border-box;
     backface-visibility: hidden;
     transform: translateZ(0);
@@ -229,18 +229,18 @@ function getWaveDelay(index: number) {
 }
 
 /* 3. 动画逻辑应用 */
-.rb-loading :deep(.rb-loading-indicator) {
+.rb-loading .rb-loading-indicator {
     animation: rb-rotate 0.8s linear infinite;
 }
 
-.rb-loading :deep(.rb-loading-spinnerItem) {
+.rb-loading .rb-loading-spinnerItem {
     transform: rotate(calc((var(--i) - 1) * 30deg));
     animation: rb-spinner 1s linear infinite;
     animation-delay: calc((var(--i) - 1) * 0.08s);
     will-change: opacity;
 }
 
-.rb-loading :deep(.rb-loading-barItem) {
+.rb-loading .rb-loading-barItem {
     animation: rb-bars-scale 1s ease-in-out infinite;
     animation-delay: calc((var(--i) - 1) * 0.12s);
     will-change: transform, opacity;
@@ -254,7 +254,7 @@ function getWaveDelay(index: number) {
     animation: rb-blocks-shuffle 1s linear infinite -0.5s;
 }
 
-.rb-loading :deep(.rb-loading-waveItem) {
+.rb-loading .rb-loading-waveItem {
     animation: rb-blocks-wave 1s ease-in-out infinite;
     animation-delay: var(--d);
     will-change: transform, opacity;

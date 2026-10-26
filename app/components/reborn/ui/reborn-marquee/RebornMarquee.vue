@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { cn } from '~/lib/utils'
 import rebornMarquee, { type RebornMarqueeOrientation, type RebornMarqueeUI } from './reborn-marquee.config'
 
@@ -24,8 +24,6 @@ const props = withDefaults(defineProps<RebornMarqueeProps>(), {
     ui: () => ({}),
 })
 
-const isHovered = ref(false)
-
 defineSlots<{
     default(props: { ui: any }): any
 }>()
@@ -34,9 +32,9 @@ const resolvedOrientation = computed<RebornMarqueeOrientation>(() => {
     return props.vertical ? 'vertical' : props.orientation
 })
 
+// 悬停暂停只靠 config 里的 group-hover 类实现，不再用 JS 记录悬停状态：内联值压不过 !important，悬停变化还会触发重渲染
 const contentStyle = computed(() => ({
     animationDirection: props.reverse ? 'reverse' : 'normal',
-    animationPlayState: props.pauseOnHover && isHovered.value ? 'paused' : 'running',
 }))
 
 const ui = computed(() => {
@@ -56,10 +54,8 @@ const ui = computed(() => {
 
 <template>
     <div
-        :class="cn(ui.root({ class: props.class }), props.pauseOnHover ? 'group cursor-pointer' : '')"
+        :class="cn(ui.root({ class: props.class }), props.pauseOnHover ? 'cursor-pointer' : '')"
         :data-orientation="resolvedOrientation"
-        @mouseenter="isHovered = true"
-        @mouseleave="isHovered = false"
     >
         <div
             v-for="index in repeat"

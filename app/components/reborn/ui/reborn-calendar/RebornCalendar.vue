@@ -2,7 +2,7 @@
 import type { CalendarColor, CalendarControllerType, CalendarMode, CalendarTitleAlign, CalendarUI } from "./reborn-calendar.config";
 import type { CalendarLunar } from "./reborn-calendar.lunar";
 import type { CalendarCellType, CalendarDateType, CalendarDayCell } from "./reborn-calendar.utils";
-import { computed, onBeforeUnmount, onMounted, shallowRef, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, shallowRef, useId, useTemplateRef, watch } from "vue";
 import { motionPresets, runMotion, stopMotion } from "@/lib/motion";
 import { cn } from "~/lib/utils";
 import RebornButton from "../reborn-button/RebornButton.vue";
@@ -10,28 +10,7 @@ import RebornRadioGroup from "../reborn-radio/RebornRadioGroup.vue";
 import RebornSelect from "../reborn-select/RebornSelect.vue";
 import { calendarDotTheme, calendarTheme } from "./reborn-calendar.config";
 import { getLunar } from "./reborn-calendar.lunar";
-import {
-  buildMonthCells,
-  buildRangeCells,
-  calculateValidatedDateRange,
-  CALENDAR_WEEK_DAYS,
-  dayInZone,
-  formatDay,
-  formatMonth,
-  formatRangeTitle,
-  formatValue,
-  groupEvents,
-  isSameDay,
-  isSameMonth,
-  isValidTimeZone,
-  msUntilNextDay,
-  parseValue,
-  resolveRange,
-  setYearMonth,
-  shiftMonth,
-  toDay,
-  zonedMidnight,
-} from "./reborn-calendar.utils";
+import { buildMonthCells, buildRangeCells, calculateValidatedDateRange, CALENDAR_WEEK_DAYS, dayInZone, formatDay, formatMonth, formatRangeTitle, formatValue, groupEvents, isSameDay, isSameMonth, isValidTimeZone, msUntilNextDay, parseValue, resolveRange, setYearMonth, shiftMonth, toDay, zonedMidnight } from "./reborn-calendar.utils";
 
 /** 日历上的一条事项 */
 export interface CalendarEvent {
@@ -66,6 +45,8 @@ export interface CalendarDateCellData {
 export type CalendarFormatter = (value: number, type: "year" | "month") => string | number;
 
 export interface CalendarProps {
+  /** SSR 根节点标识；不传时由 useId 生成。 */
+  id?: string;
   /**
    * 只显示一段日期：[开始, 结束]。开始会补到所在周的周日、结束补到所在周的周六，
    * 两者须同月或相邻月；不合法时在控制台警告并退回普通月视图
@@ -120,6 +101,25 @@ export interface CalendarProps {
   ui?: CalendarUI;
 }
 
+interface DayCellState extends CalendarDayCell {
+  isSelected: boolean;
+  isToday: boolean;
+  events: CalendarEvent[];
+  lunar?: CalendarLunar;
+}
+
+interface MonthCellState {
+  key: string;
+  /** 0~11 */
+  month: number;
+  isSelected: boolean;
+  isToday: boolean;
+  events: CalendarEvent[];
+}
+
+/** 单元格的样式状态，相同状态共用同一份类名 */
+interface CellStyleState { hasEvents: boolean; inMonth: boolean; today: boolean; selected: boolean }
+
 defineOptions({
   name: "RebornCalendar",
 });
@@ -145,11 +145,12 @@ defineSlots<{
   /** 月视图（含区间视图）里单个日期格的内容，替换日期标题与事项区 */
   "date-cell"?: (props: { data: CalendarDateCellData; events: CalendarEvent[] }) => any;
 }>();
+
 /** 选中日期：默认是 Date；设置 valueFormat 后是对应格式的字符串。未绑定时由组件内部维护 */
 const model = defineModel<Date | string>();
 /** 视图模式：month 月视图 / year 年视图 */
 const mode = defineModel<CalendarMode>("mode", { default: "month" });
-const bodyRef = shallowRef<HTMLElement | null>(null);
+const bodyRef = useTemplateRef<HTMLElement>("bodyRef");
 
 // ─── 时区与「今天」 ─────────────────────────────────────────────
 
@@ -158,11 +159,27 @@ watch(() => props.timezone, (timezone) => {
     console.warn(`[RebornCalendar] 无法识别时区「${timezone}」，已改用本地时区`);
 }, { immediate: true });
 
-/** 生效的时区；非法名称退回本地时区 */
-const zone = computed(() => props.timezone && isValidTimeZone(props.timezone) ? props.timezone : undefined);
+// 通过 SSR 根节点携带快照，普通 Vue 项目也能按服务器首帧水合。
+const generatedId = useId();
+const calendarId = computed(() => props.id ?? generatedId);
+const serverElement = typeof document !== 'undefined' ? document.getElementById(calendarId.value) : null;
+const serverZone = serverElement?.dataset.calendarZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+const serverToday = serverElement?.dataset.calendarToday;
+/** 是否已挂载：挂载前（含服务端渲染与水合）按服务端时区计算 */
+const hydrated = shallowRef(false);
 
-/** 今天（日历日）。客户端挂载后重新取一次，并在时区内的下一个零点自动刷新 */
-const today = shallowRef(dayInZone(new Date(), zone.value));
+/** 生效的时区：合法的 timezone 优先；未传或非法时，挂载前用服务端时区，挂载后用本地时区（undefined） */
+const zone = computed(() => {
+  if (props.timezone && isValidTimeZone(props.timezone))
+    return props.timezone;
+  if (hydrated.value)
+    return undefined;
+  return serverZone && isValidTimeZone(serverZone) ? serverZone : undefined;
+});
+
+/** 今天（日历日）。挂载后按用户本地时区重新取一次，并在时区内的下一个零点自动刷新 */
+const initialToday = toDay(serverToday) ?? dayInZone(new Date(), zone.value);
+const today = shallowRef(initialToday);
 let todayTimer: ReturnType<typeof setTimeout> | undefined;
 function refreshToday() {
   const next = dayInZone(new Date(), zone.value);
@@ -171,8 +188,11 @@ function refreshToday() {
   clearTimeout(todayTimer);
   todayTimer = setTimeout(refreshToday, msUntilNextDay(zone.value));
 }
-// 服务端可能处在别的时区，客户端接管后以用户所在时区为准
-onMounted(refreshToday);
+// 水合完成后切回用户本地时区：zone 随之变化，今天与各单元格经正常补丁更新修正
+onMounted(() => {
+  hydrated.value = true;
+  refreshToday();
+});
 watch(zone, () => {
   if (todayTimer !== undefined)
     refreshToday();
@@ -313,13 +333,6 @@ const modeOptions = [
 const eventsByDay = computed(() => groupEvents(props.events, formatDay, zone.value));
 const eventsByMonth = computed(() => groupEvents(props.events, formatMonth, zone.value));
 
-interface DayCellState extends CalendarDayCell {
-  isSelected: boolean;
-  isToday: boolean;
-  events: CalendarEvent[];
-  lunar?: CalendarLunar;
-}
-
 const dayCells = computed<DayCellState[]>(() => {
   const base = inRange.value ? buildRangeCells(segments.value) : buildMonthCells(viewDate.value);
   const current = selected.value;
@@ -344,15 +357,6 @@ const weeks = computed(() => {
     rows.push(dayCells.value.slice(i, i + 7));
   return rows;
 });
-
-interface MonthCellState {
-  key: string;
-  /** 0~11 */
-  month: number;
-  isSelected: boolean;
-  isToday: boolean;
-  events: CalendarEvent[];
-}
 
 /** 年视图：12 个月排成 3 行 4 列 */
 const quarters = computed(() => {
@@ -399,9 +403,6 @@ onBeforeUnmount(() => {
 });
 
 // ─── 样式 ───────────────────────────────────────────────────────
-
-/** 单元格的样式状态，相同状态共用同一份类名 */
-interface CellStyleState { hasEvents: boolean; inMonth: boolean; today: boolean; selected: boolean }
 
 const ui = computed(() => {
   const o = props.ui;
@@ -460,7 +461,7 @@ defineExpose({
 </script>
 
 <template>
-  <div :class="ui.root()">
+  <div :id="calendarId" :class="ui.root()" :data-calendar-zone="serverZone" :data-calendar-today="formatDay(initialToday)">
     <div :class="ui.header()">
       <slot name="header" :date="titleText" :value="toOutput(viewDate)" :mode="mode" :select-date="selectDate">
         <div :class="ui.controller()">
@@ -541,7 +542,7 @@ defineExpose({
           <span class="inline-block min-w-6 text-center">{{ weekday }}</span>
         </div>
       </div>
-      <div v-for="week in weeks" :key="week[0]!.day" role="row" :class="ui.row()">
+      <div v-for="(week, weekIndex) in weeks" :key="week[0]?.day ?? weekIndex" role="row" :class="ui.row()">
         <div
           v-for="cell in week" :key="cell.day" role="gridcell" :aria-selected="cell.isSelected"
           :data-type="cell.type" :class="ui.cell(cell.events.length > 0, cell.isSelected)" @click="commit(cell.date)"

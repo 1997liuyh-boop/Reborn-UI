@@ -1,53 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useAttrs, watchEffect, inject } from "vue";
 import type { ClassValue } from "clsx";
-import type { ComputedRef, Ref } from "vue";
-import { cn } from "~/lib/utils";
-import theme, {
-  checkboxColors,
-  checkboxSizes,
-  checkboxVariants,
-  type CheckboxValue,
-} from "./reborn-checkbox.config";
+import type { checkboxColors, checkboxSizes, CheckboxValue, checkboxVariants } from "./reborn-checkbox.config";
+import { computed, getCurrentInstance, inject, nextTick, normalizeClass, normalizeStyle, onBeforeUpdate, shallowRef, useAttrs } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
+import { cn } from "~/lib/utils";
+import theme, { CHECKBOX_GROUP_KEY } from "./reborn-checkbox.config";
 
-/**
- * 样式生成函数
- */
-const b = tv(theme);
-
-defineOptions({
-  inheritAttrs: false,
-});
-
-/**
- * CheckboxGroup 通过 provide 下发的上下文
- */
-export interface CheckboxGroupContext {
-  /** 组内当前选中值数组 */
-  modelValue: ComputedRef<CheckboxValue[]>;
-  /** 组级禁用（含 Form 级禁用） */
-  disabled: ComputedRef<boolean>;
-  /** 组级尺寸 */
-  size: ComputedRef<typeof checkboxSizes[number]>;
-  /** 组级配色 */
-  color: Ref<typeof checkboxColors[number]>;
-  /** 组级样式变体 */
-  variant: Ref<typeof checkboxVariants[number]>;
-  /** 组级最多可选数量 */
-  max: Ref<number | undefined>;
-  /** 组内选中数量是否已达 max 上限 */
-  limitReached: ComputedRef<boolean>;
-  /** 表单校验错误态 */
-  isError?: ComputedRef<boolean>;
-  /** 组内选中值更新入口；被 max 上限拦截时返回 undefined */
-  updateValue: (value: CheckboxValue, ev: Event) => CheckboxValue[] | undefined;
-}
-
-/**
- * 多选框属性定义
- */
 export interface CheckboxProps {
   /**
    * 默认值，用于非受控模式
@@ -112,6 +71,10 @@ export interface CheckboxProps {
   }>;
 }
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 const props = withDefaults(defineProps<CheckboxProps>(), {
   // 下面三项的运行时类型都含 Boolean：未传时会被 Vue 强转为 false，
   // 必须显式给 undefined 默认值（default 键存在即跳过强转），否则「是否传了」永远判断不出来
@@ -131,15 +94,41 @@ const emit = defineEmits<{
   (e: "change", value: CheckboxValue | CheckboxValue[], ev: Event): void;
 }>();
 
-/** 绑定值（v-model）；显式 default: undefined 跳过 Boolean 类型未传时被强转为 false 的规则，保住非受控判断 */
-const model = defineModel<CheckboxValue | CheckboxValue[]>({ default: undefined });
+/**
+ * 绑定值（v-model）；显式 default: undefined 跳过 Boolean 类型未传时被强转为 false 的规则，保住非受控判断。
+ * defineModel 只负责声明属性与 update 事件，读写都不经它的本地缓存：只传值时 useModel 会改写缓存；非受控时写进去的值
+ * 还会成为受控后「同值不派发」的去重基准，吞掉父级要收的事件。读取按严格受控取父级原始值，写入直接派发事件。
+ */
+defineModel<CheckboxValue | CheckboxValue[]>({ default: undefined });
+
+/**
+ * 样式生成函数
+ */
+const b = tv(theme);
 
 const attrs = useAttrs();
+const instance = getCurrentInstance()!;
+/** 父级是否在 vnode 上写了 modelValue（含 kebab 写法）：据此区分「未绑定」与「显式绑定 undefined」 */
+function isBound() {
+  const vnodeProps = instance.vnode.props ?? {};
+  return Object.hasOwn(vnodeProps, "modelValue") || Object.hasOwn(vnodeProps, "model-value");
+}
+/**
+ * 受控判定。是否显式绑定也必须响应父级更新（包括未绑定切到 undefined），
+ * 但只存布尔结果：shallowRef 写入相同的值不会触发依赖，下游计算只在受控状态真的变化时重算。
+ */
+const bound = shallowRef(isBound());
+onBeforeUpdate(() => {
+  bound.value = isBound();
+});
+function isControlled() {
+  return bound.value;
+}
 
 /**
  * 注入父级 CheckboxGroup 状态（如果存在）
  */
-const checkboxGroup = inject<CheckboxGroupContext | null>("RebornCheckboxGroup", null);
+const checkboxGroup = inject(CHECKBOX_GROUP_KEY, null);
 
 /**
  * 表单全局状态注入 (如来自 RebornForm)
@@ -154,17 +143,18 @@ const {
 /**
  * 非受控状态的内部值，未绑定 v-model 时以 defaultValue（优先）或 defaultChecked 起始
  */
-const innerValue = ref<CheckboxValue | CheckboxValue[]>(props.defaultValue ?? props.defaultChecked);
+const innerValue = shallowRef<CheckboxValue | CheckboxValue[]>(props.defaultValue ?? props.defaultChecked);
 
 /**
  * 当前实际生效的值
  * 优先级：CheckboxGroup.modelValue > v-model 绑定值 > 非受控内部值
  */
-const currentValue = computed<CheckboxValue | CheckboxValue[]>(() => {
+const currentValue = computed<CheckboxValue | readonly CheckboxValue[] | undefined>(() => {
   if (checkboxGroup) {
     return checkboxGroup.modelValue.value;
   }
-  return model.value !== undefined ? model.value : innerValue.value;
+  // 严格受控：只认父级传入的原始值，只传值不接 update 事件时点击不改变显示（与 Badge / Overlay / UniApp 端一致）
+  return isControlled() ? instance.props.modelValue as CheckboxValue | CheckboxValue[] : innerValue.value;
 });
 
 /**
@@ -277,10 +267,12 @@ const ui = computed(() => {
 /**
  * 过滤后的 input 原生属性
  */
-const inputAttrs = computed(() => {
-  const { class: _class, ...rest } = attrs;
+function inputAttrs() {
+  const { class: className, style, ...rest } = attrs;
+  void className;
+  void style;
   return rest;
-});
+}
 
 /**
  * 统一处理值的更新并触发相关事件
@@ -289,9 +281,9 @@ const inputAttrs = computed(() => {
  */
 function updateValue(nextValue: CheckboxValue | CheckboxValue[], event: Event) {
   // 非受控内部值同步维护：未绑定 v-model 时由它承载状态
-  innerValue.value = nextValue;
-  model.value = nextValue;
-  // 受控绑定下 model 赋值后同步回读仍是旧值，事件载荷一律用本地新值
+  if (!isControlled()) innerValue.value = nextValue;
+  instance.emit("update:modelValue", nextValue);
+  // 受控绑定下派发后同步回读仍是父级旧值，事件载荷一律用本地新值
   emit("change", nextValue, event);
 }
 
@@ -300,7 +292,21 @@ function updateValue(nextValue: CheckboxValue | CheckboxValue[], event: Event) {
  */
 function handleChange(event: Event) {
   const target = event.target as HTMLInputElement;
-  const checked = target.checked;
+  applyChange(target.checked, event);
+  // 原生 checkbox 已被浏览器切换，外观又靠 peer-checked 读 DOM 状态；受控时父级可能不回写（只传值或拒收），
+  // 组件不会重渲染，DOM 就停在切换后的状态。等父级这一轮更新完成后，把 DOM 对齐回组件认定的选中态。
+  // 必须在派发事件之后登记：此时父级的更新已排进队列，nextTick 才会排在那次刷新之后。
+  void nextTick(() => {
+    if (target.checked !== isChecked.value) target.checked = isChecked.value;
+  });
+}
+
+/**
+ * 按切换后的勾选状态计算新值并写回
+ * @param checked 原生 input 切换后的勾选状态
+ * @param event 触发本次更新的原生事件
+ */
+function applyChange(checked: boolean, event: Event) {
 
   // 情况 A: 处于 CheckboxGroup 中，值由父级统一维护（校验也由父级触发）
   if (checkboxGroup) {
@@ -334,27 +340,24 @@ function handleChange(event: Event) {
   validate("change");
 }
 
-/** 原生 input 引用，用于同步半选状态 */
-const inputRef = ref<HTMLInputElement | null>(null);
-
-/**
- * 视觉上的半选由 control 节点的 data-indeterminate 驱动，
- * 这里额外把状态写回原生 input 的 indeterminate 属性，
- * 让读屏软件拿到 mixed 语义（该属性只能用 JS 赋值，无法写在模板上）
- */
-onMounted(() => {
-  watchEffect(() => {
-    if (inputRef.value) {
-      inputRef.value.indeterminate = isIndeterminate.value;
-    }
-  });
-});
 </script>
 
 <template>
-  <label :class="ui.wrapper({ class: props.class })" :data-disabled="isDisabled">
-    <input ref="inputRef" v-bind="inputAttrs" type="checkbox" :value="optionValue" :checked="isChecked"
-      :disabled="isDisabled" :class="ui.input()" @change="handleChange" />
+  <label
+    :class="ui.wrapper({ class: cn(props.class, normalizeClass(attrs.class)) })"
+    :style="normalizeStyle(attrs.style)"
+    :data-disabled="isDisabled"
+  >
+    <input
+      v-bind="inputAttrs()"
+      :indeterminate="isIndeterminate"
+      type="checkbox"
+      :value="optionValue"
+      :checked="isChecked"
+      :disabled="isDisabled"
+      :class="ui.input()"
+      @change="handleChange"
+    >
 
     <!-- checkbox 插槽整体替换勾选框；一旦填充，ui.control / ui.icon 将不再生效 -->
     <slot name="checkbox" :checked="isChecked" :disabled="isDisabled" :indeterminate="isIndeterminate">

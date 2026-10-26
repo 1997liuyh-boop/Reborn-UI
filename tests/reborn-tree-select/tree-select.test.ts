@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { compileScript, parse } from '@vue/compiler-sfc';
 import { build } from 'esbuild';
 import { createRenderer, defineComponent, h, nextTick, provide, reactive } from 'vue';
+import { FORM_KEY } from '../../app/composables/useFieldGroup';
 
 /** 真实运行选择器逻辑，仅将子组件替换为可记录契约的测试替身。 */
 const folder = await mkdtemp(resolve('tests/reborn-tree-select/.runtime-'));
@@ -19,6 +20,7 @@ await build({
   outfile: output, bundle: true, format: 'esm', platform: 'node', packages: 'external',
   alias: { '~': resolve('app'), '@': resolve('app') },
   plugins: [{ name: 'vue-test', setup(builder) {
+    builder.onResolve({ filter: /^~\/composables\/useFieldGroup$/ }, () => ({ path: pathToFileURL(resolve('app/composables/useFieldGroup.ts')).href, external: true }));
     builder.onLoad({ filter: /Reborn(Tree|SelectTrigger|Badge|Tooltip)\.vue$/ }, ({ path }) => {
       const name = path.match(/Reborn(\w+)\.vue$/)![1];
       return { contents: `import { defineComponent, h } from 'vue';
@@ -59,7 +61,7 @@ function mount(initial: Record<string, unknown> = {}, form?: Record<string, unkn
   let clears = 0;
   const root = element('root');
   const app = renderer.createApp(defineComponent({ setup() {
-    if (form) provide('rebornForm', { props: form });
+    if (form) provide(FORM_KEY, { props: form } as any);
     return () => h(TreeSelect, { ...props,
       'onUpdate:modelValue': (value: unknown) => { values.push(value); props.modelValue = value; },
       onChange: (value: unknown) => changes.push(value), onClear: () => clears++,
@@ -100,12 +102,12 @@ it('item 插槽收到节点与状态，同时提供 title 时优先使用 item',
   view.unmount();
 });
 
-it('未使用 item 时保留 title 插槽及其作用域', async () => {
+it('未使用 item 时不消费旧 title 插槽', async () => {
   const view = mount({ treeData: data }, undefined, {
     title: ({ node, selected, expanded }) => [h('strong', `${node.title}/${selected}/${expanded}`)],
   });
   await view.open();
-  assert.equal(view.find('strong').text, '研发/true/false');
+  assert.equal(view.find('strong'), undefined);
   view.unmount();
 });
 

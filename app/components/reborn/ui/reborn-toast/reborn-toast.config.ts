@@ -1,6 +1,6 @@
 import type { CSSProperties, VNode } from 'vue';
 import type { Placement } from '~/lib/placement';
-import { reactive } from 'vue';
+import { reactive, readonly } from 'vue';
 import { tv } from '~/lib/tv';
 
 /** 消息类型（level） */
@@ -124,14 +124,27 @@ export const MESSAGE_TYPE_ICON: Record<MessageType, string> = {
 /**
  * 全局单例状态：容器组件与命令式 API 共用。
  * 放在 config 里是为了避免 index.ts（createVNode 容器）与容器组件互相引用。
+ * 只在浏览器端写入：服务端调用命令式 API 会在 index.ts 的 open() 里直接返回，不会进入这份跨请求共享的单例
  */
-export const messageState = reactive({
+const messageStore = reactive({
   list: [] as MessageInstance[],
   top: 8 as string | number,
   duration: 3,
   maxCount: 0,
   rtl: false,
 });
+
+/**
+ * 对外只读视图：容器组件按它渲染，外部不能直接改写；
+ * 修改一律走 addMessage / closeMessage / destroyMessages / applyMessageConfig
+ */
+export const messageState = readonly(messageStore) as Readonly<{
+  list: readonly MessageInstance[];
+  top: string | number;
+  duration: number;
+  maxCount: number;
+  rtl: boolean;
+}>;
 
 let seed = 0;
 
@@ -184,9 +197,9 @@ export function resumeMessage(id: number) {
 
 /** 关闭单条消息：触发 onClose 与 promise resolve */
 export function closeMessage(id: number) {
-  const index = messageState.list.findIndex((item) => item.id === id);
+  const index = messageStore.list.findIndex((item) => item.id === id);
   if (index < 0) return;
-  const [item] = messageState.list.splice(index, 1);
+  const [item] = messageStore.list.splice(index, 1);
   stopTimer(id);
   item!.onClose?.();
   item!.resolvers.forEach((resolve) => resolve());
@@ -195,10 +208,10 @@ export function closeMessage(id: number) {
 /** 全局销毁：不传 key 清空全部，传 key 关闭对应消息 */
 export function destroyMessages(key?: string | number) {
   if (key === undefined) {
-    [...messageState.list].forEach((item) => closeMessage(item.id));
+    [...messageStore.list].forEach((item) => closeMessage(item.id));
     return;
   }
-  const item = messageState.list.find(it => it.key === key);
+  const item = messageStore.list.find(it => it.key === key);
   if (item) closeMessage(item.id);
 }
 
@@ -208,7 +221,7 @@ export function destroyMessages(key?: string | number) {
  */
 function findGroupTarget(options: MessageOptions, placement: MessagePlacement) {
   if (!options.grouping || typeof options.content !== 'string') return undefined;
-  return messageState.list.find(
+  return messageStore.list.find(
     item => item.grouping && item.placement === placement && item.content === options.content,
   );
 }
@@ -221,7 +234,7 @@ export function addMessage(options: MessageOptions): Promise<void> {
     type,
     variant: options.variant ?? 'base',
     color: options.color ?? MESSAGE_TYPE_COLOR[type],
-    duration: options.duration ?? messageState.duration,
+    duration: options.duration ?? messageStore.duration,
     pauseOnHover: options.pauseOnHover ?? true,
     showClose: options.showClose ?? false,
     placement: options.placement ?? 'top',
@@ -230,7 +243,7 @@ export function addMessage(options: MessageOptions): Promise<void> {
   return new Promise<void>((resolve) => {
     // 同 key 更新：替换内容并重置计时，原有 promise 与新 promise 都在最终关闭时兑现
     if (options.key !== undefined) {
-      const existing = messageState.list.find(item => item.key === options.key);
+      const existing = messageStore.list.find(item => item.key === options.key);
       if (existing) {
         Object.assign(existing, merged);
         existing.resolvers.push(resolve);
@@ -248,24 +261,24 @@ export function addMessage(options: MessageOptions): Promise<void> {
       return;
     }
 
-    if (messageState.maxCount > 0) {
-      while (messageState.list.length >= messageState.maxCount) {
-        closeMessage(messageState.list[0]!.id);
+    if (messageStore.maxCount > 0) {
+      while (messageStore.list.length >= messageStore.maxCount) {
+        closeMessage(messageStore.list[0]!.id);
       }
     }
 
     const item: MessageInstance = { ...merged, id: ++seed, repeatNum: 1, resolvers: [resolve] };
-    messageState.list.push(item);
+    messageStore.list.push(item);
     startTimer(item);
   });
 }
 
 /** 应用全局配置（getContainer 由 index.ts 处理） */
 export function applyMessageConfig(config: Pick<MessageGlobalConfig, 'top' | 'duration' | 'maxCount' | 'rtl'>) {
-  if (config.top !== undefined) messageState.top = config.top;
-  if (config.duration !== undefined) messageState.duration = config.duration;
-  if (config.maxCount !== undefined) messageState.maxCount = config.maxCount;
-  if (config.rtl !== undefined) messageState.rtl = config.rtl;
+  if (config.top !== undefined) messageStore.top = config.top;
+  if (config.duration !== undefined) messageStore.duration = config.duration;
+  if (config.maxCount !== undefined) messageStore.maxCount = config.maxCount;
+  if (config.rtl !== undefined) messageStore.rtl = config.rtl;
 }
 
 /*

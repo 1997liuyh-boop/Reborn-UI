@@ -9,14 +9,14 @@ import type {
   TransferVariant,
 } from "./reborn-transfer.config";
 import type { SelectOption } from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
 import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
 import RebornPagination from "~/components/reborn/ui/reborn-pagination/RebornPagination.vue";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 import RebornScrollbar from "~/components/reborn/ui/scrollbar/RebornScrollbar.vue";
-import { useFormInject } from "~/composables/useFieldGroup";
+import { FORM_ITEM_KEY, FORM_KEY, useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import theme, { defaultTransferFieldNames } from "./reborn-transfer.config";
@@ -64,7 +64,7 @@ const emit = defineEmits<{
 
 // ─── 插槽声明 ──────────────────────────────────────────────────────
 
-defineSlots<{
+const slots = defineSlots<{
   /** 头部左侧的勾选区（默认是全选复选框 + 计数文案），左右面板共用，用 direction 区分 */
   title?: (props: TransferTitleSlotProps) => any;
   /** 头部右侧区域（默认是面板标题） */
@@ -90,12 +90,13 @@ const b = tv(theme);
  * inject 读取的是父组件提供的上下文，不受下面置空的影响
  */
 const { disabled: formDisabled, isError, validate } = useFormInject(props);
-const isDisabled = computed(() => !!formDisabled.value || isDisabled.value);
+// useFormInject 已合并表单级与自身的 disabled，这里只做布尔收紧
+const isDisabled = computed(() => formDisabled.value === true);
 
 // 内部的 RebornCheckbox 会注入表单上下文：继承表单尺寸与禁用、勾选时触发字段校验、校验失败时描红。
 // 这些勾选只是面板内的临时选择，不是表单值，因此对子组件置空隔断，表单交互只由穿梭框自身承担
-provide("rebornForm", null);
-provide("rebornFormItem", null);
+provide(FORM_KEY, null);
+provide(FORM_ITEM_KEY, null);
 
 /** 撤回操作最大步数（固定值，无需对外暴露） */
 const MAX_UNDO_STEPS = 20;
@@ -113,7 +114,7 @@ export interface TransferProps {
   fieldNames?: TransferFieldNames;
   /**
    * 默认已在目标列表（右侧）的条目 key
-   * 未绑定 v-model 或目标列表为空时生效；仅初始化一次，会过滤掉 dataSource 中不存在的 key
+   * 未绑定 v-model 或目标列表为空时生效；在首次拿到非空 dataSource 时初始化一次，会过滤掉 dataSource 中不存在的 key
    */
   defaultTargetKeys?: string[];
   /** 两个面板的标题，索引 0 为源列表，索引 1 为目标列表 */
@@ -341,6 +342,14 @@ interface PanelVirtualWindow {
   totalHeight: number;
 }
 
+/** 列表中单行的渲染数据 */
+interface PanelRow {
+  item: TransferDataRecord;
+  key: string;
+  /** 勾选态在父组件渲染时求成普通布尔值，复选框插槽内不再直接读取勾选集合 */
+  checked: boolean;
+}
+
 /** 单侧头部下拉的选项与选中值：与滚动状态无关，单独缓存，避免滚动时逐帧重建上千个选项 */
 interface PanelMenuState {
   options: SelectOption[];
@@ -432,45 +441,39 @@ function isItemDisabled(item: TransferDataRecord): boolean {
 
 const targetKeys = defineModel<string[]>({ default: () => [] });
 
-const defaultTargetKeysApplied = ref(false);
-
 function resolveDefaultTargetKeys(): string[] {
   if (props.defaultTargetKeys.length === 0) return [];
   const sourceKeySet = new Set(props.dataSource.map((item) => getItemKey(item)));
   return props.defaultTargetKeys.filter((key) => sourceKeySet.has(key));
 }
 
-function applyDefaultTargetKeys() {
-  if (defaultTargetKeysApplied.value) return;
-  if (targetKeys.value.length > 0) {
-    defaultTargetKeysApplied.value = true;
-    return;
-  }
+/**
+ * 默认目标键只初始化一次：setup 阶段立即尝试，SSR 首屏即可把条目放进右栏；
+ * dataSource 异步到达（挂载时为空）时，等首次拿到非空数据再尝试。
+ * 目标列表已有值、或已经尝试过一次后立即停止监听，不再对整份数据做深度遍历
+ */
+/** 尝试应用默认目标键；返回 true 表示已完成（应用过或无需应用），之后不再尝试 */
+function settleDefaultTargetKeys(length: number): boolean {
+  if (targetKeys.value.length > 0) return true;
+  if (length === 0) return false;
   const validKeys = resolveDefaultTargetKeys();
-  if (validKeys.length > 0) {
-    targetKeys.value = [...validKeys];
-  }
-  defaultTargetKeysApplied.value = true;
+  if (validKeys.length > 0) targetKeys.value = validKeys;
+  return true;
 }
 
-onMounted(() => {
-  applyDefaultTargetKeys();
-});
-
-watch(
-  () => props.dataSource,
-  () => {
-    if (!defaultTargetKeysApplied.value) {
-      applyDefaultTargetKeys();
-    }
-  },
-  { deep: true },
-);
+if (!settleDefaultTargetKeys(props.dataSource.length)) {
+  const stopDefaultTargetKeysWatch = watch(
+    () => props.dataSource.length,
+    (length) => {
+      if (settleDefaultTargetKeys(length)) stopDefaultTargetKeysWatch();
+    },
+  );
+}
 
 // ─── 两侧面板搜索关键字 / 勾选状态 ────────────────────────────────
 
-const leftSearch = ref("");
-const rightSearch = ref("");
+const leftSearch = shallowRef("");
+const rightSearch = shallowRef("");
 const leftChecked = ref<string[]>([]);
 const rightChecked = ref<string[]>([]);
 
@@ -482,7 +485,7 @@ const historyStack = ref<TransferHistoryEntry[]>([]);
  * 开启前就在右侧的条目（含 v-model / defaultTargetKeys 给出的初始值）视为已定结果，不可撤回。
  * 每次开启单向模式时清空
  */
-const oneWayMovedKeys = ref<string[]>([]);
+const oneWayMovedKeys = shallowRef<string[]>([]);
 
 /**
  * 各 key 数组的集合形态：成员判断从 includes 的线性查找改为 has，
@@ -539,8 +542,8 @@ const paginationPageSize = computed(() => {
   return 10;
 });
 
-const leftCurrentPage = ref(1);
-const rightCurrentPage = ref(1);
+const leftCurrentPage = shallowRef(1);
+const rightCurrentPage = shallowRef(1);
 
 function slicePageItems<T>(items: T[], page: number, pageSize: number): T[] {
   const start = (page - 1) * pageSize;
@@ -607,7 +610,13 @@ const VIRTUAL_FALLBACK_VIEWPORT = 320;
 /** 行间距（px），与 config 中 panelList / virtualWindow 的 gap-1 保持一致 */
 const VIRTUAL_ROW_GAP = 4;
 
-const panelScrollTop = ref<Record<TransferDirection, number>>({ left: 0, right: 0 });
+/**
+ * 各面板可视区首行的行号（未扣缓冲行）：只在跨行时整体替换，
+ * 像素级的滚动事件不会让整个组件重渲染
+ */
+const panelScrollRow = shallowRef<Record<TransferDirection, number>>({ left: 0, right: 0 });
+/** 最近一次的滚动距离（px），非响应式，只在行步长变化时用来重算行号 */
+const panelRawScrollTop: Record<TransferDirection, number> = { left: 0, right: 0 };
 const panelViewportHeight = ref<Record<TransferDirection, number>>({
   left: VIRTUAL_FALLBACK_VIEWPORT,
   right: VIRTUAL_FALLBACK_VIEWPORT,
@@ -628,15 +637,24 @@ function measureViewport(direction: TransferDirection) {
   }
 }
 
+/** 记录滚动距离，换算出的首行行号变化时才写入响应式状态 */
+function setPanelScrollTop(direction: TransferDirection, scrollTop: number) {
+  panelRawScrollTop[direction] = scrollTop;
+  const row = Math.floor(scrollTop / props.virtualItemHeight);
+  if (panelScrollRow.value[direction] !== row) {
+    panelScrollRow.value = { ...panelScrollRow.value, [direction]: row };
+  }
+}
+
 function onPanelScroll(direction: TransferDirection, payload: { scrollTop: number }) {
   if (!props.virtualScroll) return;
-  panelScrollTop.value[direction] = payload.scrollTop;
+  setPanelScrollTop(direction, payload.scrollTop);
 }
 
 /** 列表换了一批数据（搜索、翻页）时，虚拟窗口与真实滚动位置一起回到顶部 */
 function resetPanelScroll(direction: TransferDirection) {
   if (!props.virtualScroll) return;
-  panelScrollTop.value[direction] = 0;
+  setPanelScrollTop(direction, 0);
   scrollbarRefs[direction]?.setScrollTop(0, { animated: false });
 }
 
@@ -676,9 +694,19 @@ watch(
     }
     // 关闭期间不记录滚动距离，开启时以滚动层的实际位置为准
     for (const direction of ["left", "right"] as const) {
-      panelScrollTop.value[direction] = scrollbarRefs[direction]?.wrapRef?.scrollTop ?? 0;
+      setPanelScrollTop(direction, scrollbarRefs[direction]?.wrapRef?.scrollTop ?? 0);
     }
     nextTick(startViewportObserver);
+  },
+);
+
+// 行步长变化后，同一滚动距离对应的行号也变了，按记录的像素值重算
+watch(
+  () => props.virtualItemHeight,
+  () => {
+    if (!props.virtualScroll) return;
+    setPanelScrollTop("left", panelRawScrollTop.left);
+    setPanelScrollTop("right", panelRawScrollTop.right);
   },
 );
 
@@ -696,8 +724,9 @@ function computeVirtualWindow(
   // 末行之后没有行间距，总高度扣掉一个间距，与非虚拟时的列表高度一致
   const totalHeight = total ? total * h - VIRTUAL_ROW_GAP : 0;
   // 数据变少（移走、筛选）而滚动事件尚未回报新位置时，按最大可滚距离截断，避免窗口落在数据之外渲染成空白
-  const scrollTop = Math.min(panelScrollTop.value[direction], Math.max(0, totalHeight - viewport));
-  const start = Math.max(0, Math.floor(scrollTop / h) - buffer);
+  const maxRow = Math.floor(Math.max(0, totalHeight - viewport) / h);
+  const row = Math.min(panelScrollRow.value[direction], maxRow);
+  const start = Math.max(0, row - buffer);
   const end = Math.min(total, start + Math.ceil(viewport / h) + buffer * 2);
   return { rows: items.slice(start, end), offset: start * h, totalHeight };
 }
@@ -706,6 +735,22 @@ function computeVirtualWindow(
 const panelWindows = computed<Record<TransferDirection, PanelVirtualWindow>>(() => ({
   left: computeVirtualWindow(visibleLeftItems.value, "left"),
   right: computeVirtualWindow(visibleRightItems.value, "right"),
+}));
+
+/**
+ * 两侧实际渲染的行：在窗口切片上附带 key 与勾选态。
+ * 复选框的默认插槽在复选框自己的渲染里执行，若插槽里直接读勾选集合，
+ * 勾选任意一条都会让全部复选框各自重渲染；这里先求值成普通布尔值再交给插槽
+ */
+const panelRows = computed<Record<TransferDirection, PanelRow[]>>(() => ({
+  left: panelWindows.value.left.rows.map((item) => {
+    const key = getItemKey(item);
+    return { item, key, checked: leftCheckedSet.value.has(key) };
+  }),
+  right: panelWindows.value.right.rows.map((item) => {
+    const key = getItemKey(item);
+    return { item, key, checked: !props.oneWay && rightCheckedSet.value.has(key) };
+  }),
 }));
 
 /** 虚拟模式下单行的固定高度：步长减去行间距 */
@@ -1065,12 +1110,12 @@ const ui = computed(() => {
   };
 });
 
-function getItemClass(isSelected: boolean, isDisabled: boolean | undefined) {
+function getItemClass(isSelected: boolean, itemDisabled: boolean | undefined) {
   return cn(
     ui.value.item(),
     // 选中底色取语义色的 1 级色阶，hover 也锁在同色上，免得选中行悬停时闪回灰底
     isSelected && ui.value.itemSelected(),
-    isDisabled || isDisabled.value
+    itemDisabled || isDisabled.value
       ? "opacity-50 cursor-not-allowed"
       : !isSelected && "hover:bg-gray-2",
   );
@@ -1103,17 +1148,65 @@ function handleRightItemClick(item: TransferDataRecord) {
   toggleRightItem(item);
 }
 
+/**
+ * 条目 v-memo 的依赖：只有这些值变化时才重新生成该行，勾选一条只更新这一行，其余行连同复选框整体跳过。
+ * 行内用到的 ui 槽位、字段别名、行高以 computed 结果的引用放入，任一变化即全部重新生成。
+ * 提供了自定义 default / item 插槽时，插槽可能读取组件外部的状态，v-memo 感知不到，
+ * 于是放入每次都不同的新对象，等同关闭缓存（大数据请配合 virtual-scroll 或 pagination）
+ */
+function getItemMemo(panel: PanelDescriptor, item: TransferDataRecord, checked: boolean): unknown[] {
+  if (slots.default || slots.item) return [{}];
+  return [
+    item,
+    isItemDisabled(item),
+    getItemLabel(item),
+    getItemDescription(item),
+    checked,
+    panel.selectable,
+    isDisabled.value,
+    isOneWayItemMoved(item),
+    props.oneWay,
+    props.color,
+    ui.value,
+    resolvedFieldNames.value,
+    virtualRowStyle.value,
+  ];
+}
+
 // ─── 头部下拉：交给 RebornSelect 多选 ───────────────────────────────
 // 选项是当前面板搜索结果内的全部条目（不受分页限制），选中值由面板勾选态推导，
 // 回写时只取前后差集逐条切换，勾选状态仍以面板为准
 
-function getMenuOptions(panel: PanelDescriptor): SelectOption[] {
-  return panel.filtered.map((item) => ({
+function isLeftMenuItemDisabled(item: TransferDataRecord): boolean {
+  return isDisabled.value || isItemDisabled(item);
+}
+
+// 单向模式右侧没有勾选态：只有开启后移入的条目可取消（即撤回到左侧）
+function isRightMenuItemDisabled(item: TransferDataRecord): boolean {
+  return props.oneWay ? isOneWayItemUndoDisabled(item) : isDisabled.value || isItemDisabled(item);
+}
+
+function buildMenuOptions(
+  items: TransferDataRecord[],
+  isMenuItemDisabled: (item: TransferDataRecord) => boolean,
+): SelectOption[] {
+  return items.map((item) => ({
     label: getItemLabel(item),
     value: getItemKey(item),
-    disabled: panel.isMenuItemDisabled(item),
+    disabled: isMenuItemDisabled(item),
   }));
 }
+
+/**
+ * 两侧下拉选项只依赖搜索结果与禁用态，与勾选态、滚动位置无关：
+ * 单独缓存后，勾选一条不会把上千个选项整批重建
+ */
+const leftMenuOptions = computed(() =>
+  buildMenuOptions(filteredLeftItems.value, isLeftMenuItemDisabled),
+);
+const rightMenuOptions = computed(() =>
+  buildMenuOptions(filteredRightItems.value, isRightMenuItemDisabled),
+);
 
 function getMenuValue(panel: PanelDescriptor): string[] {
   return panel.filtered.filter((item) => panel.isMenuItemChecked(item)).map(getItemKey);
@@ -1156,7 +1249,7 @@ const panels = computed<[PanelDescriptor, PanelDescriptor]>(() => [
     onItemClick: toggleLeftItem,
     menuDisabled: isDisabled.value,
     isMenuItemChecked: (item) => leftCheckedSet.value.has(getItemKey(item)),
-    isMenuItemDisabled: (item) => isDisabled.value || isItemDisabled(item),
+    isMenuItemDisabled: isLeftMenuItemDisabled,
     toggleMenuItem: toggleLeftItem,
     currentPage: leftCurrentPage.value,
     setPage: (page) => {
@@ -1189,8 +1282,7 @@ const panels = computed<[PanelDescriptor, PanelDescriptor]>(() => [
     menuDisabled: isDisabled.value,
     // 单向模式右侧没有勾选态：右侧条目一律呈选中，只有开启后移入的可取消（即撤回到左侧）
     isMenuItemChecked: (item) => props.oneWay || rightCheckedSet.value.has(getItemKey(item)),
-    isMenuItemDisabled: (item) =>
-      props.oneWay ? isOneWayItemUndoDisabled(item) : isDisabled.value || isItemDisabled(item),
+    isMenuItemDisabled: isRightMenuItemDisabled,
     toggleMenuItem: (item) => (props.oneWay ? revertOneWayItem(item) : toggleRightItem(item)),
     currentPage: rightCurrentPage.value,
     setPage: (page) => {
@@ -1201,15 +1293,18 @@ const panels = computed<[PanelDescriptor, PanelDescriptor]>(() => [
 ]);
 
 /**
- * 两侧头部下拉的选项与选中值：只依赖数据与勾选态，不依赖滚动位置；
- * 若在模板里直接调用 getMenuOptions，每次滚动重渲染都会重建整批选项
+ * 两侧头部下拉的选项与选中值：选项取自上面单独缓存的 computed，勾选变化只重算选中值，
+ * 交给 RebornSelect 的选项数组引用保持不变
  */
-const panelMenus = computed(
-  () => panels.value.map((panel) => ({
-    options: getMenuOptions(panel),
-    value: getMenuValue(panel),
-  })) as [PanelMenuState, PanelMenuState],
-);
+const panelMenus = computed<[PanelMenuState, PanelMenuState]>(() => [
+  { options: leftMenuOptions.value, value: getMenuValue(panels.value[0]) },
+  { options: rightMenuOptions.value, value: getMenuValue(panels.value[1]) },
+]);
+
+/** 面板方向只对应元组的两个有效位置，模板无需使用非空断言 */
+function getPanelMenu(panel: PanelDescriptor): PanelMenuState {
+  return panelMenus.value[panel.direction === "left" ? 0 : 1];
+}
 </script>
 
 <template>
@@ -1232,8 +1327,8 @@ const panelMenus = computed(
 
             <!-- 开启下拉时计数文案显示在触发器里，复选框不再重复显示 -->
             <!-- 开启虚拟滚动时下拉列表同样虚拟渲染，选项与面板条目一样多 -->
-            <RebornSelect v-if="showHeaderSelectMenu" :model-value="panelMenus[index]!.value"
-              :options="panelMenus[index]!.options" :virtual="props.virtualScroll" multiple collapse-tags
+            <RebornSelect v-if="showHeaderSelectMenu" :model-value="getPanelMenu(panel).value"
+              :options="getPanelMenu(panel).options" :virtual="props.virtualScroll" multiple collapse-tags
               variant="borderless" size="sm" :clearable="false" :color="props.color" :disabled="panel.menuDisabled"
               :class="ui.headerSelectMenu()"
               :trigger-ui="{ trigger: ui.headerSelectTrigger(), dropdown: ui.headerSelectDropdown() }"
@@ -1268,45 +1363,104 @@ const panelMenus = computed(
               :style="getVirtualPhantomStyle(panel.direction)">
               <div :class="props.virtualScroll ? ui.virtualWindow() : 'contents'"
                 :style="getVirtualWindowStyle(panel.direction)">
-                <div v-for="item in panelWindows[panel.direction].rows" :key="getItemKey(item)"
-                  :class="panel.itemClass(item)" :style="virtualRowStyle" @click="panel.onItemClick(item)">
-                  <!-- 复选框自身的点击由 change 处理，这里截停冒泡，避免行点击再切换一次 -->
-                  <span v-if="panel.selectable" :class="ui.itemContent()" @click.stop>
-                    <RebornCheckbox :model-value="panel.isChecked(item)"
-                      :disabled="isDisabled || isItemDisabled(item)" :color="props.color" size="sm"
-                      :ui="{ control: ui.itemCheck(), label: 'min-w-0 flex-1' }" class="flex w-full gap-2"
-                      @change="panel.toggleItem(item)">
-                      <slot :item="item" :direction="panel.direction" :checked="panel.isChecked(item)"
-                        :disabled="isDisabled || isItemDisabled(item)">
-                        <slot name="item" :item="item">
-                          <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
-                          <div v-if="getItemDescription(item)" :class="ui.itemDesc()">
-                            {{ getItemDescription(item) }}
-                          </div>
+                <!--
+                  左右面板各用一处 v-for：v-memo 的缓存按模板里的编译位置存放，
+                  两侧共用一处 v-for 时会互相覆盖缓存、永远命中不了。左侧条目恒可勾选，右侧在单向模式下只读
+                -->
+                <template v-if="panel.direction === 'left'">
+                  <!-- eslint-disable vue/valid-v-memo -- 外层面板循环里这处 v-for 每次渲染只执行一次（仅左侧），缓存不会被另一侧覆盖 -->
+                  <div
+                    v-for="{ item, key, checked } in panelRows.left"
+                    :key="key"
+                    v-memo="getItemMemo(panel, item, checked)"
+                    :class="panel.itemClass(item)"
+                    :style="virtualRowStyle"
+                    @click="panel.onItemClick(item)"
+                  >
+                    <!-- eslint-enable vue/valid-v-memo -->
+                    <!-- 复选框自身的点击由 change 处理，这里截停冒泡，避免行点击再切换一次 -->
+                    <span :class="ui.itemContent()" @click.stop>
+                      <RebornCheckbox
+                        :model-value="checked"
+                        :disabled="isDisabled || isItemDisabled(item)"
+                        :color="props.color"
+                        size="sm"
+                        :ui="{ control: ui.itemCheck(), label: 'min-w-0 flex-1' }"
+                        class="flex w-full gap-2"
+                        @change="panel.toggleItem(item)"
+                      >
+                        <slot :item="item" :direction="panel.direction" :checked="checked" :disabled="isDisabled || isItemDisabled(item)">
+                          <slot name="item" :item="item">
+                            <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
+                            <div v-if="getItemDescription(item)" :class="ui.itemDesc()">
+                              {{ getItemDescription(item) }}
+                            </div>
+                          </slot>
                         </slot>
-                      </slot>
-                    </RebornCheckbox>
-                  </span>
+                      </RebornCheckbox>
+                    </span>
+                  </div>
+                </template>
 
-                  <!-- 单向模式：右侧条目不可勾选；开启后移入的条目右侧显示撤回按钮，开启前就在右侧的没有 -->
-                  <template v-else>
-                    <div :class="ui.itemContent()">
-                      <slot :item="item" :direction="panel.direction" :checked="false"
-                        :disabled="isDisabled || isItemDisabled(item)">
-                        <slot name="item" :item="item">
-                          <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
-                          <div v-if="getItemDescription(item)" :class="ui.itemDesc()">
-                            {{ getItemDescription(item) }}
-                          </div>
+                <template v-else>
+                  <!-- eslint-disable vue/valid-v-memo -- 同上，这处 v-for 每次渲染只执行一次（仅右侧） -->
+                  <div
+                    v-for="{ item, key, checked } in panelRows.right"
+                    :key="key"
+                    v-memo="getItemMemo(panel, item, checked)"
+                    :class="panel.itemClass(item)"
+                    :style="virtualRowStyle"
+                    @click="panel.onItemClick(item)"
+                  >
+                    <!-- eslint-enable vue/valid-v-memo -->
+                    <!-- 与左侧条目的复选框结构一致，修改时两处同步 -->
+                    <span v-if="panel.selectable" :class="ui.itemContent()" @click.stop>
+                      <RebornCheckbox
+                        :model-value="checked"
+                        :disabled="isDisabled || isItemDisabled(item)"
+                        :color="props.color"
+                        size="sm"
+                        :ui="{ control: ui.itemCheck(), label: 'min-w-0 flex-1' }"
+                        class="flex w-full gap-2"
+                        @change="panel.toggleItem(item)"
+                      >
+                        <slot :item="item" :direction="panel.direction" :checked="checked" :disabled="isDisabled || isItemDisabled(item)">
+                          <slot name="item" :item="item">
+                            <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
+                            <div v-if="getItemDescription(item)" :class="ui.itemDesc()">
+                              {{ getItemDescription(item) }}
+                            </div>
+                          </slot>
                         </slot>
-                      </slot>
-                    </div>
-                    <button v-if="isOneWayItemMoved(item)" type="button" :class="getUndoBtnClass(item)" title="撤回" :disabled="isDisabled || isItemDisabled(item)" aria-label="撤回到左侧"
-                      @click.stop="revertOneWayItem(item)">
-                      <Icon name="lucide:undo-2" :class="ui.itemUndoIcon()" />
-                    </button>
-                  </template>
-                </div>
+                      </RebornCheckbox>
+                    </span>
+
+                    <!-- 单向模式：右侧条目不可勾选；开启后移入的条目右侧显示撤回按钮，开启前就在右侧的没有 -->
+                    <template v-else>
+                      <div :class="ui.itemContent()">
+                        <slot :item="item" :direction="panel.direction" :checked="false" :disabled="isDisabled || isItemDisabled(item)">
+                          <slot name="item" :item="item">
+                            <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
+                            <div v-if="getItemDescription(item)" :class="ui.itemDesc()">
+                              {{ getItemDescription(item) }}
+                            </div>
+                          </slot>
+                        </slot>
+                      </div>
+                      <button
+                        v-if="isOneWayItemMoved(item)"
+                        type="button"
+                        :class="getUndoBtnClass(item)"
+                        title="撤回"
+                        :disabled="isDisabled || isItemDisabled(item)"
+                        aria-label="撤回到左侧"
+                        @click.stop="revertOneWayItem(item)"
+                      >
+                        <Icon name="lucide:undo-2" :class="ui.itemUndoIcon()" />
+                      </button>
+                    </template>
+                  </div>
+                </template>
               </div>
             </div>
 

@@ -10,7 +10,8 @@ export default {
   slots: {
     root: 'relative flex w-full h-full overflow-hidden select-none',
     panel: 'relative flex shrink-0 hover:z-50',
-    bar: 'relative flex items-center justify-center shrink-0 bg-gray-3 hover:bg-primary transition-colors select-none z-20',
+    // touch-none：拖拽改用指针事件并捕获指针，触屏上不让浏览器把按下当成滚动手势而派发 pointercancel
+    bar: 'relative flex items-center justify-center shrink-0 bg-gray-3 hover:bg-primary transition-colors select-none touch-none z-20',
     collapseButton: 'absolute flex items-center justify-center size-5 rounded-full bg-gray-1 border border-gray-4 shadow-sm hover:bg-gray-2 opacity-20 group-hover:opacity-100 transition-opacity z-30 cursor-pointer'
   },
   variants: {

@@ -1,18 +1,23 @@
 <script setup lang="ts">
+import { DemoBlock, DemoNote, DemoSection, Icon } from "#components";
+import { ref, shallowRef } from "vue";
+import RebornCollapse from "~/components/reborn/ui/reborn-collapse/RebornCollapse.vue";
+import RebornSwitch from "~/components/reborn/ui/reborn-switch/RebornSwitch.vue";
+
 /** 基础用法的展开状态 */
-const visible = ref(false);
+const visible = shallowRef(false);
 
 /** 向上展开示例的展开状态 */
-const topVisible = ref(false);
+const topVisible = shallowRef(false);
 
 /** 浮层模式：向上 / 向下两个面板各自的展开状态 */
-const floatTop = ref(false);
-const floatBottom = ref(false);
+const floatTop = shallowRef(false);
+const floatBottom = shallowRef(false);
 
 /** 禁用与事件：禁用开关、展开状态与最近一次 toggle 回显 */
-const lockDisabled = ref(false);
-const lockVisible = ref(false);
-const lastToggle = ref<string>("尚未触发");
+const lockDisabled = shallowRef(false);
+const lockVisible = shallowRef(false);
+const lastToggle = shallowRef<string>("尚未触发");
 
 /** toggle 事件回调：只在点击触发区时派发，禁用时不派发 */
 function onToggle(value: boolean) {
@@ -30,14 +35,12 @@ const panels = ref([
   {
     title: "如何控制展开",
     open: false,
-    content:
-      "通过 v-model 双向绑定展开状态；也可以监听 toggle 事件在展开或收起时执行额外逻辑，例如懒加载内容。",
+    content: "通过 v-model 双向绑定展开状态；也可以监听 toggle 事件在展开或收起时执行额外逻辑，例如懒加载内容。",
   },
   {
     title: "向上展开",
     open: false,
-    content:
-      "position 设为 top 时内容向上方展开，配合 absolute 可让内容脱离文档流悬浮显示，适合底部工具栏场景。",
+    content: "position 设为 top 时内容向上方展开，配合 absolute 可让内容脱离文档流悬浮显示，适合底部工具栏场景。",
   },
 ]);
 </script>
@@ -49,14 +52,9 @@ const panels = ref([
       description="默认插槽是触发器，可通过作用域参数 open 拿到当前状态；content 插槽是折叠内容，高度过渡由组件自动计算。"
     >
       <DemoBlock layout="stack">
-        <RebornCollapse
-          v-model="visible"
-          custom-class="w-full"
-        >
+        <RebornCollapse v-model="visible" custom-class="w-full">
           <template #default="{ open }">
-            <div
-              class="border-default rounded-lg flex cursor-pointer items-center justify-between border px-4 py-3"
-            >
+            <div class="border-default rounded-lg flex cursor-pointer items-center justify-between border px-4 py-3">
               <span class="text-default text-sm font-medium">点击展开 / 收起</span>
               <Icon
                 name="lucide:chevron-down"
@@ -68,9 +66,7 @@ const panels = ref([
 
           <template #content>
             <div class="text-muted space-y-2 px-4 py-3 text-sm leading-relaxed">
-              <p>
-                张若虚（约公元 660—约公元 720），唐代诗人，扬州（今属江苏）人，曾任兖州兵曹，生卒年与字号均已不详。
-              </p>
+              <p>张若虚（约公元 660—约公元 720），唐代诗人，扬州（今属江苏）人，曾任兖州兵曹，生卒年与字号均已不详。</p>
               <p>
                 其诗仅存两首于《全唐诗》中，《春江花月夜》抒写离情别绪与人生感慨，意境空明、韵律悠扬，素有「孤篇盖全唐」之誉。
               </p>
@@ -89,15 +85,9 @@ const panels = ref([
       description="position 设为 top 时，折叠区渲染在触发区上方，内容从触发区向上推开；它仍在文档流中，展开会把触发区往下挤。"
     >
       <DemoBlock layout="stack">
-        <RebornCollapse
-          v-model="topVisible"
-          position="top"
-          custom-class="w-full"
-        >
+        <RebornCollapse v-model="topVisible" position="top" custom-class="w-full">
           <template #default="{ open }">
-            <div
-              class="border-default rounded-lg flex cursor-pointer items-center justify-between border px-4 py-3"
-            >
+            <div class="border-default rounded-lg flex cursor-pointer items-center justify-between border px-4 py-3">
               <span class="text-default text-sm font-medium">向上展开</span>
               <Icon
                 name="lucide:chevron-up"
@@ -109,7 +99,8 @@ const panels = ref([
 
           <template #content>
             <p class="text-muted px-4 py-3 text-sm leading-relaxed">
-              折叠区位于触发区之上。收起时内容朝触发区方向裁切，因为内层加了 flex-col justify-end，把底边锚定在触发区边缘。
+              折叠区位于触发区之上。收起时内容朝触发区方向裁切，因为内层加了 flex-col
+              justify-end，把底边锚定在触发区边缘。
             </p>
           </template>
         </RebornCollapse>
@@ -122,16 +113,9 @@ const panels = ref([
     >
       <DemoBlock layout="grid" class="gap-4 sm:grid-cols-2">
         <div class="border-default rounded-xl flex h-56 w-full flex-col justify-end border border-dashed p-3">
-          <RebornCollapse
-            v-model="floatTop"
-            position="top"
-            absolute
-            custom-class="w-full"
-          >
+          <RebornCollapse v-model="floatTop" position="top" absolute custom-class="w-full">
             <template #default="{ open }">
-              <div
-                class="border-default rounded-lg flex cursor-pointer items-center justify-between border px-4 py-3"
-              >
+              <div class="border-default rounded-lg flex cursor-pointer items-center justify-between border px-4 py-3">
                 <span class="text-default text-sm font-medium">position="top"</span>
                 <Icon
                   name="lucide:chevron-up"
@@ -150,15 +134,9 @@ const panels = ref([
         </div>
 
         <div class="border-default rounded-xl h-56 w-full border border-dashed p-3">
-          <RebornCollapse
-            v-model="floatBottom"
-            absolute
-            custom-class="w-full"
-          >
+          <RebornCollapse v-model="floatBottom" absolute custom-class="w-full">
             <template #default="{ open }">
-              <div
-                class="border-default rounded-lg flex cursor-pointer items-center justify-between border px-4 py-3"
-              >
+              <div class="border-default rounded-lg flex cursor-pointer items-center justify-between border px-4 py-3">
                 <span class="text-default text-sm font-medium">position="bottom"</span>
                 <Icon
                   name="lucide:chevron-down"
@@ -176,9 +154,7 @@ const panels = ref([
           </RebornCollapse>
         </div>
       </DemoBlock>
-      <DemoNote tone="dimmed">
-        浮层会覆盖相邻内容，外层需要预留空间或确保没有被裁切的 overflow-hidden 祖先。
-      </DemoNote>
+      <DemoNote tone="dimmed">浮层会覆盖相邻内容，外层需要预留空间或确保没有被裁切的 overflow-hidden 祖先。</DemoNote>
     </DemoSection>
 
     <DemoSection
@@ -187,18 +163,10 @@ const panels = ref([
     >
       <DemoBlock layout="stack">
         <div class="flex items-center gap-2">
-          <RebornSwitch
-            v-model="lockDisabled"
-            size="sm"
-          />
+          <RebornSwitch v-model="lockDisabled" size="sm" />
           <span class="text-muted text-sm">disabled</span>
         </div>
-        <RebornCollapse
-          v-model="lockVisible"
-          :disabled="lockDisabled"
-          custom-class="w-full"
-          @toggle="onToggle"
-        >
+        <RebornCollapse v-model="lockVisible" :disabled="lockDisabled" custom-class="w-full" @toggle="onToggle">
           <template #default="{ open }">
             <div
               class="border-default rounded-lg flex items-center justify-between border px-4 py-3"
@@ -231,12 +199,7 @@ const panels = ref([
     >
       <DemoBlock layout="stack">
         <div class="divide-default border-default rounded-xl w-full divide-y border">
-          <RebornCollapse
-            v-for="panel in panels"
-            :key="panel.title"
-            v-model="panel.open"
-            custom-class="w-full"
-          >
+          <RebornCollapse v-for="panel in panels" :key="panel.title" v-model="panel.open" custom-class="w-full">
             <template #default="{ open }">
               <div class="flex cursor-pointer items-center justify-between px-4 py-3">
                 <span class="text-default text-sm font-medium">{{ panel.title }}</span>

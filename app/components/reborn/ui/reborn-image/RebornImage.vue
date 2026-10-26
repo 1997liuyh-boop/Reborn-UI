@@ -20,7 +20,7 @@ const b = tv(theme);
 
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from "vue";
 import type { CSSProperties } from "vue";
 import { useBreakpoints, useEventListener, useIntersectionObserver } from "@vueuse/core";
 import { cn } from "@/lib/utils";
@@ -96,7 +96,12 @@ const props = withDefaults(defineProps<ImageProps>(), {
 });
 
 // 事件定义
-const emit = defineEmits(["load", "error"]);
+const emit = defineEmits<{
+	/** 图片加载成功时触发，回调为原生 load 事件 */
+	load: [event: Event];
+	/** 重试仍失败、进入错误态时触发，回调为原生 error 事件 */
+	error: [event: Event];
+}>();
 
 // 宽屏判定：视口 ≥1024px 才启用放大镜（SSR 期为 false，挂载后按实际视口计算）
 const breakpoints = useBreakpoints({ widescreen: 1024 });
@@ -106,21 +111,21 @@ const isMagnifierActive = computed(() => props.magnifier && widescreenUp.value);
 const uiOverrides = computed(() => props.ui || {});
 
 // 根元素引用
-const rootRef = ref<HTMLElement | null>(null);
-const shouldLoad = ref(!props.lazyLoad);
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
+const shouldLoad = shallowRef(!props.lazyLoad);
 
 // 加载状态
-const isLoading = ref(true);
+const isLoading = shallowRef(true);
 // 加载失败状态
-const isError = ref(false);
+const isError = shallowRef(false);
 // 是否正在失败后重新请求（用于显示 common.load_reload 文案）
-const isReloading = ref(false);
+const isReloading = shallowRef(false);
 // 失败后最多重新请求的次数
 const maxRetries = 2;
 // 已重新请求的次数
-const retryCount = ref(0);
+const retryCount = shallowRef(0);
 // 重试令牌：递增以强制 <img> 重新挂载，对同一地址重新发起请求
-const retryToken = ref(0);
+const retryToken = shallowRef(0);
 
 const ui = computed(() => {
 	const styles = b();
@@ -145,9 +150,9 @@ const ui = computed(() => {
 	};
 });
 
-const imgRef = ref<HTMLImageElement | null>(null);
-const imgDimensions = ref({ width: 0, height: 0 });
-const naturalDimensions = ref({ width: 0, height: 0 });
+const imgRef = useTemplateRef<HTMLImageElement>("imgRef");
+/** 原图尺寸，放大镜按它换算背景；每次整体替换 */
+const naturalDimensions = shallowRef({ width: 0, height: 0 });
 
 onMounted(() => {
 	// 如果图片在 JS 执行/挂载前就已经加载好了（比如浏览器缓存或者 SSR），手动触发结束 loading
@@ -155,7 +160,7 @@ onMounted(() => {
 		isLoading.value = false;
 		isError.value = false;
 		// 此处刻意不读 getBoundingClientRect()：挂载期同步读取布局属性会强制回流，
-		// 同屏数百张图时实测形成 50~170ms 的重算尖峰。imgDimensions 无人消费，
+		// 同屏数百张图时实测形成 50~170ms 的重算尖峰。
 		// 放大镜真正依赖的 imgRect 在 onMouseEnter/onMouseMove 时才按需读取（不在挂载关键路径上）。
 		// naturalWidth/naturalHeight 属于图片自身解码信息，不触发布局，可安全读取。
 		naturalDimensions.value = { width: imgRef.value.naturalWidth, height: imgRef.value.naturalHeight };
@@ -233,11 +238,10 @@ function onLoad(e: any) {
 	isReloading.value = false; // 加载成功，清除重试提示
 	retryCount.value = 0; // 重置重试计数，供下次加载使用
 	if (imgRef.value) {
-		const rect = imgRef.value.getBoundingClientRect();
-		imgDimensions.value = { width: rect.width, height: rect.height };
+		// naturalWidth / naturalHeight 是解码信息，不触发布局
 		naturalDimensions.value = { width: imgRef.value.naturalWidth, height: imgRef.value.naturalHeight };
-		// 复用已读到的 rect 刷新放大镜基准，避免二次布局读取
-		if (isMagnifierActive.value) measureMagnifierGeometry(rect);
+		// 只有放大镜启用时才读布局：相邻两次 load 之间 DOM 会更新，无条件读 rect 会逐张触发强制同步布局
+		if (isMagnifierActive.value) measureMagnifierGeometry();
 	}
 	emit("load", e);
 }
@@ -364,7 +368,27 @@ function mountPreviewControls(viewer: Viewer, total: number) {
 	}
 }
 
+/**
+ * 当前打开的预览实例与它的图片容器。组件持有引用，卸载时（如预览打开期间离开路由）一并销毁，
+ * 遮罩不会残留在新页面上；已有实例或正在加载 viewerjs 时忽略重复点击，避免叠出两个预览
+ */
+let viewer: Viewer | null = null;
+let viewerContainer: HTMLElement | null = null;
+let viewerPending = false;
+let disposed = false;
+
+/** 销毁预览；先清空引用再 destroy，viewerjs 在 destroy 中派发 hidden 时再次进入这里会直接返回 */
+function disposeViewer() {
+	const current = viewer;
+	const container = viewerContainer;
+	viewer = null;
+	viewerContainer = null;
+	current?.destroy();
+	container?.remove();
+}
+
 function onPreview(force = false) {
+	if (viewer || viewerPending) return;
 	if (force || props.preview || (props.magnifier && !isMagnifierActive.value)) {
 		let urls = [props.src];
 		if (props.previewList && props.previewList.length > 0) {
@@ -374,8 +398,12 @@ function onPreview(force = false) {
 				urls = [props.src, ...props.previewList];
 			}
 		}
+		viewerPending = true;
 		Promise.all([import("viewerjs"), import("viewerjs/dist/viewer.css")])
 			.then(([{ default: Viewer }]) => {
+				viewerPending = false;
+				// 加载期间组件已卸载：不再创建预览
+				if (disposed) return;
 				const container = document.createElement("div");
 				container.style.display = "none";
 				urls.forEach((url) => {
@@ -384,23 +412,25 @@ function onPreview(force = false) {
 					container.appendChild(img);
 				});
 				document.body.appendChild(container);
-				const viewer = new Viewer(container, {
+				viewerContainer = container;
+				const instance = new Viewer(container, {
 					// 自带工具栏是白色雪碧图，图标无法跟随主题色，换成 mountPreviewControls 里的自绘菜单
 					toolbar: false,
 					// 缩略图列表只在多图时有意义：单图时列表里只有它自己，开了也不显示
 					navbar: props.previewNavbar && urls.length > 1,
 					ready() {
-						mountPreviewControls(viewer, urls.length);
+						mountPreviewControls(instance, urls.length);
 					},
 					hidden() {
-						viewer.destroy();
-						document.body.removeChild(container);
+						disposeViewer();
 					},
 					initialViewIndex: urls.indexOf(props.src)
 				});
-				viewer.show();
+				viewer = instance;
+				instance.show();
 			})
 			.catch((err) => {
+				viewerPending = false;
 				console.error("Failed to load viewerjs:", err);
 			});
 	}
@@ -417,7 +447,7 @@ watch(
 );
 
 // 放大镜相关状态
-const showMagnifier = ref(false);
+const showMagnifier = shallowRef(false);
 
 /**
  * 放大镜状态按更新频率拆成两层：
@@ -430,7 +460,8 @@ const showMagnifier = ref(false);
  * 算出的尺寸每次都带不同小数，浏览器无法复用位图缩放缓存，
  * 于是每个鼠标事件都要把原图（商品图常 1500~3000px）重新采样一遍。
  */
-const magnifierGeometry = ref({
+// 两层状态都是每次整体替换（指针追踪每帧一次），用 shallowRef 省掉深层代理
+const magnifierGeometry = shallowRef({
 	top: 0,
 	left: 0,
 	width: 0,
@@ -449,7 +480,7 @@ const magnifierGeometry = ref({
 	backgroundHeight: 0
 });
 
-const magnifierTracking = ref({ lensX: 0, lensY: 0, backgroundX: 0, backgroundY: 0 });
+const magnifierTracking = shallowRef({ lensX: 0, lensY: 0, backgroundX: 0, backgroundY: 0 });
 
 function clamp(value: number, min: number, max: number) {
 	if (max < min) return min;
@@ -718,7 +749,11 @@ useEventListener(
 	{ passive: true, capture: true }
 );
 
-onBeforeUnmount(cancelTracking);
+onBeforeUnmount(() => {
+	cancelTracking();
+	disposed = true;
+	disposeViewer();
+});
 
 /** 手动打开预览不依赖 preview 开关，开关只控制图片点击。 */
 defineExpose({ showPreview: () => onPreview(true) });

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornRootPortal from '@/components/reborn-root-portal/RebornRootPortal.vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 
-const showPortal = ref(false)
+const showPortal = shallowRef(false)
 
 const togglePortal = () => {
     showPortal.value = !showPortal.value

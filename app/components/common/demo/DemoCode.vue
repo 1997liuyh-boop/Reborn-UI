@@ -28,6 +28,6 @@ const markdown = computed(() =>
 
 <template>
   <div :class="ui">
-    <MdcProse :key="markdown" :value="markdown" />
+    <MdcProse :value="markdown" />
   </div>
 </template>

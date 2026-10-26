@@ -9,7 +9,7 @@
   ],
   "pitfalls": [
     "仅 web 端可用。",
-    "截图通过 src 传图片 URL，没有插槽，无法嵌入交互式内容。",
-    "width/height 为 SVG 像素尺寸（默认 433x882），整体缩放可用外层 class 控制。"
+    "截图通过 src 传图片 URL；需要嵌入可交互页面时传 iframeSrc（以 iframe 渲染，优先于 src）。没有插槽。",
+    "width/height 同时作为 SVG 像素尺寸与 viewBox（默认 433x882），机身按 433x882 坐标绘制，改小只会裁掉右侧和下部；缩放请在组件上写 class=\"w-full h-auto\"，由外层容器控制宽度。"
   ]
 }

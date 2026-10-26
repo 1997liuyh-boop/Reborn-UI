@@ -5,12 +5,12 @@
  *   中部是 3D 自行车（OverviewBike），指针靠近解体、离开合体，上下移动调整俯仰
  * - 两大区（Reborn 组件 / 社区移植）+ 区内按分类分块 + 卡片网格（xl 起一行 4 张）；
  *   缩略预览在上、名称与平台在下；卡片悬停时缩略预览向下铺满整张卡片，描边跟随鼠标泛光
- * - 系列与分类规则来自 useComponentsCatalog，与侧栏同源；组件在分类内按 slug 字母序，与侧栏一致
+ * - 系列与分类规则来自 componentsCatalog，与侧栏同源；组件在分类内按 slug 字母序，与侧栏一致
  */
 import type { DocsCollectionItem } from '@nuxt/content'
-import type { ComponentSeries } from '~/composables/useComponentsCatalog'
 import type { ComponentPlatform } from '~/composables/useDocsPlatform'
-import { computed, onBeforeUnmount, ref } from 'vue'
+import type { ComponentSeries } from '~/utils/componentsCatalog'
+import { computed, onBeforeUnmount, useTemplateRef } from 'vue'
 import RebornBadge from '~/components/reborn/ui/reborn-badge/RebornBadge.vue'
 import ComponentsScrollBackground from './ComponentsScrollBackground.vue'
 
@@ -20,9 +20,14 @@ interface Props {
 
 const { routePath = '/components' } = defineProps<Props>()
 
-const { data: components } = await useAsyncData('tools', async () => {
+const { data: components } = await useAsyncData(() => `components-overview:${routePath}`, async () => {
   const docs = await queryCollection('docs').all() as DocsCollectionItem[]
-  return docs.filter(item => item.path.startsWith(routePath) && item.path !== routePath)
+  // 正文只用于推导缩略图名称，避免把整站文档 AST 序列化进卡片 payload。
+  return docs.filter(item => item.path.startsWith(`${routePath.replace(/\/$/, '')}/`)).map(item => ({
+    id: item.id, path: item.path, title: item.title, description: item.description,
+    category: item.category, series: item.series, platform: item.platform,
+    badge: item.badge, tags: item.tags, demoName: overviewNameFromItem(item),
+  }))
 })
 
 /** 顶栏平台开关：总览只列出当前平台可用的组件（双端通用的两边都列） */
@@ -128,7 +133,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
   if (!components.value) return []
   return components.value
     .filter(item => isVisible((item as { platform?: string }).platform))
-    .map((item) => {
+    .map((item): OverviewItem => {
       const meta = item as { category?: string, series?: string, badge?: string, tags?: string[], platform?: string }
       return {
         id: item.id,
@@ -139,7 +144,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
         category: normalizeCategory(meta.category),
         platform: meta.platform === 'uniapp' || meta.platform === 'both' ? meta.platform : 'web',
         englishName: englishNameFromPath(item.path),
-        demoName: overviewNameFromItem(item),
+        demoName: item.demoName,
         badge: meta.badge,
         badgeIcon: meta.badge ? BADGE_ICONS[meta.badge.toLowerCase()] : undefined,
         tags: meta.tags,
@@ -176,8 +181,8 @@ function showEnglishName(item: OverviewItem) {
  * 头图光照：鼠标位置写进 --lx / --ly，--lit 控制聚光、亮点、描边与标题着色的显隐；
  * --ox / --oy 是标题相对头图的偏移，标题着色层据此换算到自身坐标。只响应鼠标，触屏不点亮。
  */
-const heroRef = ref<HTMLElement | null>(null)
-const heroTitleRef = ref<HTMLElement | null>(null)
+const heroRef = useTemplateRef<HTMLElement>('heroRef')
+const heroTitleRef = useTemplateRef<HTMLElement>('heroTitleRef')
 let heroFrame = 0
 
 function onHeroMove(event: PointerEvent) {

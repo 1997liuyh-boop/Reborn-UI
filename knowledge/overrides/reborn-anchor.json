@@ -17,6 +17,7 @@
     "selectScrollTop 与 bound 不叠加：触发线阈值取 selectScrollTop ? 0 : bound，开启前者后 bound 完全不参与判定，想微调换选中时机只调 bound。",
     "容器滚到底（scrollTop >= maxScroll - 1）时强制选中最后一项：末尾区块不足一屏高时顶部永远越不过触发线，这是有意为之，不是判定失灵。",
     "没有 v-model，选中态只能从 change 事件读（与 Element Plus 一致）：选中项由滚动位置算出，从外部写回没有意义。",
+    "链接集合变化（items 异步到达、换了一批锚点）后组件会在下一帧按当前位置重新判定选中项，容器不滚动也不会残留旧高亮；结果变化时会多触发一次 change。",
     "click 在滚动之前触发，event.preventDefault() 即接管跳转：被拦下时组件既不滚动也不改选中态；未被拦下时组件自行 preventDefault，不让浏览器再做原生锚点跳转。",
     "container 传选择器字符串时在客户端挂载后才解析，SSR 阶段不查询 DOM；querySelector 落空时不监听也不回落到窗口，链接点了没反应先查选择器与 href 指向的 id 是否存在。",
     "container 传 HTMLElement 时要确保元素已挂载：父组件首帧模板 ref 还是 undefined，需用 v-if 等它有值再渲染锚点。",
@@ -24,7 +25,8 @@
     "横向锚点只支持 marker='bar' 与 'none'，传 dot / hollow 会被组件收敛成 bar：圆点是骑在竖轨道上的形态，贴底的横轨道上没有对应画法。",
     "marker 收 boolean 与四种形态字符串，true 等价于 bar、false 等价于 none（保留 Element Plus 的布尔签名）；type='default' 配 marker='none' 会留下一条永远不亮的轨道线，要彻底去掉标记需同时设 type='underline'。",
     "color 只改选中文字与标记颜色，取各色阶的 -6 档，落成 bg-primary / text-primary 这类语义类名，组件不额外定义自己的 CSS 变量；要色板之外的颜色就在锚点上局部改写色板变量，如 class=\"[--color-primary:#7c3aed]\"。",
-    "轨道线固定 bg-gray-2、空心标记的洞固定 bg-gray-1，都不跟随 color（它们是背景而非强调色），要改得用 ui.list 覆盖 before:bg-* 或 ui.marker 覆盖 after:bg-*。",
+    "轨道线固定 bg-gray-3、空心标记的洞固定 bg-gray-1，都不跟随 color（它们是背景而非强调色），要改得用 ui.list 覆盖 before:bg-* 或 ui.marker 覆盖 after:bg-*。轨道线不用 gray-2：浅色主题里 bg-elevated 的底色就是 gray-2（或只差两三个色值），放进填充面板会与底色重合，default 与 underline 看不出区别；自定义轨道色时同样要避开所在面板的底色。",
+    "横向锚点的轨道线横贯列表全宽，列表宽度跟随根节点；锚点放在 items-start / items-center 的纵向 flex 容器里会收缩到链接总宽，轨道线只铺到最后一个链接，要与内容区等宽需给锚点加 class=\"w-full\"。",
     "color='neutral' 用的是 gray-9 不是 gray-6：gray 色阶在本仓库是会随暗色模式反转的文本色阶，gray-6 是浅灰，当强调色看不清。",
     "组件根元素带 data-reborn-anchor 标记，供页面级的全局 hash 跳转逻辑放行（本仓库 plugins/anchor-scroll.client.ts 就是这样一个 document 捕获阶段监听）。外层若不放行，stopPropagation 会让点击到不了组件，表现是点链接后页面整体跳走、目标容器纹丝不动。",
     "仅 Web 端组件，依赖 getBoundingClientRect 同步测量与 href='#id' 锚点语义，UniApp 端暂无对应实现；移动端章节定位请用 scroll-view 的 scroll-into-view 自行实现。"

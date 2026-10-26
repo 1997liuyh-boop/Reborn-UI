@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { switchColors, switchSizes, switchTypes } from './reborn-switch.config'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, shallowRef } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -9,7 +9,6 @@ import theme from './reborn-switch.config'
 
 defineOptions({
   name: 'RebornSwitch',
-  inheritAttrs: false,
 })
 
 const props = withDefaults(defineProps<SwitchProps>(), {
@@ -26,14 +25,11 @@ const props = withDefaults(defineProps<SwitchProps>(), {
 })
 
 const emit = defineEmits<{
-  /** 切换完成后更新绑定值，参数为 activeValue 或 inactiveValue */
-  (e: 'update:modelValue', value: any): void
   /** 状态切换后触发（beforeChange 拦截通过后才会触发），参数与 update:modelValue 相同 */
   (e: 'change', value: any): void
 }>()
 
 export interface SwitchProps {
-  modelValue?: any
   defaultValue?: any
   activeValue?: any // 打开状态对应的绑定值，默认 true；配合 inactiveValue 可绑定字符串/数字等任意值
   inactiveValue?: any // 关闭状态对应的绑定值，默认 false
@@ -73,9 +69,9 @@ const { disabled: formDisabled, size: formSize, isError, validate } = useFormInj
 
 const isDisabled = computed(() => formDisabled.value || props.disabled || props.loading)
 
-const localValue = ref(props.defaultValue ?? props.inactiveValue)
+const model = defineModel<any>({ default: undefined })
 const isChecked = computed(() => {
-  const val = props.modelValue !== undefined ? props.modelValue : localValue.value
+  const val = model.value !== undefined ? model.value : (props.defaultValue ?? props.inactiveValue)
   return val === props.activeValue
 })
 
@@ -133,59 +129,56 @@ const trackStyle = computed(() => {
  * 改成两组同构关键帧交替挂类——animation-name 变化即从头播放，效果与 web 端的 :key 重建一致。
  * 颜色取 color 语义色变量，不受轨道 ui 背景覆盖影响，扩散与淡出见 scoped 样式。
  */
-const waveTick = ref(0)
+const waveTick = shallowRef(0)
 const waveStyle = computed(() => ({
   '--re-switch-wave-color': `var(--color-${props.color})`,
 }))
 /** 奇数次挂 a、偶数次挂 b；waveTick 为 0 表示尚未切换过，此时波纹节点不渲染 */
 const waveClass = computed(() => (waveTick.value % 2 === 1 ? 're-switch-wave-a' : 're-switch-wave-b'))
 
+let pending = false
+let disposed = false
 function updateValue(checked: boolean) {
   const nextValue = checked ? props.activeValue : props.inactiveValue
-  if (!props.disabled && !props.loading) {
-    if (props.modelValue === undefined) {
-      localValue.value = nextValue
-    }
+  if (!isDisabled.value && !disposed) {
+    model.value = nextValue
     // 关闭波纹时不自增，波纹节点始终不渲染，避免为纯装饰动画多挂一个节点
     if (props.wave) { waveTick.value++ }
-    emit('update:modelValue', nextValue)
     emit('change', nextValue)
     if (validate) { validate('change') }
   }
 }
 
+onBeforeUnmount(() => { disposed = true })
+
 async function onTap() {
-  if (props.disabled || props.loading) return
+  if (isDisabled.value || pending || disposed) return
+  pending = true
 
   const originalChecked = isChecked.value
   const newChecked = !originalChecked
 
-  if (props.beforeChange) {
-    try {
+  try {
+    if (props.beforeChange) {
       const result = await props.beforeChange()
       if (result === false) return
-    } catch {
-      return
     }
+    updateValue(newChecked)
+  } catch {
+    // 拦截失败时保留原值。
+  } finally {
+    pending = false
   }
-
-  updateValue(newChecked)
 }
-
-watch(
-  () => props.modelValue,
-  (value) => {
-    if (value !== undefined) {
-      localValue.value = value
-    }
-  },
-)
-
-const isFocused = ref(false)
+const isFocused = shallowRef(false)
 defineExpose({
   /** `() => void` 标记聚焦态（为根节点追加 is-focused 类名）；uniapp 端无原生焦点行为 */
   focus: () => {
     isFocused.value = true
+  },
+  /** 复位样式聚焦态；uniapp 端不操作原生焦点。 */
+  blur: () => {
+    isFocused.value = false
   },
 })
 </script>

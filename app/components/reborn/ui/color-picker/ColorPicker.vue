@@ -8,7 +8,8 @@ import {
   hsvaToRgba,
   rgbaToHsva,
 } from "@uiw/color-convert";
-import { computed, ref, watch } from "vue";
+import { useEventListener } from "@vueuse/core";
+import { computed, shallowRef, useTemplateRef, watch } from "vue";
 import ContrastRatio from "./ContrastRatio.vue";
 import ObjectColorInput from "./ObjectColorInput.vue";
 
@@ -27,7 +28,6 @@ export interface ColorPickerProps {
   hideContrastRatio?: boolean;
   hideDefaultSwatches?: boolean;
   class?: string;
-  open?: boolean;
 }
 
 const props = withDefaults(defineProps<ColorPickerProps>(), {
@@ -35,17 +35,27 @@ const props = withDefaults(defineProps<ColorPickerProps>(), {
   swatches: () => [],
   hideContrastRatio: false,
   hideDefaultSwatches: false,
-  open: false,
 });
 
 const emit = defineEmits<{
   "value-change": [value: ColorPickerValue];
-  "update:open": [value: boolean];
 }>();
 
-const colorType = ref(props.type);
-const isDropdownOpen = ref(false);
-const isOpen = ref(props.open);
+/** 弹层开关，支持 v-model:open；未绑定时由组件内部维护，undefined 视为关闭 */
+const isOpen = defineModel<boolean>("open", { default: undefined });
+
+type ColorType = "hsl" | "hsla" | "rgb" | "rgba" | "hex";
+
+const colorType = shallowRef<ColorType>(props.type);
+const isDropdownOpen = shallowRef(false);
+
+// type 只是输入区的初始格式；父组件改了 type 时同步过来，用户仍可在面板里自由切换
+watch(
+  () => props.type,
+  (type) => {
+    colorType.value = type;
+  },
+);
 
 const colorOptions = [
   { value: "hex", label: "HEX" },
@@ -69,7 +79,8 @@ function getColorAsHsva(color: ColorPickerProps["value"]): HsvaColor {
   }
 }
 
-const colorHsv = ref<HsvaColor>(getColorAsHsva(props.value));
+// 颜色只会被整体替换，不就地修改
+const colorHsv = shallowRef<HsvaColor>(getColorAsHsva(props.value));
 
 watch(
   () => props.value,
@@ -81,33 +92,20 @@ watch(
   { deep: true },
 );
 
-watch(
-  () => props.open,
-  (newValue) => {
-    isOpen.value = newValue;
-  },
-);
-
-watch(isOpen, (newValue) => {
-  emit("update:open", newValue);
-});
-
 const hexValue = computed(() => hsvaToHex(colorHsv.value));
 const hslValue = computed(() => hsvaToHsla(colorHsv.value));
 const rgbValue = computed(() => hsvaToRgba(colorHsv.value));
 
+// 色板数据源在 computed 里决定：hideDefaultSwatches 只去掉默认色，自定义色板照常显示
 const defaultSwatches = ["#F8371A", "#F97C1B", "#FAC81C", "#3FD0B6", "#2CADF6", "#6462FC"];
-const sortedSwatches = computed(() => {
-  const allSwatches = [...defaultSwatches, ...props.swatches];
-  return allSwatches.sort((a, b) => hexToHsva(a).h - hexToHsva(b).h);
-});
+const visibleSwatches = computed(() =>
+  [...(props.hideDefaultSwatches ? [] : defaultSwatches), ...props.swatches]
+    .sort((a, b) => hexToHsva(a).h - hexToHsva(b).h),
+);
 
-const isDraggingSaturation = ref(false);
-const isDraggingHue = ref(false);
-const isDraggingAlpha = ref(false);
-const saturationRef = ref<HTMLElement>();
-const hueRef = ref<HTMLElement>();
-const alphaRef = ref<HTMLElement>();
+const saturationRef = useTemplateRef<HTMLElement>("saturationRef");
+const hueRef = useTemplateRef<HTMLElement>("hueRef");
+const alphaRef = useTemplateRef<HTMLElement>("alphaRef");
 
 function handleValueChange(color: HsvaColor) {
   colorHsv.value = color;
@@ -136,21 +134,40 @@ function handleValueChange(color: HsvaColor) {
   });
 }
 
-function updateFromHex(value: string | number) {
-  try {
-    const newColor = hexToHsva(String(value));
-    handleValueChange(newColor);
-  } catch (error) {
-    // Invalid hex color, ignore
+// HEX 输入框持有本地草稿：输入过程中不回填规范化值，只在凑够 6 / 8 位合法十六进制时提交；
+// hexToHsva 会把 #000～#00000 这类不完整输入当作 #000000，直接提交会覆盖用户正在输入的内容
+const hexDraft = shallowRef(hexValue.value);
+const editingHex = shallowRef(false);
+const HEX_PATTERN = /^#?(?:[\da-f]{6}|[\da-f]{8})$/i;
+
+watch(hexValue, (value) => {
+  if (!editingHex.value) hexDraft.value = value;
+});
+
+function onHexInput(event: Event) {
+  const value = (event.target as HTMLInputElement).value;
+  hexDraft.value = value;
+  if (HEX_PATTERN.test(value)) {
+    handleValueChange(hexToHsva(value.startsWith("#") ? value : `#${value}`));
   }
+}
+
+function onHexFocus() {
+  editingHex.value = true;
+}
+
+// 失焦时与外部值对齐，未完成的草稿被丢弃
+function onHexBlur() {
+  editingHex.value = false;
+  hexDraft.value = hexValue.value;
 }
 
 function updateFromObject(value: HslaColor | RgbaColor) {
   try {
     const newColor = "r" in value ? rgbaToHsva(value) : hslaToHsva(value);
     handleValueChange(newColor);
-  } catch (error) {
-    // Invalid color object, ignore
+  } catch {
+    // 非法的颜色对象，忽略
   }
 }
 
@@ -163,41 +180,46 @@ function toggleDropdown() {
 }
 
 function selectColorType(value: string) {
-  colorType.value = value as "hsl" | "hsla" | "rgb" | "rgba" | "hex";
+  colorType.value = value as ColorType;
   isDropdownOpen.value = false;
 }
 
-function startSaturationDrag(event: MouseEvent | TouchEvent) {
-  event.preventDefault();
-  isDraggingSaturation.value = true;
-  updateSaturation(event);
+type PointerLikeEvent = MouseEvent | TouchEvent;
 
-  function handleMove(e: MouseEvent | TouchEvent) {
-    if (isDraggingSaturation.value) {
-      updateSaturation(e);
-    }
-  }
-
-  function handleEnd() {
-    isDraggingSaturation.value = false;
-    document.removeEventListener("mousemove", handleMove);
-    document.removeEventListener("mouseup", handleEnd);
-    document.removeEventListener("touchmove", handleMove);
-    document.removeEventListener("touchend", handleEnd);
-  }
-
-  document.addEventListener("mousemove", handleMove);
-  document.addEventListener("mouseup", handleEnd);
-  document.addEventListener("touchmove", handleMove);
-  document.addEventListener("touchend", handleEnd);
+function getClientPoint(event: PointerLikeEvent) {
+  const point = "touches" in event ? event.touches[0] : event;
+  return { x: point?.clientX ?? 0, y: point?.clientY ?? 0 };
 }
 
-function updateSaturation(event: MouseEvent | TouchEvent) {
+/**
+ * 拖拽：按下时开始，移动时调用 onMove，松手结束。
+ * document 上的监听只在拖拽期间存在，由 useEventListener 管理，拖拽中关闭面板或卸载组件时自动移除
+ */
+function usePointerDrag(onMove: (event: PointerLikeEvent) => void) {
+  const dragging = shallowRef(false);
+  const target = () => (dragging.value ? document : undefined);
+
+  useEventListener(target, ["mousemove", "touchmove"], (event: Event) => {
+    onMove(event as PointerLikeEvent);
+  });
+  useEventListener(target, ["mouseup", "touchend"], () => {
+    dragging.value = false;
+  });
+
+  function start(event: PointerLikeEvent) {
+    event.preventDefault();
+    dragging.value = true;
+    onMove(event);
+  }
+
+  return { start };
+}
+
+function updateSaturation(event: PointerLikeEvent) {
   if (!saturationRef.value) return;
 
   const rect = saturationRef.value.getBoundingClientRect();
-  const clientX = "touches" in event ? event.touches[0].clientX : event.clientX;
-  const clientY = "touches" in event ? event.touches[0].clientY : event.clientY;
+  const { x: clientX, y: clientY } = getClientPoint(event);
 
   const relativeX = (clientX - rect.left) / rect.width;
   const relativeY = (clientY - rect.top) / rect.height;
@@ -212,40 +234,11 @@ function updateSaturation(event: MouseEvent | TouchEvent) {
   });
 }
 
-function handleHueClick(event: MouseEvent) {
-  updateHue(event);
-}
-
-function startHueDrag(event: MouseEvent | TouchEvent) {
-  event.preventDefault();
-  isDraggingHue.value = true;
-  updateHue(event);
-
-  function handleMove(e: MouseEvent | TouchEvent) {
-    if (isDraggingHue.value) {
-      updateHue(e);
-    }
-  }
-
-  function handleEnd() {
-    isDraggingHue.value = false;
-    document.removeEventListener("mousemove", handleMove);
-    document.removeEventListener("mouseup", handleEnd);
-    document.removeEventListener("touchmove", handleMove);
-    document.removeEventListener("touchend", handleEnd);
-  }
-
-  document.addEventListener("mousemove", handleMove);
-  document.addEventListener("mouseup", handleEnd);
-  document.addEventListener("touchmove", handleMove);
-  document.addEventListener("touchend", handleEnd);
-}
-
-function updateHue(event: MouseEvent | TouchEvent) {
+function updateHue(event: PointerLikeEvent) {
   if (!hueRef.value) return;
 
   const rect = hueRef.value.getBoundingClientRect();
-  const clientX = "touches" in event ? event.touches[0].clientX : event.clientX;
+  const { x: clientX } = getClientPoint(event);
 
   const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
 
@@ -255,36 +248,11 @@ function updateHue(event: MouseEvent | TouchEvent) {
   });
 }
 
-function startAlphaDrag(event: MouseEvent | TouchEvent) {
-  event.preventDefault();
-  isDraggingAlpha.value = true;
-  updateAlpha(event);
-
-  function handleMove(e: MouseEvent | TouchEvent) {
-    if (isDraggingAlpha.value) {
-      updateAlpha(e);
-    }
-  }
-
-  function handleEnd() {
-    isDraggingAlpha.value = false;
-    document.removeEventListener("mousemove", handleMove);
-    document.removeEventListener("mouseup", handleEnd);
-    document.removeEventListener("touchmove", handleMove);
-    document.removeEventListener("touchend", handleEnd);
-  }
-
-  document.addEventListener("mousemove", handleMove);
-  document.addEventListener("mouseup", handleEnd);
-  document.addEventListener("touchmove", handleMove);
-  document.addEventListener("touchend", handleEnd);
-}
-
-function updateAlpha(event: MouseEvent | TouchEvent) {
+function updateAlpha(event: PointerLikeEvent) {
   if (!alphaRef.value) return;
 
   const rect = alphaRef.value.getBoundingClientRect();
-  const clientX = "touches" in event ? event.touches[0].clientX : event.clientX;
+  const { x: clientX } = getClientPoint(event);
 
   const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
 
@@ -292,6 +260,14 @@ function updateAlpha(event: MouseEvent | TouchEvent) {
     ...colorHsv.value,
     a: x,
   });
+}
+
+const { start: startSaturationDrag } = usePointerDrag(updateSaturation);
+const { start: startHueDrag } = usePointerDrag(updateHue);
+const { start: startAlphaDrag } = usePointerDrag(updateAlpha);
+
+function handleHueClick(event: MouseEvent) {
+  updateHue(event);
 }
 </script>
 
@@ -381,11 +357,13 @@ function updateAlpha(event: MouseEvent | TouchEvent) {
           <div class="flex grow">
             <input
               v-if="colorType === 'hex'"
-              :value="hexValue"
+              :value="hexDraft"
               type="text"
               class="border-input bg-background placeholder:text-muted-foreground flex h-8 w-full rounded-md border px-3 py-1 text-sm focus:outline-none"
               placeholder="#000000"
-              @input="updateFromHex(($event.target as HTMLInputElement).value)"
+              @input="onHexInput"
+              @focus="onHexFocus"
+              @blur="onHexBlur"
             />
 
             <ObjectColorInput
@@ -421,14 +399,11 @@ function updateAlpha(event: MouseEvent | TouchEvent) {
           </div>
         </div>
 
-        <div v-if="swatches.length > 0 || !hideDefaultSwatches">
+        <div v-if="visibleSwatches.length > 0">
           <div class="bg-border h-px" />
-          <div
-            v-if="!hideDefaultSwatches"
-            class="flex flex-wrap justify-start gap-2 pt-2"
-          >
+          <div class="flex flex-wrap justify-start gap-2 pt-2">
             <button
-              v-for="color in sortedSwatches"
+              v-for="color in visibleSwatches"
               :key="`${color}-swatch`"
               type="button"
               class="ring-offset-background size-5 cursor-pointer rounded ring-2 ring-transparent ring-offset-1 transition-all duration-100 hover:ring-current"

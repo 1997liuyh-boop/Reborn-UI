@@ -2,15 +2,11 @@
 import type { inputColors, inputShapes } from "../reborn-input/reborn-input.config";
 import type { InputProps, InputUi } from "../reborn-input/RebornInput.vue";
 import type { searchBoxSizes } from "./reborn-search-box.config";
-import { computed, nextTick, onMounted, onUnmounted, ref, useSlots, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, shallowRef, useSlots, useTemplateRef, watch } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornInput from "../reborn-input/RebornInput.vue";
 import theme, { inputTheme } from "./reborn-search-box.config";
-
-defineOptions({
-  inheritAttrs: false, // 禁用属性透传，手动控制
-});
 
 const props = withDefaults(defineProps<SearchBoxProps>(), {
   placeholder: "请输入搜索内容",
@@ -18,6 +14,7 @@ const props = withDefaults(defineProps<SearchBoxProps>(), {
   color: "primary",
   shape: "circle",
   showDropdown: true,
+  historyKey: "reborn-search-history",
   ui: () => ({}),
   inputUi: () => ({}),
 });
@@ -31,8 +28,17 @@ const emit = defineEmits<{
   (e: "blur", event: FocusEvent): void;
 }>();
 
+defineSlots<{
+  leading?: (props: { ui: (typeof ui)["value"] }) => any;
+  trailing?: (props: { ui: (typeof ui)["value"]; search: typeof handleSearch }) => any;
+  'input-leading'?: (props: { ui: (typeof ui)["value"]; inputUi: unknown; search: typeof handleSearch }) => any;
+  'input-trailing'?: (props: { ui: (typeof ui)["value"]; inputUi: unknown; search: typeof handleSearch }) => any;
+  dropdown?: (props: { ui: (typeof ui)["value"]; history: string[]; selectHistory: typeof selectHistory; removeHistoryItem: typeof handleRemoveHistoryItem; clearHistory: typeof handleClearHistory; selectRecommend: typeof selectRecommend }) => any;
+}>();
+
 /** 使用 tailwind-variants 生成基础样式生成器 */
 const b = tv(theme);
+const inputVariants = tv(inputTheme);
 
 /** 插槽表：用于判断是否存在外置插槽，从而决定聚焦描边画在外框还是输入框区 */
 const slots = useSlots();
@@ -74,10 +80,8 @@ export interface SearchBoxProps {
   shape?: typeof inputShapes[number];
   /** 是否展示下拉面板（面板内容完全由 dropdown 插槽提供） */
   showDropdown?: boolean;
-  /** 自定义保存历史记录回调 */
-  saveHistory?: (history: string[]) => void;
-  /** 自定义清除历史记录回调 */
-  removeHistory?: () => void;
+  /** 未绑定 history 时，本地历史记录的存储键；多个搜索框用不同键隔离 */
+  historyKey?: string;
   /** 自定义类名 */
   class?: any;
   /** 组件自身 UI 覆盖 */
@@ -93,58 +97,45 @@ const model = defineModel<SearchBoxModelValue>({
   default: () => ({ inputValue: "", selectValue: "" }),
 });
 
-const inputRef = ref<HTMLInputElement | null>(null);
-const wrapperRef = ref<HTMLElement | null>(null);
-const isExpanded = ref(false); // 下拉面板展开状态
-const isInputFocused = ref(false); // 内部输入框是否获得焦点（边框激活高亮的唯一依据）
-const localHistory = ref<string[]>([]); // 本地历史记录列表
+/**
+ * 历史记录（v-model:history）：绑定后由父级持有，组件只通过 update:history 请求更新，不读写本地存储。
+ * 不给默认值：未绑定时它是 undefined，这就是「是否绑定」的唯一判据，展示与写入都不再另读组件实例上的原始 props
+ */
+const historyModel = defineModel<string[]>("history");
+/** 未绑定 history 时的本地历史，按 historyKey 与本地存储同步 */
+const localHistory = shallowRef<string[]>([]);
+const historyBound = () => historyModel.value !== undefined;
+const history = computed<string[]>(() => historyModel.value ?? localHistory.value);
+const inputRef = useTemplateRef<InstanceType<typeof RebornInput>>("inputRef");
+const wrapperRef = useTemplateRef<HTMLElement>("wrapperRef");
+const isExpanded = shallowRef(false);
+const isInputFocused = shallowRef(false);
+let blurTimer: ReturnType<typeof setTimeout> | null = null;
 
-// 历史记录本地存储 Key
-const STORAGE_KEY = "reborn-search-history";
-
-/** 从 LocalStorage 加载历史记录 */
-const loadHistory = () => {
-  if (typeof window === "undefined") return;
+function loadHistory() {
+  if (historyBound() || typeof window === "undefined") return;
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    localHistory.value = saved ? JSON.parse(saved) : [];
-  } catch {
-    localHistory.value = [];
+    const saved: unknown = JSON.parse(localStorage.getItem(props.historyKey) ?? "[]");
+    localHistory.value = Array.isArray(saved) ? saved.filter((item): item is string => typeof item === "string").slice(0, 10) : [];
+  } catch { localHistory.value = []; }
+}
+/** 绑定时只请求父级更新（父级拒收则界面维持父值）；未绑定时写本地历史与本地存储 */
+function writeHistory(next: string[]) {
+  if (historyBound()) {
+    historyModel.value = next;
+    return;
   }
-};
-
-/** 添加关键字到历史记录 */
-const addToHistory = (keyword: string) => {
-  if (!keyword.trim()) return;
-  const newHistory = [keyword, ...localHistory.value.filter((h) => h !== keyword)].slice(0, 10);
-  if (props.saveHistory) {
-    props.saveHistory(newHistory);
-  } else {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory));
-  }
-  localHistory.value = newHistory;
-};
-
-/** 清除全部历史记录 */
-const handleClearHistory = () => {
-  if (props.removeHistory) {
-    props.removeHistory();
-  } else {
-    localStorage.removeItem(STORAGE_KEY);
-  }
-  localHistory.value = [];
-};
-
-/** 移除单条历史记录 */
-const handleRemoveHistoryItem = (keyword: string) => {
-  const newHistory = localHistory.value.filter((h) => h !== keyword);
-  if (props.saveHistory) {
-    props.saveHistory(newHistory);
-  } else {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory));
-  }
-  localHistory.value = newHistory;
-};
+  localHistory.value = next;
+  if (typeof window === "undefined") return;
+  try { localStorage.setItem(props.historyKey, JSON.stringify(next)); } catch { /* 存储不可用时仍保留当前实例的历史 */ }
+}
+function addToHistory(keyword: string) {
+  if (keyword.trim()) writeHistory([keyword, ...history.value.filter(item => item !== keyword)].slice(0, 10));
+}
+function handleClearHistory() { writeHistory([]); }
+function handleRemoveHistoryItem(keyword: string) { writeHistory(history.value.filter(item => item !== keyword)); }
+function hasOuterSlots() { return Boolean(slots.leading || slots.trailing); }
+watch(() => props.historyKey, loadHistory);
 
 /** 搜索框自身各槽位样式 */
 const ui = computed(() => {
@@ -156,7 +147,7 @@ const ui = computed(() => {
     // 激活高亮只跟随输入框焦点，外置插槽获得焦点时不点亮边框
     focused: isInputFocused.value,
     // 存在外置插槽时，外框恒为灰色、聚焦描边只画在输入框区内，避免外置插槽跟着变色
-    hasOuterSlots: Boolean(slots.leading || slots.trailing),
+    hasOuterSlots: false,
   });
   const uiOverrides = props.ui || {};
 
@@ -166,9 +157,9 @@ const ui = computed(() => {
     backdropCard: (opts?: { class?: any }) =>
       styles.backdropCard({ class: cn(opts?.class, uiOverrides.backdropCard) }),
     control: (opts?: { class?: any }) =>
-      styles.control({ class: cn(opts?.class, uiOverrides.control) }),
+      styles.control({ hasOuterSlots: hasOuterSlots(), class: cn(opts?.class, uiOverrides.control) }),
     inputWrapper: (opts?: { class?: any }) =>
-      styles.inputWrapper({ class: cn(opts?.class, uiOverrides.inputWrapper) }),
+      styles.inputWrapper({ hasOuterSlots: hasOuterSlots(), class: cn(opts?.class, uiOverrides.inputWrapper) }),
     dropdownOuter: (opts?: { class?: any }) =>
       styles.dropdownOuter({ class: cn(opts?.class, uiOverrides.dropdownOuter) }),
     dropdown: (opts?: { class?: any }) =>
@@ -182,7 +173,7 @@ const ui = computed(() => {
 
 /** 内部 Input 组件 UI 配置：边框与聚焦态一律交给控件行外壳承担，恒压掉 input 自身的 ring */
 const internalInputUi = computed(() => {
-  const inputStyles = tv(inputTheme)({ size: props.size, shape: props.shape });
+  const inputStyles = inputVariants({ size: props.size, shape: props.shape });
   return {
     ...props.inputUi,
     wrapper: cn(inputStyles.wrapper(), props.inputUi?.wrapper),
@@ -201,8 +192,8 @@ const internalInputAttrs = computed(() => ({
   variant: "borderless" as const,
 }));
 
-const controlRef = ref<HTMLElement | null>(null);
-const controlHeight = ref(45); // 实时测量的控件行高度，用于计算底色卡片与下拉定位
+const controlRef = useTemplateRef<HTMLElement>("controlRef");
+const controlHeight = shallowRef(45); // 实时测量的控件行高度，用于计算底色卡片与下拉定位
 
 /** 处理输入事件（RebornInput 的 defineModel 载荷可能为 undefined，统一归一为字符串） */
 function handleInputValueChange(val: string | number | undefined) {
@@ -220,6 +211,8 @@ function handleSearch() {
 
 /** 获得焦点：点亮边框并展开面板 */
 const onFocus = (e: FocusEvent) => {
+  if (blurTimer) clearTimeout(blurTimer);
+  blurTimer = null;
   isInputFocused.value = true;
   if (props.showDropdown) {
     isExpanded.value = true;
@@ -244,7 +237,9 @@ const onBlur = (e: FocusEvent) => {
     return;
   }
 
-  setTimeout(() => {
+  if (blurTimer) clearTimeout(blurTimer);
+  blurTimer = setTimeout(() => {
+    blurTimer = null;
     // 再次确认当前活跃元素是否在外部
     if (!wrapperRef.value?.contains(document.activeElement)) {
       isExpanded.value = false;
@@ -268,8 +263,8 @@ function selectRecommend(keyword: string) {
   isExpanded.value = false;
 }
 
-const contentRef = ref<HTMLElement | null>(null);
-const dropdownHeight = ref(0); // 联想面板内容实际高度
+const contentRef = useTemplateRef<HTMLElement>("contentRef");
+const dropdownHeight = shallowRef(0); // 联想面板内容实际高度
 
 /** 重新计算并更新面板高度以支持动画过渡 */
 const updateHeight = () => {
@@ -319,9 +314,18 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  if (blurTimer) clearTimeout(blurTimer);
   contentObserver?.disconnect();
   controlObserver?.disconnect();
 });
+/** 点击下拉空白不抢走输入焦点，表单控件仍保留原生聚焦行为 */
+function onDropdownMousedown(event: MouseEvent) {
+  const target = event.target;
+  if (target instanceof HTMLElement && (target.closest('input, textarea, select, button, a, [tabindex]') || target.isContentEditable)) return;
+  event.preventDefault();
+}
+
+
 </script>
 
 <template>
@@ -394,20 +398,13 @@ onUnmounted(() => {
         opacity: isExpanded ? 1 : 0,
         transform: isExpanded ? 'translateY(0)' : 'translateY(-8px)',
         transitionDelay: isExpanded ? '100ms' : '0ms',
-      }" @mousedown="(e) => {
-        const target = e.target as HTMLElement;
-        // 如果点击的是输入框等可聚焦元素，不要阻止默认行为，否则会导致无法正常聚焦
-        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable) {
-          return;
-        }
-        e.preventDefault();
-      }">
+      }" @mousedown="onDropdownMousedown">
         <!--
           面板内容完全由 dropdown 插槽提供，组件不渲染任何默认内容。
           作用域透出：ui（结构层样式键，面板内容的装饰样式由插槽内容自行提供）、
           history（历史记录列表）与历史/推荐相关的操作方法。
         -->
-        <slot name="dropdown" :ui="ui" :history="localHistory" :select-history="selectHistory"
+        <slot name="dropdown" :ui="ui" :history="history" :select-history="selectHistory"
           :remove-history-item="handleRemoveHistoryItem" :clear-history="handleClearHistory"
           :select-recommend="selectRecommend" />
       </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTimeoutFn } from "@vueuse/core";
-import { ref } from "vue";
+import { ref, shallowRef, useTemplateRef } from "vue";
 
 interface GlareCardProps {
   class?: string;
@@ -8,9 +8,10 @@ interface GlareCardProps {
 
 const props = defineProps<GlareCardProps>();
 
-const isPointerInside = ref(false);
-const refElement = ref<HTMLElement | null>(null);
+const isPointerInside = shallowRef(false);
+const refElement = useTemplateRef<HTMLElement>("refElement");
 
+// 指针移动时就地改写各字段，保留深层 ref
 const state = ref({
   glare: { x: 50, y: 50 },
   background: { x: 50, y: 50 },
@@ -42,17 +43,25 @@ function handlePointerMove(event: PointerEvent) {
   }
 }
 
-function handlePointerEnter() {
-  isPointerInside.value = true;
-  useTimeoutFn(() => {
+// 进入 300ms 后把过渡时长清零，让卡片紧跟指针；定时器在 setup 顶层创建，归组件作用域所有，卸载时自动清除
+const { start: startFollowTimer, stop: stopFollowTimer } = useTimeoutFn(
+  () => {
     if (isPointerInside.value && refElement.value) {
       refElement.value.style.setProperty("--duration", "0s");
     }
-  }, 300);
+  },
+  300,
+  { immediate: false },
+);
+
+function handlePointerEnter() {
+  isPointerInside.value = true;
+  startFollowTimer();
 }
 
 function handlePointerLeave() {
   isPointerInside.value = false;
+  stopFollowTimer();
   if (refElement.value) {
     refElement.value.style.removeProperty("--duration");
     state.value.rotate = { x: 0, y: 0 };

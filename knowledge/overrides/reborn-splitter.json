@@ -3,7 +3,8 @@
   "whenToUse": [
     "编辑器、控制台等需要用户自由调整左右或上下面板比例的布局。",
     "需要面板可折叠（collapsible，配合 start-collapsible / end-collapsible 插槽自定义折叠按钮）。",
-    "拖动性能敏感时开启 lazy，拖动结束后才更新面板大小。"
+    "拖动性能敏感时开启 lazy，拖动结束后才更新面板大小。",
+    "需要保存用户调整后的布局（监听 change，载荷为全部面板百分比尺寸），或拖到 min / max 时给出提示（监听 limit）。"
   ],
   "whenNotToUse": [
     "固定比例、无需用户拖拽的布局，直接用普通布局或 reborn-container。",
@@ -11,7 +12,11 @@
   ],
   "pitfalls": [
     "platforms 仅 web 端提供。",
-    "面板的 size / min / max 支持数字或字符串两种写法。",
-    "resizable 默认 true、collapsible 默认 false；折叠时触发 collapse 事件，index 为拖拽条索引。"
+    "size 数字和字符串均按百分比解析，字符串回写为 xx%；min/max 的数字是 px、字符串是百分比。挂载不发 update:size，拖拽、折叠、外部改值引起相邻补偿，或调整过之后增删面板引起相邻补偿时才发。",
+    "resizable 默认 true、collapsible 默认 false；collapse 事件为 (index, collapsed)，index 是被折叠 / 展开面板下标，collapsed 是操作之后的状态。start-collapsible/end-collapsible 插槽仅填按钮内容，作用域包含 collapsed。",
+    "change(sizes, index) 只在提交时派发一次：拖拽松手、折叠 / 展开、调整过之后父级改写 size 引起相邻补偿，且尺寸确有变化；拖拽过程中不派发（逐帧的是 resize）。从未拖拽或折叠过时父级改 size 只是换配置，不派发；增删面板也不派发。index 为尺寸变化所在拖拽条的下标（后一个面板下标）。",
+    "limit(index, boundary, size) 在拖拽中面板进入 min / max 边界时派发一次，停在边界上不重复，离开再回到才再派发；按下时已停在边界上不派发。未设 min 按 0、未设 max 按 100% 判断，没设 min 的面板被压到 0 也会派发；lazy 模式按预览条位置判断；折叠不派发 limit。",
+    "默认插槽不再暴露内部 ui；样式通过各组件的 ui prop 覆盖。动态增删面板按稳定 vnode key 保留布局，v-for 必须提供稳定 key。",
+    "面板必须是 Splitter 默认插槽的直接子节点（可经过 v-for / v-if / template）；外面包元素或其他组件时该面板降级为普通容器、不参与尺寸分配，开发环境给出警告。"
   ]
 }

@@ -46,12 +46,13 @@ const suggestionPage = computed(() => suggestion?.value.value ?? null);
  * ComponentPlayground 自己知道，所以由它挂载时调 register() 反向通知。
  * ready 得等目标节点真的挂上去再置 true：Teleport 的 to 解析不到元素会直接报错。
  */
-const sandboxTargetId = `reborn-sandbox-${componentId}`;
-const hasSandbox = ref(false);
-const sandboxReady = ref(false);
+/** 传送目标 id 随 componentId 变化；provide 用 getter，Teleport 一侧每次渲染读到的都是当前值 */
+const sandboxTargetId = computed(() => `reborn-sandbox-${componentId}`);
+const hasSandbox = shallowRef(false);
+const sandboxReady = shallowRef(false);
 
 provide(sandboxContextKey, {
-  targetId: sandboxTargetId,
+  get targetId() { return sandboxTargetId.value; },
   ready: sandboxReady,
   register: () => {
     hasSandbox.value = true;
@@ -69,7 +70,7 @@ watch(hasSandbox, (has) => {
  * 点击后在同一个 tick 内把 activeKey 改回原值：受控绑定下 RebornTabs 只发事件、
  * 不改自己的 currentKey，值还回去它的 prop 就从头到尾没变过，胶囊滑块也不会闪一下。
  */
-const activeTab = ref<TabKey>("preview");
+const activeTab = shallowRef<TabKey>("preview");
 /** 点击发生前停在哪张，供 API 那张还原用；只在两个事件之间传值，不需要响应式 */
 let tabBeforeClick: TabKey = "preview";
 
@@ -96,7 +97,7 @@ const {
   uniappCode,
   uniappComponentCode,
   demoRawCode,
-} = useComponentCode({
+} = useComponentCode(() => ({
   componentId,
   componentFiles,
   demoFile,
@@ -104,7 +105,7 @@ const {
   uniapp: uniapp.value,
   uniappFiles,
   uniappComponentId: componentId
-});
+}));
 
 /**
  * 把 demo 源文件按 <DemoSection title="..."> 切成「标题 -> 源码」映射，向下提供给各张分组卡片。
@@ -119,18 +120,21 @@ const demoRunnableSources = computed(() => buildRunnableDemoSections(demoRawCode
  * 组件主题的 slot 结构：整页读一次，下发给每张示例卡片各自的 Theme slots 面板。
  * 面板已下沉到 DemoSection（每个示例单独开关、单独作用域），这里只负责取数据。
  */
-const themeGroups = ref<ComponentThemeGroup[]>([]);
+const themeGroups = shallowRef<ComponentThemeGroup[]>([]);
 
-watch(() => componentId, async (id) => {
-  themeGroups.value = await loadComponentThemeGroups(id);
+watch(() => componentId, async (id, _, onCleanup) => {
+  let active = true;
+  onCleanup(() => { active = false; });
+  const groups = await loadComponentThemeGroups(id);
+  if (active) themeGroups.value = groups;
 }, { immediate: true });
 
 provide(demoContextKey, {
   sources: demoSectionSources,
   runnableSources: demoRunnableSources,
-  componentId,
-  demoFile,
-  demoName: demoFile.replace(".vue", ""),
+  get componentId() { return componentId; },
+  get demoFile() { return demoFile; },
+  get demoName() { return demoFile.replace(".vue", ""); },
   themeGroups,
 });
 </script>
@@ -148,7 +152,7 @@ provide(demoContextKey, {
       :ui="{
         nav: 'sticky top-16 z-40 bg-gray-1/75 py-2 backdrop-blur-xl',
       }" @tab-click="handleTabClick" @change="handleTabChange">
-      <RebornTabPane key="preview">
+      <RebornTabPane key="preview" pane-key="preview">
         <template #title>
           <span class="inline-flex items-center gap-1.5">
             <Icon name="mage:preview" class="size-4" />
@@ -165,11 +169,14 @@ provide(demoContextKey, {
           </DemoStage>
 
           <slot name="api" />
+          <div v-if="$slots.credits" class="mt-6 text-sm text-muted">
+            <slot name="credits" />
+          </div>
         </template>
       </RebornTabPane>
 
       <!-- 只在 Tab 栏占个位：点它是滚到正文的 API 一节，这张面板永远不会被激活，所以不给内容 -->
-      <RebornTabPane key="api">
+      <RebornTabPane key="api" pane-key="api">
         <template #title>
           <span class="inline-flex items-center gap-1.5">
             <Icon name="tabler:api" class="size-4" />
@@ -178,7 +185,7 @@ provide(demoContextKey, {
         </template>
       </RebornTabPane>
 
-      <RebornTabPane v-if="suggestionPage" key="suggestion">
+      <RebornTabPane v-if="suggestionPage" key="suggestion" pane-key="suggestion">
         <template #title>
           <span class="inline-flex items-center gap-1.5">
             <Icon name="tabler:bulb" class="size-4" />
@@ -192,7 +199,7 @@ provide(demoContextKey, {
         </template>
       </RebornTabPane>
 
-      <RebornTabPane v-if="hasSandbox" key="sandbox">
+      <RebornTabPane v-if="hasSandbox" key="sandbox" pane-key="sandbox">
         <template #title>
           <span class="inline-flex items-center gap-1.5">
             <Icon name="tabler:adjustments" class="size-4" />
@@ -211,7 +218,7 @@ provide(demoContextKey, {
         </template>
       </RebornTabPane>
 
-      <RebornTabPane key="code">
+      <RebornTabPane key="code" pane-key="code">
         <template #title>
           <span class="inline-flex items-center gap-1.5">
             <Icon name="tabler:code" class="size-4" />
@@ -220,11 +227,11 @@ provide(demoContextKey, {
         </template>
 
         <template #default>
-          <MdcProse :key="demoCode" :value="demoCode" />
+          <MdcProse :value="demoCode" />
         </template>
       </RebornTabPane>
 
-      <RebornTabPane v-if="uniapp" key="uniapp">
+      <RebornTabPane v-if="uniapp" key="uniapp" pane-key="uniapp">
         <template #title>
           <span class="inline-flex items-center gap-1.5">
             <Icon name="tabler:code-asterisk" class="size-4" />
@@ -233,11 +240,11 @@ provide(demoContextKey, {
         </template>
 
         <template #default>
-          <MdcProse :key="uniappCode" :value="uniappCode" />
+          <MdcProse :value="uniappCode" />
         </template>
       </RebornTabPane>
 
-      <RebornTabPane v-if="showInstallation" key="installation">
+      <RebornTabPane v-if="showInstallation" key="installation" pane-key="installation">
         <template #title>
           <span class="inline-flex items-center gap-1.5">
             <Icon name="si:lightning-line" class="size-4" />
@@ -252,7 +259,7 @@ provide(demoContextKey, {
 
           <!-- 内层同样是 capsule，但收到 small（32px），与外层 40px 的主 Tab 栏拉开层级 -->
           <RebornTabs type="capsule" size="sm">
-            <RebornTabPane key="cli">
+            <RebornTabPane key="cli" pane-key="cli">
               <template #title>
                 <span class="inline-flex items-center gap-1.5">
                   <Icon name="tabler:terminal" class="size-4" />
@@ -265,7 +272,7 @@ provide(demoContextKey, {
               </template>
             </RebornTabPane>
 
-            <RebornTabPane key="manual">
+            <RebornTabPane key="manual" pane-key="manual">
               <template #title>
                 <span class="inline-flex items-center gap-1.5">
                   <Icon name="tabler:notes" class="size-4" />
@@ -288,7 +295,7 @@ provide(demoContextKey, {
                 </div>
 
                 <RebornTabs type="capsule" size="sm">
-                  <RebornTabPane key="web">
+                  <RebornTabPane key="web" pane-key="web">
                     <template #title>
                       <span class="inline-flex items-center gap-1.5">
                         <Icon name="tabler:world" class="size-4" />
@@ -297,11 +304,11 @@ provide(demoContextKey, {
                     </template>
 
                     <template #default>
-                      <MdcProse v-if="componentCode" :key="componentCode" :value="componentCode" />
+                      <MdcProse v-if="componentCode" :value="componentCode" />
                     </template>
                   </RebornTabPane>
 
-                  <RebornTabPane v-if="uniapp" key="uniapp-platform">
+                  <RebornTabPane v-if="uniapp" key="uniapp-platform" pane-key="uniapp-platform">
                     <template #title>
                       <span class="inline-flex items-center gap-1.5">
                         <Icon name="tabler:brand-wechat" class="size-4" />
@@ -310,7 +317,7 @@ provide(demoContextKey, {
                     </template>
 
                     <template #default>
-                      <MdcProse v-if="uniappComponentCode" :key="uniappComponentCode" :value="uniappComponentCode" />
+                      <MdcProse v-if="uniappComponentCode" :value="uniappComponentCode" />
                     </template>
                   </RebornTabPane>
                 </RebornTabs>

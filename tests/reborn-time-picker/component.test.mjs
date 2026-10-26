@@ -193,3 +193,16 @@ it("底部开关支持动态切换并控制自定义插槽", async () => {
   assert.equal(container.querySelector('[data-custom-footer]'), null);
   assert.equal(container.querySelector('[role="dialog"]').children.length, 1);
 });
+
+it("受控绑定下点击选项只派发一次 update:modelValue", async () => {
+  const model = ref("09:30:00");
+  const updates = [];
+  const container = document.createElement("div"); document.body.append(container);
+  const app = createApp({ setup: () => () => h(Picker, {
+    modelValue: model.value, "onUpdate:modelValue": (value) => { updates.push(value); model.value = value; },
+  }) });
+  app.mount(container); mounted.push(() => { app.unmount(); container.remove(); });
+  const p = { container, input: () => container.querySelector("input") }; await open(p);
+  container.querySelector('[aria-label="时"] [data-value="10"]').click(); await nextTick();
+  assert.deepEqual(updates, ["10:30:00"]);
+});

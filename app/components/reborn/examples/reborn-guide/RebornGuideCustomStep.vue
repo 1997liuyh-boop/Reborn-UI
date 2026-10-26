@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { GuideStep } from "~/components/reborn/ui/reborn-guide/RebornGuide.vue";
-import { ref } from "vue";
+import { shallowRef } from 'vue';
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 
 interface Props {
@@ -18,7 +18,7 @@ interface Props {
 defineProps<Props>();
 
 /** 自定义面板可以维护独立的业务状态。 */
-const preference = ref("个人使用");
+const preference = shallowRef("个人使用");
 const options = ["个人使用", "团队协作"];
 </script>
 

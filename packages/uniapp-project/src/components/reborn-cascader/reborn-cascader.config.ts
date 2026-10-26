@@ -55,7 +55,6 @@ export interface CascaderFieldNames {
 
 export interface CascaderProps {
     /** 绑定值 */
-    modelValue?: (string | number)[] | (string | number)[][]
     /** 选项数据 */
     options?: CascaderOption[]
     /** 标题 */
@@ -179,3 +178,6 @@ const config = {
 } as const
 
 export default config
+
+/** 级联选择器支持单选路径与多选路径数组。 */
+export type CascaderValue = (string | number)[] | (string | number)[][]

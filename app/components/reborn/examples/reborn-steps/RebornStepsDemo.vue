@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import type { StepsUI } from '~/components/reborn/ui/reborn-steps/reborn-steps.config';
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
-import { computed, defineComponent, h, ref } from 'vue';
+import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue';
 import RebornInputNumber from '~/components/reborn/ui/reborn-input-number/RebornInputNumber.vue';
 import { stepsColors, stepsDirections, stepsLineTypes, stepsPlacements, stepsSizes, stepsStatuses, stepsTypes } from '~/components/reborn/ui/reborn-steps/reborn-steps.config';
@@ -42,7 +43,7 @@ const defaultState: Record<string, any> = {
   color: 'primary',
 };
 const state = ref<Record<string, any>>({ ...defaultState });
-const lastChange = ref('尚未切换步骤');
+const lastChange = shallowRef('尚未切换步骤');
 /** 纯数字转为数值传递，其余输入保留为 CSS 长度。 */
 function parseLength(input: unknown) {
   const value = String(input ?? '').trim();
@@ -127,22 +128,22 @@ const stepsCode = computed(() => {
     const parameter = stepProgress === undefined ? '' : ` :progress="${stepProgress}"`;
     return `    <RebornStep title="${item.title}" description="${item.description}"${parameter} />`;
   }).join('\n');
-  return `<script setup lang="ts">\nimport { ref } from 'vue';\nconst active = ref(${value.active});\n<\/script>\n\n<template>\n  <RebornSteps\n    v-model:active="active"\n    direction="${value.direction}"${placement}\n    ${width}\n    ${space}\n    size="${value.size}"\n    type="${value.type}"\n    line-type="${value.lineType}"\n    color="${value.color}"\n    process-status="${value.processStatus}"\n    finish-status="${value.finishStatus}"${progress}\n    :align-center="${value.alignCenter}"\n    :simple="${value.simple}"\n  >\n${steps}\n  </RebornSteps>\n</template>`;
+  return `<script setup lang="ts">\nimport { shallowRef } from 'vue';\nconst active = shallowRef(${value.active});\n<\/script>\n\n<template>\n  <RebornSteps\n    v-model:active="active"\n    direction="${value.direction}"${placement}\n    ${width}\n    ${space}\n    size="${value.size}"\n    type="${value.type}"\n    line-type="${value.lineType}"\n    color="${value.color}"\n    process-status="${value.processStatus}"\n    finish-status="${value.finishStatus}"${progress}\n    :align-center="${value.alignCenter}"\n    :simple="${value.simple}"\n  >\n${steps}\n  </RebornSteps>\n</template>`;
 });
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 基础流程的受控下标。 */
-const basicActive = ref(0);
+const basicActive = shallowRef(0);
 /** 基础流程最近一次真实切换。 */
-const basicChange = ref('active = 0，从第一步开始');
+const basicChange = shallowRef('active = 0，从第一步开始');
 /** 三种连接方式共用下标，便于观察前进与回退的动画。 */
-const connectorActive = ref(1);
+const connectorActive = shallowRef(1);
 /** 当前步骤和整体进度分开控制，展示两种计算方式。 */
 const progressItems = items.slice(0, 3);
-const currentActive = ref(1);
-const currentProgress = ref<number | null>(45);
-const overallProgress = ref<number | null>(50);
+const currentActive = shallowRef(1);
+const currentProgress = shallowRef<number | null>(45);
+const overallProgress = shallowRef<number | null>(50);
 /** 单步进度随当前下标传入，前序步骤完成、后续步骤等待。 */
 function getCurrentProgress(index: number) {
   return index < currentActive.value ? 100 : index === currentActive.value ? currentProgress.value ?? 0 : 0;
@@ -157,7 +158,9 @@ function moveOverallProgress(offset: number) {
   overallProgress.value = Math.max(0, Math.min(100, (overallProgress.value ?? 0) + offset * 100 / progressItems.length));
 }
 /** 插槽示例独立控制步骤，观察四个插槽的作用域变化。 */
-const slotActive = ref(1);
+const slotActive = shallowRef(1);
+/** 插槽定制：节点去掉底色只留图标，指示线压低并下移，给自绘连接线留位置 */
+const iconOnlyMarkerUi: StepsUI = { marker: 'bg-transparent text-brand-6', connector: 'h-4 mt-2' };
 const slotItems = [
   { title: '创建订单', icon: 'lucide:clipboard-list', detail: '订单 RB-2026 已创建' },
   { title: '核验付款', icon: 'lucide:credit-card', detail: '核对付款金额与收款信息' },
@@ -172,6 +175,9 @@ const DeliveryIcon = defineComponent({
   name: 'StepsDeliveryIcon',
   setup: () => () => h(Icon, { name: 'lucide:truck' }),
 });
+
+/** 两步场景共用固定切片，避免在模板中重复派生。 */
+const firstTwoItems = items.slice(0, 2);
 </script>
 
 <template>
@@ -301,7 +307,7 @@ const DeliveryIcon = defineComponent({
           <p class="text-sm text-gray-7">{{ size.toUpperCase() }}</p>
           <RebornSteps :active="1" :size="size">
             <RebornStep
-              v-for="item in items.slice(0, 3)" :key="item.title" :title="item.title"
+              v-for="item in progressItems" :key="item.title" :title="item.title"
               :description="item.description"
             />
           </RebornSteps>
@@ -318,7 +324,7 @@ const DeliveryIcon = defineComponent({
         <div class="overflow-x-auto w-full">
           <RebornSteps :active="1" :width="640">
             <RebornStep
-              v-for="item in items.slice(0, 2)" :key="item.title" :title="item.title"
+              v-for="item in firstTwoItems" :key="item.title" :title="item.title"
               :description="item.description"
             />
             <RebornStep title="提交申请" description="末项与前面的步骤共同分配可用宽度，较长的描述也能获得足够空间，按可用宽度换行。" />
@@ -330,14 +336,14 @@ const DeliveryIcon = defineComponent({
         <div class="overflow-x-auto w-full">
           <RebornSteps :active="1" :space="180">
             <RebornStep
-              v-for="item in items.slice(0, 3)" :key="item.title" :title="item.title"
+              v-for="item in progressItems" :key="item.title" :title="item.title"
               :description="item.description"
             />
           </RebornSteps>
         </div>
         <RebornSteps :active="1" direction="vertical" :space="96">
           <RebornStep
-            v-for="item in items.slice(0, 3)" :key="item.title" :title="item.title"
+            v-for="item in progressItems" :key="item.title" :title="item.title"
             :description="item.description"
           />
         </RebornSteps>
@@ -384,7 +390,7 @@ const DeliveryIcon = defineComponent({
         <div v-for="lineType in stepsLineTypes" :key="lineType" class="flex flex-col gap-3 w-full">
           <p class="text-sm text-gray-7">{{ lineType }}</p>
           <RebornSteps :active="connectorActive" :line-type="lineType">
-            <RebornStep v-for="item in items.slice(0, 3)" :key="item.title" :title="item.title" />
+            <RebornStep v-for="item in progressItems" :key="item.title" :title="item.title" />
           </RebornSteps>
         </div>
         <div class="flex items-center gap-2">
@@ -400,7 +406,7 @@ const DeliveryIcon = defineComponent({
       <DemoBlock layout="stack" class="gap-6">
         <RebornSteps v-for="size in stepsSizes" :key="size" :active="1" type="dot" :size="size">
           <RebornStep
-            v-for="item in items.slice(0, 3)" :key="item.title" :title="item.title"
+            v-for="item in progressItems" :key="item.title" :title="item.title"
             :description="item.description"
           />
         </RebornSteps>
@@ -452,7 +458,7 @@ const DeliveryIcon = defineComponent({
         分别覆盖节点、标题、描述与指示线，使用作用域参数响应步骤变化。
       </template>
       <DemoBlock layout="stack" class="gap-5">
-        <RebornSteps v-model:active="slotActive" :ui="{ marker: 'bg-transparent text-brand-6', connector: 'h-4 mt-2' }">
+        <RebornSteps v-model:active="slotActive" :ui="iconOnlyMarkerUi">
           <RebornStep v-for="item in slotItems" :key="item.title">
             <template #icon="{ status }">
               <Icon :name="status === 'finish' ? 'lucide:check' : item.icon" class="size-5" :class="status === 'wait' ? 'text-gray-7' : 'text-brand-6'" />

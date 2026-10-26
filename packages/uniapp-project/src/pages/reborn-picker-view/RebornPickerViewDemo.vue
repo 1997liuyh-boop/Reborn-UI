@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPickerView from '@/components/reborn-picker-view/RebornPickerView.vue'
 
-const columns = ref([
+const columns = [
   [
     { label: '周一', value: 1 },
     { label: '周二', value: 2 },
@@ -16,14 +16,10 @@ const columns = ref([
     { label: '上午', value: 1 },
     { label: '下午', value: 2 },
   ],
-])
+]
 
-const value = ref([0, 0])
-const selectedValues = ref([1, 1])
-
-function onChange(vals: any[]) {
-  selectedValues.value = vals
-}
+const value = shallowRef([0, 0])
+const selectedValues = computed(() => value.value.map((index, column) => columns[column]?.[index]?.value))
 </script>
 
 <template>
@@ -33,7 +29,6 @@ function onChange(vals: any[]) {
         <RebornPickerView
           :columns="columns"
           v-model:value="value"
-          @change-value="onChange"
         />
       </view>
       <view class="mt-4 text-sm text-gray-500">

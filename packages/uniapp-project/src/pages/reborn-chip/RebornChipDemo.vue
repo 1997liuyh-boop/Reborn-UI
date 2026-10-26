@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import { chipColors, chipPositions, chipSizes, chipVariants } from '@/components/reborn-chip/reborn-chip.config'
 import RebornChip from '@/components/reborn-chip/RebornChip.vue'
@@ -30,16 +30,16 @@ const swatchClass: Record<(typeof chipColors)[number], string> = {
 }
 
 // 演练场状态
-const variant = ref<(typeof chipVariants)[number]>('textDot')
-const color = ref<(typeof chipColors)[number]>('primary')
-const size = ref<(typeof chipSizes)[number]>('md')
-const position = ref<(typeof chipPositions)[number]>('top-right')
-const text = ref('9')
-const inset = ref(false)
-const showChip = ref(true)
+const variant = shallowRef<(typeof chipVariants)[number]>('textDot')
+const color = shallowRef<(typeof chipColors)[number]>('primary')
+const size = shallowRef<(typeof chipSizes)[number]>('md')
+const position = shallowRef<(typeof chipPositions)[number]>('top-right')
+const text = shallowRef('9')
+const inset = shallowRef(false)
+const showChip = shallowRef(true)
 
 /** 显隐控制演示：组件内部不会改写 show，由外部按钮切换 */
-const hasUnread = ref(true)
+const hasUnread = shallowRef(true)
 </script>
 
 <template>

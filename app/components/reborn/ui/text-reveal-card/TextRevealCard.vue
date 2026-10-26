@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from "vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, shallowRef, useTemplateRef } from "vue";
 
 interface Props {
   class?: HTMLAttributes["class"];
@@ -11,36 +11,27 @@ const props = withDefaults(defineProps<Props>(), {
   starsCount: 130,
 });
 
-const cardRef = ref<HTMLElement | null>(null);
-const widthPercentage = ref(0);
-const left = ref(0);
-const localWidth = ref(0);
-const isMouseOver = ref(false);
+const cardRef = useTemplateRef<HTMLElement>("cardRef");
+const widthPercentage = shallowRef(0);
+const isMouseOver = shallowRef(false);
 
 const rotateDeg = computed(() => (widthPercentage.value - 50) * 0.1);
 
-onMounted(() => {
-  if (cardRef.value) {
-    const rect = cardRef.value.getBoundingClientRect();
-    left.value = rect.left;
-    localWidth.value = rect.width;
-  }
+/** 离开后延时收起揭示区的定时器；记下句柄，再次离开或卸载时清除 */
+let leaveTimer: ReturnType<typeof setTimeout> | undefined;
 
-  window.addEventListener("resize", updateMeasurements);
-});
-
-function updateMeasurements() {
-  if (cardRef.value) {
-    const rect = cardRef.value.getBoundingClientRect();
-    left.value = rect.left;
-    localWidth.value = rect.width;
+function clearLeaveTimer() {
+  if (leaveTimer !== undefined) {
+    clearTimeout(leaveTimer);
+    leaveTimer = undefined;
   }
 }
 
 function mouseMoveHandler(event: MouseEvent) {
   event.preventDefault();
   if (cardRef.value) {
-    const rect = cardRef.value.getBoundingClientRect(); // Get current position
+    // 每次实时读取卡片位置，页面滚动或缩放后也准确，无需监听 resize 缓存尺寸
+    const rect = cardRef.value.getBoundingClientRect();
     const relativeX = event.clientX - rect.left;
     widthPercentage.value = (relativeX / rect.width) * 100;
   }
@@ -48,12 +39,16 @@ function mouseMoveHandler(event: MouseEvent) {
 
 function mouseLeaveHandler() {
   isMouseOver.value = false;
-  setTimeout(() => {
+  clearLeaveTimer();
+  leaveTimer = setTimeout(() => {
+    leaveTimer = undefined;
     if (!isMouseOver.value) {
       widthPercentage.value = 0;
     }
   }, 100);
 }
+
+onBeforeUnmount(clearLeaveTimer);
 
 function mouseEnterHandler() {
   isMouseOver.value = true;

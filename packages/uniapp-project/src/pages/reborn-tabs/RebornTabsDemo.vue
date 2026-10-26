@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TabKey, TabsPosition, TabsSize, TabsType } from '@/components/reborn-tabs/reborn-tabs.config'
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
@@ -11,13 +11,13 @@ import RebornTabs from '@/components/reborn-tabs/RebornTabs.vue'
 // ─── 演练场状态 ─────────────────────────────────────────────────
 
 /** 演练场选中的标签 key */
-const playKey = ref<TabKey>('overview')
-const currentType = ref<TabsType>('line')
-const currentSize = ref<TabsSize>('md')
-const currentPosition = ref<TabsPosition>('top')
+const playKey = shallowRef<TabKey>('overview')
+const currentType = shallowRef<TabsType>('line')
+const currentSize = shallowRef<TabsSize>('md')
+const currentPosition = shallowRef<TabsPosition>('top')
 
 /** change 触发次数，让切换「有回应」 */
-const changeCount = ref(0)
+const changeCount = shallowRef(0)
 function onPlayChange() {
   changeCount.value++
 }
@@ -25,31 +25,34 @@ function onPlayChange() {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 类型演示 */
-const typeKey = ref<TabKey>('all')
+const typeKey = shallowRef<TabKey>('all')
 /** 尺寸演示 */
-const sizeKey = ref<TabKey>('all')
+const sizeKey = shallowRef<TabKey>('all')
 /** 位置演示 */
-const positionKey = ref<TabKey>('all')
+const positionKey = shallowRef<TabKey>('all')
 /** 禁用演示 */
-const disabledKey = ref<TabKey>('normal')
+const disabledKey = shallowRef<TabKey>('normal')
 /** 触发方式演示 */
-const hoverKey = ref<TabKey>('day')
+const hoverKey = shallowRef<TabKey>('day')
 /** 动画演示 */
-const animationKey = ref<TabKey>('one')
+const animationKey = shallowRef<TabKey>('one')
 /** 渲染策略演示 */
-const lazyKey = ref<TabKey>('first')
-const destroyKey = ref<TabKey>('first')
+const lazyKey = shallowRef<TabKey>('first')
+const destroyKey = shallowRef<TabKey>('first')
 /** 额外内容演示 */
-const extraKey = ref<TabKey>('inbox')
+const extraKey = shallowRef<TabKey>('inbox')
 /** 撑开标签演示 */
-const stretchKey = ref<TabKey>('day')
+const stretchKey = shallowRef<TabKey>('day')
 /** 撑满高度演示 */
-const justifyKey = ref<TabKey>('list')
+const justifyKey = shallowRef<TabKey>('list')
+/** 样式定制演示：color 与 ui 两个示例各自持有，不借用「类型」一节的 typeKey，切换时互不带动 */
+const colorKey = shallowRef<TabKey>('all')
+const uiKey = shallowRef<TabKey>('all')
 
 /** 滚动定位演示：标签数量超出一屏时才能看出差别 */
-const scrollKey = ref<TabKey>('12')
+const scrollKey = shallowRef<TabKey>('12')
 const scrollModes = ['auto', 'start', 'center', 'end'] as const
-const currentScrollMode = ref<typeof scrollModes[number]>('auto')
+const currentScrollMode = shallowRef<typeof scrollModes[number]>('auto')
 const scrollPanes = Array.from({ length: 20 }, (_, index) => ({
   key: `${index + 1}`,
   title: `标签 ${index + 1}`,
@@ -63,7 +66,13 @@ const editablePanes = ref([
   { key: 'refund', title: '退款' },
   { key: 'invoice', title: '发票' },
 ])
-const editableKey = ref<TabKey>('order')
+const editableKey = shallowRef<TabKey>('order')
+const fixedEditableKey = shallowRef<TabKey>('order')
+const fixedEditablePanes = ref([{ key: 'order', title: '订单', closable: false }, { key: 'refund', title: '退款', closable: true }])
+function deleteFixedPane(key: TabKey) {
+  fixedEditablePanes.value = fixedEditablePanes.value.filter(pane => pane.key !== key || !pane.closable)
+  if (!fixedEditablePanes.value.some(pane => pane.key === fixedEditableKey.value)) fixedEditableKey.value = 'order'
+}
 
 /** 新标签的编号来源，避免复用已删除的 key */
 let seed = 0
@@ -95,13 +104,13 @@ function handleDelete(key: TabKey) {
           v-model:active-key="playKey" :type="currentType" :size="currentSize"
           :position="currentPosition" @change="onPlayChange"
         >
-          <RebornTabPane key="overview" title="概览">
+          <RebornTabPane key="overview" pane-key="overview" title="概览">
             <text class="text-26 text-gray-7">当前选中 overview</text>
           </RebornTabPane>
-          <RebornTabPane key="detail" title="明细">
+          <RebornTabPane key="detail" pane-key="detail" title="明细">
             <text class="text-26 text-gray-7">当前选中 detail</text>
           </RebornTabPane>
-          <RebornTabPane key="log" title="日志">
+          <RebornTabPane key="log" pane-key="log" title="日志">
             <text class="text-26 text-gray-7">当前选中 log</text>
           </RebornTabPane>
         </RebornTabs>
@@ -162,13 +171,13 @@ function handleDelete(key: TabKey) {
       <view v-for="t in tabsTypes" :key="t" class="flex flex-col gap-2">
         <text class="text-24 text-gray-5 font-mono">{{ t }}</text>
         <RebornTabs v-model:active-key="typeKey" :type="t">
-          <RebornTabPane key="all" title="全部">
+          <RebornTabPane key="all" pane-key="all" title="全部">
             <text class="text-26 text-gray-7">全部内容</text>
           </RebornTabPane>
-          <RebornTabPane key="doing" title="进行中">
+          <RebornTabPane key="doing" pane-key="doing" title="进行中">
             <text class="text-26 text-gray-7">进行中内容</text>
           </RebornTabPane>
-          <RebornTabPane key="done" title="已完成">
+          <RebornTabPane key="done" pane-key="done" title="已完成">
             <text class="text-26 text-gray-7">已完成内容</text>
           </RebornTabPane>
         </RebornTabs>
@@ -184,10 +193,10 @@ function handleDelete(key: TabKey) {
       <view v-for="s in tabsSizes" :key="s" class="flex flex-col gap-2">
         <text class="text-24 text-gray-5 font-mono">{{ s }}</text>
         <RebornTabs v-model:active-key="sizeKey" :size="s" type="card-gutter">
-          <RebornTabPane key="all" title="全部">
+          <RebornTabPane key="all" pane-key="all" title="全部">
             <text class="text-26 text-gray-7">全部内容</text>
           </RebornTabPane>
-          <RebornTabPane key="doing" title="进行中">
+          <RebornTabPane key="doing" pane-key="doing" title="进行中">
             <text class="text-26 text-gray-7">进行中内容</text>
           </RebornTabPane>
         </RebornTabs>
@@ -204,13 +213,13 @@ function handleDelete(key: TabKey) {
         <text class="text-24 text-gray-5 font-mono">{{ p }}</text>
         <view :class="p === 'left' || p === 'right' ? 'h-[280rpx]' : ''">
           <RebornTabs v-model:active-key="positionKey" :position="p">
-            <RebornTabPane key="all" title="全部">
+            <RebornTabPane key="all" pane-key="all" title="全部">
               <text class="text-26 text-gray-7">全部内容</text>
             </RebornTabPane>
-            <RebornTabPane key="doing" title="进行中">
+            <RebornTabPane key="doing" pane-key="doing" title="进行中">
               <text class="text-26 text-gray-7">进行中内容</text>
             </RebornTabPane>
-            <RebornTabPane key="done" title="已完成">
+            <RebornTabPane key="done" pane-key="done" title="已完成">
               <text class="text-26 text-gray-7">已完成内容</text>
             </RebornTabPane>
           </RebornTabs>
@@ -222,13 +231,13 @@ function handleDelete(key: TabKey) {
     <RebornCard title="禁用" custom-class="space-y-4">
       <text class="text-24 text-gray-6">禁用的标签点击与悬停都不会切换，指示器也不会移过去</text>
       <RebornTabs v-model:active-key="disabledKey">
-        <RebornTabPane key="normal" title="可用">
+        <RebornTabPane key="normal" pane-key="normal" title="可用">
           <text class="text-26 text-gray-7">可用内容</text>
         </RebornTabPane>
-        <RebornTabPane key="locked" title="已锁定" disabled>
+        <RebornTabPane key="locked" pane-key="locked" title="已锁定" disabled>
           <text class="text-26 text-gray-7">锁定内容</text>
         </RebornTabPane>
-        <RebornTabPane key="other" title="其他">
+        <RebornTabPane key="other" pane-key="other" title="其他">
           <text class="text-26 text-gray-7">其他内容</text>
         </RebornTabPane>
       </RebornTabs>
@@ -244,17 +253,14 @@ function handleDelete(key: TabKey) {
         v-model:active-key="editableKey" type="card-gutter" editable show-add-button
         @add="handleAdd" @delete="handleDelete"
       >
-        <RebornTabPane v-for="pane in editablePanes" :key="pane.key" :title="pane.title">
+        <RebornTabPane v-for="(pane, paneIndex) in editablePanes" :key="pane.key" :order="paneIndex" :pane-key="pane.key" :title="pane.title">
           <text class="text-26 text-gray-7">{{ pane.title }} 的内容</text>
         </RebornTabPane>
       </RebornTabs>
       <text class="text-24 text-gray-5">固定标签可以单独设 closable 为 false，只留新增不许关闭</text>
-      <RebornTabs v-model:active-key="editableKey" type="card-gutter" editable>
-        <RebornTabPane key="order" title="订单" :closable="false">
-          <text class="text-26 text-gray-7">订单不允许关闭</text>
-        </RebornTabPane>
-        <RebornTabPane key="refund" title="退款">
-          <text class="text-26 text-gray-7">退款可以关闭</text>
+      <RebornTabs v-model:active-key="fixedEditableKey" type="card-gutter" editable @delete="deleteFixedPane">
+        <RebornTabPane v-for="(pane, paneIndex) in fixedEditablePanes" :key="pane.key" :order="paneIndex" :pane-key="pane.key" :title="pane.title" :closable="pane.closable">
+          <text class="text-26 text-gray-7">{{ pane.closable ? '可以关闭' : '不允许关闭' }}</text>
         </RebornTabPane>
       </RebornTabs>
     </RebornCard>
@@ -271,10 +277,10 @@ function handleDelete(key: TabKey) {
             刷新
           </ReButton>
         </template>
-        <RebornTabPane key="inbox" title="收件箱">
+        <RebornTabPane key="inbox" pane-key="inbox" title="收件箱">
           <text class="text-26 text-gray-7">收件箱内容</text>
         </RebornTabPane>
-        <RebornTabPane key="sent" title="已发送">
+        <RebornTabPane key="sent" pane-key="sent" title="已发送">
           <text class="text-26 text-gray-7">已发送内容</text>
         </RebornTabPane>
       </RebornTabs>
@@ -286,13 +292,13 @@ function handleDelete(key: TabKey) {
         stretch 让标签均分头部宽度、标题居中，适合少量固定标签占满整行；仅水平方向生效，标签总宽超出容器时仍回到滚动浏览
       </text>
       <RebornTabs v-model:active-key="stretchKey" type="capsule" stretch>
-        <RebornTabPane key="day" title="日">
+        <RebornTabPane key="day" pane-key="day" title="日">
           <text class="text-26 text-gray-7">按日统计</text>
         </RebornTabPane>
-        <RebornTabPane key="week" title="周">
+        <RebornTabPane key="week" pane-key="week" title="周">
           <text class="text-26 text-gray-7">按周统计</text>
         </RebornTabPane>
-        <RebornTabPane key="month" title="月">
+        <RebornTabPane key="month" pane-key="month" title="月">
           <text class="text-26 text-gray-7">按月统计</text>
         </RebornTabPane>
       </RebornTabs>
@@ -315,7 +321,7 @@ function handleDelete(key: TabKey) {
         </view>
       </view>
       <RebornTabs v-model:active-key="scrollKey" :scroll-position="currentScrollMode">
-        <RebornTabPane v-for="pane in scrollPanes" :key="pane.key" :title="pane.title">
+        <RebornTabPane v-for="(pane, paneIndex) in scrollPanes" :key="pane.key" :order="paneIndex" :pane-key="pane.key" :title="pane.title">
           <text class="text-26 text-gray-7">{{ pane.title }} 的内容</text>
         </RebornTabPane>
       </RebornTabs>
@@ -325,13 +331,13 @@ function handleDelete(key: TabKey) {
     <RebornCard title="触发方式" custom-class="space-y-4">
       <text class="text-24 text-gray-6">trigger 设为 hover 时鼠标移入即切换。小程序与 App 没有悬停，该值等同 click</text>
       <RebornTabs v-model:active-key="hoverKey" trigger="hover" type="rounded">
-        <RebornTabPane key="day" title="日">
+        <RebornTabPane key="day" pane-key="day" title="日">
           <text class="text-26 text-gray-7">按日统计</text>
         </RebornTabPane>
-        <RebornTabPane key="week" title="周">
+        <RebornTabPane key="week" pane-key="week" title="周">
           <text class="text-26 text-gray-7">按周统计</text>
         </RebornTabPane>
-        <RebornTabPane key="month" title="月">
+        <RebornTabPane key="month" pane-key="month" title="月">
           <text class="text-26 text-gray-7">按月统计</text>
         </RebornTabPane>
       </RebornTabs>
@@ -341,12 +347,12 @@ function handleDelete(key: TabKey) {
     <RebornCard title="过渡动画" custom-class="space-y-4">
       <text class="text-24 text-gray-6">animation 让切入的面板淡入。小程序端没有 Transition，只做入场淡入，不做退场</text>
       <RebornTabs v-model:active-key="animationKey" animation>
-        <RebornTabPane key="one" title="第一屏">
+        <RebornTabPane key="one" pane-key="one" title="第一屏">
           <view class="h-[160rpx] flex items-center rounded-ui-2xs bg-gray-2 px-[24rpx]">
             <text class="text-26 text-gray-7">第一屏内容</text>
           </view>
         </RebornTabPane>
-        <RebornTabPane key="two" title="第二屏">
+        <RebornTabPane key="two" pane-key="two" title="第二屏">
           <view class="h-[160rpx] flex items-center rounded-ui-2xs bg-gray-2 px-[24rpx]">
             <text class="text-26 text-gray-7">第二屏内容</text>
           </view>
@@ -360,19 +366,19 @@ function handleDelete(key: TabKey) {
         默认所有面板一次性挂载并保留。lazy-load 推迟到首次展示再挂载，适合内容重、首屏只看一个的场景
       </text>
       <RebornTabs v-model:active-key="lazyKey" lazy-load>
-        <RebornTabPane key="first" title="首个">
+        <RebornTabPane key="first" pane-key="first" title="首个">
           <input class="h-[64rpx] w-full rounded-ui-2xs border border-gray-3 px-[16rpx] text-26" placeholder="输入后切走再回来，内容还在">
         </RebornTabPane>
-        <RebornTabPane key="second" title="次个">
+        <RebornTabPane key="second" pane-key="second" title="次个">
           <text class="text-26 text-gray-7">第一次点进来才挂载</text>
         </RebornTabPane>
       </RebornTabs>
       <text class="text-24 text-gray-6">destroy-on-hidden 则相反，离开就销毁，面板里的临时状态会一并丢掉</text>
       <RebornTabs v-model:active-key="destroyKey" destroy-on-hidden>
-        <RebornTabPane key="first" title="首个">
+        <RebornTabPane key="first" pane-key="first" title="首个">
           <input class="h-[64rpx] w-full rounded-ui-2xs border border-gray-3 px-[16rpx] text-26" placeholder="输入后切走再回来，内容已清空">
         </RebornTabPane>
-        <RebornTabPane key="second" title="次个">
+        <RebornTabPane key="second" pane-key="second" title="次个">
           <text class="text-26 text-gray-7">每次进入都是新的</text>
         </RebornTabPane>
       </RebornTabs>
@@ -383,12 +389,12 @@ function handleDelete(key: TabKey) {
       <text class="text-24 text-gray-6">justify 让内容区吃掉容器剩余高度，配合定高外层做「头部固定、内容滚动」的版式</text>
       <view class="h-[320rpx]">
         <RebornTabs v-model:active-key="justifyKey" justify>
-          <RebornTabPane key="list" title="列表">
+          <RebornTabPane key="list" pane-key="list" title="列表">
             <view class="h-full flex items-center justify-center rounded-ui-2xs bg-gray-2">
               <text class="text-26 text-gray-7">内容区已撑满剩余高度</text>
             </view>
           </RebornTabPane>
-          <RebornTabPane key="chart" title="图表">
+          <RebornTabPane key="chart" pane-key="chart" title="图表">
             <view class="h-full flex items-center justify-center rounded-ui-2xs bg-gray-2">
               <text class="text-26 text-gray-7">图表占位</text>
             </view>
@@ -400,23 +406,23 @@ function handleDelete(key: TabKey) {
     <!-- 样式定制 -->
     <RebornCard title="样式定制" custom-class="space-y-4">
       <text class="text-24 text-gray-6">color 落成色板的语义类名，指示器与选中态取同一档色值</text>
-      <RebornTabs v-model:active-key="typeKey" color="success">
-        <RebornTabPane key="all" title="全部">
+      <RebornTabs v-model:active-key="colorKey" color="success">
+        <RebornTabPane key="all" pane-key="all" title="全部">
           <text class="text-26 text-gray-7">全部内容</text>
         </RebornTabPane>
-        <RebornTabPane key="doing" title="进行中">
+        <RebornTabPane key="doing" pane-key="doing" title="进行中">
           <text class="text-26 text-gray-7">进行中内容</text>
         </RebornTabPane>
       </RebornTabs>
       <text class="text-24 text-gray-6">ui 按槽位覆写，下面把指示器换成整条标题宽的粗线</text>
       <RebornTabs
-        v-model:active-key="typeKey"
+        v-model:active-key="uiKey"
         :ui="{ indicator: 'h-[8rpx] rounded-none', tab: 'tracking-wide' }"
       >
-        <RebornTabPane key="all" title="全部">
+        <RebornTabPane key="all" pane-key="all" title="全部">
           <text class="text-26 text-gray-7">全部内容</text>
         </RebornTabPane>
-        <RebornTabPane key="doing" title="进行中">
+        <RebornTabPane key="doing" pane-key="doing" title="进行中">
           <text class="text-26 text-gray-7">进行中内容</text>
         </RebornTabPane>
       </RebornTabs>

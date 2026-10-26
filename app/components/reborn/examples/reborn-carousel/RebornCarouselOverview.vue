@@ -7,7 +7,7 @@
  * 卡片底色用固定色相的渐变而不是主题色板：主题色板在暗色下会反转成浅色，白字就看不清了。
  * autoplay 与 loop 保持关闭，挂载后不会自动翻页；卡片禁用了交互，不放箭头。
  */
-import RebornCarousel from '~/components/reborn/ui/reborn-carousel/RebornCarousel.vue'
+import RebornCarousel from "~/components/reborn/ui/reborn-carousel/RebornCarousel.vue";
 
 const slides = [
   { id: 1, title: '城市漫步', description: '街区路线与沿途记录', tone: 'from-sky-400 to-indigo-500' },

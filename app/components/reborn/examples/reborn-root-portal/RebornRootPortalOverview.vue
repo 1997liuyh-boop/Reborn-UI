@@ -5,6 +5,7 @@
  * RebornRootPortal 只做一件事：把插槽内容 Teleport 到 body，本身没有外观；
  * 缩略图不真的传送，用静态 DOM 画出「原位置 → 根节点」的去向。
  */
+import { Icon } from '#components';
 </script>
 
 <template>

@@ -68,20 +68,12 @@ export interface RebornTextProps {
   // 是否保留单词
   preWrap?: boolean
 }
-const cache = { key: 1 }
 
 // 样式生成
 const b = tv(theme)
 const ui = computed(() => {
-  const styles = b({
-    color: props.color,
-    preWrap: props.preWrap,
-    ellipsis: props.ellipsis,
-  })
-
-  return {
-    base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, props.ui?.base) }),
-  }
+  const styles = b({ color: props.color, preWrap: props.preWrap, ellipsis: props.ellipsis })
+  return { base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, props.ui?.base) }) }
 })
 
 // 文本样式
@@ -140,6 +132,7 @@ function formatAmount(amount: string | number): string {
     num = Number.parseFloat(amount)
   }
 
+  if (!Number.isFinite(num)) return ''
   const formatted = num.toFixed(props.precision)
   const parts = formatted.split('.')
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
@@ -184,19 +177,20 @@ function formatEmail(email: string): string {
  * 根据不同类型格式化显示
  */
 const content = computed(() => {
-  const val = props.value ?? ''
+  if (props.value === null || props.value === undefined || props.value === '') return ''
+  const val = String(props.value)
 
   switch (props.type) {
     case 'phone':
-      return formatPhone(val as string)
+      return formatPhone(val)
     case 'name':
-      return formatName(val as string)
+      return formatName(val)
     case 'amount':
-      return formatAmount(val as number)
+      return formatAmount(props.value)
     case 'card':
-      return formatCard(val as string)
+      return formatCard(val)
     case 'email':
-      return formatEmail(val as string)
+      return formatEmail(val)
     default:
       return val
   }
@@ -205,14 +199,14 @@ const content = computed(() => {
 
 <template>
   <!-- #ifdef MP -->
-  <view :key="cache.key" :class="ui.base({ class: customClass })" :style="textStyle" :selectable="selectable"
+  <view :class="ui.base({ class: customClass })" :style="textStyle" :selectable="selectable"
     :space="space" :decode="decode">
     <slot>{{ content }}</slot>
   </view>
   <!-- #endif -->
 
   <!-- #ifndef MP -->
-  <text :key="cache.key" :class="ui.base({ class: customClass })" :style="textStyle" :selectable="selectable"
+  <text :class="ui.base({ class: customClass })" :style="textStyle" :selectable="selectable"
     :space="space" :decode="decode">
     <slot>{{ content }}</slot>
   </text>

@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-
-const props = defineProps<{
-    modelValue: any
-}>()
-
-const emit = defineEmits(['update:modelValue', 'showColorPicker', 'showGradientEditor', 'showImagePicker'])
-
-const qrConfig = computed({
-    get: () => props.modelValue,
-    set: (val) => emit('update:modelValue', val)
-})
+import type { ColorTarget, QrConfig } from '../types'
+import { toRef } from 'vue'
+interface Props { config: QrConfig }
+const props = defineProps<Props>()
+defineEmits<{ showColorPicker: [target: ColorTarget], showGradientEditor: [target: ColorTarget], showImagePicker: [] }>()
+const qrConfig = toRef(props, 'config')
 </script>
 
 <template>

@@ -18,7 +18,7 @@ badge: New
 
 Segmented 把一组互斥选项排成一条：灰色底槽里有一块白色选中块，点击或用方向键切换时选中块滑到新的选项上。每个选项是隐藏的原生 radio，键盘导航、表单 `name` 都是原生行为；API 与 Element Plus 的 `el-segmented` 对齐，仅 Web 端实现。
 
-数据驱动方式是 `options` + `v-model`：`options` 可以是字符串 / 数字 / 布尔的简写（自身同时作为文案与值），也可以是 `{ value, label, disabled, icon }` 对象，字段名不同时用 `props` 映射；`v-model` 按全等比较选中哪一项。默认插槽可以整体替换每一项的内容。
+数据驱动方式是 `options` + `v-model`：`options` 可以是字符串 / 数字 / 布尔的简写（自身同时作为文案与值），也可以是 `{ value, label, disabled, icon }` 对象，字段名不同时用 `fieldNames` 映射；`v-model` 按全等比较选中哪一项。默认插槽可以整体替换每一项的内容。
 
 其余 API 分三组：外观由 `size`（sm / md / lg 三档）、`direction`（横排 / 竖排）、`block`（撑满宽度）控制；状态由 `disabled`（整组）与选项的 `disabled` 字段（单项）控制；表单与无障碍由 `validateEvent`、`name`、`id`、`ariaLabel` 控制。切换后派发 `change`。
 
@@ -145,14 +145,14 @@ const options = [
 
 ### 字段映射与值类型
 
-后端字段不叫 `value` / `label` / `disabled` 时用 `props` 映射，只覆盖传入的键；值可以是字符串、数字或布尔，`v-model` 按全等（`===`）比较，`'1'` 与 `1` 不是同一项。
+后端字段不叫 `value` / `label` / `disabled` 时用 `fieldNames` 映射，只覆盖传入的键；值可以是字符串、数字或布尔，`v-model` 按全等（`===`）比较，`'1'` 与 `1` 不是同一项。
 
 ```vue
 <template>
   <RebornSegmented
     v-model="level"
     :options="[{ id: 1, name: '低' }, { id: 2, name: '中' }, { id: 3, name: '高', locked: true }]"
-    :props="{ value: 'id', label: 'name', disabled: 'locked' }"
+    :field-names="{ value: 'id', label: 'name', disabled: 'locked' }"
   />
 </template>
 ```
@@ -190,7 +190,7 @@ const options = [
 | ---------------------- | ------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `modelValue` / v-model | `string \| number \| boolean`                           | -                                                          | 选中值，按全等比较；未绑定时组件内部维护。                                                   |
 | `options`              | `Array<string \| number \| boolean \| SegmentedOption>` | `[]`                                                       | 选项数据；简写项自身同时作为文案与值，对象项含 `value` / `label` / `disabled` / `icon`。     |
-| `props`                | `{ value?: string, label?: string, disabled?: string }` | `{ value: 'value', label: 'label', disabled: 'disabled' }` | 对象选项的字段映射，只覆盖传入的键；`icon` 固定读 `icon` 字段。                              |
+| `fieldNames`                | `{ value?: string, label?: string, disabled?: string }` | `{ value: 'value', label: 'label', disabled: 'disabled' }` | 对象选项的字段映射，只覆盖传入的键；`icon` 固定读 `icon` 字段。                              |
 | `size`                 | `'sm' \| 'md' \| 'lg'`                                  | -                                                          | 尺寸，选项高度 20 / 28 / 36px；显式设置时优先于所在表单的 `size`，未设置时跟随表单，都没有时为 `md`。                 |
 | `block`                | `boolean`                                               | `false`                                                    | 是否撑满父元素宽度；横排时各选项等分宽度。                                                   |
 | `disabled`             | `boolean`                                               | `false`                                                    | 是否禁用全部选项；处于禁用的表单内时同样禁用。                                               |
@@ -247,3 +247,5 @@ const options = [
 - **没有 `color` 属性**。默认选中态是白底（`bg-gray-1`）+ `gray-10` 文字；需要主题色时用 `ui.slider` + `ui.item` 的 `data-[checked=true]:` 前缀覆盖（见「定制配色」），或改用 `reborn-radio` 的分段按钮。
 - **放进纵向 flex 容器会被拉宽**。根节点是 `inline-flex`，作为 `flex-col` 的子项时会被默认的 `align-items: stretch` 拉到容器宽度，底槽变长、选项仍靠左；给容器加 `items-start`，或者干脆开 `block` 让选项等分。
 - **选项不会换行**。横排时一排放不下会撑出父元素，文案只有在 `block` 等分宽度时才会截断；选项多时改用 `reborn-select`。
+
+- **字段映射使用 `fieldNames`**。旧 `props` 属性已移除，迁移时直接改为 `:field-names="{ value: 'id', label: 'name' }"`。

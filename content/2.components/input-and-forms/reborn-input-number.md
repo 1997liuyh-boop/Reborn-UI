@@ -12,22 +12,22 @@ badge: New
 
 ## 简介
 
-数字输入框在 `min` / `max` 范围内按 `step` 步进增减数值：默认左右为减/加按钮，中间为数字输入区，达到边界后对应按钮自动禁用。支持 `v-model` 受控与 `defaultValue` 非受控两种用法，`precision` 控制小数位，`variant` 提供 outlined / filled / borderless / underlined 四种形态。
+InputNumber 是 Web 与 UniApp 均可用的数值输入控件，在输入区两侧提供加减按钮，到达边界时禁用对应方向。
 
-两端的属性名、事件名、插槽名与 `ui` 键名已基本对齐，但**默认值、宽度策略与部分端能力并不一致**：Web 端额外提供 `step-strictly`、`model-event`、`formatter` / `parser`、`align` 等表单级能力，宽度默认 `w-full` 撑满父容器；UniApp 端宽度为内容宽度（`inline-flex`），并支持长按按钮连续增减，但没有文本对齐开关。
+`min` / `max` 限制范围，`step` 决定步进，`precision` 控制精度；`modelValue` 和 `defaultValue` 分别承担受控值与非受控初值。
 
-适用场景：
+`variant` 提供四种形态。两端名称基本对齐但默认值与能力不同：Web 宽度默认撑满，另有 stepStrictly、modelEvent、formatter / parser 与 align；UniApp 默认内容宽度，支持长按连续增减，没有文本对齐开关。
 
-- 购物车、库存等数量增减场景。
-- 需要限定 `min` / `max` / `step`，或需要固定小数位的数值录入。
-- 需要在输入框内附带货币符号、单位等前后缀（`prefix` / `suffix` 插槽）。
-- 需要自定义加减按钮图标（两端均为 `minus` / `plus` 插槽）。
-- 需要嵌入到已有边框容器（`borderless`）或走极简下划线风格（`underlined`）。
+### 何时使用
 
-不适用场景：
+- 数量需要上下限——用 `min` / `max` 限制范围。
+- 数量按固定间隔调整——用 `step` 配置步进。
+- 需要从表单状态同步数量——用 `modelValue` 绑定数值。
 
-- 自由输入长数字或文本，改用 `reborn-input`。
-- 在连续区间内拖动取值，改用 `reborn-slider`。
+### 何时不使用
+
+- 电话号码、编号等需保留前导零——改用 `reborn-input`。
+- 连续范围选择更适合拖动——改用 `reborn-slider`。
 
 ## 用法
 
@@ -514,9 +514,8 @@ UniApp 的 `<input>` 只能通过 `cursor` / `selection-start` / `selection-end`
 UniApp 端的加减按钮绑定了长按手势：按住不放会连续增减，松手（`touchend` / `touchcancel`）停止。这是触屏端的原生交互习惯，无需任何属性开启。Web 端不提供该行为，连续增减请依赖键盘方向键或滚轮。
 
 ## API
-
 ::tip
-下列属性两端**同名但默认值不同**，跨端复用时建议显式传值：`min`（`Number.MIN_SAFE_INTEGER` / `0`）、`max`（`Number.MAX_SAFE_INTEGER` / `200`）、`shape`（`square` / `circle`）、`readonly`（`false` / `true`，且**语义相反**）、`modelValue` 与 `defaultValue`（`-` / `0`）。
+下列属性两端**同名但默认值不同**，跨端复用时建议显式传值：`min`（`Number.MIN_SAFE_INTEGER` / `0`）、`max`（`Number.MAX_SAFE_INTEGER` / `200`）、`shape`（`square` / `circle`）、`readonly`（`false` / `true`，且**语义相反**）、`defaultValue`（`-` / `0`）。
 ::
 
 ### Props
@@ -529,39 +528,39 @@ UniApp 端的加减按钮绑定了长按手势：按住不放会连续增减，�
 
 | 属性名               | 类型                                                                                   | 默认值                    | 描述                                                                                                                       |
 | -------------------- | -------------------------------------------------------------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `modelValue`         | `number \| null`                                                                       | `-`                       | 受控值，配合 `v-model` 使用。                                                                                              |
-| `defaultValue`       | `number \| null`                                                                       | `-`                       | 非受控默认值，未使用 `v-model` 时作为初始值。                                                                              |
-| `min`                | `number`                                                                               | `Number.MIN_SAFE_INTEGER` | 允许的最小值，等于不限制下界。                                                                                             |
-| `max`                | `number`                                                                               | `Number.MAX_SAFE_INTEGER` | 允许的最大值，等于不限制上界。                                                                                             |
-| `step`               | `number`                                                                               | `1`                       | 每次增减的步进值。                                                                                                         |
-| `stepStrictly`       | `boolean`                                                                              | `false`                   | 是否只能取 `step` 的倍数，提交时就近吸附到最近的倍数。                                                                     |
-| `precision`          | `number`                                                                               | `-`                       | 数值精度（小数位数）；小于 `step` 的小数位时按 `step` 的小数位生效。                                                       |
-| `size`               | `"sm" \| "md" \| "lg"`                                                                 | `"md"`                    | 尺寸档位，对应高度 24 / 32 / 40px。                                                                                        |
-| `color`              | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`               | 聚焦环与按钮悬停的强调色。                                                                                                 |
-| `shape`              | `"circle" \| "square"`                                                                 | `"square"`                | 外形轮廓：circle 为胶囊圆角，square 按尺寸取 `rounded-sm` / `rounded-md` / `rounded-lg`；`variant="underlined"` 时不生效。 |
-| `variant`            | `"outlined" \| "filled" \| "borderless" \| "underlined"`                               | `"outlined"`              | 形态变体：底色描边 / 灰底填充 / 无边框 / 仅下划线。                                                                        |
-| `align`              | `"left" \| "center" \| "right"`                                                        | `"center"`                | 内部输入文本的对齐方式。                                                                                                   |
-| `disabled`           | `boolean`                                                                              | `false`                   | 是否禁用（输入框与加减按钮同时禁用）。                                                                                     |
-| `readonly`           | `boolean`                                                                              | `false`                   | 原生 readonly 语义：只读，加减按钮同时不可用。                                                                             |
-| `controls`           | `boolean`                                                                              | `true`                    | 是否渲染增减控制按钮。                                                                                                     |
-| `hideButton`         | `boolean`                                                                              | `false`                   | 是否隐藏增减按钮，与 `:controls="false"` 等效。                                                                            |
-| `controlsPosition`   | `"left" \| "right"`                                                                    | `-`                       | 控制按钮位置；不传为左右分列，`left` / `right` 为对应侧上下堆叠（默认隐藏、悬停或聚焦时滑入）。                            |
-| `modelEvent`         | `"change" \| "input"`                                                                  | `"change"`                | 绑定值更新时机：`change` 失焦 / 回车提交，`input` 键入即时更新。                                                           |
-| `valueOnClear`       | `number \| null \| "min" \| "max"`                                                     | `-`                       | 输入框被清空时回填的值。                                                                                                   |
+| `modelValue` | `number \| null`                                                                       | `-`                       | 受控值，配合 `v-model` 使用。                                                                                              |
+| `defaultValue` | `number \| null`                                                                       | `-`                       | 非受控默认值，未使用 `v-model` 时作为初始值。                                                                              |
+| `min` | `number`                                                                               | `Number.MIN_SAFE_INTEGER` | 允许的最小值，等于不限制下界。                                                                                             |
+| `max` | `number`                                                                               | `Number.MAX_SAFE_INTEGER` | 允许的最大值，等于不限制上界。                                                                                             |
+| `step` | `number`                                                                               | `1`                       | 每次增减的步进值。                                                                                                         |
+| `stepStrictly` | `boolean`                                                                              | `false`                   | 是否只能取 `step` 的倍数，提交时就近吸附到最近的倍数。                                                                     |
+| `precision` | `number`                                                                               | `-`                       | 数值精度（小数位数）；小于 `step` 的小数位时按 `step` 的小数位生效。                                                       |
+| `size` | `"sm" \| "md" \| "lg"`                                                                 | `"md"`                    | 尺寸档位，对应高度 24 / 32 / 40px。                                                                                        |
+| `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`               | 聚焦环与按钮悬停的强调色。                                                                                                 |
+| `shape` | `"circle" \| "square"`                                                                 | `"square"`                | 外形轮廓：circle 为胶囊圆角，square 按尺寸取 `rounded-sm` / `rounded-md` / `rounded-lg`；`variant="underlined"` 时不生效。 |
+| `variant` | `"outlined" \| "filled" \| "borderless" \| "underlined"`                               | `"outlined"`              | 形态变体：底色描边 / 灰底填充 / 无边框 / 仅下划线。                                                                        |
+| `align` | `"left" \| "center" \| "right"`                                                        | `"center"`                | 内部输入文本的对齐方式。                                                                                                   |
+| `disabled` | `boolean`                                                                              | `false`                   | 是否禁用（输入框与加减按钮同时禁用）。                                                                                     |
+| `readonly` | `boolean`                                                                              | `false`                   | 原生 readonly 语义：只读，加减按钮同时不可用。                                                                             |
+| `controls` | `boolean`                                                                              | `true`                    | 是否渲染增减控制按钮。                                                                                                     |
+| `hideButton` | `boolean`                                                                              | `false`                   | 是否隐藏增减按钮，与 `:controls="false"` 等效。                                                                            |
+| `controlsPosition` | `"left" \| "right"`                                                                    | `-`                       | 控制按钮位置；不传为左右分列，`left` / `right` 为对应侧上下堆叠（默认隐藏、悬停或聚焦时滑入）。                            |
+| `modelEvent` | `"change" \| "input"`                                                                  | `"change"`                | 绑定值更新时机：`change` 失焦 / 回车提交，`input` 键入即时更新。                                                           |
+| `valueOnClear` | `number \| null \| "min" \| "max"`                                                     | `-`                       | 输入框被清空时回填的值。                                                                                                   |
 | `disabledScientific` | `boolean`                                                                              | `false`                   | 禁用科学计数法输入，键入的 `e` / `E` 会被剔除。                                                                            |
-| `formatter`          | `(value: number \| string) => string`                                                  | `-`                       | 指定展示值的格式，需与 `parser` 配对。                                                                                     |
-| `parser`             | `(text: string) => string`                                                             | `-`                       | 从格式化文本中提取数值，需与 `formatter` 配对。                                                                            |
-| `keyboard`           | `boolean`                                                                              | `true`                    | 是否启用 ↑ / ↓ 方向键步进。                                                                                                |
-| `changeOnWheel`      | `boolean`                                                                              | `false`                   | 是否启用鼠标滚轮增减；仅在输入框已聚焦时接管滚轮。                                                                         |
-| `validateEvent`      | `boolean`                                                                              | `true`                    | 是否触发所在表单项（`RebornFormItem`）的校验。                                                                             |
-| `placeholder`        | `string`                                                                               | `-`                       | 输入框占位文本。                                                                                                           |
-| `name`               | `string`                                                                               | `-`                       | 等价于原生 input `name`。                                                                                                  |
-| `id`                 | `string`                                                                               | `-`                       | 等价于原生 input `id`。                                                                                                    |
-| `ariaLabel`          | `string`                                                                               | `-`                       | 等价于原生 input `aria-label`。                                                                                            |
-| `inputmode`          | `"none" \| "text" \| "decimal" \| "numeric" \| "tel" \| "search" \| "email" \| "url"`  | `"decimal"`               | 等价于原生 input `inputmode`，决定移动端软键盘类型。                                                                       |
-| `tabindex`           | `string \| number`                                                                     | `0`                       | 输入框的 tabindex。                                                                                                        |
-| `class`              | `any`                                                                                  | `-`                       | 追加到根节点的自定义类名（宽度默认 `w-full`，需固定宽度时在此传入，如 `w-40`）。                                           |
-| `ui`                 | `object`                                                                               | `-`                       | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                                                                  |
+| `formatter` | `(value: number \| string) => string`                                                  | `-`                       | 指定展示值的格式，需与 `parser` 配对。                                                                                     |
+| `parser` | `(text: string) => string`                                                             | `-`                       | 从格式化文本中提取数值，需与 `formatter` 配对。                                                                            |
+| `keyboard` | `boolean`                                                                              | `true`                    | 是否启用 ↑ / ↓ 方向键步进。                                                                                                |
+| `changeOnWheel` | `boolean`                                                                              | `false`                   | 是否启用鼠标滚轮增减；仅在输入框已聚焦时接管滚轮。                                                                         |
+| `validateEvent` | `boolean`                                                                              | `true`                    | 是否触发所在表单项（`RebornFormItem`）的校验。                                                                             |
+| `placeholder` | `string`                                                                               | `-`                       | 输入框占位文本。                                                                                                           |
+| `name` | `string`                                                                               | `-`                       | 等价于原生 input `name`。                                                                                                  |
+| `id` | `string`                                                                               | `-`                       | 等价于原生 input `id`。                                                                                                    |
+| `ariaLabel` | `string`                                                                               | `-`                       | 等价于原生 input `aria-label`。                                                                                            |
+| `inputmode` | `"none" \| "text" \| "decimal" \| "numeric" \| "tel" \| "search" \| "email" \| "url"`  | `"decimal"`               | 等价于原生 input `inputmode`，决定移动端软键盘类型。                                                                       |
+| `tabindex` | `string \| number`                                                                     | `0`                       | 输入框的 tabindex。                                                                                                        |
+| `class` | `any`                                                                                  | `-`                       | 追加到根节点的自定义类名（宽度默认 `w-full`，需固定宽度时在此传入，如 `w-40`）。                                           |
+| `ui` | `object`                                                                               | `-`                       | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                                                                  |
 
 UniApp 端没有的属性：`stepStrictly`、`align`、`controls`、`hideButton`、`modelEvent`、`valueOnClear`、`disabledScientific`、`formatter`、`parser`、`validateEvent`、`name`、`id`、`ariaLabel`、`inputmode`、`tabindex`、`class`（UniApp 用 `customClass`）。
 :::
@@ -572,25 +571,25 @@ UniApp 端没有的属性：`stepStrictly`、`align`、`controls`、`hideButton`
 
 | 属性名             | 类型                                                                                   | 默认值       | 描述                                                                                                      |
 | ------------------ | -------------------------------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
-| `modelValue`       | `number`                                                                               | `0`          | 受控值，配合 `v-model` 使用。                                                                             |
-| `defaultValue`     | `number`                                                                               | `0`          | 非受控默认值，未使用 `v-model` 时作为初始值。                                                             |
-| `min`              | `number`                                                                               | `0`          | 允许的最小值。                                                                                            |
-| `max`              | `number`                                                                               | `200`        | 允许的最大值。                                                                                            |
-| `step`             | `number`                                                                               | `1`          | 每次增减的步进值。                                                                                        |
-| `precision`        | `number`                                                                               | `-`          | 数值精度（小数位数）；不传时 `input-type="digit"` 保留两位小数，`number` 不做定长补零。                   |
-| `size`             | `"sm" \| "md" \| "lg"`                                                                 | `"md"`       | 尺寸档位，高度取字号令牌两倍，对应 52 / 56 / 64rpx。                                                      |
-| `color`            | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`  | 聚焦环、按钮悬停与分割线的强调色。                                                                        |
-| `shape`            | `"circle" \| "square"`                                                                 | `"circle"`   | 外形轮廓：circle 为胶囊圆角，square 为 `rounded-md`；`variant="underlined"` 时不生效。                    |
-| `variant`          | `"outlined" \| "filled" \| "borderless" \| "underlined"`                               | `"outlined"` | 形态变体：白底描边 / 灰底填充 / 无边框 / 仅下划线。                                                       |
-| `disabled`         | `boolean`                                                                              | `false`      | 是否禁用（输入框与加减按钮同时禁用）。                                                                    |
-| `readonly`         | `boolean`                                                                              | `true`       | **与原生 readonly 语义相反**：默认 `true` 表示允许直接键入，设为 `false` 后输入框只读、仅能通过按钮增减。 |
+| `modelValue` | `number` | `undefined` | 受控值；未传时以 defaultValue 初始化本地值。 |
+| `defaultValue` | `number`                                                                               | `0`          | 非受控默认值，未使用 `v-model` 时作为初始值。                                                             |
+| `min` | `number`                                                                               | `0`          | 允许的最小值。                                                                                            |
+| `max` | `number`                                                                               | `200`        | 允许的最大值。                                                                                            |
+| `step` | `number`                                                                               | `1`          | 每次增减的步进值。                                                                                        |
+| `precision` | `number`                                                                               | `-`          | 数值精度（小数位数）；不传时 `input-type="digit"` 保留两位小数，`number` 不做定长补零。                   |
+| `size` | `"sm" \| "md" \| "lg"`                                                                 | `"md"`       | 尺寸档位，高度取字号令牌两倍，对应 52 / 56 / 64rpx。                                                      |
+| `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`  | 聚焦环、按钮悬停与分割线的强调色。                                                                        |
+| `shape` | `"circle" \| "square"`                                                                 | `"circle"`   | 外形轮廓：circle 为胶囊圆角，square 为 `rounded-md`；`variant="underlined"` 时不生效。                    |
+| `variant` | `"outlined" \| "filled" \| "borderless" \| "underlined"`                               | `"outlined"` | 形态变体：白底描边 / 灰底填充 / 无边框 / 仅下划线。                                                       |
+| `disabled` | `boolean`                                                                              | `false`      | 是否禁用（输入框与加减按钮同时禁用）。                                                                    |
+| `readonly` | `boolean`                                                                              | `true`       | **与原生 readonly 语义相反**：默认 `true` 表示允许直接键入，设为 `false` 后输入框只读、仅能通过按钮增减。 |
 | `controlsPosition` | `"left" \| "right"`                                                                    | `-`          | 控制按钮位置；不传为左右分列，`left` / `right` 为对应侧上下堆叠（触屏无 hover，堆叠按钮常显）。           |
-| `inputType`        | `"number" \| "digit"`                                                                  | `"number"`   | 原生键盘类型：`digit` 为带小数点键盘，且不传 `precision` 时自动保留两位小数。                             |
-| `keyboard`         | `boolean`                                                                              | `true`       | 是否启用 ↑ / ↓ 方向键步进。**端能力限制：仅 H5 生效**，小程序与 App 的原生输入框不派发 `keydown`。        |
-| `changeOnWheel`    | `boolean`                                                                              | `false`      | 与 Web 端保持同名同签名的占位属性，**UniApp 侧为空实现**（无鼠标滚轮事件）。                              |
-| `placeholder`      | `string`                                                                               | `""`         | 输入框占位文本。                                                                                          |
-| `customClass`      | `any`                                                                                  | `-`          | 追加到根节点的自定义类名（对应 Web 端 `class`）。                                                         |
-| `ui`               | `object`                                                                               | `{}`         | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                                                 |
+| `inputType` | `"number" \| "digit"`                                                                  | `"number"`   | 原生键盘类型：`digit` 为带小数点键盘，且不传 `precision` 时自动保留两位小数。                             |
+| `keyboard` | `boolean`                                                                              | `true`       | 是否启用 ↑ / ↓ 方向键步进。**端能力限制：仅 H5 生效**，小程序与 App 的原生输入框不派发 `keydown`。        |
+| `changeOnWheel` | `boolean`                                                                              | `false`      | 与 Web 端保持同名同签名的占位属性，**UniApp 侧为空实现**（无鼠标滚轮事件）。                              |
+| `placeholder` | `string`                                                                               | `""`         | 输入框占位文本。                                                                                          |
+| `customClass` | `any`                                                                                  | `-`          | 追加到根节点的自定义类名（对应 Web 端 `class`）。                                                         |
+| `ui` | `object`                                                                               | `{}`         | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                                                 |
 
 Web 端没有的属性：`inputType`、`customClass`（Web 用 `class`）。另有 `readonly` 虽两端同名，但 UniApp 侧语义与默认值都与 Web 相反。
 :::
@@ -654,7 +653,7 @@ Web 端没有的属性：`inputType`、`customClass`（Web 用 `class`）。另�
 
 ::
 
-### Exposes
+### Expose
 
 `focus` 与 `blur` 两端**同名同签名**，唯一区别是 Web 端额外暴露原生元素引用。
 
@@ -665,7 +664,7 @@ Web 端没有的属性：`inputType`、`customClass`（Web 用 `class`）。另�
 | --- | --- | --- |
 | `focus` | `(options?: "start" \| "end" \| "all" \| { cursor?: "start" \| "end" \| "all" }) => void` | 使输入框获得焦点；`cursor` 决定落位：`start` 置首、`end` 置尾、`all` 全选，不传则沿用浏览器默认。 |
 | `blur` | `() => void` | 使输入框失去焦点。 |
-| `inputRef` | `Ref<HTMLInputElement \| null>` | 内部原生 input 元素的引用。 |
+| `inputRef` | `Readonly<ShallowRef<HTMLInputElement \| null>>` | 内部原生 input 元素的引用，只读。 |
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
@@ -790,10 +789,10 @@ Web 的高度、内边距和图标使用 Tailwind 原生尺寸刻度，字号保
 | ----------------------------- | ------------------------------------------------------------------- | -------------------------------------------- |
 | 默认宽度                      | `w-full` 撑满父容器，固定宽度靠 `class` 传入                        | `inline-flex` 内容宽度，输入区宽度由字号派生 |
 | `min` / `max` 默认值          | `Number.MIN_SAFE_INTEGER` / `Number.MAX_SAFE_INTEGER`               | `0` / `200`                                  |
-| `modelValue` / `defaultValue` | `number \| null`，无默认值                                          | `number`，默认 `0`                           |
+| `modelValue` / `defaultValue` 默认值 | `modelValue` `undefined` / `defaultValue` `undefined` | `modelValue` `undefined` / `defaultValue` `0` |
 | `shape` 默认值                | `square`                                                            | `circle`                                     |
 | `square` 圆角                 | 按尺寸取 `rounded-sm / rounded-md / rounded-lg`                     | 统一 `rounded-md`                            |
-| `readonly`                    | 原生语义，默认 `false`                                              | **语义相反**，默认 `true` 表示可键入         |
+| `readonly` | 原生语义，默认 `false`                                              | **语义相反**，默认 `true` 表示可键入         |
 | 文本对齐                      | `align` 支持 left / center / right                                  | 固定居中，无 `align`                         |
 | 隐藏按钮                      | `hide-button` / `:controls="false"`                                 | 不支持                                       |
 | 堆叠按钮显隐                  | 默认隐藏，悬停 / 聚焦时滑入并让出内边距                             | 常显，无滑入动画                             |
@@ -819,7 +818,9 @@ Web 的高度、内边距和图标使用 Tailwind 原生尺寸刻度，字号保
 
 ## 注意事项
 
-- **宽度策略两端不同。** Web 端默认 `w-full` 撑满父容器，需要固定宽度时通过 `class`（如 `w-40`）或 `ui.wrapper` 传入；UniApp 端为内容宽度，输入区宽度由字号派生，需要更宽时改 `ui.input`。
+- **宽度策略两端不同。** Web 端默认 `w-full` 撑满父容器，需要固定宽度时通过 `class`（如 `w-40`）、`style` 或 `ui.wrapper` 传入；UniApp 端为内容宽度，输入区宽度由字号派生，需要更宽时改 `ui.input`。
+- **Web 端透传属性分两处落地。** `class` 与 `style` 作用于外层 wrapper，其余属性（`data-*`、`aria-*`、未声明的事件监听等）落在原生 input 上。
+- **Web 端绑定 `undefined` 时保持 `undefined`。** 组件只在完全没写 `v-model` 时才用 `defaultValue ?? null` 打底；`v-model` 绑定的值是 `undefined` 时不会被改写成 `null`，可选字段配合 `z.number().optional()` 校验不会误报。
 - **`min` / `max` 必须显式传入。** 两端默认值差异极大（不限制 vs `0`–`200`），依赖默认值的代码跨端后会在 200 处静默截断。
 - **`readonly` 在 UniApp 端语义相反。** Web 端 `readonly` 为原生语义（只读且按钮禁用）；UniApp 端默认 `true` 表示**允许**键入，设为 `false` 才变成只读、仅能按按钮增减。这条最容易踩，跨端代码里建议避免使用该属性。
 - **`shape` 默认值相反。** Web `square`、UniApp `circle`，跨端模板请显式书写。

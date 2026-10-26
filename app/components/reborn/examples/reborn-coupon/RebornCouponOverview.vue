@@ -5,7 +5,7 @@
  * 沿用演练场的 perforated 竖向形态与渐变底色，把宽高与缺口偏移按卡片尺寸缩小；
  * 渐变与白字属于券面本身的配色，明暗主题下保持一致。
  */
-import RebornCoupon from '~/components/reborn/ui/reborn-coupon/RebornCoupon.vue'
+import RebornCoupon from "~/components/reborn/ui/reborn-coupon/RebornCoupon.vue";
 
 const couponStyle = { background: 'linear-gradient(135deg, #ff7e5f, #feb47b)' }
 </script>

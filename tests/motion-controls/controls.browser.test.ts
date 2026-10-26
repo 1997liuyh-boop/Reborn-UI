@@ -37,7 +37,7 @@ before(async () => {
         const app=createApp({render:()=>state.visible?h('main',{},[
           h('section',{id:'tabs'},[h(Tabs,{activeKey:state.key,'onUpdate:activeKey':v=>state.key=v,type:state.type,position:state.position,animation:state.animation,
             ui:{indicator:'fixture-indicator',tabSlider:'fixture-slider',stage:'fixture-stage'}},
-            {default:()=>options.map((item,i)=>h(Pane,{key:item.value,title:item.label},{default:()=>h('div',{style:'height:'+(80+i*80)+'px'},item.label)}))})]),
+            {default:()=>options.map((item,i)=>h(Pane,{paneKey: item.value, key:item.value,title:item.label},{default:()=>h('div',{style:'height:'+(80+i*80)+'px'},item.label)}))})]),
           h('section',{id:'segmented'},[h(Segmented,{modelValue:state.key,'onUpdate:modelValue':v=>state.key=v,options,direction:state.direction,ui:{slider:'fixture-slider'}})]),
           h('section',{id:'radio'},[h(RadioGroup,{modelValue:state.key,'onUpdate:modelValue':v=>state.key=v,options,type:'button',direction:state.direction})]),
           h('section',{id:'switch'},[h(Switch,{modelValue:state.checked,'onUpdate:modelValue':v=>state.checked=v,type:state.switchType,size:state.size,disabled:state.disabled,ui:{thumb:'fixture-thumb',track:'fixture-track'}})]),
@@ -137,7 +137,7 @@ it('Tabs 指示器与三种共享底板会运动，快速反向从当前画面�
       await (window as any).controlsFixture.flush();
       return { from, to: node.getBoundingClientRect().left };
     });
-    assert.ok(Math.abs(redirect.from - redirect.to) < 1, '反向不跳回旧终点');
+    assert.ok(Math.abs(redirect.from - redirect.to) < 1, `反向不跳回旧终点：${redirect.from} → ${redirect.to}`);
     await configure(page, { key: 'b' });
     await aligned(page, '#tabs', '.fixture-indicator', '[data-tab-active="true"] [data-tab-title]');
     for (const type of ['card', 'capsule']) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { computed, nextTick, reactive, shallowRef, useTemplateRef, watch } from 'vue';
 import { z } from 'zod';
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue';
 import RebornCheckbox from '~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue';
@@ -42,10 +42,10 @@ const form = reactive({
 });
 
 /** 表单实例与提交回显；编辑后清除旧的提交快照，避免误认为新值已经提交。 */
-const formRef = ref<InstanceType<typeof RebornForm> | null>(null);
-const result = ref<'idle' | 'success' | 'error'>('idle');
-const errorCount = ref(0);
-const submitted = ref('');
+const formRef = useTemplateRef<InstanceType<typeof RebornForm>>("formRef");
+const result = shallowRef<'idle' | 'success' | 'error'>('idle');
+const errorCount = shallowRef(0);
+const submitted = shallowRef('');
 
 /** 下拉、单选、复选与提及的候选项。 */
 const categoryOptions = [

@@ -3,7 +3,7 @@ import type { ClassValue } from "clsx";
 import type { Component, CSSProperties } from "vue";
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
 import type { Placement, PlacementSide } from "~/lib/placement";
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, toRaw, useTemplateRef, watch } from "vue";
 import { prefersReducedMotion, runMotion, stopMotion } from "@/lib/motion";
 import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
 import { resolvePlacement } from "~/lib/placement";
@@ -47,8 +47,6 @@ export interface GuideStep {
 }
 
 export interface RebornGuideProps {
-  /** 扁平步骤索引，从 0 开始，-1 关闭 */
-  current?: number;
   defaultCurrent?: number;
   steps: GuideStep[];
   mode?: "popup" | "dialog";
@@ -75,8 +73,18 @@ export interface RebornGuideProps {
 
 interface GuideEventContext { e: MouseEvent; current: number; total: number }
 
+/** 插槽与自定义组件拿到的步骤上下文；current 从 1 开始 */
+export interface GuideStepContext {
+  step: GuideStep | null;
+  current: number;
+  total: number;
+  next: (event?: MouseEvent) => void;
+  prev: (event?: MouseEvent) => void;
+  finish: (event?: MouseEvent) => void;
+  close: (event?: MouseEvent) => void;
+}
+
 const props = withDefaults(defineProps<RebornGuideProps>(), {
-  current: undefined,
   defaultCurrent: -1,
   mode: "popup",
   indicator: "counter",
@@ -90,13 +98,22 @@ const props = withDefaults(defineProps<RebornGuideProps>(), {
 const emit = defineEmits<{
   (e: "change", current: number, context?: { e: MouseEvent; total: number }): void;
   (e: "finish", context: GuideEventContext): void;
-  (e: "next-step-click", context: GuideEventContext & { next: number }): void;
-  (e: "prev-step-click", context: GuideEventContext & { prev: number }): void;
+  /** 进入下一步；模板中写作 @next-step-click */
+  (e: "nextStepClick", context: GuideEventContext & { next: number }): void;
+  /** 返回上一步；模板中写作 @prev-step-click */
+  (e: "prevStepClick", context: GuideEventContext & { prev: number }): void;
   (e: "skip", context: GuideEventContext): void;
   (e: "close", context: GuideEventContext): void;
 }>();
+defineSlots<{
+  /** 替换默认步骤指示 */
+  counter?: (props: GuideStepContext) => any;
+  /** 步骤 content / highlightContent 指定的动态插槽，接收相同的步骤上下文 */
+  [name: string]: ((props: GuideStepContext) => any) | undefined;
+}>();
+/** 扁平步骤索引，从 0 开始，-1 关闭；支持 v-model:current，未绑定时由 defaultCurrent 决定初始步骤 */
 const model = defineModel<number>("current");
-const localCurrent = ref(props.defaultCurrent);
+const localCurrent = shallowRef(props.defaultCurrent);
 const currentStep = computed({
   get: () => model.value ?? localCurrent.value,
   set: (value: number) => {
@@ -134,18 +151,21 @@ const actualMode = computed(() => displayed.value?.mode ?? props.mode);
 const actualShowOverlay = computed(() => activeStep.value?.showOverlay ?? props.showOverlay);
 const isLastStep = computed(() => displayedCurrent.value === displayedTotal.value - 1);
 const stepComponent = computed(() => activeStep.value?.component ? toRaw(activeStep.value.component) : undefined);
-const mounted = ref(false);
-const ready = ref(false);
-const motionDirection = ref(1);
-const layerRef = ref<HTMLElement>();
-const guideBoxRef = ref<HTMLElement>();
-const highlightRef = ref<HTMLElement>();
+const mounted = shallowRef(false);
+const ready = shallowRef(false);
+const motionDirection = shallowRef(1);
+const layerRef = useTemplateRef<HTMLElement>("layerRef");
+const guideBoxRef = useTemplateRef<HTMLElement>("guideBoxRef");
+const highlightRef = useTemplateRef<HTMLElement>("highlightRef");
 const targetElement = shallowRef<Element | null>(null);
 const targetRect = shallowRef<DOMRect | null>(null);
-const guideBoxStyle = ref<CSSProperties>({});
-const guideArrowStyle = ref<CSSProperties>({});
+// 定位样式每次整体替换，不需要深层响应
+const guideBoxStyle = shallowRef<CSSProperties>({});
+const guideArrowStyle = shallowRef<CSSProperties>({});
 let positionFrame = 0;
 let revision = 0;
+/** 最近一次完成切步、可以就地刷新内容的请求号；与 revision 不等说明正在切步 */
+let settledRevision = -1;
 let resizeObserver: ResizeObserver | undefined;
 let cancelTransition: (() => void) | undefined;
 
@@ -206,13 +226,13 @@ function onNext(event?: MouseEvent, index = currentStep.value, count = total.val
   if (!requestedStep.value) return;
   if (index >= count - 1) return onFinish(event, index, count);
   const next = index + 1;
-  emit("next-step-click", { ...eventContext(event, index, count), next }); // eslint-disable-line vue/custom-event-name-casing -- 保留既有事件名称
+  emit("nextStepClick", { ...eventContext(event, index, count), next });
   currentStep.value = next;
 }
 function onPrev(event?: MouseEvent, index = currentStep.value, count = total.value) {
   if (!requestedStep.value || index <= 0) return;
   const prev = index - 1;
-  emit("prev-step-click", { ...eventContext(event, index, count), prev }); // eslint-disable-line vue/custom-event-name-casing -- 保留既有事件名称
+  emit("prevStepClick", { ...eventContext(event, index, count), prev });
   currentStep.value = prev;
 }
 function onFinish(event?: MouseEvent, index = currentStep.value, count = total.value) {
@@ -230,7 +250,7 @@ function onClose(event?: MouseEvent, index = currentStep.value, count = total.va
   emit("close", eventContext(event, index, count));
   currentStep.value = -1;
 }
-const stepContext = computed(() => {
+const stepContext = computed<GuideStepContext>(() => {
   const index = displayedCurrent.value;
   const count = displayedTotal.value;
   return {
@@ -401,7 +421,29 @@ async function animatePanel(panel: HTMLElement, entering: boolean): Promise<void
   if (cancelTransition === animation.stop) cancelTransition = undefined;
 }
 
-watch([currentStep, flatSteps, () => props.mode, mounted], async () => {
+/**
+ * 已显示的步骤内容就地刷新：steps 引用变化（父组件内联数组、步骤依赖高频状态）但目标与形态没变时，
+ * 只替换快照，不重放「淡出 → 替换 → 居中 → 淡入」
+ */
+function refreshDisplayedContent() {
+  const snapshot = displayed.value;
+  const step = requestedStep.value;
+  if (!snapshot || !step || settledRevision !== revision || snapshot.index !== currentStep.value) return;
+  if (snapshot.step === step && snapshot.steps === flatSteps.value) return;
+  displayed.value = { ...snapshot, step, steps: flatSteps.value };
+  schedulePosition();
+}
+watch(flatSteps, refreshDisplayedContent);
+
+// 切步流程只由真正影响显示位置与形态的值驱动：索引、目标、步骤形态、组件级形态与挂载状态
+watch([
+  currentStep,
+  () => !!requestedStep.value,
+  () => requestedStep.value?.element,
+  () => requestedStep.value?.mode,
+  () => props.mode,
+  mounted,
+], async () => {
   const request = ++revision;
   cancelTransition?.();
   resizeObserver?.disconnect();
@@ -440,6 +482,9 @@ watch([currentStep, flatSteps, () => props.mode, mounted], async () => {
   syncPosition();
   if (guideBoxRef.value) guideBoxRef.value.style.opacity = "0";
   ready.value = true;
+  // 替换内容到这里期间若 steps 内容又变了，补刷一次快照
+  settledRevision = request;
+  refreshDisplayedContent();
   await nextTick();
   if (request !== revision || !mounted.value) return;
   guideBoxRef.value?.focus({ preventScroll: true });

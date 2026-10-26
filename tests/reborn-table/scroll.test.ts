@@ -37,7 +37,7 @@ it('真实滚动组件支持立即双轴定位、联合平滑滚动及实际表�
   try {
     await build({
       entryPoints: [resolve('app/components/reborn/ui/reborn-table/RebornTable.vue')], outfile: output,
-      bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app') },
+      bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app'), '@': resolve('app') },
       plugins: [{ name: 'table-scroll-test', setup(builder) {
         builder.onLoad({ filter: /\.css$/ }, () => ({ contents: '', loader: 'js' }));
         builder.onLoad({ filter: /\.vue$/ }, async ({ path }) => {

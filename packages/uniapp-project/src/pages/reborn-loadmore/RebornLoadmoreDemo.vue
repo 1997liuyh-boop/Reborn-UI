@@ -1,25 +1,28 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { onLoad, onReachBottom } from '@dcloudio/uni-app'
+import { ref, shallowRef } from 'vue'
+import { onLoad, onReachBottom, onUnload } from '@dcloudio/uni-app'
 
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornText from '@/components/reborn-text/RebornText.vue'
 import RebornImage from '@/components/reborn-image/RebornImage.vue'
 import RebornLoadmore from '@/components/reborn-loadmore/RebornLoadmore.vue'
-import { loadMoreColors, LoadMoreState } from "@/components/reborn-loadmore/reborn-loadmore.config";
+import { loadMoreColors, LoadMoreState } from '@/components/reborn-loadmore/reborn-loadmore.config'
 
-const list = ref<any[]>([])
+interface ListItem { id: number, title: string, body: string, image: string }
+const list = ref<ListItem[]>([])
 
 // 默认参数设置
-const page = ref(1)
+const page = shallowRef(1)
 const pageSize = 10
 
-const state = ref<'loading' | 'error' | 'finished'>('loading')
-const isError = ref(false)
-const loading = ref(false)
-const demoColor = ref<typeof loadMoreColors[number]>('neutral')
-const demoState = ref<typeof LoadMoreState[number]>('loading')
+const state = shallowRef<'loading' | 'error' | 'finished'>('loading')
+const isError = shallowRef(false)
+const loading = shallowRef(false)
+const demoColor = shallowRef<typeof loadMoreColors[number]>('neutral')
+const demoState = shallowRef<typeof LoadMoreState[number]>('loading')
+let requestTimer: ReturnType<typeof setTimeout> | undefined
+onUnload(() => clearTimeout(requestTimer))
 
 const fixedImages = [
     { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn1.jpg', ratio: 0.75 },
@@ -40,13 +43,20 @@ const getList = () => {
     state.value = 'loading'
 
     // 模拟网络请求延迟
-    setTimeout(() => {
+    requestTimer = setTimeout(() => {
+        // 失败发生在数据写入前，重试仍请求同一页且只追加一次。
+        if (page.value === 2 && !isError.value) {
+            isError.value = true
+            state.value = 'error'
+            loading.value = false
+            return
+        }
         const start = (page.value - 1) * pageSize
 
         // 模拟数据生成
         const mappedData = Array.from({ length: pageSize }).map((_, index) => {
             const globalIndex = start + index;
-            const imgData = fixedImages[globalIndex % fixedImages.length];
+            const imgData = fixedImages[globalIndex % fixedImages.length]!;
             return {
                 id: globalIndex + 1,
                 title: `分页加载示例标题 ${globalIndex + 1}`,
@@ -56,14 +66,6 @@ const getList = () => {
         })
 
         list.value.push(...mappedData)
-
-        // 模拟错误发生（在列表长度到达 20 时演示）
-        if (list.value.length === 20 && !isError.value) {
-            isError.value = true
-            state.value = 'error'
-            loading.value = false
-            return
-        }
 
         // 演示加载到 50 条停止
         if (list.value.length >= 50) {
@@ -78,6 +80,7 @@ const getList = () => {
 
 // 失败点击重试
 function reload() {
+    if (state.value !== 'error' || loading.value) return
     state.value = 'loading'
     getList()
 }
@@ -92,8 +95,8 @@ onLoad(() => {
 </script>
 
 <template>
-    <reborn-page title="loadmore 分页加载" description="用于在列表底部展示加载状态。" :ui="{ body: 'px-0' }">
-        <reborn-card title="基础用法">
+    <RebornPage title="loadmore 分页加载" description="用于在列表底部展示加载状态。" :ui="{ body: 'px-0' }">
+        <RebornCard title="基础用法">
             <view class="text-sm font-medium text-gray-5 mb-2">
                 按钮颜色
             </view>
@@ -120,8 +123,8 @@ onLoad(() => {
                     {{ c }}
                 </view>
             </view>
-            <reborn-loadmore :state="demoState" :color="demoColor" @reload="reload" />
-        </reborn-card>
+            <RebornLoadmore :state="demoState" :color="demoColor" @reload="reload" />
+        </RebornCard>
         <view v-for="item in list" :key="item.id" class="flex gap-3 p-3 bg-white border-b border-gray-100 mt-3">
             <view class="w-[160rpx] h-[120rpx] overflow-hidden rounded-lg bg-gray-100">
                 <RebornImage :src="item.image" width="100%" height="100%" mode="aspectFill" preview />
@@ -134,6 +137,6 @@ onLoad(() => {
             </view>
         </view>
 
-        <reborn-loadmore :state="state" color="primary" :ui="{ line: 'bg-primary/20' }" @reload="reload" />
-    </reborn-page>
+        <RebornLoadmore :state="state" color="primary" :ui="{ line: 'bg-primary/20' }" @reload="reload" />
+    </RebornPage>
 </template>

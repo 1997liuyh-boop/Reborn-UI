@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import type { TabKey, TabPaneMeta, TabsContext } from './reborn-tabs.config'
+import type { TabKey, TabPaneRegistration } from './reborn-tabs.config'
 import {
   computed,
-  getCurrentInstance,
   inject,
   onBeforeUnmount,
-  ref,
   shallowReactive,
+  shallowRef,
   watch,
   watchEffect,
 } from 'vue'
@@ -24,6 +23,10 @@ const props = withDefaults(defineProps<RebornTabPaneProps>(), {
 })
 
 export interface RebornTabPaneProps {
+  /** 业务选中标识；Vue key 只用于列表复用 */
+  paneKey?: TabKey
+  /** 显式序位；小程序动态列表所有项都应传入有限数值 */
+  order?: number
   /** 标题文本 */
   title?: string
   /** 是否禁用，禁用后点击与悬停都不会切换 */
@@ -34,34 +37,33 @@ export interface RebornTabPaneProps {
   destroyOnHidden?: boolean
 }
 
-const ctx = inject<TabsContext | null>(TABS_INJECTION_KEY, null)
+const ctx = inject(TABS_INJECTION_KEY, null)
 if (!ctx) throw new Error('[RebornTabPane] 必须作为 RebornTabs 的子组件使用')
 
-const instance = getCurrentInstance()
-
-/** 登记到父级的元信息，父级据此渲染头部；未写 key 时留空由父级补序号 */
-const meta = shallowReactive<TabPaneMeta>({
-  key: (instance?.vnode.key ?? undefined) as TabKey,
+/** 登记到父级的元信息，父级据此渲染头部；未写 paneKey 时留空由父级补序号 */
+const meta = ctx.addPane(shallowReactive<TabPaneRegistration>({
+  key: props.paneKey,
+  order: props.order,
   title: props.title,
   disabled: props.disabled,
   closable: props.closable,
   destroyOnHidden: props.destroyOnHidden,
-})
+}))
 
 watchEffect(() => {
+  if (props.paneKey !== undefined) meta.key = props.paneKey
+  meta.order = props.order
   meta.title = props.title
   meta.disabled = props.disabled
   meta.closable = props.closable
   meta.destroyOnHidden = props.destroyOnHidden
 })
 
-ctx.addPane(meta)
-
 const isActive = computed(() => ctx.activeKey.value === meta.key)
 const destroyOnHidden = computed(() => props.destroyOnHidden || ctx.destroyOnHidden.value)
 
 /** 记录是否被展示过，lazy-load 据此决定首次挂载时机 */
-const shown = ref(false)
+const shown = shallowRef(false)
 watchEffect(() => {
   if (isActive.value) shown.value = true
 })
@@ -73,17 +75,19 @@ const shouldRender = computed(() => {
 })
 
 /** 小程序端没有 Transition，入场动画只能靠切换类名实现 */
-const faded = ref(false)
+const faded = shallowRef(false)
+let fadeTimer: ReturnType<typeof setTimeout> | undefined
 watch(
   isActive,
   value => {
+    clearTimeout(fadeTimer)
     if (!value) {
       faded.value = false
       return
     }
     // display 由 none 变回可见的同帧改样式不会触发过渡，须等下一帧
     faded.value = false
-    setTimeout(() => {
+    fadeTimer = setTimeout(() => {
       faded.value = true
     }, 20)
   },
@@ -109,6 +113,7 @@ const paneClass = computed(() =>
 )
 
 onBeforeUnmount(() => {
+  clearTimeout(fadeTimer)
   ctx.removePane(meta)
 })
 </script>
@@ -118,6 +123,7 @@ onBeforeUnmount(() => {
   <view
     v-show="isActive"
     class="reborn-tabs__pane"
+    :data-pane-key="`${typeof meta.key}:${meta.key}`"
     :class="[paneClass, isActive ? 'reborn-tabs__pane--active' : '']"
   >
     <slot v-if="shouldRender" />

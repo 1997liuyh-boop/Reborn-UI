@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed, shallowRef } from "vue";
+import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
+import ShaderToy from "~/components/reborn/ui/shader-toy/ShaderToy.vue";
 // Source Link: https://www.shadertoy.com/view/XlfGRj
 const starNest = `
 
@@ -276,47 +279,31 @@ const shaderExamples = {
   blackhole,
 };
 
-const preset = ref("starNest");
+/** 三个预设使用固定短标识，切换只重新编译着色器。 */
+type ShaderPreset = keyof typeof shaderExamples;
+const preset = shallowRef<ShaderPreset>("starNest");
 
 const selectedExample = computed(() => shaderExamples[preset.value]);
 
-function getName(key: string) {
-  const names = {
-    starNest: "Star Nest",
-    vortex: "Vortex",
-    blackhole: "Black Hole",
-  };
-
-  return names[key];
-}
+/** 预设名称与选项只创建一次。 */
+const presetNames: Record<ShaderPreset, string> = {
+  starNest: "星巢 Star Nest",
+  vortex: "漩涡 Vortex",
+  blackhole: "黑洞 Black Hole",
+};
+const presetOptions = (Object.keys(shaderExamples) as ShaderPreset[]).map(value => ({ label: presetNames[value], value }));
 </script>
 
 <template>
   <div class="flex h-96 w-full flex-col items-center justify-center gap-4">
     <ShaderToy
-      :key="selectedExample"
       :shader-code="selectedExample"
       class="h-full w-full"
     />
 
     <div class="flex w-full items-center gap-4">
-      <div>Select Example:</div>
-      <Select v-model="preset">
-        <SelectTrigger class="w-[220px]">
-          <SelectValue placeholder="Select example shader" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectItem
-              v-for="exampleName in Object.keys(shaderExamples)"
-              :key="exampleName"
-              :value="exampleName"
-            >
-              {{ getName(exampleName) }}
-            </SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+      <div>选择着色器：</div>
+      <RebornSelect v-model="preset" :options="presetOptions" class="w-[220px]" />
     </div>
   </div>
 </template>

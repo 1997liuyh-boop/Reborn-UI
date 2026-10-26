@@ -13,13 +13,13 @@ badge: New
 
 NoticeBar 是双端可用的通知栏组件，`text` 支持单条字符串或多条字符串数组。水平模式下内容溢出容器时自动以 `speed`（px/s）匀速滚动；`direction="vertical"` 且有多条消息时切换为按 `interval` 间隔的垂直轮播。左右图标、文本颜色与背景色均可配置，并暴露 `pause` / `resume` / `replay` / `goTo` 等方法命令式控制播放。
 
-适用场景：
+### 何时使用
 
 - 页面顶部公告、促销信息循环播报。
 - 多条消息垂直轮播切换（`direction="vertical"` + `interval`）。
 - 单条长文本需要匀速水平滚动展示（`speed` 控制 px/s）。
 
-不适用场景：
+### 何时不使用
 
 - 图文卡片类内容的循环滚动（web 营销区块），改用 `reborn-marquee`。
 - 操作结果的短暂反馈，改用 `reborn-toast`。
@@ -91,19 +91,20 @@ function pauseBar() {
 | `disabled` | `boolean` | `false` | 是否禁用，禁用后不再滚动且样式变淡 | 通用 |
 | `color` | `string` | `-` | 文本颜色，支持 Hex、RGB 等 CSS 颜色格式 | 通用 |
 | `background` | `string` | `-` | 背景色，支持 Hex、RGB 等 CSS 颜色格式 | 通用 |
-| `left-icon` | `string` | `-` | 左侧图标名称 | 通用 |
-| `right-icon` | `string` | `-` | 右侧图标名称 | 通用 |
+| `leftIcon` | `string` | `-` | 左侧图标名称 | 通用 |
+| `rightIcon` | `string` | `-` | 右侧图标名称 | 通用 |
 | `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | 滚动方向 | 通用 |
 | `interval` | `number` | `3000` | 垂直滚动时的轮播间隔时间 (ms) | 通用 |
 | `customClass` | `string` | `''` | 追加到根节点的自定义类名 | 通用 |
+| `customStyle` | `string` | `''` | 追加到根节点的内联样式，排在 `color` / `background` 之后，同名属性以它为准 | 通用 |
 | `ui` | `object` | `{}` | 细粒度样式覆盖对象，见下方「自定义样式（ui）」 | 通用 |
 
 ### Emits
 
 | 事件名 | 回调参数 | 说明 | 平台 |
 | :--- | :--- | :--- | :--- |
-| `click` | `-` | 点击通知栏时触发 | 通用 |
-| `close` | `-` | 关闭通知栏时触发 | 通用 |
+| `click` | `-` | 点击通知栏时触发；禁用时不触发，点击 `right-icon` 属性渲染的图标也不触发 | 通用 |
+| `close` | `-` | 点击 `right-icon` 属性渲染的右侧图标时触发；用 `right-icon` 插槽替换图标后不再触发，禁用时也不触发 | 通用 |
 | `replay` | `-` | 重新播放动画时触发 | 通用 |
 | `change` | `index: number` | 垂直滚动切换时触发 | 通用 |
 
@@ -121,29 +122,40 @@ function pauseBar() {
 | :--- | :--- | :--- |
 | `pause` | 暂停播放：水平滚动动画停在原地，垂直轮播停止自动切换（web 端鼠标悬停自动调用） | 通用 |
 | `resume` | 恢复被 `pause` 暂停的滚动/轮播（web 端鼠标移出自动调用） | 通用 |
-| `replay` | 从头重播：垂直模式回到第 0 条并重启轮播计时（触发 `change`），水平模式重新从头滚动；完成后触发 `replay` 事件 | 通用 |
-| `checkOverflow` | 重新检测文本是否溢出并更新水平滚动状态，内容或容器尺寸变化后可手动调用（垂直模式下无效） | 通用 |
+| `replay` | 从头重播：垂直模式回到第 0 条并重启轮播计时（触发 `change`），水平模式重建文本节点从头滚动；完成后触发 `replay` 事件 | 通用 |
+| `checkOverflow` | 重新检测文本是否溢出并更新水平滚动状态（垂直模式下无效）。web 端已自动监听容器与文本尺寸，一般无需调用；uniapp 端动态改变内容后建议调用 | 通用 |
 | `goTo` | `goTo(index)`：垂直轮播模式下带过渡动画切换到指定索引并触发 `change`；水平模式或索引越界时无操作 | 通用 |
 
-## 自定义样式（ui）
+### 自定义样式（ui）
 
 `ui` 属性按以下键覆盖对应节点的类名：
 
 | 键名 | 说明 |
 | :--- | :--- |
 | `root` | 根容器 |
-| `content` | 内容区域 |
+| `content` | 预留键：两端都没有对应节点，传入不生效 |
 | `textWrapper` | 文本外层容器（溢出测量基准） |
 | `text` | 滚动文本本体 |
 | `icon` | 左右图标容器 |
 | `verticalWrapper` | 垂直轮播外层容器 |
 | `verticalItem` | 垂直轮播单条内容 |
 
+## 两端差异对照
+
+| 维度 | Web | UniApp |
+| --- | --- | --- |
+| 垂直切换动画 | Vue 进入与离开过渡 | H5 使用 Vue 进入与离开过渡；App / 小程序使用 CSS 入场动画 |
+| 尺寸变化 | ResizeObserver 自动测量 | 节点查询；布局变化后可调用 `checkOverflow()` |
+| 悬停暂停 | 鼠标进入暂停、移出恢复 | 不提供鼠标悬停行为 |
+
 ## 注意事项
 
+- **非 H5 垂直切换仅保留入场动画。** App / 小程序不依赖 Vue `<transition>`，每次换条重新挂载 CSS 入场节点；离场内容直接移除，需在开发者工具与真机确认视觉效果。
 - web、uniapp 双端可用；web 端鼠标悬停会自动暂停、移出自动恢复。
 - `scrollable` 仅在内容溢出且非垂直模式时生效；`wrapable` 多行仅水平模式生效。
 - `speed` 单位为 px/s（默认 60）；`interval` 为垂直轮播间隔毫秒（默认 3000）。
 - 垂直轮播需要 `direction="vertical"` 且 `text` 为多条数组才会启动；单条数组仍按水平模式展示。
 - 垂直模式下默认插槽提供 `{ item, index }` 作用域参数；组件暴露 `pause` / `resume` / `replay` / `checkOverflow` / `goTo` 方法。
 - uniapp 端溢出检测依赖节点查询，动态改变内容后建议调用 `checkOverflow()` 重新测量。
+- **web 端滚动状态随 props 实时更新**。是否滚动由溢出测量结果与 `scrollable` / `wrapable` / `disabled` / `direction` 共同派生，`speed` 变化立即重算时长，容器或文本尺寸变化由 ResizeObserver 触发重新测量；轮播定时器在 `direction`、`text` 条数、`disabled`、`interval` 任一变化时重建，条数变少时当前索引钳回末条并触发 `change`。
+- **关闭由右侧图标派发 `close`，组件不会自行隐藏**。点击 `right-icon` 属性渲染的图标派发 `close` 并阻止冒泡，需要在回调里用 `v-if` 移除通知栏；改用 `right-icon` 插槽时插槽内容不参与关闭，需自行绑定点击。

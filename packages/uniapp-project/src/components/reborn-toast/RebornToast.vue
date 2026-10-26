@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import type { CSSProperties } from 'vue'
-import type { MessageInstance, MessageSemanticDOM } from './reborn-toast.config'
-import { computed, onMounted, onUnmounted } from 'vue'
+import type { MessageInstance } from './reborn-toast.config'
+import { onShow } from '@dcloudio/uni-app'
+import { computed, getCurrentInstance, onMounted, onUnmounted } from 'vue'
 import { addUnit } from '@/lib/util'
 import {
+  isMessageContainerActive,
   markMessageMounted,
+  MESSAGE_CONTAINER_KEY,
   MESSAGE_TYPE_ICON,
   messageState,
   messageTheme,
   pauseMessage,
   resumeMessage,
+  syncMessageRenderer,
   unmarkMessageMounted,
 } from './reborn-toast.config'
 
@@ -23,9 +26,16 @@ defineOptions({
   },
 })
 
-// 注册实例计数：H5 命令式调用据此判断是否还需动态挂载容器（小程序端组件必须预置在页面里）
-onMounted(markMessageMounted)
-onUnmounted(unmarkMessageMounted)
+// 登记实例：页面实例各自渲染；H5 命令式容器只在当前页面没有页面实例时渲染（小程序端组件必须预置在页面里）
+const instance = getCurrentInstance()!
+const isContainer = instance.vnode.key === MESSAGE_CONTAINER_KEY
+onMounted(() => markMessageMounted(instance, isContainer))
+onUnmounted(() => unmarkMessageMounted(instance, isContainer))
+// 切换 tabBar、返回上一页不会挂载 / 卸载实例，页面重新显示时重判容器是否让位
+if (!isContainer) {
+  onShow(syncMessageRenderer)
+}
+const isRenderer = computed(() => !isContainer || isMessageContainerActive())
 
 /**
  * 顶部偏移：数字按 rpx 处理（样式优先原则，Web 端为 px），字符串原样使用；
@@ -33,18 +43,13 @@ onUnmounted(unmarkMessageMounted)
  */
 const topStyle = computed(() => `calc(var(--window-top, 0px) + ${addUnit(messageState.top)})`)
 
-/** 取单条消息的样式构建器 */
-const themeOf = (item: MessageInstance) => messageTheme({ variant: item.variant, color: item.color })
-
-/** classNames / styles 支持对象或函数两种形态 */
-function semanticClass(item: MessageInstance, key: MessageSemanticDOM): string | undefined {
-  const source = typeof item.classNames === 'function' ? item.classNames({ props: item }) : item.classNames
-  return source?.[key]
-}
-function semanticStyle(item: MessageInstance, key: MessageSemanticDOM): CSSProperties | undefined {
-  const source = typeof item.styles === 'function' ? item.styles({ props: item }) : item.styles
-  return source?.[key]
-}
+/** 每条消息的主题与语义函数仅在相关消息变化时重算一次。 */
+const renderedMessages = computed(() => messageState.list.map(item => {
+  const theme = messageTheme({ variant: item.variant, color: item.color })
+  const classes = typeof item.classNames === 'function' ? item.classNames({ props: item }) : item.classNames
+  const styles = typeof item.styles === 'function' ? item.styles({ props: item }) : item.styles
+  return { item, rootClass: theme.root(), iconWrapperClass: theme.iconWrapper(), iconClass: theme.icon(), contentClass: theme.content(), classes, styles }
+}))
 
 /** 进出场动画类：closing 标记切到离场动画 */
 function motionClass(item: MessageInstance) {
@@ -72,26 +77,26 @@ function handleResume(item: MessageInstance) {
 </script>
 
 <template>
-  <view :class="messageTheme().wrapper()" :style="{ top: topStyle }" :dir="messageState.rtl ? 'rtl' : undefined">
+  <view v-if="isRenderer" :class="messageTheme().wrapper()" :style="{ top: topStyle }" :dir="messageState.rtl ? 'rtl' : undefined">
     <view
-      v-for="item in messageState.list" :key="item.id"
-      :class="[themeOf(item).root(), motionClass(item), item.className, semanticClass(item, 'root')]"
-      :style="[item.style ?? {}, semanticStyle(item, 'root') ?? {}]" @click="item.onClick?.($event)"
-      @touchstart="handlePause(item)" @touchend="handleResume(item)" @touchcancel="handleResume(item)"
-      @mouseenter="handlePause(item)" @mouseleave="handleResume(item)"
+      v-for="row in renderedMessages" :key="row.item.id"
+      :class="[row.rootClass, motionClass(row.item), row.item.className, row.classes?.root]"
+      :style="[row.item.style ?? {}, row.styles?.root ?? {}]" @click="row.item.onClick?.($event)"
+      @touchstart="handlePause(row.item)" @touchend="handleResume(row.item)" @touchcancel="handleResume(row.item)"
+      @mouseenter="handlePause(row.item)" @mouseleave="handleResume(row.item)"
     >
       <view
-        :class="[themeOf(item).iconWrapper(), semanticClass(item, 'icon')]"
-        :style="semanticStyle(item, 'icon')"
+        :class="[row.iconWrapperClass, row.classes?.icon]"
+        :style="row.styles?.icon"
       >
-        <view :class="[iconClass(item), themeOf(item).icon()]" />
+        <view :class="[iconClass(row.item), row.iconClass]" />
       </view>
 
       <view
-        :class="[themeOf(item).content(), semanticClass(item, 'content')]"
-        :style="semanticStyle(item, 'content')"
+        :class="[row.contentClass, row.classes?.content]"
+        :style="row.styles?.content"
       >
-        {{ item.content }}
+        {{ row.item.content }}
       </view>
     </view>
   </view>

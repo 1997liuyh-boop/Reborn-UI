@@ -1,0 +1,471 @@
+# 复核分片范围
+
+各分片除下列源码路径外，还包括这些组件对应的文档 `content/2.components/**/<组件>.md`（或组合式函数文档 `content/4.composables/**`）、知识库覆盖 `knowledge/overrides/<组件>.json` 与测试 `tests/**` 里与本分片组件相关的改动。
+
+## V1
+
+- 原审查报告：`W1.md`；整改自述：`fixes/W1.md`
+- 源码路径：
+  - `app/components/reborn/ui/animate-grid`
+  - `app/components/reborn/ui/animated-circular-progressbar`
+  - `app/components/reborn/ui/animated-list`
+  - `app/components/reborn/ui/animated-testimonials`
+  - `app/components/reborn/ui/animated-tooltip`
+  - `app/components/reborn/ui/apple-card-carousel`
+  - `app/components/reborn/ui/balance-slider`
+  - `app/components/reborn/ui/bento-grid`
+  - `app/components/reborn/ui/blur-reveal`
+  - `app/components/reborn/ui/book`
+  - `app/components/reborn/ui/box-reveal`
+  - `app/components/reborn/ui/card-3d`
+  - `app/components/reborn/ui/color-picker`
+  - `app/components/reborn/ui/colourful-text`
+  - `app/components/reborn/ui/compare`
+  - `app/components/reborn/ui/container-scroll`
+  - `app/components/reborn/ui/container-text-flip`
+  - `app/components/reborn/ui/direction-aware-hover`
+  - `app/components/reborn/ui/dither-shader`
+  - `app/components/reborn/ui/dock`
+  - `app/components/reborn/ui/expandable-gallery`
+  - `app/components/reborn/ui/file-upload`
+  - `app/components/reborn/ui/flip-card`
+  - `app/components/reborn/ui/flip-words`
+  - `app/components/reborn/ui/focus`
+  - `app/components/reborn/ui/glare-card`
+  - `app/components/reborn/ui/gradient-button`
+  - `app/components/reborn/ui/halo-search`
+  - `app/components/reborn/ui/hyper-text`
+  - `app/components/reborn/ui/icon-cloud`
+  - `app/components/reborn/ui/images-slider`
+  - `app/components/reborn/ui/input`
+  - `app/components/reborn/ui/interactive-hover-button`
+  - `app/components/reborn/ui/iphone-mockup`
+  - `app/components/reborn/ui/lens`
+  - `app/components/reborn/ui/letter-pullup`
+  - `app/components/reborn/ui/line-shadow-text`
+  - `app/components/reborn/ui/link-preview`
+  - `app/components/reborn/ui/liquid-glass`
+  - `app/components/reborn/ui/meteors`
+  - `app/components/reborn/ui/morphing-tabs`
+  - `app/components/reborn/ui/morphing-text`
+  - `app/components/reborn/ui/multi-step-loader`
+  - `app/components/reborn/ui/neon-border`
+  - `app/components/reborn/ui/number-ticker`
+  - `app/components/reborn/ui/pattern-background`
+  - `app/components/reborn/ui/photo-gallery`
+  - `app/components/reborn/ui/radiant-text`
+  - `app/components/reborn/ui/rainbow-button`
+  - `app/components/reborn/ui/reborn-affix`
+  - `app/components/reborn/ui/reborn-alert`
+
+## V2
+
+- 原审查报告：`W2.md`、`W5.md`；整改自述：`fixes/W2.md`、`fixes/W5.md`
+- 源码路径：
+  - `app/components/reborn/ui/reborn-anchor`
+  - `app/components/reborn/ui/reborn-avatar`
+  - `app/components/reborn/ui/reborn-avatar-group`
+  - `app/components/reborn/ui/reborn-back-top`
+  - `app/components/reborn/ui/reborn-badge`
+  - `app/components/reborn/ui/reborn-breadcrumb`
+  - `app/components/reborn/ui/reborn-button`
+  - `app/components/reborn/ui/reborn-calendar`
+  - `app/components/reborn/ui/reborn-carousel`
+  - `app/components/reborn/ui/reborn-cascader`
+  - `app/components/reborn/ui/reborn-checkbox`
+  - `app/components/reborn/ui/reborn-loading`
+  - `app/components/reborn/ui/reborn-main`
+  - `app/components/reborn/ui/reborn-marquee`
+  - `app/components/reborn/ui/reborn-mention`
+  - `app/components/reborn/ui/reborn-menu`
+  - `app/components/reborn/ui/reborn-notice-bar`
+  - `app/components/reborn/ui/reborn-notification`
+  - `app/components/reborn/ui/reborn-overlay`
+  - `app/components/reborn/ui/reborn-page-header`
+  - `app/components/reborn/ui/reborn-pagination`
+  - `app/components/reborn/ui/reborn-popconfirm`
+  - `app/components/reborn/ui/reborn-popover`
+  - `app/components/reborn/ui/reborn-progress`
+  - `app/components/reborn/ui/reborn-qrcode`
+
+## V3
+
+- 原审查报告：`W3.md`、`W7.md`；整改自述：`fixes/W3.md`、`fixes/W7.md`
+- 源码路径：
+  - `app/components/reborn/ui/reborn-chip`
+  - `app/components/reborn/ui/reborn-collapse`
+  - `app/components/reborn/ui/reborn-color-picker`
+  - `app/components/reborn/ui/reborn-container`
+  - `app/components/reborn/ui/reborn-context-menu`
+  - `app/components/reborn/ui/reborn-countdown`
+  - `app/components/reborn/ui/reborn-coupon`
+  - `app/components/reborn/ui/reborn-crowd`
+  - `app/components/reborn/ui/reborn-date-picker`
+  - `app/components/reborn/ui/reborn-date-picker-panel`
+  - `app/components/reborn/ui/reborn-depth-image`
+  - `app/components/reborn/ui/reborn-descriptions`
+  - `app/components/reborn/ui/reborn-table`
+  - `app/components/reborn/ui/reborn-tabs`
+  - `app/components/reborn/ui/reborn-text`
+  - `app/components/reborn/ui/reborn-textarea`
+  - `app/components/reborn/ui/reborn-time-picker`
+  - `app/components/reborn/ui/reborn-timeline`
+  - `app/components/reborn/ui/reborn-toast`
+  - `app/components/reborn/ui/reborn-tooltip`
+  - `app/components/reborn/ui/reborn-transfer`
+  - `app/components/reborn/ui/reborn-transition`
+
+## V4
+
+- 原审查报告：`W4.md`、`W8.md`；整改自述：`fixes/W4.md`、`fixes/W8.md`
+- 源码路径：
+  - `app/components/reborn/ui/reborn-dialog`
+  - `app/components/reborn/ui/reborn-draggable`
+  - `app/components/reborn/ui/reborn-drawer`
+  - `app/components/reborn/ui/reborn-dropdown`
+  - `app/components/reborn/ui/reborn-empty`
+  - `app/components/reborn/ui/reborn-fab`
+  - `app/components/reborn/ui/reborn-field-trigger`
+  - `app/components/reborn/ui/reborn-fireworks`
+  - `app/components/reborn/ui/reborn-footer`
+  - `app/components/reborn/ui/reborn-form`
+  - `app/components/reborn/ui/reborn-guide`
+  - `app/components/reborn/ui/reborn-header`
+  - `app/components/reborn/ui/reborn-image`
+  - `app/components/reborn/ui/reborn-input`
+  - `app/components/reborn/ui/reborn-input-number`
+  - `app/components/reborn/ui/reborn-input-otp`
+  - `app/components/reborn/ui/reborn-layout`
+  - `app/components/reborn/ui/reborn-tree`
+  - `app/components/reborn/ui/reborn-tree-select`
+  - `app/components/reborn/ui/reborn-typewriter`
+  - `app/components/reborn/ui/reborn-upload`
+  - `app/components/reborn/ui/reborn-watermark`
+  - `app/components/reborn/ui/reui-launch`
+  - `app/components/reborn/ui/ripple`
+  - `app/components/reborn/ui/ripple-button`
+  - `app/components/reborn/ui/safari-mockup`
+  - `app/components/reborn/ui/scratch-to-reveal`
+  - `app/components/reborn/ui/scroll-island`
+  - `app/components/reborn/ui/scrollbar`
+  - `app/components/reborn/ui/shader-toy`
+  - `app/components/reborn/ui/shimmer-button`
+  - `app/components/reborn/ui/sparkles`
+  - `app/components/reborn/ui/sparkles-text`
+  - `app/components/reborn/ui/spinning-text`
+  - `app/components/reborn/ui/spring-calendar`
+  - `app/components/reborn/ui/svg-mask`
+  - `app/components/reborn/ui/testimonial-slider`
+  - `app/components/reborn/ui/text-3d`
+  - `app/components/reborn/ui/text-generate-effect`
+  - `app/components/reborn/ui/text-glitch`
+  - `app/components/reborn/ui/text-highlight`
+  - `app/components/reborn/ui/text-hover-effect`
+  - `app/components/reborn/ui/text-reveal`
+  - `app/components/reborn/ui/text-reveal-card`
+  - `app/components/reborn/ui/text-scroll-reveal`
+  - `app/components/reborn/ui/timeline`
+  - `app/components/reborn/ui/tracing-beam`
+  - `app/components/reborn/ui/vanishing-input`
+
+## V5
+
+- 原审查报告：`W6.md`；整改自述：`fixes/W6.md`
+- 源码路径：
+  - `app/components/reborn/ui/reborn-radio`
+  - `app/components/reborn/ui/reborn-rate`
+  - `app/components/reborn/ui/reborn-result`
+  - `app/components/reborn/ui/reborn-root-portal`
+  - `app/components/reborn/ui/reborn-search-box`
+  - `app/components/reborn/ui/reborn-segmented`
+  - `app/components/reborn/ui/reborn-select`
+  - `app/components/reborn/ui/reborn-select-trigger`
+  - `app/components/reborn/ui/reborn-sku`
+  - `app/components/reborn/ui/reborn-slider`
+  - `app/components/reborn/ui/reborn-splitter`
+  - `app/components/reborn/ui/reborn-statistic`
+  - `app/components/reborn/ui/reborn-steps`
+  - `app/components/reborn/ui/reborn-sticky`
+  - `app/components/reborn/ui/reborn-switch`
+
+## V6
+
+- 原审查报告：`U1.md`、`U2.md`；整改自述：`fixes/U1.md`、`fixes/U2.md`
+- 源码路径：
+  - `packages/uniapp-project/src/components/reborn-affix`
+  - `packages/uniapp-project/src/components/reborn-alert`
+  - `packages/uniapp-project/src/components/reborn-back-top`
+  - `packages/uniapp-project/src/components/reborn-badge`
+  - `packages/uniapp-project/src/components/reborn-breadcrumb`
+  - `packages/uniapp-project/src/components/reborn-button`
+  - `packages/uniapp-project/src/components/reborn-card`
+  - `packages/uniapp-project/src/components/reborn-cascader`
+  - `packages/uniapp-project/src/components/reborn-checkbox`
+  - `packages/uniapp-project/src/components/reborn-chip`
+  - `packages/uniapp-project/src/components/reborn-collapse`
+  - `packages/uniapp-project/src/components/reborn-color-picker`
+  - `packages/uniapp-project/src/components/reborn-date-picker`
+  - `packages/uniapp-project/src/components/reborn-draggable`
+  - `packages/uniapp-project/src/components/reborn-dropdown-select`
+  - `packages/uniapp-project/src/components/reborn-empty`
+  - `packages/uniapp-project/src/components/reborn-fab`
+  - `packages/uniapp-project/src/components/reborn-footer`
+  - `packages/uniapp-project/src/components/reborn-form`
+  - `packages/uniapp-project/src/components/reborn-image`
+  - `packages/uniapp-project/src/components/reborn-input`
+  - `packages/uniapp-project/src/components/reborn-input-number`
+  - `packages/uniapp-project/src/components/reborn-input-otp`
+  - `packages/uniapp-project/src/components/reborn-loading`
+  - `packages/uniapp-project/src/components/reborn-loadmore`
+  - `packages/uniapp-project/src/components/reborn-notice-bar`
+  - `packages/uniapp-project/src/components/reborn-overlay`
+  - `packages/uniapp-project/src/components/reborn-page`
+  - `packages/uniapp-project/src/components/reborn-pagination`
+  - `packages/uniapp-project/src/components/reborn-picker-view`
+  - `packages/uniapp-project/src/components/reborn-popover`
+  - `packages/uniapp-project/src/components/reborn-popup`
+  - `packages/uniapp-project/src/components/reborn-qrcode`
+  - `packages/uniapp-project/src/components/reborn-radio`
+  - `packages/uniapp-project/src/components/reborn-rate`
+  - `packages/uniapp-project/src/components/reborn-result`
+  - `packages/uniapp-project/src/components/reborn-root-portal`
+  - `packages/uniapp-project/src/components/reborn-search-box`
+  - `packages/uniapp-project/src/components/reborn-select`
+  - `packages/uniapp-project/src/components/reborn-select-trigger`
+  - `packages/uniapp-project/src/components/reborn-signature`
+
+## V7
+
+- 原审查报告：`U3.md`、`C1.md`；整改自述：`fixes/U3.md`、`fixes/C1.md`
+- 源码路径：
+  - `packages/uniapp-project/src/components/reborn-slide-verify`
+  - `packages/uniapp-project/src/components/reborn-slider`
+  - `packages/uniapp-project/src/components/reborn-sticky`
+  - `packages/uniapp-project/src/components/reborn-swiper-action`
+  - `packages/uniapp-project/src/components/reborn-switch`
+  - `packages/uniapp-project/src/components/reborn-tabbar`
+  - `packages/uniapp-project/src/components/reborn-tabs`
+  - `packages/uniapp-project/src/components/reborn-text`
+  - `packages/uniapp-project/src/components/reborn-textarea`
+  - `packages/uniapp-project/src/components/reborn-toast`
+  - `packages/uniapp-project/src/components/reborn-transition`
+  - `packages/uniapp-project/src/components/reborn-waterfall`
+  - `packages/uniapp-project/src/components/reborn-watermark`
+  - `app/composables`
+  - `packages/uniapp-project/src/composables`
+  - `app/lib`
+  - `app/utils`
+  - `app/plugins`
+
+## V8
+
+- 原审查报告：`S1.md`；整改自述：`fixes/S1.md`
+- 源码路径：
+  - `app/app.vue`
+  - `app/error.vue`
+  - `app/directives`
+  - `app/components/app`
+  - `app/components/docs`
+  - `app/components/common`
+  - `app/components/content`
+  - `app/components/examples`
+  - `app/layouts`
+  - `app/pages`
+  - `content.config.ts`
+  - `packages/cli/src`
+  - `scripts/kb`
+  - `packages/uniapp-project/src/App.vue`
+  - `packages/uniapp-project/src/stores`
+
+## V9
+
+- 原审查报告：`E2.md`；整改自述：`fixes/E2.md`
+- 源码路径：
+  - `app/components/reborn/examples/reborn-badge`
+  - `app/components/reborn/examples/reborn-breadcrumb`
+  - `app/components/reborn/examples/reborn-button`
+  - `app/components/reborn/examples/reborn-calendar`
+  - `app/components/reborn/examples/reborn-card`
+  - `app/components/reborn/examples/reborn-carousel`
+  - `app/components/reborn/examples/reborn-cascader`
+  - `app/components/reborn/examples/reborn-checkbox`
+  - `app/components/reborn/examples/reborn-chip`
+  - `app/components/reborn/examples/reborn-collapse`
+  - `app/components/reborn/examples/reborn-color-picker`
+  - `app/components/reborn/examples/reborn-container`
+  - `app/components/reborn/examples/reborn-context-menu`
+  - `app/components/reborn/examples/reborn-countdown`
+  - `app/components/reborn/examples/reborn-coupon`
+  - `app/components/reborn/examples/reborn-crowd`
+  - `app/components/reborn/examples/reborn-date-picker`
+  - `app/components/reborn/examples/reborn-date-picker-panel`
+  - `app/components/reborn/examples/reborn-depth-image`
+  - `app/components/reborn/examples/reborn-descriptions`
+
+## V10
+
+- 原审查报告：`E1.md`、`E3.md`、`E4.md`、`E5.md`；整改自述：`fixes/E1.md`、`fixes/E3.md`、`fixes/E4.md`、`fixes/E5.md`
+- 源码路径：
+  - `app/components/reborn/configs`
+  - `app/components/reborn/examples/animate-grid`
+  - `app/components/reborn/examples/animated-circular-progressbar`
+  - `app/components/reborn/examples/animated-list`
+  - `app/components/reborn/examples/animated-testimonials`
+  - `app/components/reborn/examples/animated-tooltip`
+  - `app/components/reborn/examples/apple-card-carousel`
+  - `app/components/reborn/examples/balance-slider`
+  - `app/components/reborn/examples/bento-grid`
+  - `app/components/reborn/examples/blur-reveal`
+  - `app/components/reborn/examples/book`
+  - `app/components/reborn/examples/box-reveal`
+  - `app/components/reborn/examples/card-3d`
+  - `app/components/reborn/examples/color-picker`
+  - `app/components/reborn/examples/colourful-text`
+  - `app/components/reborn/examples/compare`
+  - `app/components/reborn/examples/configuration`
+  - `app/components/reborn/examples/container-scroll`
+  - `app/components/reborn/examples/container-text-flip`
+  - `app/components/reborn/examples/direction-aware-hover`
+  - `app/components/reborn/examples/dither-shader`
+  - `app/components/reborn/examples/dock`
+  - `app/components/reborn/examples/expandable-gallery`
+  - `app/components/reborn/examples/file-upload`
+  - `app/components/reborn/examples/flip-card`
+  - `app/components/reborn/examples/flip-words`
+  - `app/components/reborn/examples/focus`
+  - `app/components/reborn/examples/glare-card`
+  - `app/components/reborn/examples/gradient-button`
+  - `app/components/reborn/examples/halo-search`
+  - `app/components/reborn/examples/hyper-text`
+  - `app/components/reborn/examples/icon-cloud`
+  - `app/components/reborn/examples/images-slider`
+  - `app/components/reborn/examples/input`
+  - `app/components/reborn/examples/interactive-hover-button`
+  - `app/components/reborn/examples/iphone-mockup`
+  - `app/components/reborn/examples/lens`
+  - `app/components/reborn/examples/letter-pullup`
+  - `app/components/reborn/examples/line-shadow-text`
+  - `app/components/reborn/examples/link-preview`
+  - `app/components/reborn/examples/liquid-glass`
+  - `app/components/reborn/examples/meteors`
+  - `app/components/reborn/examples/morphing-tabs`
+  - `app/components/reborn/examples/morphing-text`
+  - `app/components/reborn/examples/multi-step-loader`
+  - `app/components/reborn/examples/neon-border`
+  - `app/components/reborn/examples/number-ticker`
+  - `app/components/reborn/examples/pattern-background`
+  - `app/components/reborn/examples/photo-gallery`
+  - `app/components/reborn/examples/radiant-text`
+  - `app/components/reborn/examples/rainbow-button`
+  - `app/components/reborn/examples/reborn-affix`
+  - `app/components/reborn/examples/reborn-alert`
+  - `app/components/reborn/examples/reborn-anchor`
+  - `app/components/reborn/examples/reborn-avatar`
+  - `app/components/reborn/examples/reborn-avatar-group`
+  - `app/components/reborn/examples/reborn-back-top`
+  - `app/components/reborn/examples/reborn-dialog`
+  - `app/components/reborn/examples/reborn-draggable`
+  - `app/components/reborn/examples/reborn-drawer`
+  - `app/components/reborn/examples/reborn-dropdown`
+  - `app/components/reborn/examples/reborn-dropdown-select`
+  - `app/components/reborn/examples/reborn-empty`
+  - `app/components/reborn/examples/reborn-fab`
+  - `app/components/reborn/examples/reborn-fireworks`
+  - `app/components/reborn/examples/reborn-footer`
+  - `app/components/reborn/examples/reborn-form`
+  - `app/components/reborn/examples/reborn-guide`
+  - `app/components/reborn/examples/reborn-header`
+  - `app/components/reborn/examples/reborn-image`
+  - `app/components/reborn/examples/reborn-input`
+  - `app/components/reborn/examples/reborn-input-number`
+  - `app/components/reborn/examples/reborn-input-otp`
+  - `app/components/reborn/examples/reborn-layout`
+  - `app/components/reborn/examples/reborn-loading`
+  - `app/components/reborn/examples/reborn-loadmore`
+  - `app/components/reborn/examples/reborn-main`
+  - `app/components/reborn/examples/reborn-marquee`
+  - `app/components/reborn/examples/reborn-mention`
+  - `app/components/reborn/examples/reborn-menu`
+  - `app/components/reborn/examples/reborn-notice-bar`
+  - `app/components/reborn/examples/reborn-notification`
+  - `app/components/reborn/examples/reborn-overlay`
+  - `app/components/reborn/examples/reborn-page`
+  - `app/components/reborn/examples/reborn-page-header`
+  - `app/components/reborn/examples/reborn-pagination`
+  - `app/components/reborn/examples/reborn-picker-view`
+  - `app/components/reborn/examples/reborn-popconfirm`
+  - `app/components/reborn/examples/reborn-popover`
+  - `app/components/reborn/examples/reborn-popup`
+  - `app/components/reborn/examples/reborn-progress`
+  - `app/components/reborn/examples/reborn-qrcode`
+  - `app/components/reborn/examples/reborn-radio`
+  - `app/components/reborn/examples/reborn-rate`
+  - `app/components/reborn/examples/reborn-result`
+  - `app/components/reborn/examples/reborn-root-portal`
+  - `app/components/reborn/examples/reborn-search-box`
+  - `app/components/reborn/examples/reborn-segmented`
+  - `app/components/reborn/examples/reborn-select`
+  - `app/components/reborn/examples/reborn-select-2`
+  - `app/components/reborn/examples/reborn-signature`
+  - `app/components/reborn/examples/reborn-sku`
+  - `app/components/reborn/examples/reborn-slide-verify`
+  - `app/components/reborn/examples/reborn-slider`
+  - `app/components/reborn/examples/reborn-splitter`
+  - `app/components/reborn/examples/reborn-statistic`
+  - `app/components/reborn/examples/reborn-steps`
+  - `app/components/reborn/examples/reborn-sticky`
+  - `app/components/reborn/examples/reborn-swiper-action`
+  - `app/components/reborn/examples/reborn-switch`
+  - `app/components/reborn/examples/reborn-tabbar`
+  - `app/components/reborn/examples/reborn-table`
+  - `app/components/reborn/examples/reborn-tabs`
+  - `app/components/reborn/examples/reborn-text`
+  - `app/components/reborn/examples/reborn-textarea`
+  - `app/components/reborn/examples/reborn-time-picker`
+  - `app/components/reborn/examples/reborn-timeline`
+  - `app/components/reborn/examples/reborn-toast`
+  - `app/components/reborn/examples/reborn-tooltip`
+  - `app/components/reborn/examples/reborn-transfer`
+  - `app/components/reborn/examples/reborn-transition`
+  - `app/components/reborn/examples/reborn-tree`
+  - `app/components/reborn/examples/reborn-tree-select`
+  - `app/components/reborn/examples/reborn-typewriter`
+  - `app/components/reborn/examples/reborn-upload`
+  - `app/components/reborn/examples/reborn-waterfall`
+  - `app/components/reborn/examples/reborn-watermark`
+  - `app/components/reborn/examples/reui-launch`
+  - `app/components/reborn/examples/ripple`
+  - `app/components/reborn/examples/ripple-button`
+  - `app/components/reborn/examples/safari-mockup`
+  - `app/components/reborn/examples/scratch-to-reveal`
+  - `app/components/reborn/examples/scroll-island`
+  - `app/components/reborn/examples/scrollbar`
+  - `app/components/reborn/examples/shader-toy`
+  - `app/components/reborn/examples/shimmer-button`
+  - `app/components/reborn/examples/sparkles`
+  - `app/components/reborn/examples/sparkles-text`
+  - `app/components/reborn/examples/spinning-text`
+  - `app/components/reborn/examples/spring-calendar`
+  - `app/components/reborn/examples/svg-mask`
+  - `app/components/reborn/examples/testimonial-slider`
+  - `app/components/reborn/examples/text-3d`
+  - `app/components/reborn/examples/text-generate-effect`
+  - `app/components/reborn/examples/text-glitch`
+  - `app/components/reborn/examples/text-highlight`
+  - `app/components/reborn/examples/text-hover-effect`
+  - `app/components/reborn/examples/text-reveal`
+  - `app/components/reborn/examples/text-reveal-card`
+  - `app/components/reborn/examples/text-scroll-reveal`
+  - `app/components/reborn/examples/timeline`
+  - `app/components/reborn/examples/tracing-beam`
+  - `app/components/reborn/examples/track`
+  - `app/components/reborn/examples/vanishing-input`
+
+## V11
+
+- 原审查报告：`P1.md`；整改自述：`fixes/P1.md`
+- 源码路径：
+  - `packages/uniapp-project/src/pages`
+  - `packages/uniapp-project/src/demo`
+  - `packages/uniapp-project/src/main.ts`
+

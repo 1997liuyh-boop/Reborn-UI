@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
@@ -7,29 +7,28 @@ import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 import { textareaColors, textareaSizes } from '@/components/reborn-textarea/reborn-textarea.config'
 import RebornTextarea from '@/components/reborn-textarea/RebornTextarea.vue'
 
-// Textarea values
-const value = ref('')
-const value1 = ref('轻轻的我走了，正如我轻轻的来；我轻轻的招手，作别西天的云彩。那河畔的金柳，是夕阳中的新娘；波光里的艳影，在我的心头荡漾。软泥上的青荇，油油的在水底招摇；在康河的柔波里，我甘心做一条水草！那榆荫下的一潭，不是清泉，是天上虹；揉碎在浮藻间，沉淀着彩虹似的梦。寻梦？撑一支长篙，向青草更青处漫溯；满载一船星辉，在星辉斑斓里放歌。但我不能放歌，悄悄是别离的笙箫；夏虫也为我沉默，沉默是今晚的康桥！悄悄的我走了，正如我悄悄的来；我挥一挥衣袖，不带走一片云彩。')
-const demoColor = ref<typeof textareaColors[number]>('primary')
-const demoSize = ref<typeof textareaSizes[number]>('md')
-const isBorder = ref(true)
-const isShowCount = ref(true)
-const isDisabled = ref(false)
-const isAutoHeight = ref(false)
-const isShowlimitSlot = ref(false)
+// 演练场与样式示例分别持有输入内容。
+const value = shallowRef('')
+const value1 = shallowRef('轻轻的我走了，正如我轻轻的来；我轻轻的招手，作别西天的云彩。那河畔的金柳，是夕阳中的新娘；波光里的艳影，在我的心头荡漾。软泥上的青荇，油油的在水底招摇；在康河的柔波里，我甘心做一条水草！那榆荫下的一潭，不是清泉，是天上虹；揉碎在浮藻间，沉淀着彩虹似的梦。寻梦？撑一支长篙，向青草更青处漫溯；满载一船星辉，在星辉斑斓里放歌。但我不能放歌，悄悄是别离的笙箫；夏虫也为我沉默，沉默是今晚的康桥！悄悄的我走了，正如我悄悄的来；我挥一挥衣袖，不带走一片云彩。')
+const demoColor = shallowRef<typeof textareaColors[number]>('primary')
+const demoSize = shallowRef<typeof textareaSizes[number]>('md')
+const isBorder = shallowRef(true)
+const isShowCount = shallowRef(true)
+const isDisabled = shallowRef(false)
+const isAutoHeight = shallowRef(false)
+const isShowlimitSlot = shallowRef(false)
 
-// Global Size Control
-// const sizes = ['sm', 'md', 'lg'] as const
-// const currentSize = ref<typeof sizes[number]>('md')
 </script>
 
 <template>
   <RebornPage title="文本域" description="多行文本输入控件。">
     <!-- Basic -->
     <RebornCard title="自定义" custom-class="flex flex-col gap-2">
-      <RebornTextarea v-model="value" :border="isBorder" :disabled="isDisabled" :show-word-limit="isShowCount"
-        :auto-height="isAutoHeight" placeholder="请输入内容..." :color="demoColor">
-        <template v-if="isShowlimitSlot" #limit="{ length, max }">
+      <RebornTextarea
+        v-if="isShowlimitSlot" v-model="value" :border="isBorder" :disabled="isDisabled"
+        :show-word-limit="isShowCount" :auto-height="isAutoHeight" placeholder="请输入内容..." :color="demoColor"
+      >
+        <template #limit="{ length, max }">
           <view class="
               absolute bottom-2 right-2 rounded bg-gray-200 px-2 py-0.5 text-xs
               text-gray-500
@@ -39,6 +38,10 @@ const isShowlimitSlot = ref(false)
           </view>
         </template>
       </RebornTextarea>
+      <RebornTextarea
+        v-else v-model="value" :border="isBorder" :disabled="isDisabled" :show-word-limit="isShowCount"
+        :auto-height="isAutoHeight" placeholder="请输入内容..." :color="demoColor"
+      />
     </RebornCard>
     <!-- Custom Styles -->
     <RebornCard title="自定义样式 (UI Prop)" custom-class="flex flex-col gap-2">

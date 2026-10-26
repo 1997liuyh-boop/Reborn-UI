@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { computed, shallowRef } from 'vue';
 import RebornHeader from "~/components/reborn/ui/reborn-header/RebornHeader.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
+const state = shallowRef<Record<string, any>>({
   title: "Reborn UI",
   toggleSide: "right",
   sticky: true,
@@ -73,10 +74,10 @@ const links = [
           <!-- 右侧操作区 -->
           <template #right>
             <div class="flex items-center gap-2">
-              <RebornButton size="sm" color="success" variant="circle">
+              <RebornButton size="sm" color="success" circle variant="filled" aria-label="搜索">
                 <Icon name="lucide:search" />
               </RebornButton>
-              <RebornButton size="sm" color="secondary" variant="circle">
+              <RebornButton size="sm" color="secondary" circle variant="filled" aria-label="切换主题">
                 <Icon name="lucide:moon" />
               </RebornButton>
               <RebornButton size="sm" class="hidden sm:flex" label="立即体验" />
@@ -100,7 +101,7 @@ const links = [
               </div>
 
               <div class="px-2">
-                <RebornButton block label="登录账户" @click="close" />
+                <RebornButton class="w-full" label="登录账户" @click="close" />
               </div>
             </div>
           </template>

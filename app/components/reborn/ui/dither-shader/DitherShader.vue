@@ -1,43 +1,44 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { useResizeObserver } from "@vueuse/core";
+import { computed, onUnmounted, shallowRef, useTemplateRef, watch } from "vue";
 
 export type DitheringMode = "bayer" | "halftone" | "noise" | "crosshatch";
 export type ColorMode = "original" | "grayscale" | "duotone" | "custom";
 
 export interface Props {
-  /** Source image URL */
+  /** 源图片地址 */
   src: string;
-  /** Size of the dithering grid cells */
+  /** 抖动网格单元的尺寸，单位 px */
   gridSize?: number;
-  /** Type of dithering pattern */
+  /** 抖动图案类型 */
   ditherMode?: DitheringMode;
-  /** Color processing mode */
+  /** 颜色处理模式 */
   colorMode?: ColorMode;
-  /** Invert the dithered output colors */
+  /** 反转抖动后的输出颜色 */
   invert?: boolean;
-  /** Pixelation multiplier (1 = no pixelation, higher = more pixelated) */
+  /** 像素化倍数（1 为不额外像素化，越大颗粒越粗） */
   pixelRatio?: number;
-  /** Primary color for duotone mode */
+  /** duotone 模式的主色 */
   primaryColor?: string;
-  /** Secondary color for duotone mode */
+  /** duotone 模式的副色 */
   secondaryColor?: string;
-  /** Custom color palette array for custom mode */
+  /** custom 模式使用的调色板 */
   customPalette?: string[];
-  /** Brightness adjustment (-1 to 1) */
+  /** 亮度调整（-1 到 1） */
   brightness?: number;
-  /** Contrast adjustment (0 to 2, 1 = normal) */
+  /** 对比度调整（0 到 2，1 为原始对比度） */
   contrast?: number;
-  /** Background color behind the dithered image */
+  /** 抖动图像背后的背景色 */
   backgroundColor?: string;
-  /** Object fit behavior */
+  /** 图片在容器内的适配方式，同 CSS object-fit */
   objectFit?: "cover" | "contain" | "fill" | "none";
-  /** Threshold bias for dithering (0 to 1) */
+  /** 抖动阈值偏移（0 到 1） */
   threshold?: number;
-  /** Enable animation effect */
+  /** 开启动画效果 */
   animated?: boolean;
-  /** Animation speed (lower = slower) */
+  /** 动画速度（越小越慢） */
   animationSpeed?: number;
-  /** Additional CSS classes for the container */
+  /** 容器追加的类名 */
   class?: string;
 }
 
@@ -59,7 +60,7 @@ const props = withDefaults(defineProps<Props>(), {
   animationSpeed: 0.02,
 });
 
-// 4x4 Bayer matrix for ordered dithering
+// 有序抖动用的 4x4 Bayer 矩阵
 const BAYER_MATRIX_4x4 = [
   [0, 8, 2, 10],
   [12, 4, 14, 6],
@@ -67,7 +68,7 @@ const BAYER_MATRIX_4x4 = [
   [15, 7, 13, 5],
 ];
 
-// 8x8 Bayer matrix for finer dithering
+// 更细腻抖动用的 8x8 Bayer 矩阵
 const BAYER_MATRIX_8x8 = [
   [0, 32, 8, 40, 2, 34, 10, 42],
   [48, 16, 56, 24, 50, 18, 58, 26],
@@ -79,13 +80,16 @@ const BAYER_MATRIX_8x8 = [
   [63, 31, 55, 23, 61, 29, 53, 21],
 ];
 
-const containerRef = useTemplateRef("containerRef");
-const canvasRef = useTemplateRef("canvasRef");
-const animationRef = ref<number | null>(null);
-const timeRef = ref<number>(0);
-const imageRef = ref<HTMLImageElement | null>(null);
-const imageDataRef = ref<ImageData | null>(null);
-const dimensions = ref({ width: 0, height: 0 });
+const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
+const canvasRef = useTemplateRef<HTMLCanvasElement>("canvasRef");
+// 容器尺寸只整体替换
+const dimensions = shallowRef({ width: 0, height: 0 });
+
+// 帧循环与离屏绘制使用的内部状态不参与模板渲染，用普通变量保存，避免每帧经过响应式代理
+let sourceImage: HTMLImageElement | null = null;
+let imageData: ImageData | null = null;
+let animationFrame: number | null = null;
+let time = 0;
 
 function parseColor(color: string): [number, number, number] {
   if (color.startsWith("#")) {
@@ -129,9 +133,9 @@ function applyDithering(
   time: number = 0,
 ) {
   const canvas = canvasRef.value;
-  if (!canvas || !imageDataRef.value) return;
+  if (!canvas || !imageData) return;
 
-  // Clear with background
+  // 用背景色清空画布
   if (props.backgroundColor !== "transparent") {
     ctx.fillStyle = props.backgroundColor;
     ctx.fillRect(0, 0, displayWidth, displayHeight);
@@ -139,19 +143,19 @@ function applyDithering(
     ctx.clearRect(0, 0, displayWidth, displayHeight);
   }
 
-  const sourceData = imageDataRef.value.data;
-  const sourceWidth = imageDataRef.value.width;
-  const sourceHeight = imageDataRef.value.height;
+  const sourceData = imageData.data;
+  const sourceWidth = imageData.width;
+  const sourceHeight = imageData.height;
 
   const effectivePixelSize = Math.max(1, Math.floor(props.gridSize * props.pixelRatio));
   const matrixSize = props.gridSize <= 4 ? 4 : 8;
   const bayerMatrix = props.gridSize <= 4 ? BAYER_MATRIX_4x4 : BAYER_MATRIX_8x8;
   const matrixScale = matrixSize === 4 ? 16 : 64;
 
-  // Process pixels
+  // 逐块处理像素
   for (let y = 0; y < displayHeight; y += effectivePixelSize) {
     for (let x = 0; x < displayWidth; x += effectivePixelSize) {
-      // Map display coordinates to source image coordinates
+      // 把显示坐标映射到源图坐标
       const srcX = Math.floor((x / displayWidth) * sourceWidth);
       const srcY = Math.floor((y / displayHeight) * sourceHeight);
       const srcIdx = (srcY * sourceWidth + srcX) * 4;
@@ -161,17 +165,18 @@ function applyDithering(
       let b = sourceData[srcIdx + 2] || 0;
       const a = sourceData[srcIdx + 3] || 0;
 
-      if (a < 10) continue; // Skip fully transparent pixels
+      // 跳过几乎全透明的像素
+      if (a < 10) continue;
 
-      // Apply brightness and contrast
+      // 应用亮度与对比度
       r = clamp((r - 128) * props.contrast + 128 + props.brightness * 255, 0, 255);
       g = clamp((g - 128) * props.contrast + 128 + props.brightness * 255, 0, 255);
       b = clamp((b - 128) * props.contrast + 128 + props.brightness * 255, 0, 255);
 
-      // Calculate luminance
+      // 计算亮度
       const luminance = getLuminance(r, g, b) / 255;
 
-      // Get dither threshold based on mode
+      // 按模式取抖动阈值
       let ditherThreshold: number;
       const matrixX = Math.floor(x / props.gridSize) % matrixSize;
       const matrixY = Math.floor(y / props.gridSize) % matrixSize;
@@ -205,10 +210,10 @@ function applyDithering(
           ditherThreshold = bayerMatrix[matrixY][matrixX] / matrixScale;
       }
 
-      // Adjust threshold with user setting
+      // 叠加用户设置的阈值偏移
       ditherThreshold = ditherThreshold * (1 - props.threshold) + props.threshold * 0.5;
 
-      // Determine output color based on color mode
+      // 按颜色模式决定输出颜色
       let outputColor: [number, number, number];
 
       switch (props.colorMode) {
@@ -229,7 +234,7 @@ function applyDithering(
               ? parsedCustomPalette.value[0]
               : parsedCustomPalette.value[1];
           } else {
-            // Quantize to closest palette color with dithering
+            // 抖动后量化到最接近的调色板颜色
             const adjustedLuminance = luminance + (ditherThreshold - 0.5) * 0.5;
             const paletteIndex = Math.floor(
               clamp(adjustedLuminance, 0, 1) * (parsedCustomPalette.value.length - 1),
@@ -240,13 +245,13 @@ function applyDithering(
         }
         case "original":
         default: {
-          // Apply dithering while preserving colors
+          // 保留原色的同时做抖动
           const ditherAmount = ditherThreshold - 0.5;
           const adjustedR = clamp(r + ditherAmount * 64, 0, 255);
           const adjustedG = clamp(g + ditherAmount * 64, 0, 255);
           const adjustedB = clamp(b + ditherAmount * 64, 0, 255);
 
-          // Quantize to fewer levels for dithered look
+          // 量化到较少的色阶，形成抖动质感
           const levels = 4;
           outputColor = [
             Math.round(adjustedR / (255 / levels)) * (255 / levels),
@@ -257,21 +262,36 @@ function applyDithering(
         }
       }
 
-      // Apply inversion
+      // 应用反色
       if (props.invert) {
         outputColor = [255 - outputColor[0], 255 - outputColor[1], 255 - outputColor[2]];
       }
 
-      // Draw the pixel
+      // 绘制像素块
       ctx.fillStyle = `rgb(${outputColor[0]}, ${outputColor[1]}, ${outputColor[2]})`;
       ctx.fillRect(x, y, effectivePixelSize, effectivePixelSize);
     }
   }
 }
 
-function processImage(img: HTMLImageElement) {
+/** 取已按 dpr 缩放好的画布上下文 */
+function getContext(): CanvasRenderingContext2D | null {
+  return canvasRef.value?.getContext("2d") ?? null;
+}
+
+/** 只重绘：抖动参数变化时调用，不重新读取像素 */
+function redraw() {
+  const ctx = getContext();
+  const { width, height } = dimensions.value;
+  if (!ctx || !imageData || width === 0 || height === 0) return;
+  applyDithering(ctx, width, height, time);
+}
+
+/** 重新离屏绘制并读取像素：只有图片、容器尺寸或 objectFit 变化时才需要 */
+function rebuildImageData() {
   const canvas = canvasRef.value;
-  if (!canvas || dimensions.value.width === 0 || dimensions.value.height === 0) return;
+  const img = sourceImage;
+  if (!canvas || !img || dimensions.value.width === 0 || dimensions.value.height === 0) return;
 
   // 注意：此处禁止用 typeof 直接判断 window 是否存在（含注释在内都不能出现该字面量组合）。
   // 本文件会被源码面板以 ?raw 内联成字符串常量，而 Nitro 的 rollup replace 会把该组合
@@ -288,7 +308,7 @@ function processImage(img: HTMLImageElement) {
   ctx.resetTransform();
   ctx.scale(dpr, dpr);
 
-  // Create offscreen canvas to get image data
+  // 用离屏画布按 objectFit 绘制后读取像素
   const offscreen = document.createElement("canvas");
   const iw = img.naturalWidth || displayWidth;
   const ih = img.naturalHeight || displayHeight;
@@ -328,88 +348,93 @@ function processImage(img: HTMLImageElement) {
   offCtx.drawImage(img, dx, dy, dw, dh);
 
   try {
-    imageDataRef.value = offCtx.getImageData(0, 0, displayWidth, displayHeight);
+    imageData = offCtx.getImageData(0, 0, displayWidth, displayHeight);
   } catch {
     console.error("Could not get image data. CORS issue?");
+    imageData = null;
     return;
   }
 
-  // Initial render
-  applyDithering(ctx, displayWidth, displayHeight, 0);
+  redraw();
+}
 
-  // Setup animation if enabled
-  if (props.animated) {
-    const animate = () => {
-      timeRef.value += props.animationSpeed;
-      applyDithering(ctx, displayWidth, displayHeight, timeRef.value);
-      animationRef.value = requestAnimationFrame(animate);
-    };
-    animationRef.value = requestAnimationFrame(animate);
+function stopLoop() {
+  if (animationFrame !== null) {
+    cancelAnimationFrame(animationFrame);
+    animationFrame = null;
   }
 }
 
-function loadImage() {
-  if (animationRef.value) {
-    cancelAnimationFrame(animationRef.value);
-    animationRef.value = null;
-  }
+/** 开启动画循环；开新循环前先停掉旧的，任何时候最多只有一条 rAF 循环 */
+function startLoop() {
+  stopLoop();
+  if (!props.animated) return;
+  const animate = () => {
+    time += props.animationSpeed;
+    redraw();
+    animationFrame = requestAnimationFrame(animate);
+  };
+  animationFrame = requestAnimationFrame(animate);
+}
 
-  // If image is already loaded, reprocess it
-  if (imageRef.value && imageRef.value.complete) {
-    processImage(imageRef.value);
-  } else {
-    // Load the image
+// 加载图片：src 变化时重新加载，watcher 清理时把旧请求标记为过期，晚到的旧图不会覆盖新图。
+// 只在客户端执行，服务端没有 Image
+watch(
+  () => props.src,
+  (src, _oldSrc, onCleanup) => {
+    if (!import.meta.client) return;
+    let stale = false;
+    onCleanup(() => {
+      stale = true;
+    });
+
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = props.src;
+    img.src = src;
 
     img.onload = () => {
-      imageRef.value = img;
-      processImage(img);
+      if (stale) return;
+      sourceImage = img;
+      rebuildImageData();
+      startLoop();
     };
 
     img.onerror = () => {
-      console.error("Failed to load image for DitherShader:", props.src);
+      if (stale) return;
+      console.error("Failed to load image for DitherShader ", src);
     };
-  }
-}
+  },
+  { immediate: true },
+);
 
-// Setup resize observer
-let resizeObserver: ResizeObserver | null = null;
-
-onMounted(() => {
-  const container = containerRef.value;
-  if (!container) return;
-
-  resizeObserver = new ResizeObserver((entries) => {
-    for (const entry of entries) {
-      const { width, height } = entry.contentRect;
-      if (width > 0 && height > 0) {
-        dimensions.value = { width, height };
-      }
+// 容器尺寸观察：卸载时自动断开
+useResizeObserver(containerRef, (entries) => {
+  for (const entry of entries) {
+    const { width, height } = entry.contentRect;
+    if (width > 0 && height > 0) {
+      dimensions.value = { width, height };
     }
-  });
-
-  resizeObserver.observe(container);
-});
-
-onUnmounted(() => {
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-  }
-  if (animationRef.value) {
-    cancelAnimationFrame(animationRef.value);
   }
 });
 
-// Watch for changes that should trigger reprocessing
+// 影响像素读取的量：重新离屏绘制
+watch([dimensions, () => props.objectFit], rebuildImageData);
+
+// 开关动画
+watch(
+  () => props.animated,
+  (animated) => {
+    if (animated) startLoop();
+    else {
+      stopLoop();
+      redraw();
+    }
+  },
+);
+
+// 只影响抖动计算的参数：动画模式下一帧自然生效，静态模式重绘一次即可
 watch(
   [
-    () => props.src,
-    () => dimensions.value,
-    () => props.objectFit,
-    () => props.animated,
-    () => props.animationSpeed,
     () => props.gridSize,
     () => props.ditherMode,
     () => props.colorMode,
@@ -424,15 +449,26 @@ watch(
     () => props.threshold,
   ],
   () => {
-    loadImage();
+    if (animationFrame === null) redraw();
   },
   { deep: true },
 );
+
+onUnmounted(stopLoop);
 </script>
 
 <template>
-  <div ref="containerRef" :class="props.class" class="relative h-full w-full">
-    <canvas ref="canvasRef" class="absolute inset-0 h-full w-full" style="image-rendering: pixelated"
-      aria-label="Dithered image" role="img" />
+  <div
+    ref="containerRef"
+    :class="props.class"
+    class="relative h-full w-full"
+  >
+    <canvas
+      ref="canvasRef"
+      class="absolute inset-0 h-full w-full"
+      style="image-rendering: pixelated"
+      aria-label="Dithered image"
+      role="img"
+    />
   </div>
 </template>

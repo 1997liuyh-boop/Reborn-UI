@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { onMounted, shallowRef, watch } from "vue";
 
 interface Props {
   starsCount?: number;
@@ -26,13 +26,13 @@ function random(min: number, max: number): number {
 }
 
 function randomSize(): number {
-  // Randomly return either 1 or 2
+  // 随机返回 1 或 2
   return Math.random() < 0.5 ? 1 : 2;
 }
 
-const stars = computed(() =>
-  Array.from(
-    { length: props.starsCount },
+function createStars(count: number): Star[] {
+  return Array.from(
+    { length: count },
     (_, i): Star => ({
       id: i,
       top: `${random(0, 100)}%`,
@@ -44,23 +44,43 @@ const stars = computed(() =>
       opacityStart: random(0.1, 0.3),
       opacityEnd: random(0.7, 1),
     }),
-  ),
+  );
+}
+
+// 随机星点只在客户端生成一次并缓存：服务端与客户端各算一次会导致水合 style 不一致，
+// 放在 computed 里还会在每次重新求值时重新随机；数量变化时才重新生成
+const stars = shallowRef<Star[]>([]);
+
+onMounted(() => {
+  stars.value = createStars(props.starsCount);
+});
+
+watch(
+  () => props.starsCount,
+  (count) => {
+    stars.value = createStars(count);
+  },
 );
 </script>
 
 <template>
   <div class="absolute inset-0 overflow-hidden">
-    <div v-for="star in stars" :key="star.id" :style="{
-      top: star.top,
-      left: star.left,
-      width: `${star.size}px`,
-      height: `${star.size}px`,
-      '--reborn-twinkle-duration': `${star.twinkleDuration}s`,
-      '--reborn-drift-duration': `${star.driftDuration}s`,
-      '--reborn-drift-direction': `${star.driftDirection}px`,
-      '--reborn-opacity-start': star.opacityStart,
-      '--reborn-opacity-end': star.opacityEnd,
-    }" class="star absolute rounded-full bg-white" />
+    <div
+      v-for="star in stars"
+      :key="star.id"
+      :style="{
+        top: star.top,
+        left: star.left,
+        width: `${star.size}px`,
+        height: `${star.size}px`,
+        '--reborn-twinkle-duration': `${star.twinkleDuration}s`,
+        '--reborn-drift-duration': `${star.driftDuration}s`,
+        '--reborn-drift-direction': `${star.driftDirection}px`,
+        '--reborn-opacity-start': star.opacityStart,
+        '--reborn-opacity-end': star.opacityEnd,
+      }"
+      class="star absolute rounded-full bg-white"
+    />
   </div>
 </template>
 

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { HTMLAttributes } from "vue";
-import { ref, watchEffect } from "vue";
+import { onBeforeUnmount, ref, useTemplateRef } from "vue";
 
 interface RippleButtonProps {
   class?: HTMLAttributes["class"];
@@ -17,8 +17,13 @@ const emit = defineEmits<{
   (e: "click", event: MouseEvent): void;
 }>();
 
-const rippleButtonRef = ref<HTMLButtonElement | null>(null);
+const rippleButtonRef = useTemplateRef<HTMLButtonElement>("rippleButtonRef");
 const buttonRipples = ref<Array<{ x: number; y: number; size: number; key: number }>>([]);
+
+/** 涟漪的自增 key：Date.now() 在同一毫秒内连点会重复 */
+let rippleKey = 0;
+/** 各涟漪的移除定时器，卸载时统一清除 */
+const removeTimers = new Set<ReturnType<typeof setTimeout>>();
 
 function handleClick(event: MouseEvent) {
   createRipple(event);
@@ -34,17 +39,21 @@ function createRipple(event: MouseEvent) {
   const x = event.clientX - rect.left - size / 2;
   const y = event.clientY - rect.top - size / 2;
 
-  const newRipple = { x, y, size, key: Date.now() };
-  buttonRipples.value.push(newRipple);
+  const key = ++rippleKey;
+  buttonRipples.value.push({ x, y, size, key });
+
+  // 每条涟漪在创建时各排一个移除定时器：事件驱动的清理放在事件处理里，
+  // 用 watchEffect 驱动会在每次增删时重跑，给剩下的涟漪重复排定时器
+  const timer = setTimeout(() => {
+    removeTimers.delete(timer);
+    buttonRipples.value = buttonRipples.value.filter(ripple => ripple.key !== key);
+  }, props.duration);
+  removeTimers.add(timer);
 }
 
-watchEffect(() => {
-  if (buttonRipples.value.length > 0) {
-    const lastRipple = buttonRipples.value[buttonRipples.value.length - 1];
-    setTimeout(() => {
-      buttonRipples.value = buttonRipples.value.filter((ripple) => ripple.key !== lastRipple.key);
-    }, props.duration);
-  }
+onBeforeUnmount(() => {
+  removeTimers.forEach(clearTimeout);
+  removeTimers.clear();
 });
 </script>
 

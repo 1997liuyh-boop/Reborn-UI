@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { DemoBlock, DemoSection } from '#components';
+import RebornSticky from '~/components/reborn/ui/reborn-sticky/RebornSticky.vue';
 /** 吸顶演示需要一段可滚动内容，列表本身无背景，靠分隔线区分条目 */
 const listA = Array.from({ length: 8 }, (_, i) => i + 1);
 const listB = Array.from({ length: 8 }, (_, i) => i + 1);

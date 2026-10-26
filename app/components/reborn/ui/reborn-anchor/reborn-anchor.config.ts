@@ -1,9 +1,6 @@
 import type { ClassValue } from "clsx";
-import type { ComputedRef } from "vue";
+import type { ComputedRef, InjectionKey } from "vue";
 import { tv } from "~/lib/tv";
-
-/** 父子组件通信用的 provide/inject 键 */
-export const ANCHOR_INJECTION_KEY = "reborn-anchor";
 
 const anchorTypes = ["default", "underline"] as const;
 const anchorDirections = ["vertical", "horizontal"] as const;
@@ -87,6 +84,9 @@ export interface AnchorContext {
   handleClick: (event: MouseEvent, meta: AnchorLinkMeta) => void;
 }
 
+/** 父子组件通信用的注入键（Symbol），注入方据此拿到 AnchorContext 类型 */
+export const ANCHOR_INJECTION_KEY: InjectionKey<AnchorContext> = Symbol("reborn-anchor");
+
 /** 可覆盖的样式区域 */
 export type AnchorUI = Partial<{
   root: ClassValue;
@@ -164,19 +164,22 @@ const theme = tv({
     },
   },
   compoundVariants: [
-    // default 类型的轨道线：标记就压在这条线上，滑过时看着像轨道被逐段点亮
+    // default 类型的轨道线：标记就压在这条线上，滑过时看着像轨道被逐段点亮。
+    // 颜色取 gray-3 而不是 gray-2：浅色主题里 --color-elevated 就是 gray-2，Nuxt UI 的 bg-elevated 也只差两三个色值，
+    // 锚点一放进填充面板，gray-2 的轨道线就与底色重合，default 与 underline 看起来完全一样。
+    // gray-3 与时间轴连线、标签页分隔线同档，在白底和填充底上都看得出来
     {
       type: "default",
       direction: "vertical",
       class: {
-        list: "before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:rounded-full before:bg-gray-2 before:content-['']",
+        list: "before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:rounded-full before:bg-gray-3 before:content-['']",
       },
     },
     {
       type: "default",
       direction: "horizontal",
       class: {
-        list: "before:absolute before:inset-x-0 before:bottom-0 before:h-0.5 before:rounded-full before:bg-gray-2 before:content-['']",
+        list: "before:absolute before:inset-x-0 before:bottom-0 before:h-0.5 before:rounded-full before:bg-gray-3 before:content-['']",
       },
     },
     // 纵向标记：三种形态都是固定尺寸，组件只写中线位置，靠 -translate-y-1/2 自己居中

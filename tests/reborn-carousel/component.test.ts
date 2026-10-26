@@ -541,3 +541,21 @@ it('实际动画落后于连续指令时先滑向安全区，不执行越界周�
     assert.equal(t.exposed.value.activeIndex, 4);
   } finally { t.stop(); }
 });
+
+it('越界的初始索引在 SSR 首屏与客户端首帧即被钳制，始终有一项处于激活态', async () => {
+  for (const [props, expected] of [[{ initialSlide: 5 }, 3], [{ loop: true, initialSlide: -1 }, 3], [{ modelValue: 9 }, 3]] as const) {
+    const app = createSSRApp({ render: () => h(ServerCarousel, { ...props, pagination: { type: 'button' } }, { default: () => [0, 1, 2].map(index => h('article', `内容 ${index}`)) }) });
+    app.component('Icon', { render: () => h('svg') });
+    const html = await renderToString(app);
+    assert.match(html, new RegExp(`aria-label="切换到第 ${expected} 项"[^>]*aria-current="true"`), JSON.stringify(props));
+    // 客户端首帧：挂载后、watch(slideCount) 的 nextTick 钳制之前
+    const root = new Element('root');
+    const client = renderer.createApp(defineComponent({ setup: () => () => h(Carousel, { ...props, pagination: { type: 'button' } }, { default: () => [0, 1, 2].map(index => h('article', { key: index }, `内容 ${index}`)) }) }));
+    client.component('Icon', { render: () => h('svg') });
+    client.mount(root);
+    try {
+      const current = flatten(root).filter(node => node.type === 'button' && node.props['aria-current'] === 'true').map(node => node.props['aria-label']);
+      assert.deepEqual(current, [`切换到第 ${expected} 项`], JSON.stringify(props));
+    } finally { client.unmount(); frames.clear(); }
+  }
+});

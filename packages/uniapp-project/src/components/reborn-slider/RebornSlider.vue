@@ -2,7 +2,7 @@
 import type { ClassValue } from 'clsx'
 import type { CSSProperties } from 'vue'
 import type { sliderColors, sliderSizes } from './reborn-slider.config'
-import { computed, getCurrentInstance, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, shallowRef, watch } from 'vue'
 
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
@@ -14,8 +14,6 @@ defineOptions({
 })
 
 const props = withDefaults(defineProps<SliderProps>(), {
-  modelValue: 0,
-  values: () => [0, 0],
   min: 0,
   max: 100,
   step: 1,
@@ -33,7 +31,13 @@ const props = withDefaults(defineProps<SliderProps>(), {
   ui: () => ({}),
 })
 
-const emit = defineEmits(['update:modelValue', 'update:values', 'change', 'changing', 'changeComplete'])
+const emit = defineEmits<{
+  change: [value: number | number[]]
+  changing: [value: number | number[]]
+  changeComplete: [value: number | number[]]
+}>()
+const model = defineModel<number>({ default: 0 })
+const values = defineModel<number[]>('values', { default: () => [0, 0] })
 
 /**
  * 刻度标记：key 必须是 [min, max] 闭区间内的数字（越界或非法的 key 会被忽略），
@@ -50,10 +54,6 @@ export interface SliderTooltip {
 }
 
 export interface SliderProps {
-  /** v-model 绑定的值，单值模式使用 */
-  modelValue?: number
-  /** v-model:values 绑定的值，范围模式使用，editable 时长度可变 */
-  values?: number[]
   /** 最小值 */
   min?: number
   /** 最大值 */
@@ -124,6 +124,7 @@ export interface SliderProps {
 }
 
 const { proxy } = getCurrentInstance()!
+let disposed = false
 
 // reborn-form 上下文
 const { disabled: fieldGroupDisabled, size: fieldGroupSize, validate } = useFormInject(props)
@@ -228,28 +229,28 @@ const ui = computed(() => {
 })
 
 // 当前滑块的值，单值模式
-const value = ref<number>(props.modelValue)
+const value = computed(() => Math.max(props.min, Math.min(props.max, model.value)))
 
 /** range 模式的节点数组，始终保持升序，editable 时长度可变 */
-const rangeValue = ref<number[]>([...props.values])
+const rangeValue = computed(() => values.value.map(item => Math.max(props.min, Math.min(props.max, item))))
 
 /** 激活节点下标：默认最右侧，此后跟随用户最近一次触摸的滑块 */
-const activeThumbIndex = ref<number>(Math.max(0, props.values.length - 1))
+const activeThumbIndex = shallowRef<number>(Math.max(0, values.value.length - 1))
 
 /** 是否处于触摸拖拽中（色晕与气泡据此显示） */
-const dragging = ref(false)
+const dragging = shallowRef(false)
 
 /** 是否处于选区整体平移中（draggableTrack） */
-const trackDragging = ref(false)
+const trackDragging = shallowRef(false)
 let trackDragStartValue = 0
 let trackDragBaseNodes: number[] = []
 
 /** 可编辑模式下正被拖离滑轨的节点下标，松手即删除；拖回则恢复 */
-const removingIndex = ref<number | null>(null)
+const removingIndex = shallowRef<number | null>(null)
 
 /** 轨道与交互带的测量结果（touchstart 时刷新，拖拽期间复用） */
-const trackRect = ref({ left: 0, top: 0, width: 0, height: 0 })
-const innerRect = ref({ left: 0, top: 0, width: 0, height: 0 })
+const trackRect = shallowRef({ left: 0, top: 0, width: 0, height: 0 })
+const innerRect = shallowRef({ left: 0, top: 0, width: 0, height: 0 })
 
 /** 触摸点距滑块中心多少像素内算「抓住滑块」（手指精度放宽到 16px） */
 const GRAB_THRESHOLD = 16
@@ -311,6 +312,19 @@ function thumbStyle(pct: number) {
 }
 
 const singleThumbStyle = computed(() => thumbStyle(percentage.value))
+/** 静态刻度的样式不随拖拽值重算。 */
+const stopDots = computed(() => stopValues.value.map(value => ({ value, cls: ui.value.stopDot(), style: thumbStyle(toPct(value)) })))
+const renderedMarks = computed(() => markList.value.map(mark => ({ ...mark, dotClass: ui.value.markDot(), labelClass: ui.value.markLabel(), position: thumbStyle(toPct(mark.value)) })))
+
+// 同步提交后用于同一交互的收尾载荷；父级刷新后重新以 model 为准。
+let pendingValue: number | undefined
+let pendingNodes: number[] | undefined
+let bridgeScheduled = false
+function scheduleBridgeReset() {
+  if (bridgeScheduled) return
+  bridgeScheduled = true
+  nextTick(() => { pendingValue = undefined; pendingNodes = undefined; bridgeScheduled = false })
+}
 
 // 计算要显示的数值文本
 const displayValue = computed<string>(() => {
@@ -348,7 +362,8 @@ function measure(): Promise<void> {
     query.select('.reborn-slider__track').boundingClientRect()
     query.select('.reborn-slider__inner').boundingClientRect()
     query.exec((res) => {
-      const [trackNode, innerNode] = res
+      if (disposed) { resolve(); return }
+      const [trackNode, innerNode] = res ?? []
       if (trackNode) {
         trackRect.value = {
           left: trackNode.left ?? 0,
@@ -455,23 +470,25 @@ function canDragTrack(): boolean {
 
 /** 提交节点数组：写内部状态并向外发 update:values + change（changing 兼容保留） */
 function commitNodes(arr: number[]) {
-  rangeValue.value = arr
-  emit('update:values', [...arr])
+  pendingNodes = [...arr]
+  values.value = [...arr]
+  scheduleBridgeReset()
   emit('change', [...arr])
   emit('changing', [...arr])
 }
 
 function updateValue(newValue: number) {
   if (value.value !== newValue) {
-    value.value = Math.max(props.min, Math.min(props.max, newValue))
-    emit('update:modelValue', newValue)
+    pendingValue = Math.max(props.min, Math.min(props.max, newValue))
+    model.value = pendingValue
+    scheduleBridgeReset()
     emit('change', newValue)
     emit('changing', newValue)
   }
 }
 
 function emitChangeComplete() {
-  emit('changeComplete', props.range ? [...rangeValue.value] : value.value)
+  emit('changeComplete', props.range ? [...(pendingNodes ?? rangeValue.value)] : (pendingValue ?? value.value))
   if (validate) { validate('change') }
 }
 
@@ -545,14 +562,18 @@ function onMarkClick(markValue: number) {
 }
 
 // 触摸开始事件：先测量轨道位置，再按 抓滑块 → 选区平移 → 添加节点 → 就近移动 的优先级分派
+let touchSeq = 0
+let releasedSeq = -1
+onBeforeUnmount(() => { disposed = true; touchSeq++ })
 async function onTouchStart(e: TouchEvent) {
   if (isDisabled.value) { return }
 
-  await measure()
-
+  const seq = ++touchSeq
   const touch = e.touches[0]
   if (!touch) { return }
   const coords = { clientX: touch.clientX, clientY: touch.clientY }
+  await measure()
+  if (disposed || seq !== touchSeq || isDisabled.value) return
   const val = calculateValue(coords)
 
   dragging.value = true
@@ -588,6 +609,7 @@ async function onTouchStart(e: TouchEvent) {
   else {
     updateValue(val)
   }
+  if (releasedSeq === seq) onTouchEnd()
 }
 
 // 触摸移动事件
@@ -630,6 +652,7 @@ function onTouchMove(e: TouchEvent) {
 
 // 触摸结束事件
 function onTouchEnd() {
+  releasedSeq = touchSeq
   if (!dragging.value) { return }
   dragging.value = false
   trackDragging.value = false
@@ -642,28 +665,9 @@ function onTouchEnd() {
   emitChangeComplete()
 }
 
-// 监听外部传入的 modelValue 变化
-watch(
-  () => props.modelValue,
-  (newModelValue: number) => {
-    if (newModelValue !== value.value) {
-      value.value = Math.max(props.min, Math.min(props.max, newModelValue))
-    }
-  },
-  { immediate: true },
-)
-
-// 监听外部传入的 values 变化
-watch(
-  () => props.values,
-  (newValues: number[]) => {
-    rangeValue.value = newValues.map((singleValue) => {
-      return Math.max(props.min, Math.min(props.max, singleValue))
-    })
-    activeThumbIndex.value = Math.min(activeThumbIndex.value, Math.max(0, newValues.length - 1))
-  },
-  { immediate: true },
-)
+watch(() => rangeValue.value.length, length => {
+  activeThumbIndex.value = Math.min(activeThumbIndex.value, Math.max(0, length - 1))
+})
 </script>
 
 <template>
@@ -680,34 +684,34 @@ watch(
         <view :class="ui.progress()" :style="progressStyle" />
         <!-- 间断点：按步长撒点 -->
         <view
-          v-for="v in stopValues" :key="`stop-${v}`" :class="ui.stopDot()"
-          :style="thumbStyle(toPct(v))"
+          v-for="dot in stopDots" :key="`stop-${dot.value}`" :class="dot.cls"
+          :style="dot.style"
         />
         <!-- 刻度点：位置与滑块共用显示轴换算 -->
         <view
-          v-for="m in markList" :key="`dot-${m.value}`" :class="ui.markDot()"
-          :style="thumbStyle(toPct(m.value))"
+          v-for="m in renderedMarks" :key="`dot-${m.value}`" :class="m.dotClass"
+          :style="m.position"
         />
       </view>
 
       <!-- 刻度文字：单个标记的 style 以内联样式叠加，点按精确跳转 -->
       <view
-        v-for="m in markList" :key="`label-${m.value}`" :class="ui.markLabel()"
-        :style="[thumbStyle(toPct(m.value)), m.style ?? {}]" @tap.stop="onMarkClick(m.value)"
+        v-for="m in renderedMarks" :key="`label-${m.value}`" :class="m.labelClass"
+        :style="[m.position, m.style ?? {}]" @tap.stop="onMarkClick(m.value)"
       >
         {{ m.label }}
       </view>
 
       <!-- 单滑块模式：恒为激活态 -->
       <template v-if="!range">
-        <slot name="thumb" :value="{ value: displayValue, style: singleThumbStyle }">
-          <view :class="ui.thumb({ pressed: thumbPressed(0) })" :style="singleThumbStyle">
+        <view :class="ui.thumb({ pressed: thumbPressed(0), handleDisabled: isDisabled })" :style="singleThumbStyle">
+          <slot name="thumb" :value="value" :index="0" :active="true" :disabled="isDisabled">
             <view :class="ui.thumbDot()" />
-            <view v-if="thumbTooltipVisible(0)" :class="ui.tooltip()">
-              {{ tooltipContent(value) }}
-            </view>
+          </slot>
+          <view v-if="thumbTooltipVisible(0)" :class="ui.tooltip()">
+            {{ tooltipContent(value) }}
           </view>
-        </slot>
+        </view>
       </template>
 
       <!-- 多滑块模式：最近一次触摸的为激活态（默认最右侧），未激活的小一号且无色晕 -->
@@ -720,12 +724,14 @@ watch(
             removing: removingIndex === i,
           })" :style="thumbStyle(pct)"
         >
-          <view
-            :class="ui.thumbDot({
-              active: i === activeThumbIndex && !handleDisabled(i),
-              handleDisabled: handleDisabled(i),
-            })"
-          />
+          <slot name="thumb" :value="rangeValue[i]" :index="i" :active="i === activeThumbIndex && !handleDisabled(i)" :disabled="handleDisabled(i)">
+            <view
+              :class="ui.thumbDot({
+                active: i === activeThumbIndex && !handleDisabled(i),
+                handleDisabled: handleDisabled(i),
+              })"
+            />
+          </slot>
           <view v-if="thumbTooltipVisible(i)" :class="ui.tooltip()">
             {{ tooltipContent(rangeValue[i]) }}
           </view>

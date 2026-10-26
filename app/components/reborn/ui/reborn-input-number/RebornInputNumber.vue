@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
+import type { StyleValue } from 'vue';
 import type {
   inputNumberAligns,
   inputNumberColors,
@@ -7,7 +8,7 @@ import type {
   inputNumberSizes,
   inputNumberVariants,
 } from "./reborn-input-number.config";
-import { computed, onMounted, ref, toRef, useAttrs } from "vue";
+import { computed, getCurrentInstance, onMounted, shallowRef, toRef, useAttrs, useTemplateRef } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -47,6 +48,21 @@ const emit = defineEmits<{
   (e: "focus", event: FocusEvent): void;
   /** 输入框失去焦点（并完成数值修正）后触发 */
   (e: "blur", event: FocusEvent): void;
+}>();
+
+defineSlots<{
+  /** 减号按钮图标；iconClass 为内置图标的类名 */
+  minus?: (props: { iconClass: string }) => any;
+  /** minus 的旧插槽名，保留以兼容既有用法 */
+  decrement?: (props: { iconClass: string }) => any;
+  /** 加号按钮图标；iconClass 为内置图标的类名 */
+  plus?: (props: { iconClass: string }) => any;
+  /** plus 的旧插槽名，保留以兼容既有用法 */
+  increment?: (props: { iconClass: string }) => any;
+  /** 输入框前缀 */
+  prefix?: () => any;
+  /** 输入框后缀 */
+  suffix?: () => any;
 }>();
 
 const b = tv(theme);
@@ -158,23 +174,35 @@ export interface InputNumberProps {
 /** 绑定值；未绑定 v-model 时由 defineModel 内部保存本地值 */
 const model = defineModel<number | null | undefined>();
 
-// 非受控模式打底：仅在完全未绑定时用 defaultValue 初始化
-if (model.value === undefined) {
+/**
+ * 是否绑定了 v-model。model.value === undefined 区分不了「没绑定」和「绑定了 undefined」，
+ * 后者若被改写成 null，会改动父组件状态，也会让 z.number().optional() 这类校验报错；
+ * 判定方式与 useFormInject 判断显式 size 一致，读 vnode 上实际传入的属性
+ */
+const vnodeProps = getCurrentInstance()?.vnode.props ?? {};
+const isModelBound = "modelValue" in vnodeProps || "model-value" in vnodeProps || "onUpdate:modelValue" in vnodeProps;
+
+// 非受控模式打底：仅在真正未绑定时用 defaultValue 初始化
+if (!isModelBound && model.value === undefined) {
   model.value = props.defaultValue ?? null;
 }
 
 const attrs = useAttrs();
-const inputRef = ref<HTMLInputElement | null>(null);
+/** 每次渲染读取最新透传样式，避免缓存非响应式 attrs。 */
+function rootStyle(): StyleValue {
+  return attrs.style as StyleValue;
+}
+const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
 
 /**
  * 键入过程中的原始文本。
  * 为 null 表示不处于键入态，显示值由绑定值推导；非 null 时原样回显，
  * 以便用户能输入 "-"、"1." 这类尚不可解析的中间状态。
  */
-const userInput = ref<string | null>(null);
+const userInput = shallowRef<string | null>(null);
 
 /** 输入框是否持有焦点；changeOnWheel 依赖它来避免误吞页面滚动 */
-const isFocused = ref(false);
+const isFocused = shallowRef(false);
 
 const {
   orientation,
@@ -214,10 +242,10 @@ const ui = computed(() => {
   };
 });
 
-const inputAttrs = computed(() => {
+function inputAttrs() {
   const { class: _class, style: _style, ...rest } = attrs;
   return rest;
-});
+}
 
 // ─── 精度计算 ───────────────────────────────────────────────────
 
@@ -467,8 +495,9 @@ defineExpose({
 </script>
 
 <template>
-  <div :class="ui.wrapper({ class: props.class })" :data-disabled="isDisabled" :data-readonly="props.readonly"
-    @click="inputRef?.focus()">
+  <!-- class 走 prop、style 落在根节点（wrapper），其余透传属性落在原生 input -->
+  <div :class="ui.wrapper({ class: props.class })" :style="rootStyle()" :data-disabled="isDisabled"
+    :data-readonly="props.readonly" @click="inputRef?.focus()">
     <!-- 左右分列布局：减按钮在最左 -->
     <template v-if="showControls && !isControlsStacked">
       <button type="button" tabindex="-1" :class="ui.button()" :disabled="isDecreaseDisabled" @click.stop="stepBy(-1)">
@@ -486,7 +515,7 @@ defineExpose({
       <slot name="prefix" />
     </span>
 
-    <input :id="props.id" ref="inputRef" v-bind="inputAttrs" type="text" role="spinbutton" :inputmode="props.inputmode"
+    <input :id="props.id" ref="inputRef" v-bind="inputAttrs()" type="text" role="spinbutton" :inputmode="props.inputmode"
       :name="props.name" :aria-label="props.ariaLabel" :tabindex="props.tabindex" :placeholder="props.placeholder"
       :value="displayValue" :disabled="isDisabled" :readonly="props.readonly" :aria-valuenow="model ?? undefined"
       :aria-valuemin="props.min" :aria-valuemax="props.max" :class="ui.input()" @input="handleInput"

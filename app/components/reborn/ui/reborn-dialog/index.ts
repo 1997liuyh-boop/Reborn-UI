@@ -2,7 +2,7 @@ import type { VNode } from "vue";
 import type { RebornDialogProps } from "./RebornDialog.vue";
 import { Icon } from "#components";
 import { useNuxtApp } from "#imports";
-import { createVNode, defineComponent, getCurrentInstance, h, ref, render } from "vue";
+import { createVNode, defineComponent, getCurrentInstance, h, render, shallowRef } from "vue";
 import RebornButton from "../reborn-button/RebornButton.vue";
 import RebornDialog from "./RebornDialog.vue";
 
@@ -113,9 +113,9 @@ function createModal(type: ModalType, options: ModalMethodOptions = {}): ModalRe
   const preset = TYPE_PRESETS[type];
   const useLoading = onLoading !== false;
 
-  const open = ref(true);
-  const okLoading = ref(false);
-  const cancelLoading = ref(false);
+  const open = shallowRef(true);
+  const okLoading = shallowRef(false);
+  const cancelLoading = shallowRef(false);
 
   const container = document.createElement("div");
   let destroyed = false;

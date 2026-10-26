@@ -5,13 +5,9 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { mdcCode, loadFilesByPath } = useComponentCode({ 
+const { mdcCode } = useComponentCode(() => ({
     paths: props.paths 
-});
-
-watch(() => props.paths, (newPaths) => {
-    loadFilesByPath(newPaths);
-}, { deep: true });
+}));
 </script>
 
 <template>

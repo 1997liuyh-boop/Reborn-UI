@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, shallowRef, useTemplateRef } from 'vue';
 import {
   inputNumberAligns,
   inputNumberColors,
@@ -34,7 +35,7 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 最近一次 change 事件的参数，回调形如 (新值, 旧值) */
-const lastChange = ref<{ value: number | null; oldValue: number | null } | null>(null);
+const lastChange = shallowRef<{ value: number | null; oldValue: number | null } | null>(null);
 
 function handleChange(value: number | null, oldValue: number | null) {
   lastChange.value = { value, oldValue };
@@ -158,40 +159,40 @@ const codeExtras = ['@change="handleChange"'];
 
 // 各 section 独立持有绑定值，避免调整一处示例牵连其他示例
 // 基础用法
-const basicValue = ref(5);
+const basicValue = shallowRef(5);
 
-const shapeValue = ref(5);
-const variantValue = ref(12);
-const layoutValue = ref(5);
-const customValue = ref(8);
-const themedValue = ref(8);
+const shapeValue = shallowRef(5);
+const variantValue = shallowRef(12);
+const layoutValue = shallowRef(5);
+const customValue = shallowRef(8);
+const themedValue = shallowRef(8);
 
 // 禁用与只读
-const lockedValue = ref(42);
+const lockedValue = shallowRef(42);
 
 // 精度：step 为 0.1 时即便 precision 传 0，也会按 step 的小数位保留 1 位
-const precisionValue = ref(1.5);
-const stepPrecisionValue = ref(1);
+const precisionValue = shallowRef(1.5);
+const stepPrecisionValue = shallowRef(1);
 
 // 前后缀
-const priceValue = ref(199);
-const weightValue = ref(2.5);
+const priceValue = shallowRef(199);
+const weightValue = shallowRef(2.5);
 
 // 更新时机对比
-const changeModeValue = ref(50);
-const inputModeValue = ref(50);
+const changeModeValue = shallowRef(50);
+const inputModeValue = shallowRef(50);
 
 // 步进倍数
-const strictlyValue = ref(10);
+const strictlyValue = shallowRef(10);
 
 // 键盘与滚轮
-const keyboardOnValue = ref(30);
-const keyboardOffValue = ref(30);
-const wheelValue = ref(30);
+const keyboardOnValue = shallowRef(30);
+const keyboardOffValue = shallowRef(30);
+const wheelValue = shallowRef(30);
 
 // 格式化与解析：formatter 只影响展示文本，parser 在提交前把文本还原为数值
-const formattedValue = ref(1234567);
-const percentValue = ref(60);
+const formattedValue = shallowRef(1234567);
+const percentValue = shallowRef(60);
 
 /** 千分位格式化，如 1234567 → 1,234,567 */
 function formatThousands(v: number | string) {
@@ -214,8 +215,8 @@ function parsePercent(text: string) {
 }
 
 // focus(cursor) 演示
-const cursorValue = ref(1234);
-const cursorInputRef = ref<InstanceType<typeof RebornInputNumber> | null>(null);
+const cursorValue = shallowRef(1234);
+const cursorInputRef = useTemplateRef<InstanceType<typeof RebornInputNumber>>("cursorInputRef");
 
 /** 调用组件暴露的 focus()，按 cursor 决定焦点落位 */
 function focusWithCursor(cursor: "start" | "end" | "all") {

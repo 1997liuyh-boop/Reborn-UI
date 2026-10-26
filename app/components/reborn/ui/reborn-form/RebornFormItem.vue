@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, provide, useSlots } from 'vue'
-import { useFieldGroupItem } from '~/composables/useFieldGroup'
+import type { formItemLabelPositions } from './reborn-form-item.config'
+import { computed, provide, toRef, useSlots } from 'vue'
+import { FORM_ITEM_KEY, useFieldGroupItem } from '~/composables/useFieldGroup'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
-import theme, { formItemLabelPositions } from './reborn-form-item.config'
+import theme from './reborn-form-item.config'
 
 /**
  * RebornFormItem Props 定义 (与 UniApp 版一致)
@@ -47,10 +48,9 @@ const {
 } = useFieldGroupItem(props)
 
 // 提供给子组件 (Input 等) 的上下文
-provide('rebornFormItem', {
+provide(FORM_ITEM_KEY, {
     isError: computed(() => !!error.value),
     validate,
-    size,
 })
 
 const labelStyle = computed(() => {
@@ -64,8 +64,13 @@ const b = tv(theme)
 const uiOverrides = computed(() => props.ui || {})
 
 const slots = useSlots()
-// 是否有标签，决定表单项之间的间距（有标签 24px / 无标签 16px）
-const hasLabel = computed(() => !!(props.label || slots.label))
+/**
+ * 是否有标签，决定表单项之间的间距（有标签 24px / 无标签 16px）。
+ * 插槽不是响应式数据，放进 computed 会在 label 插槽动态增删后不刷新，所以在渲染期由 ui.root() 调用
+ */
+function hasLabel() {
+    return !!(props.label || slots.label)
+}
 
 /** 错误信息排在控件右侧（true）还是浮在控件下方（false），由父级 RebornForm 的 inlineMessage 决定 */
 const inlineMessage = computed(() => form?.props?.inlineMessage === true)
@@ -81,11 +86,11 @@ const ui = computed(() => {
         error: !!error.value,
         labelPosition: labelPosition.value as any,
         size: size.value as any,
-        hasLabel: hasLabel.value,
         inlineMessage: inlineMessage.value,
     })
     return {
-        root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.class, uiOverrides.value.root) }),
+        // hasLabel 只影响根节点，作为 slot 级变体在渲染期传入，不进 computed 缓存
+        root: (opts?: { class?: any }) => styles.root({ hasLabel: hasLabel(), class: cn(opts?.class, props.class, uiOverrides.value.root) }),
         wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
         label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
         content: (opts?: { class?: any }) => styles.content({ class: cn(opts?.class, uiOverrides.value.content) }),
@@ -94,8 +99,11 @@ const ui = computed(() => {
 })
 
 defineExpose({
-    /** 当前表单项绑定的字段名，供父级 Form 定位字段实例（validateField/scrollToField 等依赖它） */
-    prop: props.prop,
+    /**
+     * 当前表单项绑定的字段名，随 prop 实时更新（暴露对象经 proxyRefs 解包，外部读到的是当前值）。
+     * 仅供外部读取；父级 Form 定位字段靠 useFieldGroupItem 的注册，并不读这个值
+     */
+    prop: toRef(props, 'prop'),
     /** `(callback: (rect: DOMRect) => void) => void` 以回调返回表单项根节点的位置与尺寸，校验失败滚动定位时使用 */
     getBoundingClientRect,
 })
@@ -122,7 +130,7 @@ defineExpose({
                 <slot />
             </div>
 
-            <!-- 错误信息 (自带动画)；showMessage 为 false 时不渲染，控件的错误描边不受影响 -->
+            <!-- 错误信息的进场 / 离场动画只由这里的 Transition 负责；showMessage 为 false 时不渲染，控件的错误描边不受影响 -->
             <Transition name="form-error">
                 <!-- title：行内模式单行截断时，悬停可看到完整的错误信息 -->
                 <div v-if="showMessage && error" :class="ui.error()" :title="error">

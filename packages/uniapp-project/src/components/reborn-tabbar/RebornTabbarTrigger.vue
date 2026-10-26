@@ -9,7 +9,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, shallowRef, watch } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-tabbar-trigger.config'
@@ -23,6 +23,8 @@ export interface TabbarTriggerProps {
     title?: string
     /** 唯一标识符 */
     name?: number | string
+    /** 显式序位；小程序动态列表所有项须传入有限数值 */
+    order?: number
     /** 图标名称或图片链接 */
     icon?: string
     /** 未选中时的图标名称或图片链接 */
@@ -160,21 +162,24 @@ const isImage = (name?: string) => {
     return name.includes('/') || name.includes('.') || name.startsWith('http') || name.startsWith('data:image')
 }
 
-const isShaking = ref(false)
-let shakeTimer: any = null
+const isShaking = shallowRef(false)
+let shakeTimer: ReturnType<typeof setTimeout> | undefined
+let frameTimer: ReturnType<typeof setTimeout> | undefined
+let jellyTimer: ReturnType<typeof setTimeout> | undefined
 
-const isJelly = ref(false)
+const isJelly = shallowRef(false)
 
 watch(() => active.value, (newVal) => {
     if (parentAnimation.value === 'fly-balls') {
         if (newVal) {
             isJelly.value = true
-            setTimeout(() => {
+            clearTimeout(jellyTimer)
+            jellyTimer = setTimeout(() => {
                 isJelly.value = false
             }, 500)
         }
     }
-}, { immediate: true })
+})
 
 /**
  * 点击 tabbar 选项
@@ -187,7 +192,8 @@ function handleClick() {
     if (active.value) {
         if (shakeTimer) clearTimeout(shakeTimer)
         isShaking.value = false
-        setTimeout(() => {
+        clearTimeout(frameTimer)
+        frameTimer = setTimeout(() => {
             isShaking.value = true
             shakeTimer = setTimeout(() => {
                 isShaking.value = false
@@ -200,29 +206,34 @@ function handleClick() {
         tabbar.setChange({ name: itemName })
     }
 }
+onBeforeUnmount(() => {
+    clearTimeout(shakeTimer)
+    clearTimeout(frameTimer)
+    clearTimeout(jellyTimer)
+})
 </script>
 
 <template>
-    <view class="reborn-tabbar-trigger" :class="ui.root({ class: cn(customClass, rootExtraClass) })" :style="customStyle"
+    <view class="reborn-tabbar-trigger" :class="ui.root({ class: cn(customClass, rootExtraClass) })" :style="[customStyle, { order: index }]"
         @click="handleClick">
         <slot :active="active" :ui="ui">
             <!-- round + glass: bodyGlowLayer 包裹 body，提供颜色背景；默认 display:contents 不影响布局 -->
             <view :class="ui.bodyGlowLayer()">
                 <view :class="ui.body({ class: bodyExtraClass })">
-                    <!-- Icon area with animation -->
+                    <!-- 图标与切换动画区域 -->
                     <view v-if="$slots.icon || icon"
                         :class="[ui.icon({ class: iconExtraClass }), isShaking ? 'animate-[shake_0.3s_ease-in-out]' : '', isJelly ? 'fly-balls-jelly' : '']">
                         <slot name="icon" :active="active" :ui="ui">
                             <!-- 选中时 -->
                             <view :class="ui.activeIcon()" :style="textStyle">
                                 <RebornImage v-if="isImage(icon)" :width="imageSize || 40" :height="imageSize || 40"
-                                    :src="icon!" mode="scaleToFill" />
+                                    :src="icon || ''" mode="scaleToFill" />
                                 <view v-else :class="[ui.iconInner(), icon]" />
                             </view>
                             <!-- 未选中时 -->
                             <view :class="ui.inactiveIcon()" :style="textStyle">
                                 <RebornImage v-if="isImage(inactive || icon)" :width="imageSize || 40"
-                                    :height="imageSize || 40" :src="inactive! || icon!" mode="scaleToFill" />
+                                    :height="imageSize || 40" :src="inactive || icon || ''" mode="scaleToFill" />
                                 <view v-else :class="[ui.iconInner(), inactive || icon]" />
                             </view>
                         </slot>

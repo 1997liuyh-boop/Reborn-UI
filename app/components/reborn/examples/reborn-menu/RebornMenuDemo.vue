@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ItemType } from "~/components/reborn/ui/reborn-menu";
-import { computed, ref, watch } from "vue";
+import { computed, shallowRef, watch } from 'vue';
 import {
   RebornMenu,
   RebornMenuItem,
@@ -16,7 +16,7 @@ import {
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
+const state = shallowRef<Record<string, any>>({
   mode: "vertical",
   collapse: false,
   tooltip: true,
@@ -28,16 +28,13 @@ const state = ref<Record<string, any>>({
   defaultExpandAll: false,
   color: "primary",
   showActiveBackground: true,
-  backgroundColor: "#ffffff",
-  textColor: "#303133",
-  activeTextColor: "#409eff",
 });
 
 /** 演练场里被 v-model:open-keys 双向绑定的展开项 */
-const expandedMenus = ref<string[]>([]);
+const expandedMenus = shallowRef<string[]>([]);
 
 /** 演练场菜单的重建标记，切换「默认全部展开」时自增 */
-const playgroundKey = ref(0);
+const playgroundKey = shallowRef(0);
 
 /**
  * defaultExpandAll 只在挂载时判定一次，运行时改动不会让已收起的子菜单重新展开。
@@ -144,9 +141,20 @@ const controls: any = [
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
-const activePath = ref(["1"]);
+/** 各独立菜单分别持有选中项，避免操作一个示例影响其他示例。 */
+const activePath = shallowRef<string[]>(["1"]);
+const verticalPath = shallowRef<string[]>(["1"]);
+const horizontalPath = shallowRef<string[]>(["1"]);
+const normalVerticalPath = shallowRef<string[]>(["a1"]);
+const normalHorizontalPath = shallowRef<string[]>(["b1"]);
+const mutexPath = shallowRef<string[]>(["c1-1"]);
+const showcasePath = shallowRef<string[]>(["d1-1"]);
+const expandedPath = shallowRef<string[]>(["f1-1"]);
+const darkPath = shallowRef<string[]>(["1"]);
+const customPath = shallowRef<string[]>(["1"]);
+const showcaseOpenKeys = shallowRef<string[]>([]);
 /** 「垂直菜单」示例的折叠开关 */
-const isCollapse = ref(false);
+const isCollapse = shallowRef(false);
 
 function handleSelect(index: string) {
   console.log("select", index);
@@ -163,14 +171,14 @@ function handleClose(index: string) {
 // ─── 父级可选 ───────────────────────────────────────────────────
 
 /** 「父级可选」两个菜单共用的选中路径：同一份数据下对照垂直浮层与水平两种选中样式 */
-const strictPath = ref<string[]>(["s1"]);
+const strictPath = shallowRef<string[]>(["s1"]);
 /** 最近一次 select 事件回显 */
-const strictLastSelect = ref("尚未触发");
+const strictLastSelect = shallowRef("尚未触发");
 
 // ─── items 配置式数据 ───────────────────────────────────────────
 
 /** 「配置式」示例的选中项 */
-const itemsActive = ref(["items-home"]);
+const itemsActive = shallowRef(["items-home"]);
 
 /**
  * 与 Ant Design 对齐的菜单数据：
@@ -207,9 +215,9 @@ const menuItems: ItemType[] = [
 // ─── 溢出折叠 ───────────────────────────────────────────────────
 
 /** 「溢出折叠」示例的选中项 */
-const ellipsisActive = ref(["e1"]);
+const ellipsisActive = shallowRef(["e1"]);
 /** 通过缩放容器宽度直观观察折叠点变化 */
-const ellipsisWidth = ref(100);
+const ellipsisWidth = shallowRef(100);
 /** 顶栏导航条目 */
 const ellipsisNavs = [
   "首页",
@@ -222,8 +230,8 @@ const ellipsisNavs = [
 ];
 
 /** 子菜单缩进示例：两块用同一份选中与展开状态，只差 no-indent */
-const indentPath = ref<string[]>(["i2-2-1"]);
-const indentOpened = ref<string[]>(["i2", "i2-2"]);
+const indentPath = shallowRef<string[]>(["i2-2-1"]);
+const indentOpened = shallowRef<string[]>(["i2", "i2-2"]);
 const indentShowcases = [
   { label: "默认逐层缩进", note: "每下沉一层向右 16px，层级关系直观。", noIndent: false },
   { label: "no-indent 取消缩进", note: "各级条目左对齐，靠箭头与分组区分层级。", noIndent: true },
@@ -231,7 +239,8 @@ const indentShowcases = [
 
 // ─── 折叠态文字提示 ─────────────────────────────────────────────
 
-const tooltipPath = ref(["t1"]);
+/** 三种提示配置共享选中项，便于对照同一条目在各提示模式下的表现。 */
+const tooltipPath = shallowRef(["t1"]);
 /** 三种提示配置并排对照：默认、自定义、关闭 */
 const tooltipShowcases = [
   { label: "默认开启", note: "悬停图标，右侧弹出菜单项标题。", tooltip: true as const },
@@ -249,16 +258,16 @@ const tooltipEntries = [
 ];
 
 /** 「无图标时的折叠」示例的折叠开关，默认折叠，进页面就能看到首字与分隔线 */
-const fallbackCollapse = ref(true);
+const fallbackCollapse = shallowRef(true);
 /** 「无图标时的折叠」示例的选中项 */
-const fallbackPath = ref(["f-orders"]);
+const fallbackPath = shallowRef(["f-orders"]);
 
 // ─── 自动滚动到选中项 ───────────────────────────────────────────
 
 const scrollEntries = Array.from({ length: 30 }, (_, i) => `scroll-${i + 1}`);
 /** 初值落在可视区之外，挂载时即可看到自动滚动 */
-const scrollPath = ref(["scroll-25"]);
-const autoScroll = ref(true);
+const scrollPath = shallowRef(["scroll-25"]);
+const autoScroll = shallowRef(true);
 
 /** 从外部改选中项，模拟路由跳转等非点击来源 */
 function jumpTo(n: number) {
@@ -266,26 +275,33 @@ function jumpTo(n: number) {
 }
 
 /** 演练场右上角展示的等价代码 */
-const codeString = computed(
-  () => `<RebornMenu
-  v-model:selected-keys='${JSON.stringify(activePath.value)}'
-  v-model:open-keys='[${expandedMenus.value.join(", ")}]'
-  :mode='${state.value.mode}'
-  :collapse='${state.value.collapse}'
-  :tooltip='${state.value.tooltip}'
-  :menu-trigger='${state.value.menuTrigger}'
-  :unique-opened='${state.value.uniqueOpened}'
-  :expand-type='${state.value.expandType}'
-  :expand-mutex='${state.value.expandMutex}'
-  :no-indent='${state.value.noIndent}'
-  :default-expand-all='${state.value.defaultExpandAll}'
-  color='${state.value.color}'
-  :show-active-background='${state.value.showActiveBackground}'
-  background-color='${state.value.backgroundColor}'
-  text-color='${state.value.textColor}'
-  active-text-color='${state.value.activeTextColor}'
-/>`,
-);
+const codeString = computed(() => {
+  const s = state.value;
+  return [
+    '<script setup lang="ts">',
+    'import { shallowRef } from "vue";',
+    `const selectedKeys = shallowRef(${JSON.stringify(activePath.value)});`,
+    `const openKeys = shallowRef(${JSON.stringify(expandedMenus.value)});`,
+    '<\/script>',
+    '<template>',
+    '<RebornMenu',
+    '  v-model:selected-keys="selectedKeys"',
+    '  v-model:open-keys="openKeys"',
+    `  mode="${s.mode}"`,
+    `  menu-trigger="${s.menuTrigger}"`,
+    `  expand-type="${s.expandType}"`,
+    `  color="${s.color}"`,
+    ...['collapse', 'tooltip', 'uniqueOpened', 'expandMutex', 'noIndent', 'defaultExpandAll', 'showActiveBackground'].map(key => `  :${key.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)}="${s[key]}"`),
+    '>',
+    '  <RebornMenuItem index="1">首页</RebornMenuItem>',
+    '  <RebornSubMenu index="2">',
+    '    <template #title>系统管理</template>',
+    '    <RebornMenuItem index="2-1">用户管理</RebornMenuItem>',
+    '  </RebornSubMenu>',
+    '</RebornMenu>',
+    '</template>',
+  ].join('\n');
+});
 </script>
 
 <template>
@@ -296,7 +312,7 @@ const codeString = computed(
       :code="codeString"
       component-name="RebornMenu"
       title="交互演练场"
-      description="调节左侧属性，实时预览菜单的布局、展开方式与配色。"
+      description="调节上方属性，实时预览菜单的布局、展开方式与配色。"
     >
       <div>
         <RebornMenu
@@ -419,7 +435,7 @@ const codeString = computed(
             />
           </div>
           <RebornMenu
-            v-model:selected-keys="activePath"
+            v-model:selected-keys="verticalPath"
             mode="vertical"
             :collapse="isCollapse"
             color="primary"
@@ -477,7 +493,7 @@ const codeString = computed(
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">水平菜单 · <code>mode="horizontal"</code></span>
           <RebornMenu
-            v-model:selected-keys="activePath"
+            v-model:selected-keys="horizontalPath"
             mode="horizontal"
             color="info"
             class="w-full"
@@ -726,7 +742,7 @@ const codeString = computed(
           <span class="text-dimmed text-xs font-medium">垂直 · 平铺展开 <code>normal</code></span>
           <DemoNote tone="dimmed">子菜单内嵌展开并下推后续内容，适合树形导航。</DemoNote>
           <RebornMenu
-            v-model:selected-keys="activePath"
+            v-model:selected-keys="normalVerticalPath"
             mode="vertical"
             expand-type="normal"
             color="success"
@@ -773,7 +789,7 @@ const codeString = computed(
           <span class="text-dimmed text-xs font-medium">水平 · 平铺展开 <code>normal</code></span>
           <DemoNote tone="dimmed">水平模式下子菜单内嵌展开，适合顶部导航的下拉场景。</DemoNote>
           <RebornMenu
-            v-model:selected-keys="activePath"
+            v-model:selected-keys="normalHorizontalPath"
             mode="horizontal"
             expand-type="normal"
             color="info"
@@ -817,7 +833,7 @@ const codeString = computed(
           <span class="text-dimmed text-xs font-medium">浮层展开 + 同级互斥 <code>expand-mutex</code></span>
           <DemoNote tone="dimmed">同级子菜单同时只保留一个展开，其余自动收起。</DemoNote>
           <RebornMenu
-            v-model:selected-keys="activePath"
+            v-model:selected-keys="mutexPath"
             mode="vertical"
             expand-type="popup"
             :expand-mutex="true"
@@ -864,12 +880,12 @@ const codeString = computed(
           <span class="text-dimmed text-xs font-medium">双向绑定 · <code>v-model:open-keys</code></span>
           <DemoNote tone="dimmed">
             当前展开菜单：<code>{{
-              expandedMenus.length ? expandedMenus.join(", ") : "（无）"
+              showcaseOpenKeys.length ? showcaseOpenKeys.join(", ") : "（无）"
             }}</code>
           </DemoNote>
           <RebornMenu
-            v-model:selected-keys="activePath"
-            v-model:open-keys="expandedMenus"
+            v-model:selected-keys="showcasePath"
+            v-model:open-keys="showcaseOpenKeys"
             mode="vertical"
             color="primary"
             class="min-h-[180px] w-full"
@@ -906,7 +922,7 @@ const codeString = computed(
             <code>expand-type="normal"</code> 下生效，浮层形态下全部展开会让弹层互相遮挡。
           </DemoNote>
           <RebornMenu
-            v-model:selected-keys="activePath"
+            v-model:selected-keys="expandedPath"
             mode="vertical"
             expand-type="normal"
             default-expand-all
@@ -961,7 +977,7 @@ const codeString = computed(
             expand-type="popup"
             menu-trigger="hover"
             class="w-full"
-            @select="(index: string) => (strictLastSelect = index)"
+            @select="strictLastSelect = $event"
           >
             <RebornMenuItem index="s1">首页</RebornMenuItem>
             <RebornSubMenu index="s2">
@@ -986,7 +1002,7 @@ const codeString = computed(
             mode="horizontal"
             check-strictly
             class="w-full"
-            @select="(index: string) => (strictLastSelect = index)"
+            @select="strictLastSelect = $event"
           >
             <RebornMenuItem index="s1">首页</RebornMenuItem>
             <RebornSubMenu index="s2">
@@ -1139,7 +1155,7 @@ const codeString = computed(
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">深色配色 · <code>background-color</code></span>
           <RebornMenu
-            v-model:selected-keys="activePath"
+            v-model:selected-keys="darkPath"
             mode="vertical"
             color="neutral"
             background-color="#1f2937"
@@ -1173,7 +1189,7 @@ const codeString = computed(
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">极简无边 · <code>ui.root</code></span>
           <RebornMenu
-            v-model:selected-keys="activePath"
+            v-model:selected-keys="customPath"
             mode="vertical"
             color="secondary"
             background-color="transparent"

@@ -2,7 +2,7 @@
 import type { PlaygroundControlGroup } from '~/components/common/play-ground/Playground.vue'
 import type { TableChange, TableColumn, TableExpose, TableKey, TableProps, TableRow, TableRowDragEnd, TableSize } from '~/components/reborn/ui/reborn-table/table.types'
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components'
-import { computed, h, ref, watch } from 'vue'
+import { computed, h, onBeforeUnmount, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'
 import RebornCheckbox from '~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue'
 import RebornInputNumber from '~/components/reborn/ui/reborn-input-number/RebornInputNumber.vue'
@@ -56,15 +56,15 @@ const defaultState = {
 /** 当前演练参数。 */
 const state = ref({ ...defaultState })
 /** 重建实例时同时清除内部排序等非模型状态。 */
-const previewKey = ref(0)
+const previewKey = shallowRef(0)
 /** 演练场的五个具名模型。 */
-const selectedKeys = ref<TableKey[]>([])
-const expandedRowKeys = ref<TableKey[]>([])
-const currentRowKey = ref<TableKey>()
-const currentPage = ref(1)
-const pageSize = ref(10)
+const selectedKeys = shallowRef<TableKey[]>([])
+const expandedRowKeys = shallowRef<TableKey[]>([])
+const currentRowKey = shallowRef<TableKey>()
+const currentPage = shallowRef(1)
+const pageSize = shallowRef(10)
 /** 最近一次交互的可读回显。 */
-const lastEvent = ref('尚未操作')
+const lastEvent = shallowRef('尚未操作')
 /** 演练列只包含可序列化字段，复制代码时无需补齐回调。 */
 const playgroundColumns: TableColumn[] = [
   { type: 'selection', width: 48 },
@@ -129,19 +129,19 @@ function resetState() {
 const tableCode = computed(() => {
   const propsCode = JSON.stringify(previewProps.value, null, 2).replaceAll('<', '\\u003c')
   return `<script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'
 import RebornTable from '~/components/reborn/ui/reborn-table/RebornTable.vue'
 import type { TableKey, TableProps } from '~/components/reborn/ui/reborn-table/table.types'
 
 const props: TableProps = ${propsCode}
-const selectedKeys = ref<TableKey[]>(${JSON.stringify(selectedKeys.value)})
-const expandedRowKeys = ref<TableKey[]>(${JSON.stringify(expandedRowKeys.value)})
-const currentRowKey = ref<TableKey | undefined>(${JSON.stringify(currentRowKey.value) ?? 'undefined'})
-const currentPage = ref(${currentPage.value})
-const pageSize = ref(${pageSize.value})
-const tableKey = ref(0)
-const lastEvent = ref('尚未操作')
+const selectedKeys = shallowRef<TableKey[]>(${JSON.stringify(selectedKeys.value)})
+const expandedRowKeys = shallowRef<TableKey[]>(${JSON.stringify(expandedRowKeys.value)})
+const currentRowKey = shallowRef<TableKey | undefined>(${JSON.stringify(currentRowKey.value) ?? 'undefined'})
+const currentPage = shallowRef(${currentPage.value})
+const pageSize = shallowRef(${pageSize.value})
+const tableKey = shallowRef(0)
+const lastEvent = shallowRef('尚未操作')
 function reset() {
   selectedKeys.value = []
   expandedRowKeys.value = []
@@ -194,7 +194,7 @@ const fixedColumns: TableColumn[] = [
   { prop: 'amount', label: '金额', width: 140, fixed: 'right', align: 'right' },
 ]
 /** 固定区域实例可恢复滚动位置。 */
-const fixedTable = ref<TableExpose>()
+const fixedTable = useTemplateRef<TableExpose>("fixedTable");
 /** 分组列的叶子节点仍然使用普通列配置。 */
 const groupedColumns: TableColumn[] = [
   { prop: 'name', label: '姓名', width: 120 },
@@ -213,19 +213,19 @@ const selectionBatches = [
   rows.map(row => ({ ...row, id: Number(row.id) + 100, name: `${row.name}（第二批）`, amount: Number(row.amount) + 120 })),
 ]
 /** 两批数据复用同一实例，用于验证跨数据选择保留。 */
-const selectionBatch = ref(0)
+const selectionBatch = shallowRef(0)
 const selectionData = computed(() => selectionBatches[selectionBatch.value] ?? [])
-const batchKeys = ref<TableKey[]>([])
-const selectionTable = ref<TableExpose>()
-const selectionEvent = ref('勾选已确认行，再切换数据批次')
+const batchKeys = shallowRef<TableKey[]>([])
+const selectionTable = useTemplateRef<TableExpose>("selectionTable");
+const selectionEvent = shallowRef('勾选已确认行，再切换数据批次')
 /** 本示例只维护一个当前键，双向映射为选择数组，让两种交互同步。 */
-const radioCurrentKey = ref<TableKey>()
+const radioCurrentKey = shallowRef<TableKey>()
 const radioKeys = computed<TableKey[]>({
   get: () => radioCurrentKey.value === undefined ? [] : [radioCurrentKey.value],
   set: keys => { radioCurrentKey.value = keys[0] },
 })
 /** 隐藏单选列只改变列结构，当前键与行点击高亮继续生效。 */
-const showRadio = ref(true)
+const showRadio = shallowRef(true)
 const radioColumns = computed<TableColumn[]>(() => showRadio.value ? [{ type: 'radio', width: 48 }, ...columns] : columns)
 
 /** 读取公开实例方法，展示实际选择行而不是仅统计键。 */
@@ -240,10 +240,10 @@ const sortableColumns: TableColumn[] = [
   { prop: 'department', label: '部门', minWidth: 120, filters: ['研发', '设计', '运营', '财务'].map(value => ({ text: value, value })), filterMethod: (value, row) => row.department === value },
   { prop: 'amount', label: '报销金额', minWidth: 140, align: 'right', sortable: true, sortMethod: (a, b) => Number(a.amount) - Number(b.amount), sortOrders: ['ascending', 'descending', null] },
 ]
-const sortTable = ref<TableExpose>()
-const sortEvent = ref('点击金额表头切换排序方向')
+const sortTable = useTemplateRef<TableExpose>("sortTable");
+const sortEvent = shallowRef('点击金额表头切换排序方向')
 /** 拖拽排序使用独立副本，回写顺序不影响其他示例共用的数据。 */
-const dragRows = ref<TableRow[]>(rows.slice(0, 5).map(row => ({ ...row })))
+const dragRows = shallowRef<TableRow[]>(rows.slice(0, 5).map(row => ({ ...row })))
 /** 首列放手柄；金额列可排序，用来演示排序生效时手柄禁用。 */
 const dragColumns: TableColumn[] = [
   { type: 'drag', width: 48 },
@@ -251,26 +251,30 @@ const dragColumns: TableColumn[] = [
   { prop: 'department', label: '部门', minWidth: 100 },
   { prop: 'amount', label: '报销金额', minWidth: 140, align: 'right', sortable: true },
 ]
-const dragEvent = ref('按住手柄拖动，或聚焦手柄后按上下方向键移动')
+const dragEvent = shallowRef('按住手柄拖动，或聚焦手柄后按上下方向键移动')
 /** 表格不改动 data，回调里的 data 已是移动后的新数组，直接回写。 */
 function onRowDragEnd(payload: TableRowDragEnd) {
   dragRows.value = payload.data
   dragEvent.value = `row-drag-end：${payload.row.name} 从第 ${payload.oldIndex + 1} 位移到第 ${payload.newIndex + 1} 位（${payload.position === 'before' ? '放在' : '放到'}${payload.targetRow.name}${payload.position === 'before' ? '之前' : '之后'}）`
 }
 /** 本地分页仅传完整数据，由组件截取当前页。 */
-const localPage = ref(1)
-const localPageSize = ref(3)
+const localPage = shallowRef(1)
+const localPageSize = shallowRef(3)
+/** 每页条数可在 3 / 5 / 10 之间切换，分页条显示总数与条数选择器 */
+const localPagination: TableProps['pagination'] = { pageSizes: [3, 5, 10], layout: 'total, sizes, prev, pager, next' }
 
 /** 模拟接口的请求状态；真实项目可将定时器替换为接口调用。 */
-const remoteQuery = ref<TableChange>({ action: 'paginate', page: 1, pageSize: 3, sort: { prop: '', order: null }, filters: {} })
-const remotePage = ref(1)
-const remotePageSize = ref(3)
-const remoteRows = ref<TableRow[]>(rows.slice(0, 3))
-const remoteTotal = ref(rows.length)
-const remoteLoading = ref(false)
-const remoteCount = ref(0)
+const remoteQuery = shallowRef<TableChange>({ action: 'paginate', page: 1, pageSize: 3, sort: { prop: '', order: null }, filters: {} })
+const remotePage = shallowRef(1)
+const remotePageSize = shallowRef(3)
+const remoteRows = shallowRef<TableRow[]>(rows.slice(0, 3))
+const remoteTotal = shallowRef(rows.length)
+const remoteLoading = shallowRef(false)
+const remoteCount = shallowRef(0)
 /** 远程排序只发送意图，筛选与切片全部在模拟接口中完成。 */
 const remoteColumns: TableColumn[] = sortableColumns.filter(column => column.type !== 'index').map(column => ({ ...column, sortable: column.prop === 'amount' ? 'custom' : false }))
+/** 远程分页的总数来自模拟接口，只在 remoteTotal 变化时重建配置 */
+const remotePagination = computed<TableProps['pagination']>(() => ({ total: remoteTotal.value, pageSizes: [3, 5, 10], layout: 'total, sizes, prev, pager, next' }))
 
 /** 请求切换或组件卸载时取消旧定时器，避免过期响应覆盖最新一页。 */
 watch(remoteQuery, (query, previous, onCleanup) => {
@@ -293,13 +297,13 @@ watch(remoteQuery, (query, previous, onCleanup) => {
 })
 
 /** 展开行与树节点分别维护展开键，避免两个示例互相干扰。 */
-const detailKeys = ref<TableKey[]>([])
-const treeKeys = ref<TableKey[]>(['group'])
-const expandEvent = ref('点击左侧箭头查看详情')
+const detailKeys = shallowRef<TableKey[]>([])
+const treeKeys = shallowRef<TableKey[]>(['group'])
+const expandEvent = shallowRef('点击左侧箭头查看详情')
 const expandColumns: TableColumn[] = [{ type: 'expand', width: 48 }, ...columns]
 /** 父表与子表分别设置边框，开关之间没有依赖。 */
-const parentBorder = ref(false)
-const childBorder = ref(false)
+const parentBorder = shallowRef(false)
+const childBorder = shallowRef(false)
 /** 明细按父行键归属，每笔交通与住宿之和等于该行报销金额。 */
 const detailRows: Record<string, TableRow[]> = Object.fromEntries(rows.slice(0, 3).map(row => {
   const travel = Math.round(Number(row.amount) * 0.6)
@@ -315,6 +319,8 @@ const detailColumns: TableColumn[] = [
   { prop: 'amount', label: '金额（元）', minWidth: 140, align: 'right' },
 ]
 const treeRows: TableRow[] = [{ id: 'group', name: '华东团队', department: '跨部门', children: rows.slice(0, 2) }, { id: 'other', name: '华北团队', department: '设计', children: rows.slice(2, 4) }]
+/** 树形数据的子节点放在 children 字段 */
+const treeChildrenProps: TableProps['treeProps'] = { children: 'children' }
 
 /** 同部门相邻两行合并首列；不与排序混用，以保持连续分组。 */
 const mergeColumns: TableColumn[] = [columns[1]!, columns[0]!, columns[3]!]
@@ -337,20 +343,20 @@ const slotColumns: TableColumn[] = [
   { columnKey: 'action', label: '操作', width: 148 },
 ]
 /** 行内删除只操作本示例的副本，其他表格数据不受影响。 */
-const slotRows = ref(rows.slice(0, 3).map(row => ({ ...row })))
-const slotEvent = ref('行内操作使用事件阻止冒泡，不触发行点击')
+const slotRows = shallowRef(rows.slice(0, 3).map(row => ({ ...row })))
+const slotEvent = shallowRef('行内操作使用事件阻止冒泡，不触发行点击')
 /** 删除指定记录并回显名称，不依赖当前排序位置。 */
 function deleteSlotRow(row: TableRow) {
   slotRows.value = slotRows.value.filter(item => item.id !== row.id)
   slotEvent.value = `已删除：${row.name}；剩余 ${slotRows.value.length} 条记录`
 }
 /** 两种表头共享筛选值；清空数字输入时不过滤金额。 */
-const minimumAmount = ref<number | null>(null)
+const minimumAmount = shallowRef<number | null>(null)
 const headerRows = computed(() => rows.filter(row => Number(row.amount) >= (minimumAmount.value ?? 0)))
 const headerColumns = slotColumns.filter(column => column.prop).map(column => ({ ...column, minWidth: column.prop === 'amount' ? 280 : column.minWidth }))
 /** 空态与加载态独立切换，重试按钮真正恢复数据。 */
-const statusLoading = ref(false)
-const statusEmpty = ref(true)
+const statusLoading = shallowRef(false)
+const statusEmpty = shallowRef(true)
 
 /** 仅标记指定记录，其余行返回空类名，保留默认样式。 */
 const statusColumns: TableColumn[] = [...columns, { prop: 'status', label: '审核状态', minWidth: 120 }]
@@ -370,27 +376,40 @@ const overflowColumns: TableColumn[] = [
   { prop: 'status', label: '状态（关闭提示）', width: 140, showOverflowTooltip: false },
 ]
 /** 固定表头和流体高度分别使用独立状态。 */
-const headerFixed = ref(true)
-const fluidExpanded = ref(false)
+const headerFixed = shallowRef(true)
+const fluidExpanded = shallowRef(false)
 /** 本地排序与筛选分开演示，远程表仍复用组合列。 */
 const localSortColumns: TableColumn[] = sortableColumns.map(({ filters, filterMethod, ...column }) => column)
+/** 初始按金额升序排列 */
+const amountAscendingSort: TableProps['defaultSort'] = { prop: 'amount', order: 'ascending' }
 const filterColumns: TableColumn[] = sortableColumns.filter(column => column.type !== 'index').map(({ sortable, sortMethod, sortOrders, ...column }) => column)
-const filterTable = ref<TableExpose>()
-const filterEvent = ref('选择部门筛选条件')
+const filterTable = useTemplateRef<TableExpose>("filterTable");
+const filterEvent = shallowRef('选择部门筛选条件')
 /** 懒加载改用 nodes / hasMore 字段，展示自定义字段映射。 */
 const lazyRows: TableRow[] = [{ id: 'lazy-team', name: '异步团队', department: '研发', hasMore: true }]
-const lazyKeys = ref<TableKey[]>([])
-const lazyCount = ref(0)
-const lazyEvent = ref('展开异步团队后加载成员，模拟延迟 350ms')
+const lazyTreeProps: TableProps['treeProps'] = { children: 'nodes', hasChildren: 'hasMore' }
+const lazyKeys = shallowRef<TableKey[]>([])
+const lazyCount = shallowRef(0)
+const lazyEvent = shallowRef('展开异步团队后加载成员，模拟延迟 350ms')
+/** 卸载时结束尚未完成的懒加载，避免旧页面继续修改状态。 */
+const pendingLoads = new Map<ReturnType<typeof setTimeout>, (active: boolean) => void>()
+onBeforeUnmount(() => {
+  pendingLoads.forEach((done, timer) => { clearTimeout(timer); done(false) })
+  pendingLoads.clear()
+})
 const loadChildren: NonNullable<TableProps['load']> = async (row, treeNode, resolve) => {
   lazyEvent.value = JSON.stringify({ name: row.name, ...treeNode })
-  await new Promise<void>(done => setTimeout(done, 350))
+  const active = await new Promise<boolean>(done => {
+    const timer = setTimeout(() => { pendingLoads.delete(timer); done(true) }, 350)
+    pendingLoads.set(timer, done)
+  })
+  if (!active) return
   resolve(rows.slice(0, 2).map(member => ({ ...member, id: `${String(row.id)  }-${  String(member.id)}` })))
   lazyCount.value++
 }
 /** 树选择与展开独立控制，不与上一个示例共用模型。 */
-const treeSelection = ref<TableKey[]>([])
-const selectableTreeKeys = ref<TableKey[]>(['group'])
+const treeSelection = shallowRef<TableKey[]>([])
+const selectableTreeKeys = shallowRef<TableKey[]>(['group'])
 const selectableTreeColumns: TableColumn[] = [{ type: 'selection', width: 48 }, ...columns]
 /** 横向合并只覆盖首行前两列，不改变后面的金额列。 */
 const mergeAcross: NonNullable<TableProps['spanMethod']> = ({ $index, columnIndex }) => {
@@ -398,8 +417,9 @@ const mergeAcross: NonNullable<TableProps['spanMethod']> = ({ $index, columnInde
   return columnIndex === 0 ? [1, 2] : [0, 0]
 }
 /** 分页偏移由表格计算，回调只格式化序号，不把展示序号用作行键。 */
-const indexPage = ref(1)
-const indexPageSize = ref(3)
+const indexPage = shallowRef(1)
+const indexPageSize = shallowRef(3)
+const indexPagination: TableProps['pagination'] = { pageSizes: [3, 5, 10] }
 const indexColumns: TableColumn[] = [
   { type: 'index', label: '编号', width: 100, index: index => `BX-${String(index + 1).padStart(3, '0')}` },
   ...columns,
@@ -408,20 +428,34 @@ const indexColumns: TableColumn[] = [
 const layouts = ['fixed', 'auto'] as const
 const layoutColumns: TableColumn[] = [{ prop: 'name', label: '姓名', width: 100 }, { prop: 'email', label: '邮箱', width: 140 }]
 /** 自定义提示：短文本不弹出，列回调覆盖表回调，插槽可覆盖两者。 */
-const tooltipSlot = ref(false)
-const tooltipArrow = ref(true)
-const tooltipDisabled = ref(false)
+const tooltipSlot = shallowRef(false)
+const tooltipArrow = shallowRef(true)
+const tooltipDisabled = shallowRef(false)
+/** 表级溢出提示：延迟 160ms 弹出，鼠标划过时不闪 */
+const overflowTooltip: TableProps['showOverflowTooltip'] = { openDelay: 160 }
+/** 表级提示样式：箭头与禁用由上方开关控制，只在这两个开关变化时重建 */
+const tableTooltipOptions = computed<TableProps['tooltipOptions']>(() => ({ placement: 'top', closeDelay: 100, arrow: tooltipArrow.value, disabled: tooltipDisabled.value, ui: { content: 'max-w-80' } }))
 const formatTooltip: NonNullable<TableProps['tooltipFormatter']> = ({ column, content }) => `表级格式化 · ${  column.label  }：${  content}`
 const tooltipColumns: TableColumn[] = [
   { prop: 'name', label: '姓名', width: 100 },
   { prop: 'note', label: '说明（列级）', width: 180, tooltipOptions: { placement: 'bottom' }, tooltipFormatter: ({ content }) => h('strong', {}, `列级格式化 · ${  content}`) },
   { prop: 'email', label: '邮箱（表级）', width: 160 },
 ]
+
+/** 固定数据切片只计算一次，事件回显不会改变表格的 data 引用。 */
+const rows2 = rows.slice(0, 2);
+const rows3 = rows.slice(0, 3);
+const rows4 = rows.slice(0, 4);
+const rows5 = rows.slice(0, 5);
+const fixedRows3 = fixedRows.slice(0, 3);
+const emptyRows: TableRow[] = [];
+const statusData = computed(() => statusEmpty.value ? emptyRows : rows3);
+const fluidData = computed(() => fluidExpanded.value ? rows : rows2);
 </script>
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" :code="tableCode" component-name="RebornTable" title="交互演练场" description="调节左侧参数，查看表格外观、选择、展开与分页结果。">
+    <Playground v-model="state" :controls="controls" :code="tableCode" component-name="RebornTable" title="交互演练场" description="调节上方参数，查看表格外观、选择、展开与分页结果。">
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
           <template #leading><Icon name="lucide:rotate-ccw" size="12" /></template>
@@ -451,10 +485,10 @@ const tooltipColumns: TableColumn[] = [
     <DemoSection title="基础表格">
       <template #description><code>data</code> 提供只读行数据，<code>columns</code> 与声明列二选一；传入 <code>columns</code> 时以它为准。</template>
       <DemoBlock layout="stack" class="gap-4">
-        <DemoNote>数据驱动列</DemoNote>
-        <RebornTable :data="rows.slice(0, 3)" :columns="columns" aria-label="数据驱动报销明细" />
+        <DemoNote>数据驱动列：data 使用稳定引用，切片在 script 中提前计算。</DemoNote>
+        <RebornTable :data="rows3" :columns="columns" aria-label="数据驱动报销明细" />
         <DemoNote>声明列：默认插槽可以直接使用行数据。</DemoNote>
-        <RebornTable :data="rows.slice(0, 3)" aria-label="声明列报销明细">
+        <RebornTable :data="rows3" aria-label="声明列报销明细">
           <RebornTableColumn type="index" label="序号" :width="64" />
           <RebornTableColumn prop="name" label="姓名" />
           <RebornTableColumn prop="department" label="部门" />
@@ -464,14 +498,14 @@ const tooltipColumns: TableColumn[] = [
           </RebornTableColumn>
         </RebornTable>
         <DemoNote>本地分页传完整数据，由组件切片；每页条数和页码可双向绑定。</DemoNote>
-        <RebornTable v-model:current-page="localPage" v-model:page-size="localPageSize" :data="rows" :columns="columns" :pagination="{ pageSizes: [3, 5, 10], layout: 'total, sizes, prev, pager, next' }" aria-label="本地分页报销明细" />
+        <RebornTable v-model:current-page="localPage" v-model:page-size="localPageSize" :data="rows" :columns="columns" :pagination="localPagination" aria-label="本地分页报销明细" />
       </DemoBlock>
     </DemoSection>
 
     <DemoSection title="带斑马纹表格">
       <template #description><code>stripe</code> 默认关闭，开启后交替行使用 <code>bg-gray-2</code>，便于沿行阅读。</template>
       <DemoBlock layout="stack" class="gap-4">
-        <RebornTable :data="rows.slice(0, 5)" :columns="columns" stripe aria-label="斑马纹报销明细" />
+        <RebornTable :data="rows5" :columns="columns" stripe aria-label="斑马纹报销明细" />
       </DemoBlock>
     </DemoSection>
 
@@ -480,7 +514,7 @@ const tooltipColumns: TableColumn[] = [
       <DemoBlock layout="stack" class="gap-4">
         <div v-for="size in sizes" :key="size" class="w-full min-w-0">
           <DemoNote>{{ size }}：{{ { lg: 56, md: 48, sm: 36 }[size] }}px 单行高度</DemoNote>
-          <RebornTable :data="rows.slice(0, 2)" :columns="columns" :size="size" border header-background :aria-label="`${size} 尺寸报销明细`" />
+          <RebornTable :data="rows2" :columns="columns" :size="size" border header-background :aria-label="`${size} 尺寸报销明细`" />
         </div>
       </DemoBlock>
       <DemoNote tone="dimmed">文字沿用 <code>text-base font-medium text-gray-9</code> 的 14px / 22px 与 500 字重，不额外覆盖行高；多行内容可撑高。悬停与表头背景使用灰阶 2，边框使用灰阶 3。</DemoNote>
@@ -489,10 +523,10 @@ const tooltipColumns: TableColumn[] = [
     <DemoSection title="带状态表格">
       <template #description><code>row-class-name</code> 为某一行添加类名，自定义每行样式；回调返回空类名时保留默认样式。</template>
       <DemoBlock layout="stack" class="gap-4">
-        <RebornTable :data="rows.slice(0, 4)" :columns="statusColumns" :row-class-name="statusRowClass" :hover="false" aria-label="报销审核状态" />
+        <RebornTable :data="rows4" :columns="statusColumns" :row-class-name="statusRowClass" :hover="false" aria-label="报销审核状态" />
         <DemoNote tone="dimmed">仅陈晨（待审核）使用警告色 <code>bg-warning-2</code>，周宁（已确认）使用成功色 <code>bg-success-2</code>；林晓与许青保持默认底色，不是给所有行着色。下表独立演示加载与空状态。</DemoNote>
         <div class="flex flex-wrap gap-4"><RebornCheckbox v-model="statusLoading" label="加载中" /><RebornCheckbox v-model="statusEmpty" label="无数据" /></div>
-        <RebornTable :data="statusEmpty ? [] : rows.slice(0, 3)" :columns="columns" :loading="statusLoading" :height="200" aria-label="加载和空状态演示">
+        <RebornTable :data="statusData" :columns="columns" :loading="statusLoading" :height="200" aria-label="加载和空状态演示">
           <template #loading><p class="p-4 text-base font-medium text-gray-9" role="status">正在读取报销记录，请稍候…</p></template>
           <template #empty><div class="flex flex-col items-center gap-3 p-6"><p>当前没有报销记录</p><RebornButton size="sm" variant="outlined" :disabled="statusLoading" @click="statusEmpty = false">载入示例数据</RebornButton></div></template>
         </RebornTable>
@@ -519,7 +553,7 @@ const tooltipColumns: TableColumn[] = [
     <DemoSection title="固定列">
       <template #description>列的 <code>fixed</code> 指定左右固定位置，并配合 <code>width</code> 确定偏移；不设置高度也可单独固定列。</template>
       <DemoBlock layout="stack" class="gap-4">
-        <RebornTable :data="fixedRows.slice(0, 3)" :columns="fixedColumns" border aria-label="仅固定列的报销明细" />
+        <RebornTable :data="fixedRows3" :columns="fixedColumns" border aria-label="仅固定列的报销明细" />
       </DemoBlock>
     </DemoSection>
 
@@ -536,15 +570,15 @@ const tooltipColumns: TableColumn[] = [
       <template #description><code>maxHeight</code> 只限制上限，数据少时自然收缩，超出后滚动并固定表头。</template>
       <DemoBlock layout="stack" class="gap-4">
         <RebornCheckbox v-model="fluidExpanded" label="显示全部八条记录" />
-        <RebornTable :data="fluidExpanded ? rows : rows.slice(0, 2)" :columns="columns" :max-height="220" aria-label="流体高度报销明细" />
+        <RebornTable :data="fluidData" :columns="columns" :max-height="220" aria-label="流体高度报销明细" />
       </DemoBlock>
     </DemoSection>
 
     <DemoSection title="多级表头">
       <template #description>列的 <code>children</code> 生成多级表头，声明式写法则把子列放进父列的 <code>default</code> 插槽。</template>
       <DemoBlock layout="stack" class="gap-4">
-        <RebornTable :data="rows.slice(0, 3)" :columns="groupedColumns" border header-background aria-label="数据分组表头" />
-        <RebornTable :data="rows.slice(0, 2)" border aria-label="声明式分组表头">
+        <RebornTable :data="rows3" :columns="groupedColumns" border header-background aria-label="数据分组表头" />
+        <RebornTable :data="rows2" border aria-label="声明式分组表头">
           <RebornTableColumn prop="name" label="姓名" />
           <RebornTableColumn label="组织信息" header-align="center">
             <RebornTableColumn prop="department" label="部门" />
@@ -563,7 +597,7 @@ const tooltipColumns: TableColumn[] = [
           <RebornButton size="sm" variant="outlined" @click="radioCurrentKey = 101">选中林晓</RebornButton>
           <RebornButton size="sm" variant="outlined" @click="radioCurrentKey = undefined">清空单选</RebornButton>
         </div>
-        <RebornTable v-model:selected-keys="radioKeys" v-model:current-row-key="radioCurrentKey" :data="rows.slice(0, 3)" :columns="radioColumns" highlight-current-row aria-label="单选与当前报销行" />
+        <RebornTable v-model:selected-keys="radioKeys" v-model:current-row-key="radioCurrentKey" :data="rows3" :columns="radioColumns" highlight-current-row aria-label="单选与当前报销行" />
         <DemoNote tone="dimmed" aria-live="polite">单选键：{{ radioKeys }}；当前行键：{{ radioCurrentKey ?? '无' }}。本示例用双向计算属性关联组件原本独立的两个模型，不改变其他示例；隐藏单选列后仍可点击行或外部设置、清空。当前行使用 <code>bg-brand-2</code>，悬停时保留高亮。</DemoNote>
       </DemoBlock>
     </DemoSection>
@@ -593,12 +627,12 @@ const tooltipColumns: TableColumn[] = [
           <RebornButton size="sm" variant="outlined" @click="sortTable?.sort('amount', 'descending')">金额降序</RebornButton>
           <RebornButton size="sm" variant="outlined" @click="sortTable?.clearSort()">清除排序</RebornButton>
         </div>
-        <RebornTable ref="sortTable" :data="rows" :columns="localSortColumns" :default-sort="{ prop: 'amount', order: 'ascending' }" aria-label="可排序的报销明细" @change="sortEvent = JSON.stringify($event)" />
+        <RebornTable ref="sortTable" :data="rows" :columns="localSortColumns" :default-sort="amountAscendingSort" aria-label="可排序的报销明细" @change="sortEvent = JSON.stringify($event)" />
         <DemoNote tone="dimmed" class="break-all font-mono text-xs" aria-live="polite">{{ sortEvent }}</DemoNote>
         <DemoNote>远程分页：模拟接口延迟 350ms，支持部门筛选与金额排序，不发送网络请求。</DemoNote>
         <RebornTable
           v-model:current-page="remotePage" v-model:page-size="remotePageSize" :data="remoteRows" :columns="remoteColumns" remote :loading="remoteLoading"
-          :pagination="{ total: remoteTotal, pageSizes: [3, 5, 10], layout: 'total, sizes, prev, pager, next' }" aria-label="远程分页报销明细" @change="remoteQuery = $event"
+          :pagination="remotePagination" aria-label="远程分页报销明细" @change="remoteQuery = $event"
         />
         <DemoNote tone="dimmed" class="break-all font-mono text-xs" aria-live="polite">已完成请求：{{ remoteCount }}；返回 {{ remoteRows.length }} 行，共 {{ remoteTotal }} 行；参数：{{ JSON.stringify(remoteQuery) }}</DemoNote>
       </DemoBlock>
@@ -679,7 +713,7 @@ const tooltipColumns: TableColumn[] = [
           <RebornSwitch v-model="parentBorder" active-label="父表边框" aria-label="父表边框" />
           <RebornSwitch v-model="childBorder" active-label="子表边框" aria-label="子表边框" />
         </div>
-        <RebornTable v-model:expanded-row-keys="detailKeys" :data="rows.slice(0, 3)" :columns="expandColumns" :border="parentBorder" aria-label="带详情的报销明细" @expand-change="(row, expanded) => expandEvent = `${row.name} 展开变化；当前 ${expanded.length} 行展开`">
+        <RebornTable v-model:expanded-row-keys="detailKeys" :data="rows3" :columns="expandColumns" :border="parentBorder" aria-label="带详情的报销明细" @expand-change="(row, expanded) => expandEvent = `${row.name} 展开变化；当前 ${expanded.length} 行展开`">
           <template #expand="{ row, $index }">
             <div class="flex min-w-0 flex-col gap-3 p-4">
               <div class="flex flex-wrap gap-6"><span>第 {{ $index + 1 }} 行</span><span>邮箱：{{ row.email }}</span><span>状态：{{ row.status }}</span></div>
@@ -698,9 +732,9 @@ const tooltipColumns: TableColumn[] = [
           <RebornButton size="sm" variant="outlined" @click="treeKeys = ['group', 'other']">展开团队</RebornButton>
           <RebornButton size="sm" variant="outlined" @click="treeKeys = []">折叠团队</RebornButton>
         </div>
-        <RebornTable v-model:expanded-row-keys="treeKeys" :data="treeRows" :columns="columns" :tree-props="{ children: 'children' }" :indent="16" row-key="id" aria-label="团队树形报销明细" />
+        <RebornTable v-model:expanded-row-keys="treeKeys" :data="treeRows" :columns="columns" :tree-props="treeChildrenProps" :indent="16" row-key="id" aria-label="团队树形报销明细" />
         <DemoNote>下表使用 nodes / hasMore 字段映射；首次展开才加载，不发出网络请求。</DemoNote>
-        <RebornTable v-model:expanded-row-keys="lazyKeys" :data="lazyRows" :columns="columns" row-key="id" lazy :load="loadChildren" :tree-props="{ children: 'nodes', hasChildren: 'hasMore' }" aria-label="懒加载团队成员" />
+        <RebornTable v-model:expanded-row-keys="lazyKeys" :data="lazyRows" :columns="columns" row-key="id" lazy :load="loadChildren" :tree-props="lazyTreeProps" aria-label="懒加载团队成员" />
         <DemoNote tone="dimmed" class="break-all" aria-live="polite">已加载 {{ lazyCount }} 次；回调参数：{{ lazyEvent }}。</DemoNote>
         <DemoNote tone="dimmed">树表按根节点分页，所有层级的行键必须唯一；<code>load</code> 完成后调用 <code>resolve(children)</code>，空结果调用 <code>resolve([])</code>。</DemoNote>
       </DemoBlock>
@@ -721,7 +755,7 @@ const tooltipColumns: TableColumn[] = [
     <DemoSection title="表尾合计行">
       <template #description><code>showSummary</code> 开启默认合计，<code>summaryMethod</code> 返回与叶子列对应的内容，避免把数字编号当金额相加。</template>
       <DemoBlock layout="stack" class="gap-4">
-        <RebornTable :data="rows.slice(0, 4)" :columns="columns" show-summary sum-text="金额合计" aria-label="默认金额合计" />
+        <RebornTable :data="rows4" :columns="columns" show-summary sum-text="金额合计" aria-label="默认金额合计" />
         <RebornTable :data="rows" :columns="columns" show-summary :summary-method="summarize" aria-label="自定义金额合计" />
         <DemoNote tone="dimmed">本地合计接收筛选、排序后的全部根节点，远程模式只接收传入的数据；跨页总计需由接口提供。</DemoNote>
       </DemoBlock>
@@ -732,7 +766,7 @@ const tooltipColumns: TableColumn[] = [
       <DemoBlock layout="stack" class="gap-4">
         <RebornTable :data="rows" :columns="mergeColumns" :span-method="mergeCells" :summary-method="summarize" show-summary border aria-label="部门合并与金额合计" />
         <DemoNote tone="dimmed">悬停部门合并格高亮覆盖的所有行；悬停姓名或金额仅高亮该行及相交部门格，不扩散到其他组或合计行。</DemoNote>
-        <RebornTable :data="rows.slice(0, 3)" :columns="mergeColumns" :span-method="mergeAcross" border aria-label="首行横向合并" />
+        <RebornTable :data="rows3" :columns="mergeColumns" :span-method="mergeAcross" border aria-label="首行横向合并" />
         <DemoNote tone="dimmed">上表部门每两行合并，下表首行前两列合并；不同时排序，以免打散连续分组。</DemoNote>
       </DemoBlock>
     </DemoSection>
@@ -740,7 +774,7 @@ const tooltipColumns: TableColumn[] = [
     <DemoSection title="自定义索引">
       <template #description><code>index</code> 可指定数字起点或回调；开启 <code>pagination</code> 后自动计入页偏移，回调只格式化 <code>index + 1</code>，行键仍使用 <code>id</code>。</template>
       <DemoBlock layout="stack" class="gap-4">
-        <RebornTable v-model:current-page="indexPage" v-model:page-size="indexPageSize" :data="rows" :columns="indexColumns" :pagination="{ pageSizes: [3, 5, 10] }" row-key="id" aria-label="跨页自定义编号" />
+        <RebornTable v-model:current-page="indexPage" v-model:page-size="indexPageSize" :data="rows" :columns="indexColumns" :pagination="indexPagination" row-key="id" aria-label="跨页自定义编号" />
       </DemoBlock>
     </DemoSection>
 
@@ -764,7 +798,7 @@ const tooltipColumns: TableColumn[] = [
           <RebornCheckbox v-model="tooltipDisabled" label="禁用提示" />
         </div>
         <div class="w-full max-w-xl">
-          <RebornTable :data="overflowRows" :columns="tooltipColumns" :show-overflow-tooltip="{ openDelay: 160 }" :tooltip-formatter="formatTooltip" :tooltip-options="{ placement: 'top', closeDelay: 100, arrow: tooltipArrow, disabled: tooltipDisabled, ui: { content: 'max-w-80' } }" aria-label="自定义溢出提示">
+          <RebornTable :data="overflowRows" :columns="tooltipColumns" :show-overflow-tooltip="overflowTooltip" :tooltip-formatter="formatTooltip" :tooltip-options="tableTooltipOptions" aria-label="自定义溢出提示">
             <template v-if="tooltipSlot" #tooltip="{ row, column, cellValue, content }">
               <div class="flex flex-col gap-1">
                 <strong>{{ row.name }} · {{ column.label }}</strong>

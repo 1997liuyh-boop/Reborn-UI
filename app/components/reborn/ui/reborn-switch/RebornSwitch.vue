@@ -2,7 +2,7 @@
 import type { ClassValue } from "clsx";
 import type { switchColors, switchSizes, switchTypes } from "./reborn-switch.config";
 import { animate } from "motion-v";
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useAttrs, useTemplateRef, watch } from "vue";
 import { motionPresets, prefersReducedMotion } from "@/lib/motion";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -26,17 +26,35 @@ const props = withDefaults(defineProps<SwitchProps>(), {
 });
 
 const emit = defineEmits<{
-  /** 切换完成后更新绑定值，参数为 activeValue 或 inactiveValue */
-  (e: "update:modelValue", value: any): void;
   /** 状态切换后触发（beforeChange 拦截通过后才会触发），参数与 update:modelValue 相同 */
   (e: "change", value: any): void;
 }>();
 
+defineSlots<{
+  /** 开启态文案：默认在轨道右侧，inlinePrompt 生效时在轨道内 */
+  activeLabel?: () => any;
+  /** 关闭态文案：默认在轨道左侧，inlinePrompt 生效时在轨道内 */
+  inactiveLabel?: () => any;
+  /** 完全接管滑块内部内容，优先级最高 */
+  thumb?: (props: { checked: boolean; loading: boolean }) => any;
+  /** 滑块内开态内容，仅开态渲染 */
+  active?: (props: { checked: boolean }) => any;
+  /** 滑块内关态内容，仅关态渲染 */
+  inactive?: (props: { checked: boolean }) => any;
+}>();
+
+/**
+ * 开关绑定值（v-model）：与 activeValue 严格相等时为开态，切换完成后发出 update:modelValue，参数为 activeValue 或 inactiveValue。
+ * 不绑定时组件自己持有取值，初值取 defaultValue（缺省 inactiveValue）；
+ * 绑定值被父级置回 undefined（如表单重置到「未赋值」）时同样回到这个初值，不会停在上一次的受控值上。
+ * 类型为 any，显式写 default: undefined，避免未传时被布尔强转。
+ */
+const model = defineModel<any>({ default: undefined });
+
 const b = tv(theme);
 
 export interface SwitchProps {
-  modelValue?: any;
-  defaultValue?: any;
+  defaultValue?: any; // 非受控模式下的初始值，缺省取 inactiveValue；绑定值为 undefined 时也回到它
   activeValue?: any; // 打开状态对应的绑定值，默认 true；配合 inactiveValue 可绑定字符串/数字等任意值
   inactiveValue?: any; // 关闭状态对应的绑定值，默认 false
   activeLabel?: string;
@@ -69,8 +87,8 @@ export interface SwitchProps {
 }
 
 const attrs = useAttrs();
-const inputRef = ref<HTMLInputElement>();
-const thumbRef = ref<HTMLElement>();
+const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
+const thumbRef = useTemplateRef<HTMLElement>("thumbRef");
 let thumbRun = 0;
 let thumbPlayback: ReturnType<typeof animate> | undefined;
 let motionMedia: MediaQueryList | undefined;
@@ -131,7 +149,6 @@ async function animateThumb() {
   });
 }
 
-const localValue = ref(props.defaultValue ?? props.inactiveValue);
 const {
   disabled: fieldGroupDisabled,
   size: fieldGroupSize,
@@ -139,10 +156,10 @@ const {
   validate
 } = useFormInject(props);
 
-const isChecked = computed(() => {
-  const val = props.modelValue !== undefined ? props.modelValue : localValue.value;
-  return val === props.activeValue;
-});
+/** 当前生效的取值：绑定值为 undefined（未绑定或被置回 undefined）时回到非受控初值 */
+const currentValue = computed(() => (model.value === undefined ? (props.defaultValue ?? props.inactiveValue) : model.value));
+
+const isChecked = computed(() => currentValue.value === props.activeValue);
 
 watch(isChecked, animateThumb, { flush: "pre" });
 onMounted(() => {
@@ -192,10 +209,27 @@ const ui = computed(() => {
   };
 });
 
-const inputAttrs = computed(() => {
-  const { class: _class, ...rest } = attrs;
-  return rest;
-});
+/**
+ * 透传属性分两路：
+ * - style 与 data-* 作用于外观或供选择器定位，落到根节点 label，否则会落在 sr-only 的隐藏 input 上毫无效果；
+ * - 其余（id、name、aria-*、原生监听等）落到隐藏的原生 checkbox，保证 label for、表单提交与读屏语义指向真实控件。
+ * class 是声明过的 prop，不会出现在 attrs 里。
+ */
+function rootAttrs() {
+  const result: Record<string, unknown> = {};
+  for (const key in attrs) {
+    if (key === "style" || key.startsWith("data-")) result[key] = attrs[key];
+  }
+  return result;
+}
+
+function inputAttrs() {
+  const result: Record<string, unknown> = {};
+  for (const key in attrs) {
+    if (key !== "style" && !key.startsWith("data-")) result[key] = attrs[key];
+  }
+  return result;
+}
 
 /** inline-prompt 是否生效：line 型轨道过细放不下文本，直接不渲染 */
 const inlinePromptActive = computed(() => props.inlinePrompt && props.type !== "line");
@@ -204,30 +238,35 @@ const inlinePromptActive = computed(() => props.inlinePrompt && props.type !== "
  * 切换波纹（wave 开启才生效）：每次切换成功自增 key 重建波纹节点，动画从头触发（参考 antd 的 wave 效果）。
  * 颜色取 color 语义色变量，不受轨道 ui 背景覆盖影响，扩散与淡出见 scoped 样式。
  */
-const waveKey = ref(0);
+const waveKey = shallowRef(0);
 const waveStyle = computed(() => ({
   "--re-switch-wave-color": `var(--color-${props.color})`,
 }));
 
 function updateValue(checked: boolean) {
   const nextValue = checked ? props.activeValue : props.inactiveValue;
-  if (props.modelValue === undefined) {
-    localValue.value = nextValue;
-  }
   // 关闭波纹时不自增，波纹节点始终不渲染，避免为纯装饰动画多挂一个节点
   if (props.wave) waveKey.value++;
-  emit("update:modelValue", nextValue);
+  // 未绑定时 defineModel 自行更新本地值；受控时只发 update:modelValue，赋值后同步读到的仍是旧值，事件载荷用本地算出的新值
+  model.value = nextValue;
   emit("change", nextValue);
   // 与 uniapp 端对齐：切换后触发表单项的 change 校验
   if (validate) validate("change");
 }
 
+/**
+ * 唯一的切换入口，挂在原生 checkbox 的 click 上：
+ * 点击轨道或文案时 label 把点击转发给 input，键盘聚焦后按空格时浏览器直接在 input 上派发 click，两条路径只处理一次。
+ * 原生 checkbox 在 click 派发前已经自行翻转了 checked，这里立刻把它改回当前状态，DOM 的勾选态只跟随 isChecked：
+ * 不用 preventDefault，是因为被取消的 click 会在派发结束后再把 checked 还原一次，
+ * 而同步切换时 Vue 已在派发途中写入新值，还原会让 DOM 与绑定值失步（读屏读到的状态随之出错）。
+ */
 async function handleClick(event: Event) {
+  const input = event.currentTarget as HTMLInputElement;
+  input.checked = isChecked.value;
+
   // isDisabled 含表单级禁用，仅判 props.disabled 会漏掉 Form 下发的禁用态
   if (isDisabled.value || props.loading) return;
-
-  // 阻止默认行为（防止 input 自动切换状态）
-  event.preventDefault();
 
   const newChecked = !isChecked.value;
 
@@ -243,15 +282,6 @@ async function handleClick(event: Event) {
   updateValue(newChecked);
 }
 
-watch(
-  () => props.modelValue,
-  (value: any) => {
-    if (value !== undefined) {
-      localValue.value = value;
-    }
-  },
-);
-
 defineExpose({
   /** `() => void` 使内部隐藏的原生 checkbox 获得键盘焦点 */
   focus: () => inputRef.value?.focus(),
@@ -259,17 +289,17 @@ defineExpose({
 </script>
 
 <template>
-  <label :class="ui.wrapper({ class: props.class })" :data-disabled="isDisabled || props.loading" @click="handleClick">
+  <label v-bind="rootAttrs()" :class="ui.wrapper({ class: props.class })" :data-disabled="isDisabled || props.loading">
 
     <!-- inline-prompt 开启后两侧文案让位给轨道内文本 -->
     <span v-if="!inlinePromptActive && (props.inactiveLabel || $slots.inactiveLabel)" :class="ui.inactiveLabel()">
       <slot name="inactiveLabel">{{ props.inactiveLabel }}</slot>
     </span>
 
-    <!-- 增加 @click.stop 防止事件冒泡造成的双重触发 -->
+    <!-- 切换逻辑只挂在 input 上：鼠标点击经 label 转发、键盘空格直接派发，都落到同一个 click -->
     <input
-      ref="inputRef" v-bind="inputAttrs" type="checkbox" :checked="isChecked"
-      :disabled="isDisabled || props.loading" :class="ui.input()" @click.stop
+      ref="inputRef" v-bind="inputAttrs()" type="checkbox" :checked="isChecked"
+      :disabled="isDisabled || props.loading" :class="ui.input()" @click="handleClick"
     >
 
     <span :class="ui.track()" :data-loading="props.loading">

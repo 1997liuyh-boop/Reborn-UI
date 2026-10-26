@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Motion, MotionConfig } from "motion-v";
-import { ref } from "vue";
+import { computed } from "vue";
 
 interface CalendarEvent {
   title: string;
@@ -15,20 +15,27 @@ interface CalendarDay {
   events?: CalendarEvent[];
 }
 
-const props = defineProps<{
+interface Props {
   calendarData: CalendarDay[];
   initialIndex?: number;
-}>();
+}
 
-const emit = defineEmits<{
-  (e: "update:activeIndex", value: number): void;
-}>();
+const props = defineProps<Props>();
 
-const activeIndex = ref(props.initialIndex ?? 0);
+/** 当前选中的日期下标，支持 v-model:active-index；不绑定时以 initialIndex 为初值 */
+const activeModel = defineModel<number>("activeIndex", { default: undefined });
+
+/** 实际生效的下标：夹在 calendarData 范围内，数据变短后不会越界 */
+const activeIndex = computed(() =>
+  Math.min(
+    Math.max(activeModel.value ?? props.initialIndex ?? 0, 0),
+    Math.max(props.calendarData.length - 1, 0),
+  ),
+);
+const activeDay = computed<CalendarDay | undefined>(() => props.calendarData[activeIndex.value]);
 
 function setActive(index: number) {
-  activeIndex.value = index;
-  emit("update:activeIndex", index);
+  activeModel.value = index;
 }
 </script>
 
@@ -39,19 +46,20 @@ function setActive(index: number) {
       as="div"
       class="bg-muted/50 flex w-full max-w-lg flex-col gap-6 overflow-hidden rounded-3xl border p-8"
       :animate="{
-        height: calendarData[activeIndex].events ? 'auto' : 'fit',
+        height: activeDay?.events ? 'auto' : 'fit',
       }"
     >
       <TextMorph
-        :text="calendarData[activeIndex].day"
+        :text="activeDay?.day ?? ''"
         class="w-fit font-bold"
         :morph-time="0.5"
         :cool-down-time="0.1"
       />
 
+      <!-- 以选中下标为 key：只有切换日期时才重挂事件区并播放入场，父组件重渲染不会触发 -->
       <Motion
-        v-if="calendarData[activeIndex].events"
-        :key="`event-container${Math.random()}`"
+        v-if="activeDay?.events"
+        :key="activeIndex"
         layout
         as="div"
         class="flex flex-col gap-4"
@@ -71,8 +79,8 @@ function setActive(index: number) {
 
         <div class="flex flex-wrap gap-4">
           <Motion
-            v-for="event in calendarData[activeIndex].events"
-            :key="event.title + event.time + Math.random()"
+            v-for="(event, eventIndex) in activeDay.events"
+            :key="`${event.title}-${event.time}-${eventIndex}`"
             as="div"
             layout
             class="w-full max-w-44 rounded-lg border p-3"

@@ -20,6 +20,8 @@
     "ellipsis 默认为 false（Element Plus 默认 true），需要水平溢出折叠时显式开启。",
     "传了 items 后默认插槽会被忽略，两种写法不要混用。",
     "选中态配色取 color 对应色阶的第 2 档（背景块）与第 6 档（文字），primary 落到 brand、neutral 的文字落到 gray-9；不需要色块时传 :show-active-background=\"false\"，投影会一并移除。",
-    "旧版的 v-model:active / v-model:expanded 已更名为 v-model:selected-keys / v-model:open-keys，不保留别名；实例方法 updateActive 更名为 updateActiveIndex。"
+    "旧版的 v-model:active / v-model:expanded 已更名为 v-model:selected-keys / v-model:open-keys，不保留别名；实例方法 updateActive 更名为 updateActiveIndex。",
+    "openKeys 是唯一展开来源；受控父级拒收时维持父值，defaultOpeneds 仅初始化一次。",
+    "open(index)/close(index) 按完整祖先路径处理；items 可定位未挂载后代，纯插槽后代需已渲染登记。"
   ]
 }

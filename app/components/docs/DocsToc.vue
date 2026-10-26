@@ -69,7 +69,7 @@ function toAnchorItems(links: TocLinkItem[]): AnchorItem[] {
 const items = computed(() => toAnchorItems(props.links ?? []));
 
 /** <lg 折叠条是否展开；lg+ 目录常驻，不看这个值 */
-const mobileOpen = ref(false);
+const mobileOpen = shallowRef(false);
 </script>
 
 <template>

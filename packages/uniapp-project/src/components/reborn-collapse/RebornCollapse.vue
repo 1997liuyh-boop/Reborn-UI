@@ -1,8 +1,6 @@
-<script lang="ts">
-</script>
-
 <script setup lang="ts">
-import { computed, getCurrentInstance, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, shallowRef, watch } from 'vue'
+import { useBooleanModel } from '@/composables/useBooleanModel'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-collapse.config'
@@ -21,10 +19,8 @@ const props = withDefaults(defineProps<RebornCollapseProps>(), {
   ui: () => ({}),
 })
 
-const collapse = defineModel('modelValue', {
-  type: Boolean,
-  default: false,
-})
+defineModel<boolean>({ default: undefined })
+const collapse = useBooleanModel('modelValue')
 
 // 获取组件实例
 const { proxy } = getCurrentInstance()!
@@ -33,69 +29,48 @@ const b = tv(theme)
 const ui = computed(() => b())
 const overrides = computed(() => props.ui || {})
 
-// 折叠展开状态
-const isOpened = ref(false)
-// 内容高度
-const height = ref(0)
+// 开合状态只由模型持有，像素高度只负责过渡。
+const isOpened = computed(() => !!collapse.value)
+// null 表示 height: auto。初始状态直接落到终态，挂载时不做过渡，也就不会先撑开再收回。
+// auto 能等于内容高度的前提是内容节点留在文档流里（见 reborn-collapse.config.ts 的 content）。
+const height = shallowRef<number | null>(isOpened.value ? null : 0)
+let token = 0
+let measureTimer: ReturnType<typeof setTimeout> | undefined
+let transitionTimer: ReturnType<typeof setTimeout> | undefined
 
-/**
- * 显示折叠内容
- */
-function show() {
-  isOpened.value = true
-  updateHeight()
+function cancelTransition() {
+  token++
+  clearTimeout(measureTimer)
+  clearTimeout(transitionTimer)
 }
 
-/**
- * 隐藏折叠内容
- */
-function hide() {
-  isOpened.value = false
-  height.value = 0
-}
-
-/**
- * 更新高度
- */
 function updateHeight() {
-  // 使用 nextTick 确保 DOM 更新后再获取
-  // Use setTimeout as simple generic nextTick for uni-app sometimes nextTick is not enough for layout
-  setTimeout(() => {
-    const query = uni.createSelectorQuery().in(proxy)
-    query.select('.reborn-collapse__content')
-      .boundingClientRect((data) => {
-        const node = data as UniApp.NodeInfo
-        if (node && node.height !== undefined) {
-          height.value = node.height
-        }
-      })
-      .exec()
-  }, 50)
+  cancelTransition()
+  // 已收起且高度已是 0：无需测量，否则会先写入内容高度、再回到 0，出现一次展开闪动
+  if (!isOpened.value && height.value === 0) return
+  const current = token
+  nextTick(() => {
+    if (current !== token) return
+    measureTimer = setTimeout(() => {
+      uni.createSelectorQuery().in(proxy).select('.reborn-collapse__content')
+        .boundingClientRect((data) => {
+          if (current !== token) return
+          const node = data as UniApp.NodeInfo
+          height.value = node?.height ?? 0
+          transitionTimer = setTimeout(() => {
+            if (current === token) height.value = isOpened.value ? null : 0
+          }, isOpened.value ? 300 : 20)
+        }).exec()
+    }, 20)
+  })
 }
 
-/**
- * 切换折叠状态
- */
-function toggle() {
-  if (isOpened.value) {
-    hide()
-  } else {
-    show()
-  }
-}
+function show() { collapse.value = true }
+function hide() { collapse.value = false }
+function toggle() { collapse.value = !isOpened.value }
 
-// 监听折叠状态变化
-watch(
-  () => collapse.value,
-  (val: boolean) => {
-    if (val) {
-      show()
-    } else {
-      hide()
-    }
-  },
-  { immediate: true },
-)
+watch(isOpened, updateHeight)
+onBeforeUnmount(cancelTransition)
 
 defineExpose({
   show,
@@ -110,7 +85,7 @@ defineExpose({
     <view @click="toggle">
       <slot :open="isOpened" />
     </view>
-    <view :class="ui.trigger({ class: overrides?.trigger })" :style="{ height: isOpened ? `${height}px` : '0px' }">
+    <view :class="ui.trigger({ class: overrides?.trigger })" :style="{ height: height === null ? 'auto' : `${height}px` }">
       <view class="reborn-collapse__content" :class="ui.content({ class: overrides?.content })">
         <slot name="content" />
       </view>

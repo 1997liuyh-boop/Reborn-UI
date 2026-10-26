@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import { computed, nextTick, reactive } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, watch } from 'vue'
 
 defineOptions({
   name: 'RebornAffix',
@@ -31,16 +31,23 @@ export interface FloatViewProps {
   safeArea?: boolean
 }
 
-// 获取屏幕信息和安全区域
-// 获取屏幕信息和安全区域
-const windowInfo = uni.getWindowInfo() || {}
-const screenWidth = windowInfo.screenWidth || 0
-const screenHeight = windowInfo.screenHeight || 0
+/**
+ * 可视窗口尺寸与安全区。
+ * 用 windowWidth / windowHeight 而不是 screenWidth / screenHeight：fixed 元素的 left / bottom 相对页面窗口计算，
+ * H5 里窗口可能比设备屏幕小（例如嵌在文档站的手机预览里），按屏幕宽度算出的右缘位置会落到窗口之外；
+ * 小程序带原生导航栏时 screenHeight 也比窗口高。取不到窗口尺寸时退回屏幕尺寸
+ */
+function viewportOf(info: { windowWidth?: number, windowHeight?: number, screenWidth?: number, screenHeight?: number }) {
+  return { width: info.windowWidth || info.screenWidth || 0, height: info.windowHeight || info.screenHeight || 0 }
+}
+let windowInfo = uni.getWindowInfo() || {}
+let screenWidth = viewportOf(windowInfo).width
+let screenHeight = viewportOf(windowInfo).height
 
 // 获取底部安全区域高度 (iPhone X+ 的底部黑条)
-const safeAreaBottom = props.safeArea ? (windowInfo.safeAreaInsets?.bottom || 0) : 0
+let safeAreaBottom = props.safeArea ? (windowInfo.safeAreaInsets?.bottom || 0) : 0
 // 获取顶部安全区域高度 (状态栏/刘海屏)
-const safeAreaTop = props.safeArea ? (windowInfo.safeAreaInsets?.top || 0) : 0
+let safeAreaTop = props.safeArea ? (windowInfo.safeAreaInsets?.top || 0) : 0
 
 const position = reactive({
   x: props.right !== undefined ? (screenWidth - props.size - props.right) : props.left,
@@ -52,6 +59,54 @@ const position = reactive({
     : (props.bottom + safeAreaBottom),
   isDragging: false,
 })
+
+/** 用户是否拖动过悬浮块；拖动过的位置属于用户，窗口变化时不能被复位 */
+let userMoved = false
+
+/** 重新读取屏幕尺寸与安全区 */
+function readWindow() {
+  windowInfo = uni.getWindowInfo() || {}
+  screenWidth = viewportOf(windowInfo).width
+  screenHeight = viewportOf(windowInfo).height
+  safeAreaBottom = props.safeArea ? (windowInfo.safeAreaInsets?.bottom || 0) : 0
+  safeAreaTop = props.safeArea ? (windowInfo.safeAreaInsets?.top || 0) : 0
+}
+
+/** 按定位 props 推出初始位置 */
+function applyInitialPosition() {
+  position.x = props.right !== undefined ? screenWidth - props.size - props.right : props.left
+  position.y = props.top !== undefined ? screenHeight - props.size - props.top - safeAreaTop : props.bottom + safeAreaBottom
+}
+
+/** 定位 props 变化：以新 props 为准复位，之前的拖动位置作废 */
+function resetPosition() {
+  readWindow()
+  userMoved = false
+  applyInitialPosition()
+}
+
+/**
+ * 窗口尺寸变化（H5 地址栏收起 / 软键盘、横竖屏切换）：只刷新边界。
+ * 没拖动过时按 props 重新锚定（right / top 锚点随新尺寸生效）；拖动过则保留用户位置，只夹回可视范围，
+ * 开启吸附时贴回原来那一侧的边缘（按变化前的中线判断，避免窗口变宽后右侧按钮被判到左侧）。
+ */
+function onWindowResize() {
+  const wasRight = position.x + props.size / 2 > screenWidth / 2
+  readWindow()
+  if (!userMoved) {
+    applyInitialPosition()
+    return
+  }
+  position.x = Math.max(0, Math.min(screenWidth - props.size, position.x))
+  position.y = Math.max(safeAreaBottom, Math.min(screenHeight - props.size - safeAreaTop, position.y))
+  if (props.noSnapping || position.isDragging) return
+  const { size, gap } = props
+  position.x = wasRight ? screenWidth - size - gap : gap
+  position.y = Math.max(gap + safeAreaBottom, Math.min(screenHeight - size - safeAreaTop - gap, position.y))
+}
+watch(() => [props.left, props.right, props.top, props.bottom, props.size, props.safeArea], resetPosition)
+uni.onWindowResize(onWindowResize)
+onBeforeUnmount(() => uni.offWindowResize(onWindowResize))
 
 const dragState = reactive({
   startX: 0,
@@ -122,25 +177,17 @@ function onTouchMove(e: TouchEvent) {
 
   position.x = newX
   position.y = newY
+  userMoved = true
   dragState.startX = touch.clientX
   dragState.startY = touch.clientY
 }
 
 function performEdgeSnapping() {
   const { size, gap } = props
-  const edgeThreshold = 60
-  const centerX = screenWidth / 2
 
-  // 水平吸附
-  if (position.x < edgeThreshold) {
-    position.x = gap
-  }
-  else if (position.x > screenWidth - size - edgeThreshold) {
-    position.x = screenWidth - size - gap
-  }
-  else {
-    position.x = position.x < centerX ? gap : screenWidth - size - gap
-  }
+  // 水平吸附：按元素中心落在窗口中线的哪一侧决定贴左还是贴右，两侧都留 gap（与 Web 端一致）。
+  // 用左上角坐标比较会让元素中心已过中线、左边缘还没过的悬浮块被判到左侧
+  position.x = position.x + size / 2 < screenWidth / 2 ? gap : screenWidth - size - gap
 
   // 垂直吸附修正
   const maxY = screenHeight - size - safeAreaTop
@@ -163,8 +210,12 @@ function onTouchEnd() {
 </script>
 
 <template>
+  <view v-if="disabled" class="fixed" :style="viewStyle">
+    <slot />
+  </view>
   <view
-    class="fixed touch-none" :style="viewStyle" @touchstart="onTouchStart" @touchmove="onTouchMove"
+    v-else
+    class="fixed touch-none" :style="viewStyle" @touchstart="onTouchStart" @touchmove.stop.prevent="onTouchMove"
     @touchend="onTouchEnd" @touchcancel="onTouchEnd"
   >
     <slot />

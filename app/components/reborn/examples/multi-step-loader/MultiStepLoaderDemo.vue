@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed, onBeforeUnmount, reactive, shallowRef } from "vue";
+
 /** 单个步骤的描述 */
 interface Step {
   /** 步骤进行中显示的文案 */
@@ -14,9 +16,9 @@ interface Step {
 }
 
 /** 定时模式的开关 */
-const timedLoading = ref(false);
+const timedLoading = shallowRef(false);
 /** 异步模式的开关 */
-const asyncLoading = ref(false);
+const asyncLoading = shallowRef(false);
 
 /** 异步模式下三个业务步骤各自的进行中状态 */
 const pending = reactive({
@@ -26,10 +28,10 @@ const pending = reactive({
 });
 
 /** 最近一次的流程事件，替代 alert 与 console 输出 */
-const lastEvent = ref("暂无");
+const lastEvent = shallowRef("暂无");
 
 /** 定时模式：每一步固定停留一段时间后自动推进 */
-const timedSteps = computed<Step[]>(() => [
+const timedSteps: Step[] = [
   { text: "校验支付信息", duration: 2000 },
   { text: "保存订单", duration: 1500 },
   { text: "发送确认邮件", duration: 2500 },
@@ -43,7 +45,7 @@ const timedSteps = computed<Step[]>(() => [
       timedLoading.value = false;
     },
   },
-]);
+];
 
 /** 异步模式：async 为 true 时该步会一直等待，直到外部把它改为 false */
 const asyncSteps = computed<Step[]>(() => [
@@ -73,26 +75,55 @@ function toggleTimed() {
   timedLoading.value = !timedLoading.value;
 }
 
-/** 用 setTimeout 模拟三个耗时不等的异步任务 */
-function settle(key: keyof typeof pending, delay: number) {
-  return new Promise<void>((resolve) => {
-    setTimeout(() => {
+/** 当前计时任务的取消入口；取消时也结束等待中的 Promise */
+const cancellations = new Set<() => void>();
+let runId = 0;
+
+/** 每轮独立计时，过期任务不再改写当前步骤 */
+function settle(key: keyof typeof pending, delay: number, id: number) {
+  if (id !== runId) return Promise.resolve(false);
+  return new Promise<boolean>((resolve) => {
+    let timer: ReturnType<typeof setTimeout>;
+    const cancel = () => {
+      clearTimeout(timer);
+      cancellations.delete(cancel);
+      resolve(false);
+    };
+    timer = setTimeout(() => {
+      cancellations.delete(cancel);
+      if (id !== runId) {
+        resolve(false);
+        return;
+      }
       pending[key] = false;
-      resolve();
+      resolve(true);
     }, delay);
+    cancellations.add(cancel);
   });
 }
 
+/** 关闭、重开或卸载时作废旧流程并清空等待 */
+function stopAsync() {
+  runId++;
+  cancellations.forEach(cancel => cancel());
+  cancellations.clear();
+  asyncLoading.value = false;
+}
+
 async function startAsync() {
+  stopAsync();
+  const id = runId;
   asyncLoading.value = true;
   pending.payment = true;
   pending.order = true;
   pending.mail = true;
 
-  await settle("payment", 2000);
-  await settle("order", 3000);
-  await settle("mail", 2500);
+  if (!await settle("payment", 2000, id)) return;
+  if (!await settle("order", 3000, id)) return;
+  await settle("mail", 2500, id);
 }
+
+onBeforeUnmount(stopAsync);
 </script>
 
 <template>
@@ -137,7 +168,7 @@ async function startAsync() {
           :loading="asyncLoading"
           @state-change="handleStateChange"
           @complete="handleComplete"
-          @close="asyncLoading = false"
+          @close="stopAsync"
         />
 
         <DemoNote tone="dimmed">

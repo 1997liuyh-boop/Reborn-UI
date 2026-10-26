@@ -46,8 +46,8 @@ export interface UiKeysResult {
  * 内部组件白名单：这些 .vue 虽然消费 props.ui，但没有任何对外入口能把 ui 传进去，
  * 键位写进文档只会误导使用方，故不参与抽取。
  *
- * - RebornLoadingMask：v-loading 指令与 useLoading 共用的遮罩层，由 createLoading
- *   内部渲染，useLoading 的选项里并没有 ui 透传（app/composables/useLoading.ts）。
+ * - RebornLoadingMask：v-loading 指令与 showLoading 共用的遮罩层，由 createLoading
+ *   内部渲染，showLoading 的选项里并没有 ui 透传（app/composables/useLoading.ts）。
  *   若将来补上透传，把这里删掉即可，守卫会立刻要求文档补齐这 4 个键。
  */
 const INTERNAL_COMPONENTS = new Set(["RebornLoadingMask"]);

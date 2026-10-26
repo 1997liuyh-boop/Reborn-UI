@@ -1,8 +1,19 @@
 <script setup lang="ts">
-/** 演练场当前色值 */
-const color = ref("#3b82f6");
+import { DemoBlock, DemoNote, DemoSection, Playground } from "#components";
+import { computed, ref, shallowRef } from "vue";
+import { colorPickerSizes } from "~/components/reborn/ui/reborn-color-picker/reborn-color-picker.config";
+import RebornColorPicker from "~/components/reborn/ui/reborn-color-picker/RebornColorPicker.vue";
 
-const state = ref<Record<string, any>>({
+/** 演练场当前色值 */
+
+const color = shallowRef("#3b82f6");
+/** change 只在一次取色结束且颜色变化时提交。 */
+const lastChange = shallowRef("暂无");
+function onColorChange(value: string) {
+  lastChange.value = value;
+}
+
+const state = shallowRef<Record<string, any>>({
   size: "md",
   disabled: false,
 });
@@ -19,7 +30,6 @@ const controls = [
         defaultValue: "md",
         props: {
           options: [
-            { label: "XS", value: "xs" },
             { label: "SM", value: "sm" },
             { label: "MD", value: "md" },
             { label: "LG", value: "lg" },
@@ -44,7 +54,6 @@ const pickerCode = computed(() => {
 
 /** 尺寸对照演示 */
 const sizeColors = ref<Record<string, string>>({
-  xs: "#ef4444",
   sm: "#f59e0b",
   md: "#22c55e",
   lg: "#3b82f6",
@@ -62,34 +71,17 @@ const sizeColors = ref<Record<string, string>>({
       description="点击色块弹出取色面板，v-model 绑定十六进制字符串；面板由 RebornPopover 承载，无需额外容器。"
     >
       <div class="flex flex-col items-center gap-3">
-        <RebornColorPicker
-          v-model="color"
-          :size="state.size"
-          :disabled="state.disabled"
-        />
+        <RebornColorPicker v-model="color" :size="state.size" :disabled="state.disabled" @change="onColorChange" />
         <DemoNote tone="dimmed">
-          当前色值：<code>{{ color }}</code>
+          当前色值：<code>{{ color }}</code>；最近提交：<code>{{ lastChange }}</code>
         </DemoNote>
       </div>
     </Playground>
 
-    <DemoSection
-      title="尺寸对照"
-      description="size 支持 xs / sm / md / lg 四档，与 RebornButton 的触发器尺寸保持一致。"
-    >
-      <DemoBlock
-        layout="row"
-        align="center"
-      >
-        <div
-          v-for="s in ['xs', 'sm', 'md', 'lg']"
-          :key="s"
-          class="flex flex-col items-center gap-2"
-        >
-          <RebornColorPicker
-            v-model="sizeColors[s]"
-            :size="s as 'xs' | 'sm' | 'md' | 'lg'"
-          />
+    <DemoSection title="尺寸对照" description="size 支持 sm / md / lg 三档，与 RebornButton 的触发器尺寸保持一致。">
+      <DemoBlock layout="row" align="center">
+        <div v-for="s in colorPickerSizes" :key="s" class="flex flex-col items-center gap-2">
+          <RebornColorPicker v-model="sizeColors[s]" :size="s" />
           <span class="text-dimmed text-xs font-medium">{{ s }}</span>
         </div>
       </DemoBlock>

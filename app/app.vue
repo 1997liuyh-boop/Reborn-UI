@@ -4,14 +4,17 @@
  *
  * 与上游的差异：
  * 1. 查询多带出 `platform` / `category` / `series` 字段（queryCollectionNavigation 的 extraFields）；
- * 2. transform 阶段把组件分区从「目录 → 组件」重组为「系列 → 分类 → 组件」（useComponentsCatalog），
+ * 2. transform 阶段把组件分区从「目录 → 组件」重组为「系列 → 分类 → 组件」（componentsCatalog），
  *    侧栏、移动端抽屉、页头 headline 共用；平台开关的裁剪仍在各消费方按档位进行；
  * 3. AI 助手面板换成基于 RebornDrawer 的 AppAssistantDrawer。抽屉带遮罩盖在页面上方，
  *    上游那层「按面板宽度给正文加 margin-right」的推挤随之去掉，否则遮罩下的整站会被挤窄并重排。
  * 其余（i18n 回退、搜索索引）与 Docus 5.6.1 保持一致，升级 Docus 时需对照同步。
  */
 import type { ContentNavigationItem, DocsCollectionItem, PageCollections } from "@nuxt/content";
+import type { DocsNavigation } from "~/utils/docsNavigation";
 import * as nuxtUiLocales from "@nuxt/ui/locale";
+import { RebornOverlayHost } from "~/composables/useOverlay";
+import { navigationKey } from "~/utils/docsNavigation";
 
 /** Docus 的 AppConfig 类型增强不在本项目 tsconfig 范围内，这里按其声明手动收窄 */
 const { seo } = useAppConfig() as { seo: { titleTemplate?: string; title?: string; description?: string } };
@@ -67,19 +70,20 @@ const { data: navigation } = await useAsyncData(
   {
     transform: (data: ContentNavigationItem[]) =>
       regroupNavigationTree(transformNavigation(data, isEnabled.value, locale.value)),
-    watch: [locale],
   },
 );
 const { data: files } = useLazyAsyncData(
-  `search_${collectionName.value}`,
+  () => `search_${collectionName.value}`,
   () => queryCollectionSearchSections(collectionName.value as keyof PageCollections),
   {
     server: false,
-    watch: [locale],
   },
 );
 
-provide("navigation", navigation);
+const sharedNavigation = readonly(navigation) as DocsNavigation;
+provide(navigationKey, sharedNavigation);
+// Docus 上游组件仍读取约定字符串键，两者共享同一份只读导航。
+provide("navigation", sharedNavigation);
 
 /**
  * 全局回到顶部：右侧 uniapp 手机面板（2xl 起 fixed 贴右缘、420px 宽、z-30）可见时，
@@ -90,6 +94,7 @@ const { isPanelVisible } = useUniDemoPanel();
 
 <template>
   <UApp :locale="nuxtUiLocale">
+    <RebornOverlayHost />
     <NuxtLoadingIndicator color="var(--ui-primary)" />
 
     <div>
@@ -107,25 +112,11 @@ const { isPanelVisible } = useUniDemoPanel();
       BackTop 自己的文档页不挂：页内 demo 有同位置的实例，按钮会叠在一起。
     -->
     <template v-if="!$route.path.endsWith('/reborn-back-top')">
-      <RebornBackTop
-        :bottom="228"
-        show-progress
-        color="info"
-        size="md"
-        shape="square"
-        icon="lucide:arrow-big-up"
-        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }"
-      />
-      <RebornBackTop
-        direction="bottom"
-        :bottom="180"
-        show-progress
-        color="info"
-        size="md"
-        shape="square"
+      <RebornBackTop :bottom="228" show-progress size="md" shape="square" icon="lucide:arrow-big-up"
+        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }" />
+      <RebornBackTop direction="bottom" :bottom="180" show-progress size="md" shape="square"
         icon="lucide:arrow-big-down"
-        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }"
-      />
+        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }" />
     </template>
 
     <ClientOnly>

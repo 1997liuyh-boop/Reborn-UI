@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { imageMode } from './reborn-image.config'
-import { computed, ref } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-image.config'
@@ -48,7 +48,7 @@ const props = withDefaults(defineProps<ImageProps>(), {
 })
 
 // 事件定义
-const emit = defineEmits(['load', 'error'])
+const emit = defineEmits<{ load: [event: unknown]; error: [event: unknown] }>()
 
 const b = tv(theme)
 
@@ -70,9 +70,11 @@ const ui = computed(() => {
 
 
 // 加载状态
-const isLoading = ref(true)
+const isLoading = shallowRef(true)
 // 加载失败状态
-const isError = ref(false)
+const isError = shallowRef(false)
+
+watch(() => props.src, () => { isLoading.value = true; isError.value = false })
 
 // 计算加载图标大小 (width/height 的 0.6)
 const loadingSize = computed(() => {
@@ -148,13 +150,7 @@ function onTap() {
         <!-- <view :class="absolute w-[2px] h-full bg-current rotate-45"></view>
 				<view :class="absolute w-[2px] h-full bg-current -rotate-45"></view> -->
         <view :class="ui.errorIcon()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-              <path
-                d="m3 16l7-3l4 1.818M16 10a2 2 0 1 1 0-4a2 2 0 0 1 0 4m.879 11.121L19 19m2.121-2.121L19 19m0 0l-2.121-2.121M19 19l2.121 2.121" />
-              <path d="M13 21H3.6a.6.6 0 0 1-.6-.6V3.6a.6.6 0 0 1 .6-.6h16.8a.6.6 0 0 1 .6.6V13" />
-            </g>
-          </svg>
+          <view class="i-lucide-image-off size-[48rpx]" />
         </view>
       </slot>
     </view>

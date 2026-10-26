@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { shallowRef } from 'vue';
+
 /** 基础列表：可自由拖拽排序 */
-const list1 = ref([
+const list1 = shallowRef([
   { name: "项目 1", color: "bg-red-500" },
   { name: "项目 2", color: "bg-blue-500" },
   { name: "项目 3", color: "bg-green-500" },
@@ -8,7 +10,7 @@ const list1 = ref([
 ]);
 
 /** 部分禁用列表：item.disabled 为 true 的项不可拖动，但仍可被其它项挤开 */
-const list2 = ref([
+const list2 = shallowRef([
   { name: "A", color: "bg-purple-500" },
   { name: "B", color: "bg-pink-500", disabled: true },
   { name: "C", color: "bg-indigo-500" },
@@ -18,10 +20,10 @@ const list2 = ref([
 ]);
 
 /** 最近一次 start 事件拖起的项，替代 console 输出 */
-const lastStart = ref("");
+const lastStart = shallowRef("");
 
 /** 最近一次 change 事件后的顺序 */
-const lastOrder = ref("");
+const lastOrder = shallowRef("");
 
 function handleStart(payload: { index: number; item: { name: string } }) {
   lastStart.value = payload.item.name;

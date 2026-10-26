@@ -1,9 +1,9 @@
 import type { ClassValue } from 'clsx'
-import type { ComputedRef } from 'vue'
+import type { ComputedRef, InjectionKey } from 'vue'
 import { tv } from '@/lib/tv'
 
 /** 父子组件通信用的 provide/inject 键 */
-export const TABS_INJECTION_KEY = 'reborn-tabs'
+export const TABS_INJECTION_KEY: InjectionKey<TabsContext> = Symbol('reborn-tabs')
 
 const tabsTypes = ['line', 'card', 'card-gutter', 'card-fill', 'text', 'rounded', 'capsule'] as const
 const tabsSizes = ['sm', 'md', 'lg'] as const
@@ -39,7 +39,9 @@ export type TabKey = string | number
 
 /** 单个标签页登记到父级的元信息，父级据此渲染头部 */
 export interface TabPaneMeta {
-  /** 标签唯一标识，取自 tab-pane 的 key 属性；未写 key 时由父级按登记顺序补序号 */
+  /** 显式序位；缺省时使用所在平台的自然顺序 */
+  order?: number
+  /** 业务标识取自 tab-pane 的 paneKey；缺省时由父级按登记顺序补序号 */
   key: TabKey
   /** 标题文本 */
   title?: string
@@ -50,6 +52,9 @@ export interface TabPaneMeta {
   /** 不显示时是否销毁内容 */
   destroyOnHidden: boolean
 }
+
+/** 登记输入允许缺省标识，父级归一后返回同一个元信息对象。 */
+export type TabPaneRegistration = Omit<TabPaneMeta, 'key'> & { key?: TabKey }
 
 /** 父级下发给 tab-pane 的上下文 */
 export interface TabsContext {
@@ -64,7 +69,9 @@ export interface TabsContext {
   /** 内容区面板的样式类 */
   paneClass: ComputedRef<string>
   /** 登记标签页，未写 key 的会在此补上序号 */
-  addPane: (meta: TabPaneMeta) => void
+  addPane: (meta: TabPaneRegistration) => TabPaneMeta
+  /** 按实际面板顺序校正头部顺序。 */
+  sortPanes: () => void
   /** 注销标签页 */
   removePane: (meta: TabPaneMeta) => void
 }

@@ -1,16 +1,3 @@
-<template>
-    <div :class="ui.root()">
-        <!-- 画布：full 内联渲染；mobile / tablet 用 iframe 获得真实断点 -->
-        <div :class="ui.canvas()">
-            <slot v-if="viewport === 'full'" />
-            <div v-else :class="ui.frame()">
-                <iframe ref="frameRef" :src="embedSrc" :class="ui.iframe()" :title="`${demoName} 预览`"
-                    @load="syncTheme" />
-            </div>
-        </div>
-    </div>
-</template>
-
 <script setup lang="ts">
 /**
  * DemoStage —— 文档 Preview 区的统一展示容器
@@ -26,6 +13,7 @@
  * - iframe 主题同步：同源可直接写入 contentDocument 的 class，切换主题即时生效。
  */
 import { tv } from '~/lib/tv'
+import { themeColors } from '~/utils/themeColor'
 import theme from './demo-stage.config'
 import type { StageViewport } from './types'
 
@@ -51,14 +39,32 @@ const embedSrc = computed(() => {
 
 // ---- iframe 主题同步 ----
 const colorMode = useColorMode()
-const frameRef = ref<HTMLIFrameElement>()
+const themeColor = useThemeColor()
+const frameRef = useTemplateRef<HTMLIFrameElement>('frameRef')
+
+/** 色系名 → 主题预设名，与外层页面（theme-color 插件）共用 utils/themeColor 的同一张表 */
+const themePreset = computed(() => themeColors.find(color => color.name === themeColor.value)?.preset ?? 'brand')
 
 /** 将当前主题写入 iframe 文档（同源可直接操作；load 时与主题切换时各同步一次） */
 function syncTheme() {
     const doc = frameRef.value?.contentDocument
     if (!doc) return
     doc.documentElement.classList.toggle('dark', colorMode.value === 'dark')
+    doc.documentElement.dataset.themeColor = themePreset.value
 }
 
-watch(() => colorMode.value, () => syncTheme())
+watch([() => colorMode.value, themeColor], syncTheme)
 </script>
+
+<template>
+    <div :class="ui.root()">
+        <!-- 画布：full 内联渲染；mobile / tablet 用 iframe 获得真实断点 -->
+        <div :class="ui.canvas()">
+            <slot v-if="viewport === 'full'" />
+            <div v-else :class="ui.frame()">
+                <iframe ref="frameRef" :src="embedSrc" :class="ui.iframe()" :title="`${demoName} 预览`"
+                    @load="syncTheme" />
+            </div>
+        </div>
+    </div>
+</template>

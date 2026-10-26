@@ -5,10 +5,10 @@
  * 不用 controls-position="left" / "right"：那套按钮是悬停才滑入的，
  * 而卡片预览层是 pointer-events-none 的，静态缩略图里会看不到按钮。
  */
-import { ref } from 'vue'
+import { shallowRef } from 'vue';
 import RebornInputNumber from '~/components/reborn/ui/reborn-input-number/RebornInputNumber.vue'
 
-const value = ref(3)
+const value = shallowRef(3)
 </script>
 
 <template>

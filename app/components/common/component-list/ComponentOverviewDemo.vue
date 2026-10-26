@@ -5,7 +5,7 @@
  * - 已注册的 Overview 进入视口后才挂载，避免大量同时渲染
  * - 预览区禁交互，点击整卡仍跳转详情
  */
-import type { Component } from 'vue'
+import type { Component, ShallowRef } from 'vue'
 import { camelize, capitalize, getCurrentInstance } from 'vue'
 
 interface Props {
@@ -19,11 +19,11 @@ const props = withDefaults(defineProps<Props>(), {
   category: '杂项',
 })
 
-const rootRef = ref<HTMLElement | null>(null)
+const rootRef = useTemplateRef<HTMLElement>('rootRef')
 /** 是否已确认可尝试挂载 Overview（进入视口） */
-const visible = ref(false)
+const visible = shallowRef(false)
 /** null=尚未解析；false=确认无此组件；Component=可挂载 */
-const resolvedDemo = shallowRef<Component | false | null>(null)
+const resolvedDemo: ShallowRef<Component | false | null> = shallowRef(null)
 
 /**
  * 全局组件注册表（nuxt.config 中 components 为 global，Overview 都注册在这里）。
@@ -57,6 +57,9 @@ function markVisible() {
   }
 }
 
+let observer: IntersectionObserver | undefined
+onBeforeUnmount(() => observer?.disconnect())
+
 onMounted(() => {
   // 先解析：未注册 Overview 立刻 Glyph，避免 100+ 卡片空转「加载中」
   const resolved = resolveOverview()
@@ -74,35 +77,16 @@ onMounted(() => {
     return
   }
 
-  const io = new IntersectionObserver(
+  observer = new IntersectionObserver(
     (entries) => {
       if (entries.some(entry => entry.isIntersecting)) {
         markVisible()
-        io.disconnect()
+        observer?.disconnect()
       }
     },
     { rootMargin: '240px 0px' },
   )
-  io.observe(el)
-
-  // 部分预览环境 IO 不回调：滚动时用几何再判一次
-  const onScrollCheck = () => {
-    if (visible.value) {
-      window.removeEventListener('scroll', onScrollCheck, true)
-      return
-    }
-    if (isNearViewport(el)) {
-      markVisible()
-      io.disconnect()
-      window.removeEventListener('scroll', onScrollCheck, true)
-    }
-  }
-  window.addEventListener('scroll', onScrollCheck, true)
-
-  onBeforeUnmount(() => {
-    io.disconnect()
-    window.removeEventListener('scroll', onScrollCheck, true)
-  })
+  observer.observe(el)
 })
 </script>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornEmpty from '@/components/reborn-empty/RebornEmpty.vue'
@@ -24,18 +24,20 @@ const IMAGE_OPTIONS = [
   { label: 'folder', value: ARTWORK.folder },
   { label: 'scene', value: ARTWORK.scene },
 ]
+const imageSizes = [96, 160, 240, 400] as const
+const sampleSizes = [96, 160, 240] as const
 
 // ─── 演练场状态（默认值与 Web 端 Playground 一致） ───────────────
 
-const currentImage = ref<string>(ARTWORK.folder)
-const imageSize = ref(240)
-const title = ref('暂无数据')
-const description = ref('调整筛选条件后重新查询，或者先创建一条记录。')
-const showImage = ref(true)
-const showExtra = ref(true)
+const currentImage = shallowRef<string>(ARTWORK.folder)
+const imageSize = shallowRef(240)
+const title = shallowRef('暂无数据')
+const description = shallowRef('调整筛选条件后重新查询，或者先创建一条记录。')
+const showImage = shallowRef(true)
+const showExtra = shallowRef(true)
 
 /** 操作区点击回显，让预览「有回应」 */
-const lastAction = ref('')
+const lastAction = shallowRef('')
 function onAction(name: string) {
   lastAction.value = name
 }
@@ -50,10 +52,11 @@ function onAction(name: string) {
     <!-- 演练场 -->
     <RebornCard title="自定义" custom-class="space-y-4">
       <RebornEmpty
+        v-if="showExtra"
         :image="showImage ? currentImage : null" :image-size="imageSize"
         :title="title" :description="description"
       >
-        <template v-if="showExtra" #extra>
+        <template #extra>
           <ReButton color="neutral" variant="outlined" size="md" @tap="onAction('重置筛选')">
             重置筛选
           </ReButton>
@@ -62,6 +65,11 @@ function onAction(name: string) {
           </ReButton>
         </template>
       </RebornEmpty>
+      <RebornEmpty
+        v-else
+        :image="showImage ? currentImage : null" :image-size="imageSize"
+        :title="title" :description="description"
+      />
 
       <text class="text-24 text-gray-6">最近点击：{{ lastAction || '（无）' }}；组件不派发事件，回显来自插槽里按钮自己的 tap。</text>
 
@@ -82,7 +90,7 @@ function onAction(name: string) {
       <view class="flex flex-col gap-2">
         <text class="text-24 text-gray-6">图片宽度 (image-size)，单位 rpx</text>
         <view class="flex flex-wrap gap-2">
-          <view v-for="s in [96, 160, 240, 400]" :key="s">
+          <view v-for="s in imageSizes" :key="s">
             <ReButton
               size="xs" :variant="imageSize === s ? 'filled' : 'outlined'"
               :color="imageSize === s ? 'primary' : 'neutral'" @tap="imageSize = s"
@@ -122,7 +130,7 @@ function onAction(name: string) {
         image-size 只设宽度，高度按原图比例自适应；数字按 rpx 处理，也可以直接写 '80px' 之类的 CSS 长度。
       </text>
 
-      <view v-for="s in [96, 160, 240]" :key="s" class="flex flex-col gap-2">
+      <view v-for="s in sampleSizes" :key="s" class="flex flex-col gap-2">
         <text class="text-24 text-gray-6 font-mono">:image-size="{{ s }}"</text>
         <RebornEmpty :image-size="s" title="暂无数据" />
       </view>

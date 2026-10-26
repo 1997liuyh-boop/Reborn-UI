@@ -4,10 +4,10 @@
  *
  * 卡片宽度有限，用 sm 尺寸并限宽 210px，避免被裁切。
  */
-import { ref } from 'vue'
+import { shallowRef } from 'vue';
 import RebornInput from '~/components/reborn/ui/reborn-input/RebornInput.vue'
 
-const value = ref('Reborn UI')
+const value = shallowRef('Reborn UI')
 </script>
 
 <template>

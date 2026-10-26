@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AlertType, AlertVariant } from '@/components/reborn-alert/reborn-alert.config'
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import { alertTypes, alertVariants } from '@/components/reborn-alert/reborn-alert.config'
 import RebornAlert from '@/components/reborn-alert/RebornAlert.vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
@@ -12,19 +12,19 @@ import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 
 // 演练场状态（默认值与 Web 端 Playground 一致）
-const type = ref<AlertType>('info')
-const variant = ref<AlertVariant>('soft')
-const title = ref('')
-const content = ref('这是一条警告提示的内容')
-const showIcon = ref(true)
-const closable = ref(false)
-const banner = ref(false)
-const center = ref(false)
-const playgroundShow = ref(true)
+const type = shallowRef<AlertType>('info')
+const variant = shallowRef<AlertVariant>('soft')
+const title = shallowRef('')
+const content = shallowRef('这是一条警告提示的内容')
+const showIcon = shallowRef(true)
+const closable = shallowRef(false)
+const banner = shallowRef(false)
+const center = shallowRef(false)
+const playgroundShow = shallowRef(true)
 
 // 可关闭示例的显隐状态与关闭动画回调
-const closableShow = ref(true)
-const afterCloseLog = ref('')
+const closableShow = shallowRef(true)
+const afterCloseLog = shallowRef('')
 function handleAfterClose() {
   afterCloseLog.value = 'after-close 已触发（关闭动画结束）'
 }
@@ -36,7 +36,7 @@ const noticeMessages = [
   '文档站已支持双端演示与在线运行',
   '组件库知识库与 AI 助手已上线，欢迎试用',
 ]
-const noticeIndex = ref(0)
+const noticeIndex = shallowRef(0)
 </script>
 
 <template>

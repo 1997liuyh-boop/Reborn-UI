@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, shallowRef, useTemplateRef, watch } from "vue";
 
 interface Props {
   height?: number | string;
@@ -18,15 +18,30 @@ const props = withDefaults(defineProps<Props>(), {
   fill: false,
 });
 
-const isLoading = ref(true);
+const imgRef = useTemplateRef<HTMLImageElement>("imgRef");
+const isLoading = shallowRef(true);
 
 function handleLoad() {
   isLoading.value = false;
 }
+
+// 服务端渲染的页面里，图片可能在水合挂上 @load 之前就已加载完成（命中缓存），load 不会再触发
+onMounted(() => {
+  if (imgRef.value?.complete) isLoading.value = false;
+});
+
+// 换图后回到模糊态，等新图加载完成再清晰
+watch(
+  () => props.src,
+  () => {
+    isLoading.value = true;
+  },
+);
 </script>
 
 <template>
   <img
+    ref="imgRef"
     class="transition duration-300"
     :class="[isLoading ? 'blur-sm' : 'blur-0', props.class, fill ? 'h-full w-full' : '']"
     :src="src"

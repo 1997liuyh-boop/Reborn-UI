@@ -2,7 +2,9 @@
 import type { CSSProperties } from "vue";
 import type { fabColors, fabDirections, fabPositions, fabTriggers } from "./reborn-fab.config";
 
-import { computed, nextTick, onMounted, onUnmounted, provide, reactive, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, reactive, shallowRef, useTemplateRef, watch } from "vue";
+import { useControlledModel } from "~/composables/useControlledModel";
+import { useRawProp } from "~/composables/useRawProp";
 import { tv } from "~/lib/tv";
 
 import { cn } from "~/lib/utils";
@@ -33,8 +35,7 @@ interface UiMap {
  * 悬浮按钮属性定义
  */
 interface Props {
-  modelValue?: boolean; // 是否展开（v-model）
-  active?: boolean; // 是否激活
+  active?: boolean; // 非受控模式下是否默认展开
   position?: FabPosition; // 固定位置
   top?: string | number; // 自定义顶部距离
   bottom?: string | number; // 自定义底部距离
@@ -62,8 +63,23 @@ interface Props {
   ui?: UiMap; // 自定义各部分样式类
 }
 
+/** 默认插槽与 trigger 插槽下发的状态 */
+export interface FabSlotProps {
+  /** 当前是否展开（与 v-model 一致） */
+  isActive: boolean;
+  /** 动画结束后的稳定展开状态 */
+  isExpanded: boolean;
+  /** 是否处于展开 / 收起动画中 */
+  isAnimating: boolean;
+  /** 是否正在拖拽 */
+  isDragging: boolean;
+  /** 是否处于吸边动画中 */
+  isAttracting: boolean;
+  /** 是否处于滚动半隐藏状态 */
+  isPeeking: boolean;
+}
+
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: false,
   active: false,
   position: "right-bottom",
   trigger: "click",
@@ -87,35 +103,45 @@ const props = withDefaults(defineProps<Props>(), {
   }),
 });
 
-const emit = defineEmits([
-  "update:modelValue",
-  "click",
-  "open", // 动作面板开始展开时立即触发（动画启动时刻）
-  "opened", // 动作面板展开动画结束后触发（约 400ms 后，此时 v-model 同步为 true）
-  "close", // 动作面板开始收起时立即触发（动画启动时刻）
-  "closed", // 动作面板收起动画结束后触发（约 400ms 后，此时 v-model 同步为 false）
-]);
+const emit = defineEmits<{
+  /** 非可展开（expandable 为假）状态下点击触发 */
+  click: [];
+  /** 动作面板开始展开时立即触发（动画启动时刻） */
+  open: [];
+  /** 动作面板展开动画结束后触发（约 400ms 后） */
+  opened: [];
+  /** 动作面板开始收起时立即触发（动画启动时刻） */
+  close: [];
+  /** 动作面板收起动画结束后触发（约 400ms 后） */
+  closed: [];
+}>();
 
-// 响应式状态：内部执行动画的关键开关
-const isActive = ref(props.modelValue || props.active);
-// 动画的稳定状态（完全展开或完全收起）
-const isExpanded = ref(isActive.value);
+defineSlots<{
+  /** 动作面板内容 */
+  default?: (props: FabSlotProps) => any;
+  /** 自定义主触发按钮 */
+  trigger?: (props: FabSlotProps) => any;
+  /** 胶囊变体下动作区与触发按钮之间的分割线 */
+  divider?: () => any;
+}>();
+
+/**
+ * 是否展开（v-model），唯一的数据源：点击即写回，父组件随时读到的都是当前值。
+ * 动画只是它的派生状态（isExpanded / isAnimating），不再延迟 400ms 回写。
+ */
+/** defineModel 返回的引用只随父级传值变化（本地交互不写它），下方用它监听父级改写 */
+const isActiveModel = defineModel<boolean>({ default: undefined });
+const { present: hasModelValue } = useRawProp('modelValue');
+// 显式空模型按关闭读取，缺省状态独立保留本地交互。
+const isActive = useControlledModel<boolean>('modelValue', { initial: props.active, resolve: value => !!value });
+// active 只提供非受控初值，不派发初始化事件；动画稳定状态以实际模型为准。
+const isExpanded = shallowRef(isActive.value);
 // 是否正处于伸展或回弹动画中
-const isAnimating = ref(false);
+const isAnimating = shallowRef(false);
 let animTimer: ReturnType<typeof setTimeout> | null = null;
 let hoverCloseTimer: ReturnType<typeof setTimeout> | null = null;
 
-// 监听外界主动 modelValue 变化，同步 UI
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (isActive.value !== val) {
-      isActive.value = val;
-    }
-  },
-);
-
-// 监听组件展开状态，分步进行更新控制（在动画结束后进行最终状态同步）
+// 展开状态变化时驱动动画：阶段事件立即触发，终点事件在动画结束后触发
 watch(isActive, (val) => {
   isAnimating.value = true;
 
@@ -125,24 +151,21 @@ watch(isActive, (val) => {
 
   if (animTimer) clearTimeout(animTimer);
   animTimer = setTimeout(() => {
+    animTimer = null;
     isAnimating.value = false;
     isExpanded.value = val;
-    // 等动画结束后，更新外层 v-model 并抛出终点事件
-    emit("update:modelValue", val);
     if (val) emit("opened");
     else emit("closed");
   }, 400); // 匹配整体响应最大动画时间 0.4s (对应 Tailwind duration-400)
 });
-// 提供给子组件（FabAction）的稳定展现状态，用于在插槽内部控制展示时机，避免 DOM 过早卸载
-provide("reborn-fab-active", isExpanded);
 
-const fabDirection = ref(props.direction);
+const fabDirection = shallowRef(props.direction);
 
 // 胶囊水平展开：JS 驱动宽度动画
 // CSS grid-template-columns 的 fr 单位在 intrinsic width 场景下无法撑开容器，
 // 水平方向改用测量 capsuleInner 的 offsetWidth 后通过 width 过渡实现展开。
-const capsuleInnerRef = ref<HTMLElement | null>(null);
-const capsuleContentWidth = ref(0);
+const capsuleInnerRef = useTemplateRef<HTMLElement>("capsuleInnerRef");
+const capsuleContentWidth = shallowRef(0);
 let capsuleRo: ResizeObserver | null = null;
 
 /**
@@ -178,23 +201,24 @@ const capsuleActionsStyle = computed<CSSProperties>(() => {
 });
 
 // 拖拽相关内部状态
-const inited = ref(false); // 是否已初始化位置
-const topPos = ref<string | number>(0); // 实时顶部像素
-const leftPos = ref<string | number>(0); // 实时左侧像素
+const inited = shallowRef(false); // 是否已初始化位置
+const topPos = shallowRef<string | number>(0); // 实时顶部像素
+const leftPos = shallowRef<string | number>(0); // 实时左侧像素
+// fabSize / screen 被 dockSide、peekTranslateX、rootStyle 等计算属性读取且就地修改，保留 reactive
 const fabSize = reactive({ width: 48, height: 48 }); // 按钮尺寸（默认 md = size-12 = 48px）
 const screen = reactive({ width: 0, height: 0 }); // 屏幕尺寸
-const attractTransition = ref(false); // 是否处于吸边动画中
-const hasDragged = ref(false); // 是否已经通过拖拽确定过位置，用于避免交互时回到初始坐标
+const attractTransition = shallowRef(false); // 是否处于吸边动画中
+const hasDragged = shallowRef(false); // 是否已经通过拖拽确定过位置，用于避免交互时回到初始坐标
 
 /**
- * 拖拽边界限制
+ * 拖拽边界限制。只在事件处理函数里读写，不进模板也不进计算属性，用普通对象即可
  */
-const bounding = reactive({
+const bounding = {
   minTop: 0, // 最小顶部距离 (gap.top)
   minLeft: 0, // 最小左侧距离 (gap.left)
   maxTop: 0, // 最大顶部距离 (视口高度 - 按钮高度 - gap.bottom)
   maxLeft: 0, // 最大左侧距离 (视口宽度 - 按钮宽度 - gap.right)
-});
+};
 
 const b = tv(theme);
 const uiOverrides = computed(() => props.ui || {});
@@ -224,8 +248,21 @@ const uiClasses = computed(() => {
   };
 });
 
-const triggerRef = ref<HTMLElement | null>(null);
-const actionsRef = ref<HTMLElement | null>(null);
+const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
+const actionsRef = useTemplateRef<HTMLElement>("actionsRef");
+
+/** updateCircleLayout 写在插槽子元素上的内联属性；离开 circle 变体时要逐个清掉 */
+const CIRCLE_INLINE_PROPS = ["position", "left", "top", "transition", "transform", "opacity"] as const;
+
+/**
+ * 清除环形布局写入的内联样式，交还给 float 变体的 CSS 控制
+ */
+function resetCircleLayout() {
+  if (!actionsRef.value) return;
+  for (const item of Array.from(actionsRef.value.children) as HTMLElement[]) {
+    for (const name of CIRCLE_INLINE_PROPS) item.style.removeProperty(name);
+  }
+}
 
 /**
  * 计算环形排列布局
@@ -272,27 +309,32 @@ function updateCircleLayout() {
   });
 }
 
-// 监听展开状态、方向或子元素变化时更新布局
+// 监听展开状态、变体、方向与环形参数变化时更新布局；flush: 'post' 保证切换变体后读到的是新渲染的子元素
 watch(
-  [isActive, fabDirection, () => props.radius, () => props.startAngle, () => props.totalAngle],
+  [isActive, () => props.variant, fabDirection, () => props.radius, () => props.startAngle, () => props.totalAngle],
   () => {
-    updateCircleLayout();
+    if (props.variant === "circle") updateCircleLayout();
+    else resetCircleLayout();
   },
-  { immediate: true },
+  { flush: "post" },
 );
 
-// 使用 MutationObserver 监听 Slot 内部子元素的变化
+// 使用 MutationObserver 监听 Slot 内部子元素的变化；动作容器随变体切换建立或销毁，observer 跟着节点走
 let observer: MutationObserver | null = null;
+watch(actionsRef, (el) => {
+  observer?.disconnect();
+  observer = null;
+  if (!el) return;
+  observer = new MutationObserver(() => updateCircleLayout());
+  observer.observe(el, { childList: true });
+}, { immediate: true });
+
 onMounted(() => {
-  if (actionsRef.value) {
-    observer = new MutationObserver(() => updateCircleLayout());
-    observer.observe(actionsRef.value, { childList: true });
-  }
   updateCircleLayout();
 });
 
 onUnmounted(() => {
-  if (observer) observer.disconnect();
+  observer?.disconnect();
 });
 
 /**
@@ -307,12 +349,12 @@ function toPixel(val: string | number): number {
  * 只记绝对像素的话，视口变大时无法还原贴边关系（原本贴右边的按钮会悬在画面中间），
  * 因此这里存停靠侧与可用区间内的相对比例，尺寸变化时据此重建坐标。
  */
-const anchor = reactive({
+const anchor = {
   captured: false,
   side: null as "left" | "right" | null,
   xRatio: 0,
   yRatio: 0,
-});
+};
 
 function boundingSpan() {
   return {
@@ -479,10 +521,11 @@ function initPosition() {
 }
 
 // 拖拽控制逻辑
-const isDragging = ref(false);
-const hasMoved = ref(false); // 当前按下手势是否已经发生拖拽，用于阻止拖拽后的 click
-const dragOffset = reactive({ x: 0, y: 0 });
-const startPointerPos = reactive({ x: 0, y: 0 });
+const isDragging = shallowRef(false);
+const hasMoved = shallowRef(false); // 当前按下手势是否已经发生拖拽，用于阻止拖拽后的 click
+// 指针偏移与起点只在事件处理函数里使用，不需要响应式
+const dragOffset = { x: 0, y: 0 };
+const startPointerPos = { x: 0, y: 0 };
 const pendingDragPosition = { x: 0, y: 0 };
 let capturedTarget: HTMLElement | null = null;
 let dragFrame: number | null = null;
@@ -604,6 +647,14 @@ watch(
   },
 );
 
+// 显式坐标在运行时修改：只要用户还没拖拽定位过，就按新坐标重新落位（挂载前由 rootStyle 直接读取，无需处理）
+watch(
+  () => [props.top, props.bottom, props.left, props.right],
+  () => {
+    if (inited.value && !hasDragged.value) initPosition();
+  },
+);
+
 // 监听 gap 变化，重新计算边界
 watch(
   () => props.gap,
@@ -689,6 +740,9 @@ function clearHoverCloseTimer() {
   hoverCloseTimer = null;
 }
 
+// 切换到显式模型后，作废先前非受控交互留下的关闭延迟。
+watch([hasModelValue, isActiveModel], clearHoverCloseTimer, { flush: 'sync' });
+
 function getHoverCloseDelay() {
   return props.variant === "circle" ? 320 : 160;
 }
@@ -725,7 +779,7 @@ function handleMouseLeave() {
 const PEEK_RESTORE_DELAY = 1000;
 const ATTRACT_EASE = "cubic-bezier(0.18, 0.89, 0.32, 1.28)";
 
-const isPeeking = ref(false);
+const isPeeking = shallowRef(false);
 let peekRestoreTimer: ReturnType<typeof setTimeout> | null = null;
 let scrollFrame: number | null = null;
 
@@ -851,13 +905,16 @@ const rootStyle = computed<CSSProperties>(() => {
   return style;
 });
 
-onMounted(() => {
-  // 胶囊模式：开启尺寸监听（用于处理动态内容导致的宽度变动）
-  if (capsuleInnerRef.value) {
-    capsuleRo = new ResizeObserver(() => measureCapsuleWidth());
-    capsuleRo.observe(capsuleInnerRef.value);
-  }
+// 胶囊模式：开启尺寸监听（用于处理动态内容导致的宽度变动）；胶囊节点随变体切换建立或销毁，监听跟着节点走
+watch(capsuleInnerRef, (el) => {
+  capsuleRo?.disconnect();
+  capsuleRo = null;
+  if (!el || typeof ResizeObserver === "undefined") return;
+  capsuleRo = new ResizeObserver(() => measureCapsuleWidth());
+  capsuleRo.observe(el);
+}, { immediate: true });
 
+onMounted(() => {
   // 初始化时测量一次宽度，并校准位置
   nextTick(() => measureCapsuleWidth());
   updateBounding();
@@ -871,6 +928,8 @@ onMounted(() => {
 onUnmounted(() => {
   // 销毁监听器，防止内存泄漏
   if (capsuleRo) capsuleRo.disconnect();
+  // 卸载后不再推进动画状态与终点事件
+  if (animTimer) clearTimeout(animTimer);
   clearHoverCloseTimer();
   clearPeekRestoreTimer();
   if (scrollFrame !== null) window.cancelAnimationFrame(scrollFrame);

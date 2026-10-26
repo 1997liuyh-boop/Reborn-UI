@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { shallowRef } from "vue";
+
 import RebornTypewriter from "~/components/reborn/ui/reborn-typewriter/RebornTypewriter.vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 
-const text1 = ref("Hello, World!");
-const text2 = ref("欢迎使用 Reborn UI 组件库");
+const text1 = "Hello, World!";
+const text2 = "欢迎使用 Reborn UI 组件库";
 
-const currentText = ref("这是第一段文字");
+const currentText = shallowRef("这是第一段文字");
 
 const texts = [
   "这是第一段文字",
@@ -19,15 +20,15 @@ let textIndex = 0;
 
 function changeText() {
   textIndex = (textIndex + 1) % texts.length;
-  currentText.value = texts[textIndex];
+  currentText.value = texts[textIndex] ?? texts[0]!;
 }
 
 function resetText() {
-  currentText.value = texts[0];
+  currentText.value = texts[0]!;
   textIndex = 0;
 }
 
-const customText = ref("自定义速度的打字效果");
+const customText = shallowRef("自定义速度的打字效果");
 
 
 const speedTexts = [
@@ -40,7 +41,7 @@ let speedIndex = 0;
 
 function changeSpeedText() {
   speedIndex = (speedIndex + 1) % speedTexts.length;
-  customText.value = speedTexts[speedIndex];
+  customText.value = speedTexts[speedIndex] ?? speedTexts[0]!;
 }
 </script>
 

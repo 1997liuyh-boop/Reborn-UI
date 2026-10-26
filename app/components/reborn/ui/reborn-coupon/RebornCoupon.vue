@@ -5,7 +5,7 @@ import type {
     CouponSplit,
     CouponType,
 } from "./reborn-coupon.config";
-import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
+import { breakpointsTailwind, useBreakpoints, useMounted } from "@vueuse/core";
 import { computed } from "vue";
 import { tv } from "~/lib/tv";
 import theme from "./reborn-coupon.config";
@@ -22,7 +22,7 @@ export interface RebornCouponBaseProps {
     gap?: number;
     split?: CouponSplit;
     size?: number | [number, number];
-    // Optional divider color. Falls back to inherited text color when omitted.
+    /** 分割线颜色；不传时继承文字颜色 */
     splitColor?: string;
     class?: any;
     ui?: {
@@ -65,14 +65,24 @@ const props = withDefaults(defineProps<RebornCouponProps>(), {
     xxl: undefined,
 });
 
+// 断点查询必须在 setup 顶层各建一次：greaterOrEqual() 每次调用都新建一个媒体查询与 watchEffect，
+// 放进 computed 里每次求值都会泄漏一组，且不归属组件作用域、卸载后也不释放
 const breakpoints = useBreakpoints(breakpointsTailwind);
+const smQuery = breakpoints.greaterOrEqual("sm");
+const mdQuery = breakpoints.greaterOrEqual("md");
+const lgQuery = breakpoints.greaterOrEqual("lg");
+const xlQuery = breakpoints.greaterOrEqual("xl");
+const xxlQuery = breakpoints.greaterOrEqual("2xl");
+// 服务端没有 matchMedia，断点全为 false；挂载前只用基础 props，保证水合首帧与服务端输出一致
+const isMounted = useMounted();
 
 const activeProps = computed(() => {
-    const isSm = breakpoints.greaterOrEqual("sm").value;
-    const isMd = breakpoints.greaterOrEqual("md").value;
-    const isLg = breakpoints.greaterOrEqual("lg").value;
-    const isXl = breakpoints.greaterOrEqual("xl").value;
-    const is2xl = breakpoints.greaterOrEqual("2xl").value;
+    const ready = isMounted.value;
+    const isSm = ready && smQuery.value;
+    const isMd = ready && mdQuery.value;
+    const isLg = ready && lgQuery.value;
+    const isXl = ready && xlQuery.value;
+    const is2xl = ready && xxlQuery.value;
 
     const {
         sm,
@@ -106,8 +116,11 @@ const activeProps = computed(() => {
     return merged;
 });
 
+// 主题只编译一次，computed 里只按当前变体取类名
+const coupon = tv(theme);
+
 const ui = computed(() => {
-    const b = tv(theme)({
+    const b = coupon({
         direction: activeProps.value.direction as any || props.direction,
         hoverable: activeProps.value.hoverable || props.hoverable,
     });
@@ -220,6 +233,9 @@ const centerStyle = computed(() => {
 });
 
 // mask 蒙版仅负责 coupon 的外轮廓缺口或切角，不再承担中间分割线的绘制工作。
+// 厂商前缀属性必须写带引号的连字符键：服务端 stringifyStyle 用 hyphenate 生成属性名，
+// 驼峰的 WebkitMaskImage 会变成缺少开头短横线的 webkit-mask-image，首屏 HTML 的缺口全部失效；
+// 客户端 patchStyle 会把连字符键驼峰化后写入，两端都成立。标准属性 maskComposite 照常用驼峰
 const maskStyle = computed(() => {
     const type = activeProps.value.type;
     const direction = activeProps.value.direction;
@@ -273,7 +289,7 @@ const maskStyle = computed(() => {
             "-webkit-mask-position": `${maskPosition}, -${corner}px -${corner}px`,
             "-webkit-mask-size": `${size}, 100%`,
             "-webkit-mask-composite": "source-out, destination-over",
-            "mask-composite": "subtract, add",
+            maskComposite: "subtract, add",
         };
     }
 

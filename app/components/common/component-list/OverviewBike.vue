@@ -10,7 +10,7 @@
  * 交互（见 lib/three/bikeScene.ts）：指针在 trigger 区域内越靠近车身，车越解体；离开时逐渐合体；指针上下移动调整俯仰。
  */
 import type { BikeSceneController } from '~/lib/three/bikeScene'
-import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import { onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
 import { loadModelBuffer, resolveModelURL } from '~/lib/three/modelAssets'
 
 interface Props {
@@ -31,7 +31,7 @@ const MODEL = '/models/bike/carbon-frame-bike.glb.gz'
 const rootRef = useTemplateRef<HTMLElement>('root')
 const canvasRef = useTemplateRef<HTMLCanvasElement>('canvas')
 /** 3D 首帧已渲染：画布淡入、静态首帧淡出 */
-const ready = ref(false)
+const ready = shallowRef(false)
 
 const { app } = useRuntimeConfig()
 let controller: BikeSceneController | undefined
@@ -83,7 +83,7 @@ function schedule() {
   const io = new IntersectionObserver((entries) => {
     if (!entries.some(entry => entry.isIntersecting)) return
     io.disconnect()
-    if ('requestIdleCallback' in window) {
+    if (typeof window.requestIdleCallback === 'function') {
       const id = window.requestIdleCallback(() => start(), { timeout: 1500 })
       cleanups.push(() => window.cancelIdleCallback(id))
     }

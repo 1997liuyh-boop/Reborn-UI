@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import { ref } from "vue";
-
 interface Props {
   text?: string;
   class?: string;
@@ -8,13 +6,10 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   text: "Button",
 });
-
-const buttonRef = ref<HTMLButtonElement>();
 </script>
 
 <template>
   <button
-    ref="buttonRef"
     class="group bg-background relative w-auto cursor-pointer overflow-hidden rounded-full border p-2 px-6 text-center font-semibold"
     :class="[props.class]"
   >

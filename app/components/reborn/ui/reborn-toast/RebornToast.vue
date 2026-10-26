@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue';
 import type {
+  MessageColor,
   MessageInstance,
   MessageNode,
   MessagePlacement,
   MessageSemanticDOM,
+  MessageVariant,
 } from './reborn-toast.config';
 import { computed } from 'vue';
 import { useMotionList } from '@/composables/useMotionList';
@@ -20,11 +22,44 @@ import {
 
 defineOptions({ name: 'RebornToast' });
 
-/** 按位置分组：六个方位各自维护一条堆叠队列 */
+/** 单条消息各节点的完整类名 */
+interface MessageClasses {
+  root: string;
+  iconWrapper: string;
+  icon: string;
+  content: string;
+  close: string;
+  badge: string;
+}
+
+/** 类名只由 variant 与 color 决定（最多 35 种组合），按组合缓存，渲染时不再逐条调用 tv */
+const classCache = new Map<string, MessageClasses>();
+function classesOf(variant: MessageVariant, color: MessageColor): MessageClasses {
+  const cacheKey = `${variant}|${color}`;
+  let classes = classCache.get(cacheKey);
+  if (!classes) {
+    const theme = messageTheme({ variant, color });
+    classes = {
+      root: theme.root(),
+      iconWrapper: theme.iconWrapper(),
+      icon: theme.icon(),
+      content: theme.content(),
+      close: theme.close(),
+      badge: theme.badge(),
+    };
+    classCache.set(cacheKey, classes);
+  }
+  return classes;
+}
+
+/** 按位置分组：六个方位各自维护一条堆叠队列；每条消息带上算好的类名，模板直接取字符串 */
 const stacks = computed(() =>
   messagePlacements.map(placement => ({
     placement,
-    items: messageState.list.filter(item => item.placement === placement),
+    wrapperClass: messageTheme({ placement }).wrapper(),
+    items: messageState.list
+      .filter(item => item.placement === placement)
+      .map(item => ({ item, cls: classesOf(item.variant, item.color) })),
   })),
 );
 
@@ -50,9 +85,6 @@ const listMotion = useMotionList({
 });
 const vMotionList = listMotion.directive;
 
-/** 取单条消息的样式构建器 */
-const themeOf = (item: MessageInstance) => messageTheme({ variant: item.variant, color: item.color });
-
 /** classNames / styles 支持对象或函数两种形态 */
 function semanticClass(item: MessageInstance, key: MessageSemanticDOM): string | undefined {
   const source = typeof item.classNames === 'function' ? item.classNames({ props: item }) : item.classNames;
@@ -63,10 +95,13 @@ function semanticStyle(item: MessageInstance, key: MessageSemanticDOM): CSSPrope
   return source?.[key];
 }
 
-/** VNode（或返回 VNode 的函数）走 component :is 渲染 */
-function asComponent(node?: MessageNode) {
-  if (!node || typeof node === 'string') return null;
-  return typeof node === 'function' ? node : () => node;
+/**
+ * VNode 或返回 VNode 的函数直接交给 component :is：
+ * VNode 会被克隆后按原类型 patch，函数保持同一引用，容器重渲染时内容不会被卸载重建。
+ * 不能每次渲染包一层新的箭头函数，那样组件类型每次都变，内部状态与动画会被重置
+ */
+function isNodeContent(node?: MessageNode): node is Exclude<MessageNode, string> {
+  return !!node && typeof node !== 'string';
 }
 
 /** 图标名：icon 传字符串时优先，否则按 type 取默认图标 */
@@ -101,53 +136,53 @@ function handleMouseLeave(item: MessageInstance) {
   <TransitionGroup
     v-for="stack in stacks" :key="stack.placement"
     v-motion-list tag="div" :css="false"
-    :class="messageTheme({ placement: stack.placement }).wrapper()" :style="edgeStyle(stack.placement)"
+    :class="stack.wrapperClass" :style="edgeStyle(stack.placement)"
     :dir="messageState.rtl ? 'rtl' : undefined" @enter="listMotion.enter"
     @leave="listMotion.leave" @enter-cancelled="listMotion.cancel"
     @leave-cancelled="listMotion.cancel"
   >
     <div
-      v-for="item in stack.items" :key="item.id"
+      v-for="{ item, cls } in stack.items" :key="item.id"
       :data-placement="stack.placement"
-      :class="[themeOf(item).root(), item.className, semanticClass(item, 'root')]"
+      :class="[cls.root, item.className, semanticClass(item, 'root')]"
       :style="[item.style ?? {}, semanticStyle(item, 'root') ?? {}]"
       role="alert"
       @click="item.onClick?.($event)"
       @mouseenter="handleMouseEnter(item)"
       @mouseleave="handleMouseLeave(item)"
     >
-      <span :class="[themeOf(item).iconWrapper(), semanticClass(item, 'icon')]" :style="semanticStyle(item, 'icon')">
-        <component :is="asComponent(item.icon)" v-if="asComponent(item.icon)" />
+      <span :class="[cls.iconWrapper, semanticClass(item, 'icon')]" :style="semanticStyle(item, 'icon')">
+        <component :is="item.icon" v-if="isNodeContent(item.icon)" />
         <Icon
           v-else :name="iconName(item)"
-          :class="[themeOf(item).icon(), item.type === 'loading' && !item.icon ? 'animate-spin' : '']"
+          :class="[cls.icon, item.type === 'loading' && !item.icon ? 'animate-spin' : '']"
         />
       </span>
 
       <!-- dangerouslyUseHTMLString 开启时按 HTML 片段渲染，调用方需保证内容可信 -->
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <span v-if="htmlContent(item)" :class="[themeOf(item).content(), semanticClass(item, 'content')]" :style="semanticStyle(item, 'content')" v-html="htmlContent(item)" />
+      <span v-if="htmlContent(item)" :class="[cls.content, semanticClass(item, 'content')]" :style="semanticStyle(item, 'content')" v-html="htmlContent(item)" />
       <span
         v-else
-        :class="[themeOf(item).content(), semanticClass(item, 'content')]" :style="semanticStyle(item, 'content')"
+        :class="[cls.content, semanticClass(item, 'content')]" :style="semanticStyle(item, 'content')"
       >
-        <component :is="asComponent(item.content)" v-if="asComponent(item.content)" />
+        <component :is="item.content" v-if="isNodeContent(item.content)" />
         <template v-else>{{ item.content }}</template>
       </span>
 
       <span
         v-if="item.showClose"
-        :class="[themeOf(item).close(), semanticClass(item, 'close')]" :style="semanticStyle(item, 'close')"
+        :class="[cls.close, semanticClass(item, 'close')]" :style="semanticStyle(item, 'close')"
         role="button" aria-label="关闭"
         @click.stop="closeMessage(item.id)"
       >
-        <component :is="asComponent(item.closeIcon)" v-if="asComponent(item.closeIcon)" />
+        <component :is="item.closeIcon" v-if="isNodeContent(item.closeIcon)" />
         <Icon v-else :name="closeIconName(item)" class="size-full" />
       </span>
 
       <span
         v-if="item.repeatNum > 1"
-        :class="[themeOf(item).badge(), semanticClass(item, 'badge')]" :style="semanticStyle(item, 'badge')"
+        :class="[cls.badge, semanticClass(item, 'badge')]" :style="semanticStyle(item, 'badge')"
         :aria-label="`重复 ${item.repeatNum} 次`"
       >
         {{ badgeText(item) }}

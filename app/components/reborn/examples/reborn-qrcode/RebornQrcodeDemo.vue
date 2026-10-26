@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { ClQrcodeMode } from "~/components/reborn/ui/reborn-qrcode";
+import { DemoBlock, DemoNote, DemoSection, Playground } from '#components';
+import { computed, ref } from 'vue';
+import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue';
 import { eccLevel } from "~/components/reborn/ui/reborn-qrcode";
+import RebornQrcode from '~/components/reborn/ui/reborn-qrcode/RebornQrcode.vue';
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 

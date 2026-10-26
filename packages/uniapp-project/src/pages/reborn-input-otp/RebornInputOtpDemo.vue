@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import { inputOtpColors, inputOtpSizes } from '@/components/reborn-input-otp/reborn-input-otp.config'
 import RebornInputOtp from '@/components/reborn-input-otp/RebornInputOtp.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 
-const demoColor = ref<typeof inputOtpColors[number]>('primary')
-const demoSize = ref<typeof inputOtpSizes[number]>('md')
-const value1 = ref('')
-const value2 = ref('')
-const value3 = ref('')
-const value11 = ref('12')
-const value12 = ref('1234')
+const demoColor = shallowRef<typeof inputOtpColors[number]>('primary')
+const demoSize = shallowRef<typeof inputOtpSizes[number]>('md')
+const value1 = shallowRef('')
+const value2 = shallowRef('')
+const value3 = shallowRef('')
+const value11 = shallowRef('12')
+const value12 = shallowRef('1234')
 </script>
 
 <template>
@@ -44,7 +44,7 @@ const value12 = ref('1234')
       </view>
       <view class="flex flex-wrap">
         <RebornButton v-for="s in inputOtpSizes" :key="s" variant="outlined"
-          :color="demoSize === s ? 'primary' : 'neutral'" size="sm" :square="false" custom-class="rounded-full"
+          :color="demoSize === s ? 'primary' : 'neutral'" size="sm" custom-class="rounded-full"
           @click="demoSize = s" gap>
           {{ s }}
         </RebornButton>

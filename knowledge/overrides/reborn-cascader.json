@@ -18,8 +18,10 @@
     "值按「类型 + 值」严格比对，数字 1 匹配不上字符串 '1'；对象值只比对 value-key 指定的属性。匹配不上的值交给 fallback 兜底展示，不会消失。",
     "多选且父子关联时，绑定值里只会出现叶子；需要拿到父节点本身请开 check-strictly。",
     "子树里有禁用且未勾选的叶子时，父节点会一直停在半选——勾选联动只写未禁用的叶子。",
-    "懒加载必须自己标 isLeaf，否则组件无从区分「到底了」与「还没请求」；done 回传的子节点写回的是传入的选项对象，options 必须是响应式数据。",
+    "懒加载必须标 isLeaf；done(children) 保存在内部缓存，不修改 options，冻结对象也可使用。替换 options 数组、改变 valueKey 或 fieldNames 的取值、开关懒加载才会清空缓存并使旧回调失效；fieldNames 按取值比较、loadMore 只看有无，内联写法下父级重渲染不会丢失已加载的下级。",
     "RebornCascaderPanel 是浮层里那块面板的独立版本，可单独放进页面；它默认自带外框（bordered），被 RebornCascader 内嵌时会关掉。",
-    "virtual-list-props 要求每项等高，改了 ui.option 的字号或内边距必须同步改 height。"
+    "virtual-list-props 要求每项等高，改了 ui.option 的字号或内边距必须同步改 height。",
+    "Web 端显式传入 undefined/null 会清空对应模型，不回落旧内部选择；三个模型受控时严格只认父值，只传值不接更新事件或拒收时交互只派发事件、显示保持父值；style/id/aria/data 属性透传到触发器根节点。",
+    "Web 搜索结果随关键词或 options 改变时，真实滚动位置与虚拟窗口一同回到顶部；虚拟行盒高为 virtualListProps.height，行间不另加间距。"
   ]
 }

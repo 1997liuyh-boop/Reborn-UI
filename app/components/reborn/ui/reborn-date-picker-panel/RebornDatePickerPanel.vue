@@ -1,73 +1,25 @@
 <script setup lang="ts">
+/* eslint vue/custom-event-name-casing: off -- 保留既有公开事件名 */
 import type { ClassValue } from "clsx";
 import type { TimeRangeRole } from "../reborn-time-picker/reborn-time-panel.config";
-import type {
-  CalDay,
-  DatePickerActiveType,
-  DatePickerCell,
-  datePickerPanelColors,
-  datePickerPanelSizes,
-  DatePickerType,
-  ViewType,
-} from "./reborn-date-picker-panel.config";
-import dayjs from "dayjs";
-import advancedFormat from "dayjs/plugin/advancedFormat";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import { computed, ref, watch } from "vue";
+import type { UnitCell } from "./DatePickerUnitGrid.vue";
+import type { CalDay, DatePickerActiveType, DatePickerCell, datePickerPanelColors, datePickerPanelSizes, DatePickerType, ViewType } from "./reborn-date-picker-panel.config";
+import type { PanelSide } from "./useDatePickerNavigation";
+import { computed, onBeforeUnmount, onMounted, shallowRef, watch } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import { RebornTimePicker } from "../reborn-time-picker";
+import DatePickerDateGrid from "./DatePickerDateGrid.vue";
+import DatePickerHeader from "./DatePickerHeader.vue";
+import DatePickerUnitGrid from "./DatePickerUnitGrid.vue";
 import theme, { DATE_PANEL_NESTED_OVERLAY_CLASS } from "./reborn-date-picker-panel.config";
+import { dayjs, dayKey, parseDateValue, quarterOf, quarterStartDate, weekEndOf, weekStartOf } from "./reborn-date-picker.utils";
+import { useDatePickerNavigation } from "./useDatePickerNavigation";
+import { useDatePickerRange } from "./useDatePickerRange";
 
-const props = withDefaults(defineProps<DatePickerPanelProps>(), {
-  modelValue: "",
-  type: "date",
-  start: "1970-01-01",
-  end: "2099-12-31",
-  size: "md",
-  overflow: "visible",
-  color: "primary",
-  activeType: "fill",
-  width: "auto",
-  disabled: false,
-  border: false,
-  shortcuts: () => [],
-  valueFormat: "",
-  showWeekNumber: false,
-  unlinkPanels: false,
-  singlePanel: false,
-  showToday: false,
-});
-const emit = defineEmits<{
-  (e: "update:modelValue", value: any): void;
-  (e: "change", value: any): void;
-  // 范围类型点选日期时触发：第一次点选只有开始日期，结束日期为 null
-  (e: "calendar-change", value: [Date, Date | null]): void;
-  // 面板翻页、切换视图或下钻时触发：date 为面板当前展示年月的 1 日（双面板时为 [左, 右]）；
-  // mode 为变化粒度（日期视图按月翻页为 month，其余为 year），view 为变化后的视图
-  (
-    e: "panel-change",
-    date: Date | [Date, Date],
-    mode: "month" | "year",
-    view: ViewType,
-  ): void;
-  // 调用 clear 清空选中值时触发
-  (e: "clear"): void;
-}>();
-dayjs.extend(customParseFormat);
-// 季度类型的 valueFormat 支持 Q 令牌（如 YYYY-[Q]Q），Q 由 advancedFormat 提供
-dayjs.extend(advancedFormat);
-
-const b = tv(theme);
-
-/** defaultValue 的单项：Date、可按 valueFormat 解析的字符串或时间戳 */
 export type DatePickerDefaultValue = Date | string | number;
 
-/**
- * 组件属性定义
- */
 export interface DatePickerPanelProps {
-  modelValue?: any; // 绑定值
   type?: DatePickerType; // 选择器类型：date, datetime, year, month 等
   start?: string; // 可选范围开始时间
   end?: string; // 可选范围结束时间
@@ -154,6 +106,59 @@ export interface DatePickerPanelProps {
     footerDisabled: ClassValue;
   }>;
 }
+
+type TimeRole = "start" | "end";
+
+const props = withDefaults(defineProps<DatePickerPanelProps>(), {
+  type: "date",
+  start: "1970-01-01",
+  end: "2099-12-31",
+  size: "md",
+  overflow: "visible",
+  color: "primary",
+  activeType: "fill",
+  width: "auto",
+  disabled: false,
+  border: false,
+  shortcuts: () => [],
+  valueFormat: "",
+  showWeekNumber: false,
+  unlinkPanels: false,
+  singlePanel: false,
+  showToday: false,
+});
+
+const emit = defineEmits<{
+  (e: "change", value: any): void;
+  // 范围类型点选日期时触发：第一次点选只有开始日期，结束日期为 null
+  (e: "calendar-change", value: [Date, Date | null]): void;
+  // 面板翻页、切换视图或下钻时触发：date 为面板当前展示年月的 1 日（双面板时为 [左, 右]）；
+  // mode 为变化粒度（日期视图按月翻页为 month，其余为 year），view 为变化后的视图
+  (
+    e: "panel-change",
+    date: Date | [Date, Date],
+    mode: "month" | "year",
+    view: ViewType,
+  ): void;
+  // 调用 clear 清空选中值时触发
+  (e: "clear"): void;
+}>();
+
+defineSlots<{
+  /** 自定义单元格内容：作用域参数即单元格数据，年 / 月 / 季度 / 日期四种视图共用 */
+  default?: (props: DatePickerCell) => any;
+  /** 上个月图标：仅日期视图的内侧单箭头 */
+  "prev-month"?: () => any;
+  /** 下个月图标：仅日期视图的内侧单箭头 */
+  "next-month"?: () => any;
+  /** 上一年图标：日期视图的外侧双箭头，以及年 / 月 / 季度视图的翻页按钮（这三种视图按年或十年翻页） */
+  "prev-year"?: () => any;
+  /** 下一年图标：日期视图的外侧双箭头，以及年 / 月 / 季度视图的翻页按钮 */
+  "next-year"?: () => any;
+}>();
+
+const model = defineModel<any>({ default: "" });
+const b = tv(theme);
 
 // --- 组件状态标识 ---
 const isMultiple = computed(() =>
@@ -294,61 +299,36 @@ const ui = computed(() => {
 });
 
 // --- 日历核心状态 ---
-const today = new Date();
-const viewYear = ref(today.getFullYear()); // 当前视觉年份
-const viewMonth = ref(today.getMonth()); // 当前视觉月份 (0-11)
+/** 当前日期，挂载后才读取时钟：服务端与水合首帧不判「今天」，避免两端渲染不一致 */
+const today = shallowRef<Date | null>(null);
+/**
+ * 面板是否已定位到实际月份：有绑定值或 defaultValue 时立即为 true，否则挂载后才为 true。
+ * 在此之前导航停在固定基准月（1970 年 1 月），内容区先隐藏，服务端首屏不会露出明显错误的年月
+ */
+const viewSettled = shallowRef(false);
 
-// 第二面板取消联动时的独立状态：仅 unlinkPanels 生效时读取，联动时由左侧推算
-const rightYear = ref(viewYear.value);
-const rightMonth = ref(viewMonth.value);
-
-// 联动时右面板紧跟左面板：日期类型隔一个月，月 / 季度类型隔一年
-function linkedYear2(): number {
-  if (props.type === "monthrange" || props.type === "quarterrange") return viewYear.value + 1;
-  if (viewMonth.value === 11) return viewYear.value + 1;
-  return viewYear.value;
-}
-function linkedMonth2(): number {
-  if (props.type === "monthrange") return viewMonth.value;
-  if (viewMonth.value === 11) return 0;
-  return viewMonth.value + 1;
-}
-
-// 第二面板状态：联动时推算，取消联动时读独立状态
-const viewYear2 = computed(() => (isUnlinked.value ? rightYear.value : linkedYear2()));
-const viewMonth2 = computed(() => (isUnlinked.value ? rightMonth.value : linkedMonth2()));
-
-const currentView = ref<ViewType>("date"); // 当前视图：year, month, date, time
-
-// 获取初始视图类型
-function getInitialView(): ViewType {
-  if (["year", "years", "yearrange"].includes(props.type)) return "year";
-  if (["month", "months", "monthrange"].includes(props.type)) return "month";
-  if (isQuarterType.value) return "quarter";
-  return "date";
-}
-currentView.value = getInitialView();
+// --- 导航：当前视图、左右面板所示年月与十年页，约束与翻页事件都在导航内部收口 ---
+const nav = useDatePickerNavigation({
+  type: () => props.type,
+  disabled: () => props.disabled,
+  showDual,
+  isUnlinked,
+  onPanelChange: (date, mode, view) => emit("panel-change", date, mode, view),
+});
+const currentView = nav.view; // 当前视图：year, month, quarter, date
+/** 年 / 月 / 季度视图共用一套网格组件，日期视图单独渲染 */
+const isUnitView = computed(() => ["year", "month", "quarter"].includes(currentView.value));
+const unitKind = computed<"year" | "month" | "quarter">(() =>
+  currentView.value === "month" || currentView.value === "quarter" ? currentView.value : "year",
+);
 
 // 选中的数据状态
-const selectedDate = ref<Date | null>(null); // 单个选中日期
-const selectedDates = ref<Date[]>([]); // 多个选中日期
-const rangeStart = ref<Date | null>(null); // 范围开始
-const rangeEnd = ref<Date | null>(null); // 范围结束
-/** 范围预览：已选起点、尚未选终点时，鼠标悬停的那一格 */
-const hoverDate = ref<Date | null>(null);
-/**
- * 用于绘制范围带子的终点：已选终点优先；只选了起点时取悬停格，
- * 让用户在点下终点之前就能看到这次会覆盖哪些格子。选中态（isXxxActive）仍只认真实终点。
- */
-const previewEnd = computed<Date | null>(() => {
-  if (rangeEnd.value) return rangeEnd.value;
-  if (!isRange.value || props.type === "week" || !rangeStart.value) return null;
-  return hoverDate.value;
-});
+const selectedDate = shallowRef<Date | null>(null); // 单个选中日期
+const range = useDatePickerRange({ type: () => props.type, isRange, disabled: () => props.disabled }); // 范围端点与悬停预览
 
-const selectedHour = ref(today.getHours()); // 选中的小时
-const selectedMinute = ref(today.getMinutes()); // 选中的分钟
-const selectedSecond = ref(0); // 选中的秒
+const selectedHour = shallowRef(0); // 选中的小时
+const selectedMinute = shallowRef(0); // 选中的分钟
+const selectedSecond = shallowRef(0); // 选中的秒
 
 const timeFormat = computed(() => {
   if (props.valueFormat.includes("SSS")) return "HH:mm:ss.SSS";
@@ -356,12 +336,12 @@ const timeFormat = computed(() => {
 });
 
 const displayDate1 = computed(() => {
-  const d = isRange.value ? rangeStart.value : selectedDate.value;
+  const d = isRange.value ? range.start.value : selectedDate.value;
   return d ? dayjs(d).format("YYYY-MM-DD") : "选择日期";
 });
 
 const displayTime1 = computed(() => {
-  const d = isRange.value ? rangeStart.value : selectedDate.value;
+  const d = isRange.value ? range.start.value : selectedDate.value;
   if (!d) return "选择时间";
   return dayjs(d)
     .hour(selectedHour.value)
@@ -372,22 +352,22 @@ const displayTime1 = computed(() => {
 
 const displayDate2 = computed(() => {
   if (!isRange.value) return "";
-  return rangeEnd.value ? dayjs(rangeEnd.value).format("YYYY-MM-DD") : "选择日期";
+  return range.end.value ? dayjs(range.end.value).format("YYYY-MM-DD") : "选择日期";
 });
+
+const selectedHour2 = shallowRef(0);
+const selectedMinute2 = shallowRef(0);
+const selectedSecond2 = shallowRef(0);
 
 const displayTime2 = computed(() => {
   if (!isRange.value) return "";
-  if (!rangeEnd.value) return "选择时间";
-  return dayjs(rangeEnd.value)
+  if (!range.end.value) return "选择时间";
+  return dayjs(range.end.value)
     .hour(selectedHour2.value)
     .minute(selectedMinute2.value)
     .second(selectedSecond2.value)
     .format(timeFormat.value);
 });
-
-const selectedHour2 = ref(today.getHours());
-const selectedMinute2 = ref(today.getMinutes());
-const selectedSecond2 = ref(0);
 
 const timeModel1 = computed({
   get: () => displayTime1.value,
@@ -399,21 +379,20 @@ const timeModel1 = computed({
       selectedSecond.value = d.second();
 
       if (isRange.value) {
-        if (!rangeStart.value) {
-          const today = new Date();
-          rangeStart.value = today;
-          rangeEnd.value = today;
+        // 还没选日期就先选时间：起止都落到今天，结束时间与开始时间相同
+        if (!range.start.value) {
+          const now = new Date();
+          range.setRange(now, now);
           selectedHour2.value = d.hour();
           selectedMinute2.value = d.minute();
           selectedSecond2.value = d.second();
         }
-        const newVal = [formatDate(rangeStart.value), formatDate(rangeEnd.value, "end")];
-        emit("update:modelValue", newVal);
+        model.value = rangeValue();
       } else {
         if (!selectedDate.value) {
           selectedDate.value = new Date();
         }
-        emit("update:modelValue", formatDate(selectedDate.value));
+        model.value = formatDate(selectedDate.value);
       }
     }
   },
@@ -429,47 +408,18 @@ const timeModel2 = computed({
       selectedSecond2.value = d.second();
 
       if (isRange.value) {
-        if (!rangeStart.value) {
-          rangeStart.value = new Date();
-        }
-        if (!rangeEnd.value) {
-          rangeEnd.value = new Date();
-        }
-        const newVal = [formatDate(rangeStart.value), formatDate(rangeEnd.value, "end")];
-        emit("update:modelValue", newVal);
+        // 缺哪一端就用此刻补上
+        range.setRange(range.start.value ?? new Date(), range.end.value ?? new Date());
+        model.value = rangeValue();
       }
     }
   },
 });
 
-const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
-
 /**
  * 解析输入值为 Date 对象
  */
-function parseValue(v: any): Date | null {
-  if (!v) return null;
-  if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
-
-  // dayjs 的 customParseFormat 不认 Q 令牌，季度值（如 "2024-Q2"）自行取出年份与季号
-  if (props.valueFormat && props.valueFormat.includes("Q")) {
-    const m = String(v).match(/(\d{4})\D*([1-4])/);
-    if (m) return quarterStartDate(Number(m[1]), Number(m[2]));
-  }
-
-  const d = props.valueFormat ? dayjs(v, props.valueFormat) : dayjs(v);
-  return d.isValid() ? d.toDate() : null;
-}
-
-/** 季度的起始日期：第 q 季度从 (q-1)*3 月 1 号开始 */
-function quarterStartDate(year: number, q: number): Date {
-  return new Date(year, (q - 1) * 3, 1);
-}
-
-/** 日期落在第几季度（1 ~ 4） */
-function quarterOf(d: Date): number {
-  return Math.floor(d.getMonth() / 3) + 1;
-}
+function parseValue(v: unknown): Date | null { return parseDateValue(v, props.valueFormat); }
 
 function isSameDate(v1: any, v2: any): boolean {
   if (!v1 || !v2) return false;
@@ -501,17 +451,52 @@ function formatDate(d: Date | null, role: "start" | "end" = "start"): any {
   return dateObj.format(props.valueFormat);
 }
 
-/**
- * 确认选中的时间
- */
-function confirmTime() {
-  currentView.value = "date";
+// --- 范围提交：组装绑定值与派发事件只在这里写一份 ---
+
+/** 范围类型的绑定值：起点按开始时间、终点按结束时间格式化，缺终点时为空串 */
+function rangeValue() {
+  return [formatDate(range.start.value), formatDate(range.end.value, "end")];
+}
+
+/** 范围类型点选后抛出 calendar-change：只选了起点时终点为 null；week 类型一次点选即成整周，不抛 */
+function emitCalendarChange() {
+  const start = range.start.value;
+  if (props.type === "week" || !start) return;
+  emit("calendar-change", [new Date(start), range.end.value ? new Date(range.end.value) : null]);
+}
+
+/** 范围类型的统一提交：写回绑定值、抛 calendar-change，两端齐了再抛 change */
+function commitRange() {
+  const val = rangeValue();
+  model.value = val;
+  emitCalendarChange();
+  if (range.start.value && range.end.value) emit("change", val);
+}
+
+// --- 日期网格 ---
+
+/** 日期格的可选边界 */
+function dayLimits() {
+  return {
+    start: props.start ? new Date(props.start) : null,
+    end: props.end ? new Date(props.end) : null,
+  };
+}
+
+/** 某天是否被规则排除：越界或 disabledMethod 命中（week 类型按 week 粒度询问），整面板禁用时每一天都算 */
+function isDayBlocked(d: Date, limits = dayLimits()): boolean {
+  let blocked = false;
+  if (limits.start && d < limits.start) blocked = true;
+  if (limits.end && d > limits.end) blocked = true;
+  if (!blocked && props.disabledMethod?.(new Date(d), isWeekUnit.value ? "week" : "date")) blocked = true;
+  // 整面板禁用：每一格都视为被排除，统一走禁用样式与灰带
+  return blocked || props.disabled;
 }
 
 /**
  * 生成日历日期列表
  */
-function getCalendarDays(y: number, m: number): CalDay[] {
+function getBaseCalendarDays(y: number, m: number): CalDay[] {
   const firstDayOfMonth = new Date(y, m, 1);
   const startWeekday = firstDayOfMonth.getDay();
   // 月首恰逢周日时前补一整周上月日期（如 2018/4 前补 3/25-31），
@@ -524,66 +509,26 @@ function getCalendarDays(y: number, m: number): CalDay[] {
   // 固定 6 行 × 7 列 = 42 格：行数不随月份浮动，切月时面板高度保持稳定
   const totalCells = 42;
   const days: CalDay[] = [];
-
-  const startLimit = props.start ? new Date(props.start) : null;
-  const endLimit = props.end ? new Date(props.end) : null;
+  const limits = dayLimits();
 
   for (let i = 0; i < totalCells; i++) {
     const d = new Date(startDate);
     d.setDate(startDate.getDate() + i);
 
-    const isCurrentMonth = d.getMonth() === m && d.getFullYear() === y;
-    const isToday = d.toDateString() === today.toDateString();
-    const isSelected = selectedDate.value
-      ? d.toDateString() === selectedDate.value.toDateString()
-      : false;
-
-    // 被规则排除：越界或 disabledMethod 命中（week 类型按 week 粒度询问）
-    let isBlocked = false;
-    if (startLimit && d < startLimit) isBlocked = true;
-    if (endLimit && d > endLimit) isBlocked = true;
-    if (
-      !isBlocked &&
-      props.disabledMethod?.(new Date(d), isWeekUnit.value ? "week" : "date")
-    ) {
-      isBlocked = true;
-    }
-
-    // 整面板禁用：每一格都视为被排除，统一走禁用样式与灰带
-    if (props.disabled) isBlocked = true;
-
-    // ⚠️ 根因：此前非本月的补位格也算作禁用，灰带 + 禁用光标 + 拦截点击，与真正被规则排除的日期无从区分。
-    // ✅ 修复：只有被规则排除的格子才禁用；补位格只调淡文字（dayOutside），照常可点。
-    const isDisabled = isBlocked;
-
-    // 范围端点按天比较：终点可能是悬停预览格且早于起点，先排序；
-    // 起止带时分（datetimerange）时也不会因 00:00 早于起点而把首格漏出带子
-    const dayKey = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
-    const t = dayKey(d);
-    const a = rangeStart.value ? dayKey(rangeStart.value) : null;
-    const b = previewEnd.value ? dayKey(previewEnd.value) : null;
-    let lo = a !== null && b !== null ? Math.min(a, b) : a;
-    let hi = a !== null && b !== null ? Math.max(a, b) : null;
-    // 周范围按整周预览：只点了起点时先高亮起点所在周，悬停时两端扩到各自所在周的周日与周六
-    if (props.type === "weekrange" && lo !== null) {
-      hi = weekEndOf(new Date(hi ?? lo)).getTime();
-      lo = weekStartOf(new Date(lo)).getTime();
-    }
-    const isRangeStart = lo !== null && t === lo;
-    const isRangeEnd = hi !== null && t === hi;
-    const isInRange = lo !== null && hi !== null && t >= lo && t <= hi;
+    // 只有被规则排除的格子才禁用；非本月的补位格只调淡文字（dayOutside），照常可点
+    const isBlocked = isDayBlocked(d, limits);
 
     days.push({
       date: d,
       day: d.getDate(),
-      isCurrentMonth,
-      isToday,
-      isSelected,
-      isDisabled,
+      isCurrentMonth: d.getMonth() === m && d.getFullYear() === y,
+      isToday: d.toDateString() === today.value?.toDateString(),
+      isSelected: false,
+      isDisabled: isBlocked,
       isBlocked,
-      isInRange,
-      isRangeStart,
-      isRangeEnd,
+      isInRange: false,
+      isRangeStart: false,
+      isRangeEnd: false,
       // 禁用灰带：只有被规则排除的格子进灰带，连续格子的底色自然连成一条
       isDisabledBand: isBlocked,
     });
@@ -591,8 +536,30 @@ function getCalendarDays(y: number, m: number): CalDay[] {
   return days;
 }
 
-const calendarDays = computed(() => getCalendarDays(viewYear.value, viewMonth.value));
-const calendarDays2 = computed(() => getCalendarDays(viewYear2.value, viewMonth2.value));
+/** 日期网格的规则层：只随所示年月与禁用规则重算，范围悬停预览不会重跑 disabledMethod */
+const baseCalendarDays = computed(() => getBaseCalendarDays(nav.leftYear.value, nav.leftMonth.value));
+const baseCalendarDays2 = computed(() => getBaseCalendarDays(nav.rightYear.value, nav.rightMonth.value));
+const selectedDayKeys = computed(() => new Set((Array.isArray(model.value) ? model.value : [])
+  .map(parseValue).filter((date): date is Date => date !== null).map(dayKey)));
+/** 日期网格的选中层：选中、范围带与起止端点 */
+function applySelection(days: CalDay[]) {
+  const a = range.start.value ? dayKey(range.start.value) : null;
+  const b = range.previewEnd.value ? dayKey(range.previewEnd.value) : null;
+  let lo = a !== null && b !== null ? Math.min(a, b) : a;
+  let hi = a !== null && b !== null ? Math.max(a, b) : null;
+  if (props.type === 'weekrange' && lo !== null) {
+    hi = weekEndOf(new Date(hi ?? lo)).getTime();
+    lo = weekStartOf(new Date(lo)).getTime();
+  }
+  return days.map(day => {
+    const t = dayKey(day.date);
+    const result = { ...day, isSelected: isDateActive(day.date), isInRange: lo !== null && hi !== null && t >= lo && t <= hi,
+      isRangeStart: lo !== null && t === lo, isRangeEnd: hi !== null && t === hi };
+    return { ...result, active: !isRangePlaceholder(result) && result.isSelected, rangeBand: showRangeBand(result) };
+  });
+}
+const calendarDays = computed(() => applySelection(baseCalendarDays.value));
+const calendarDays2 = computed(() => applySelection(baseCalendarDays2.value));
 
 /**
  * 双面板范围类型（daterange / datetimerange）下，补位格只做灰字占位：
@@ -611,14 +578,7 @@ function showRangeBand(day: CalDay): boolean {
   return day.isInRange && !(day.isRangeStart && day.isRangeEnd) && !isRangePlaceholder(day);
 }
 
-const currentYearDecade = computed(() => Math.floor(viewYear.value / 10) * 10);
-const viewYearPageStart = ref(currentYearDecade.value);
-
-// 右侧年份面板取消联动时的独立十年页起点；联动时恒为左侧 + 10
-const rightYearPageStart = ref(viewYearPageStart.value + 10);
-const viewYearPageStart2 = computed(() =>
-  isUnlinked.value ? rightYearPageStart.value : viewYearPageStart.value + 10,
-);
+// --- 年 / 月 / 季度网格 ---
 
 /** 年份是否禁用：start / end 越界，或 disabledMethod 按 year 粒度命中（以当年 1 月 1 日询问） */
 function isYearDisabled(y: number): boolean {
@@ -629,310 +589,97 @@ function isYearDisabled(y: number): boolean {
 }
 
 /** 月份是否禁用：disabledMethod 按 month 粒度命中（以当月 1 日询问） */
-function isMonthDisabled(m: number, yearContext?: number): boolean {
+function isMonthDisabled(m: number, year: number): boolean {
   if (props.disabled) return true;
-  const y = yearContext ?? viewYear.value;
-  return !!props.disabledMethod?.(new Date(y, m - 1, 1), "month");
+  return !!props.disabledMethod?.(new Date(year, m - 1, 1), "month");
 }
 
 /** 季度是否禁用：disabledMethod 按 quarter 粒度命中（以季度首日询问） */
-function isQuarterDisabled(q: number, yearContext?: number): boolean {
+function isQuarterDisabled(q: number, year: number): boolean {
   if (props.disabled) return true;
-  const y = yearContext ?? viewYear.value;
-  return !!props.disabledMethod?.(quarterStartDate(y, q), "quarter");
+  return !!props.disabledMethod?.(quarterStartDate(year, q), "quarter");
 }
 
-function getYearList(pageStart: number) {
-  const years: { year: number; isDisabled: boolean }[] = [];
+const monthList = Array.from({ length: 12 }, (_, i) => i + 1);
+const quarterList = [1, 2, 3, 4];
 
-  for (let i = -1; i <= 10; i++) {
-    const y = pageStart + i;
-    years.push({
-      year: y,
-      isDisabled: isYearDisabled(y),
-    });
-  }
-  return years;
-}
-
-const yearList = computed(() => getYearList(viewYearPageStart.value));
-const yearList2 = computed(() => getYearList(viewYearPageStart2.value));
-
-const monthList = computed(() => Array.from({ length: 12 }, (_, i) => i + 1));
-
-const headerTitle = computed(() => {
-  if (props.type === "yearrange")
-    return `${viewYearPageStart.value} - ${viewYearPageStart.value + 9}`;
-  return `${viewYearPageStart.value} - ${viewYearPageStart.value + 9}`; // Single panel or base
-});
-const headerTitle2 = computed(() => {
-  return `${viewYearPageStart2.value} - ${viewYearPageStart2.value + 9}`;
-});
-
-// --- 翻页 ---
-type PanelSide = "left" | "right";
-
-/** 以「年」为最小单位的范围类型：左右面板各显示一整年 */
-const isYearUnitRange = computed(() => ["monthrange", "quarterrange"].includes(props.type));
+type UnitBase = Omit<UnitCell, "selected" | "inRange" | "cap" | "isToday">;
 
 /**
- * 联动双面板的翻页步长倍数：两块面板一起平移一整屏，
- * 年视图 20 年、月 / 季度视图 2 年、日期视图 2 个月；
- * daterange 切到月 / 季度视图时左右同年，只平移 1 年，否则会跳过中间一年。
- * 单面板与取消联动时每次只走 1 个单位。
+ * 年 / 月 / 季度网格的规则层：只随视图、所示年份（年视图为十年页）与禁用规则重算，
+ * 范围悬停预览只改选中层，不会重跑 disabledMethod。年视图前后各补一年，共 12 格
  */
-function linkedStep(): number {
-  if (!showDual.value || isUnlinked.value) return 1;
-  if (
-    (currentView.value === "month" || currentView.value === "quarter") &&
-    !isYearUnitRange.value
-  ) {
-    return 1;
-  }
-  return 2;
-}
-
-/** 左面板按月平移，自动跨年 */
-function shiftLeftMonth(delta: number) {
-  const d = new Date(viewYear.value, viewMonth.value + delta, 1);
-  viewYear.value = d.getFullYear();
-  viewMonth.value = d.getMonth();
-}
-
-/** 右面板（取消联动时）按月平移，自动跨年 */
-function shiftRightMonth(delta: number) {
-  const d = new Date(rightYear.value, rightMonth.value + delta, 1);
-  rightYear.value = d.getFullYear();
-  rightMonth.value = d.getMonth();
-}
-
-/** 年月折算成连续序号，便于比较左右面板的先后与间距 */
-function monthIndex(y: number, m: number): number {
-  return y * 12 + m;
-}
-
-/**
- * 取消联动时左右面板能否再相互靠拢一步：靠拢后左侧仍须严格早于右侧。
- * unit 为 page 时按当前视图的翻页单位判断，为 year 时按跨年按钮判断（日期视图下间距须超过 12 个月）。
- */
-function canConverge(unit: "page" | "year" = "page"): boolean {
-  if (currentView.value === "year") return viewYearPageStart.value + 10 < rightYearPageStart.value;
-  if (isYearUnitRange.value) return viewYear.value + 1 < rightYear.value;
-  const gap = currentView.value === "date" && unit === "page" ? 1 : 12;
-  return (
-    monthIndex(viewYear.value, viewMonth.value) + gap <
-    monthIndex(rightYear.value, rightMonth.value)
-  );
-}
-
-/**
- * 取消联动时保证左面板严格早于右面板：以 fixed 一侧为准，把另一侧推到紧邻位置。
- * 下钻选年 / 选月会直接改写某一侧，可能越过另一侧，需要在改写后调用。
- */
-function ensureOrder(fixed: PanelSide) {
-  if (!isUnlinked.value) return;
-  if (currentView.value === "year") {
-    if (viewYearPageStart.value < rightYearPageStart.value) return;
-    if (fixed === "left") rightYearPageStart.value = viewYearPageStart.value + 10;
-    else viewYearPageStart.value = rightYearPageStart.value - 10;
-    return;
-  }
-  if (isYearUnitRange.value) {
-    if (viewYear.value < rightYear.value) return;
-    if (fixed === "left") rightYear.value = viewYear.value + 1;
-    else viewYear.value = rightYear.value - 1;
-    return;
-  }
-  if (monthIndex(viewYear.value, viewMonth.value) < monthIndex(rightYear.value, rightMonth.value)) {
-    return;
-  }
-  if (fixed === "left") {
-    const d = new Date(viewYear.value, viewMonth.value + 1, 1);
-    rightYear.value = d.getFullYear();
-    rightMonth.value = d.getMonth();
-  } else {
-    const d = new Date(rightYear.value, rightMonth.value - 1, 1);
-    viewYear.value = d.getFullYear();
-    viewMonth.value = d.getMonth();
-  }
-}
-
-/** 面板当前所示时间：年视图取十年页首年，其余取所示年月的 1 号 */
-function panelDate(side: PanelSide): Date {
-  if (side === "left") {
-    if (currentView.value === "year") return new Date(viewYearPageStart.value, 0, 1);
-    return new Date(viewYear.value, viewMonth.value, 1);
-  }
-  if (currentView.value === "year") return new Date(viewYearPageStart2.value, 0, 1);
-  return new Date(viewYear2.value, viewMonth2.value, 1);
-}
-
-/** 抛出 panel-change：双面板回传左右两个日期，单面板回传一个 */
-function emitPanelChange(mode: "month" | "year") {
-  const date = showDual.value
-    ? ([panelDate("left"), panelDate("right")] as [Date, Date])
-    : panelDate("left");
-  emit("panel-change", date, mode, currentView.value);
-}
-
-/**
- * 按方向平移一侧面板。unit 为 page 时按当前视图的翻页单位（十年 / 年 / 月），
- * 为 year 时固定跨一年（日期视图的双箭头）。
- */
-function movePanel(side: PanelSide, dir: 1 | -1, unit: "page" | "year" = "page") {
-  const step = unit === "year" || side === "right" ? dir : linkedStep() * dir;
-  const view = currentView.value;
+function unitBase(view: ViewType, year: () => number, pageStart: () => number): UnitBase[] {
   if (view === "year") {
-    if (side === "right") rightYearPageStart.value += 10 * step;
-    else viewYearPageStart.value += 10 * step;
-  } else if (view !== "date" || unit === "year") {
-    if (side === "right") rightYear.value += step;
-    else viewYear.value += step;
-  } else if (side === "right") {
-    shiftRightMonth(step);
-  } else {
-    shiftLeftMonth(step);
+    const start = pageStart();
+    return Array.from({ length: 12 }, (_, i) => start - 1 + i).map(y => ({
+      value: y, date: new Date(y, 0, 1), label: String(y), disabled: isYearDisabled(y), outside: y < start || y > start + 9,
+    }));
   }
-  emitPanelChange(view === "date" && unit === "page" ? "month" : "year");
-}
-
-/**
- * 上一页。联动时两侧一起走；取消联动时右侧的后退受「不得追上左侧」约束。
- */
-function prevPage(side: PanelSide = "left") {
-  if (props.disabled) return;
-  if (side === "right" && isUnlinked.value) {
-    if (canConverge()) movePanel("right", -1);
-    return;
+  if (view === "month") {
+    const y = year();
+    return monthList.map(m => ({ value: m, date: new Date(y, m - 1, 1), label: `${m}月`, disabled: isMonthDisabled(m, y), outside: false }));
   }
-  movePanel("left", -1);
-}
-
-/**
- * 下一页。联动时两侧一起走；取消联动时左侧的前进受「不得追上右侧」约束。
- */
-function nextPage(side: PanelSide = "left") {
-  if (props.disabled) return;
-  if (side === "right" && isUnlinked.value) {
-    movePanel("right", 1);
-    return;
+  if (view === "quarter") {
+    const y = year();
+    return quarterList.map(q => ({ value: q, date: quarterStartDate(y, q), label: `第${q}季度`, disabled: isQuarterDisabled(q, y), outside: false }));
   }
-  if (isUnlinked.value && !canConverge()) return;
-  movePanel("left", 1);
+  return [];
 }
 
-/** 日期视图的跨年翻页：联动时两个月份一起平移，月份不变只改年份 */
-function prevYear(side: PanelSide = "left") {
-  if (props.disabled) return;
-  if (side === "right" && isUnlinked.value) {
-    if (canConverge("year")) movePanel("right", -1, "year");
-    return;
-  }
-  movePanel("left", -1, "year");
+/** 年 / 月 / 季度网格的选中层：选中、范围带、端点封口与「今天」 */
+function applyUnitSelection(view: ViewType, cells: UnitBase[], year: number): UnitCell[] {
+  const now = today.value;
+  return cells.map((cell) => {
+    if (view === "year") {
+      return { ...cell, selected: isYearActive(cell.value), inRange: isYearInRange(cell.value),
+        cap: yearMonthRangeCap("year", cell.value, year), isToday: cell.value === now?.getFullYear() };
+    }
+    if (view === "month") {
+      return { ...cell, selected: isMonthActive(cell.value, year), inRange: isMonthInRange(cell.value, year),
+        cap: yearMonthRangeCap("month", cell.value, year), isToday: year === now?.getFullYear() && cell.value - 1 === now?.getMonth() };
+    }
+    return { ...cell, selected: isQuarterActive(cell.value, year), inRange: isQuarterInRange(cell.value, year),
+      cap: yearMonthRangeCap("quarter", cell.value, year), isToday: year === now?.getFullYear() && cell.value === (now ? quarterOf(now) : 0) };
+  });
 }
 
-function nextYear(side: PanelSide = "left") {
-  if (props.disabled) return;
-  if (side === "right" && isUnlinked.value) {
-    movePanel("right", 1, "year");
-    return;
-  }
-  if (isUnlinked.value && !canConverge("year")) return;
-  movePanel("left", 1, "year");
-}
+const leftUnitBase = computed(() => unitBase(currentView.value, () => nav.leftYear.value, () => nav.leftPage.value));
+const rightUnitBase = computed(() => unitBase(currentView.value, () => nav.rightYear.value, () => nav.rightPage.value));
+const leftUnits = computed(() => applyUnitSelection(currentView.value, leftUnitBase.value, nav.leftYear.value));
+const rightUnits = computed(() => applyUnitSelection(currentView.value, rightUnitBase.value, nav.rightYear.value));
 
-/** 所在周的周日 00:00（周从周日开始，与日历表头一致） */
-function weekStartOf(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay());
-}
-
-/** 所在周的周六 00:00 */
-function weekEndOf(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay() + 6);
-}
-
-/** 范围类型点选后抛出 calendar-change：只选了起点时终点为 null；week 类型一次点选即成整周，不抛 */
-function emitCalendarChange() {
-  if (props.type === "week" || !rangeStart.value) return;
-  emit("calendar-change", [
-    new Date(rangeStart.value),
-    rangeEnd.value ? new Date(rangeEnd.value) : null,
-  ]);
-}
+// --- 选择 ---
 
 /**
  * 选中某个日期
  */
-function selectDay(day: CalDay, panel: "left" | "right" = "left") {
+function selectDay(day: CalDay, side: PanelSide = "left") {
   if (day.isDisabled) return;
 
   // 单面板点中补位格时翻到该日期所在月份，选中结果才看得见（双面板的真实格子在另一侧，不翻页）
-  if (!day.isCurrentMonth && !showDual.value) {
-    viewYear.value = day.date.getFullYear();
-    viewMonth.value = day.date.getMonth();
-  }
+  if (!day.isCurrentMonth && !showDual.value) nav.showMonthOf(day.date);
 
   if (props.type === "week") {
     // 周选择模式：选中整周
-    const start = weekStartOf(day.date);
-    const end = weekEndOf(day.date);
-    rangeStart.value = start;
-    rangeEnd.value = end;
-    const val = [formatDate(start), formatDate(end)];
-    emit("update:modelValue", val);
-    emit("change", val);
+    range.setRange(weekStartOf(day.date), weekEndOf(day.date));
+    commitRange();
   } else if (props.type === "dates") {
     // 多选模式
-    const current = (props.modelValue as any[]) || [];
+    const current = (model.value as any[]) || [];
     const idx = current.findIndex((v) => isSameDate(v, day.date));
     const newVal = [...current];
     if (idx > -1) newVal.splice(idx, 1);
     else newVal.push(formatDate(day.date));
-    emit("update:modelValue", newVal);
+    model.value = newVal;
   } else if (isRange.value) {
-    // 范围选择模式
-    if (panel === "right") {
-      if (!rangeStart.value) {
-        rangeStart.value = new Date();
-      }
-      rangeEnd.value = day.date;
-      if (rangeEnd.value < rangeStart.value) {
-        const temp = rangeStart.value;
-        rangeStart.value = rangeEnd.value;
-        rangeEnd.value = temp;
-      }
-    } else {
-      if (!rangeStart.value || (rangeStart.value && rangeEnd.value)) {
-        rangeStart.value = day.date;
-        rangeEnd.value = null;
-      } else {
-        if (day.date < rangeStart.value) {
-          rangeEnd.value = rangeStart.value;
-          rangeStart.value = day.date;
-        } else {
-          rangeEnd.value = day.date;
-        }
-      }
-    }
-
-    // 周范围：起点吸附到所在周的周日，终点吸附到所在周的周六，绑定值始终覆盖完整的周
-    if (props.type === "weekrange") {
-      rangeStart.value = weekStartOf(rangeStart.value);
-      if (rangeEnd.value) rangeEnd.value = weekEndOf(rangeEnd.value);
-    }
-
-    const val = [
-      formatDate(rangeStart.value),
-      rangeEnd.value ? formatDate(rangeEnd.value, "end") : "",
-    ];
-    emit("update:modelValue", val);
-    emitCalendarChange();
-    if (rangeStart.value && rangeEnd.value) emit("change", val);
+    range.pick(day.date, side);
+    commitRange();
   } else {
     // 单选模式
     selectedDate.value = day.date;
     const val = formatDate(day.date);
-    emit("update:modelValue", val);
+    model.value = val;
     emit("change", val);
   }
 }
@@ -940,7 +687,7 @@ function selectDay(day: CalDay, panel: "left" | "right" = "left") {
 /**
  * 选中某个年份
  */
-function selectYear(year: number, panel: "left" | "right" = "left") {
+function selectYear(year: number, side: PanelSide = "left") {
   // 禁用格不再靠 pointer-events-none 拦截（要显示 cursor-not-allowed），点击在此守卫
   if (isYearDisabled(year)) return;
   const d = new Date(year, 0, 1);
@@ -948,13 +695,13 @@ function selectYear(year: number, panel: "left" | "right" = "left") {
   if (props.type === "year") {
     selectedDate.value = d;
     const val = formatDate(d);
-    emit("update:modelValue", val);
+    model.value = val;
     emit("change", val);
     return;
   }
 
   if (props.type === "years") {
-    const current = (props.modelValue as any[]) || [];
+    const current = (model.value as any[]) || [];
     const valStr = formatDate(d);
     const idx = current.findIndex((v) => {
       const dv = dayjs(v);
@@ -963,226 +710,125 @@ function selectYear(year: number, panel: "left" | "right" = "left") {
     const newVal = [...current];
     if (idx > -1) newVal.splice(idx, 1);
     else newVal.push(valStr);
-    emit("update:modelValue", newVal);
+    model.value = newVal;
     return;
   }
 
   if (props.type === "yearrange") {
-    if (panel === "right") {
-      if (!rangeStart.value) rangeStart.value = new Date();
-      rangeEnd.value = d;
-      if (rangeEnd.value < rangeStart.value) {
-        const temp = rangeStart.value;
-        rangeStart.value = rangeEnd.value;
-        rangeEnd.value = temp;
-      }
-    } else {
-      if (!rangeStart.value || (rangeStart.value && rangeEnd.value)) {
-        rangeStart.value = d;
-        rangeEnd.value = null;
-      } else {
-        if (d < rangeStart.value) {
-          rangeEnd.value = rangeStart.value;
-          rangeStart.value = d;
-        } else {
-          rangeEnd.value = d;
-        }
-      }
-    }
-    const val = [
-      formatDate(rangeStart.value),
-      rangeEnd.value ? formatDate(rangeEnd.value, "end") : "",
-    ];
-    emit("update:modelValue", val);
-    emitCalendarChange();
-    if (rangeStart.value && rangeEnd.value) emit("change", val);
+    range.pick(d, side);
+    commitRange();
     return;
   }
 
-  // 下钻到月 / 季度视图：取消联动时只改被点的那一侧
-  currentView.value = isQuarterType.value ? "quarter" : "month";
-  if (panel === "right" && isUnlinked.value) {
-    rightYear.value = year;
-    rightYearPageStart.value = Math.floor(year / 10) * 10;
-    ensureOrder("right");
-  } else {
-    // 联动的月 / 季度范围右侧恒比左侧晚一年，点右侧的年份时左侧落到前一年
-    viewYear.value =
-      panel === "right" && showDual.value && isYearUnitRange.value ? year - 1 : year;
-    viewYearPageStart.value = Math.floor(viewYear.value / 10) * 10;
-    ensureOrder("left");
-  }
-  emitPanelChange("year");
+  // 其余类型从年视图下钻到月 / 季度视图
+  nav.drillYear(side, year);
 }
 
 /**
- * 选中某个月份
+ * 选中某个月份（month 从 1 起，year 为该格所在面板的年份）
  */
-function selectMonth(month: number, yearContext?: number, panel: "left" | "right" = "left") {
-  if (isMonthDisabled(month, yearContext)) return;
-  const targetYear = yearContext ?? viewYear.value;
-  const d = new Date(targetYear, month - 1, 1);
+function selectMonth(month: number, year: number, side: PanelSide = "left") {
+  if (isMonthDisabled(month, year)) return;
+  const d = new Date(year, month - 1, 1);
 
   if (props.type === "month") {
     selectedDate.value = d;
     const val = formatDate(d);
-    emit("update:modelValue", val);
+    model.value = val;
     emit("change", val);
     return;
   }
 
   if (props.type === "months") {
-    const current = (props.modelValue as any[]) || [];
+    const current = (model.value as any[]) || [];
     const valStr = formatDate(d);
     const idx = current.findIndex((v) => {
       const dv = dayjs(v);
-      return dv.isValid() && dv.year() === targetYear && dv.month() === month - 1;
+      return dv.isValid() && dv.year() === year && dv.month() === month - 1;
     });
     const newVal = [...current];
     if (idx > -1) newVal.splice(idx, 1);
     else newVal.push(valStr);
-    emit("update:modelValue", newVal);
+    model.value = newVal;
     return;
   }
 
   if (props.type === "monthrange") {
-    if (panel === "right") {
-      if (!rangeStart.value) rangeStart.value = new Date();
-      rangeEnd.value = d;
-      if (rangeEnd.value < rangeStart.value) {
-        const temp = rangeStart.value;
-        rangeStart.value = rangeEnd.value;
-        rangeEnd.value = temp;
-      }
-    } else {
-      if (!rangeStart.value || (rangeStart.value && rangeEnd.value)) {
-        rangeStart.value = d;
-        rangeEnd.value = null;
-      } else {
-        if (d < rangeStart.value) {
-          rangeEnd.value = rangeStart.value;
-          rangeStart.value = d;
-        } else {
-          rangeEnd.value = d;
-        }
-      }
-    }
-    const val = [
-      formatDate(rangeStart.value),
-      rangeEnd.value ? formatDate(rangeEnd.value, "end") : "",
-    ];
-    emit("update:modelValue", val);
-    emitCalendarChange();
-    if (rangeStart.value && rangeEnd.value) emit("change", val);
+    range.pick(d, side);
+    commitRange();
     return;
   }
 
-  // 下钻到日期视图：取消联动时只改被点的那一侧
-  currentView.value = "date";
-  if (panel === "right" && isUnlinked.value) {
-    rightYear.value = targetYear;
-    rightMonth.value = month - 1;
-    ensureOrder("right");
-  } else {
-    // 联动的日期范围右侧恒比左侧晚一个月，点右侧的月份时左侧落到前一个月
-    const leftDate = new Date(
-      targetYear,
-      panel === "right" && showDual.value ? month - 2 : month - 1,
-      1,
-    );
-    viewYear.value = leftDate.getFullYear();
-    viewMonth.value = leftDate.getMonth();
-    ensureOrder("left");
-  }
-  emitPanelChange("month");
+  // 其余类型从月视图下钻到日期视图
+  nav.drillMonth(side, year, month);
 }
-
-const quarterList = [1, 2, 3, 4];
 
 /**
  * 选中某个季度。单选直接提交，多选按已选集合增删，范围按首尾两端记录。
  */
-function selectQuarter(q: number, yearContext?: number, panel: "left" | "right" = "left") {
-  if (isQuarterDisabled(q, yearContext)) return;
-  const targetYear = yearContext ?? viewYear.value;
-  const d = quarterStartDate(targetYear, q);
+function selectQuarter(q: number, year: number, side: PanelSide = "left") {
+  if (isQuarterDisabled(q, year)) return;
+  const d = quarterStartDate(year, q);
 
   if (props.type === "quarter") {
     selectedDate.value = d;
     const val = formatDate(d);
-    emit("update:modelValue", val);
+    model.value = val;
     emit("change", val);
     return;
   }
 
   if (props.type === "quarters") {
-    const current = (props.modelValue as any[]) || [];
+    const current = (model.value as any[]) || [];
     const valStr = formatDate(d);
     const idx = current.findIndex((v) => {
       const dv = v instanceof Date ? v : parseValue(v);
-      return !!dv && dv.getFullYear() === targetYear && quarterOf(dv) === q;
+      return !!dv && dv.getFullYear() === year && quarterOf(dv) === q;
     });
     const newVal = [...current];
     if (idx > -1) newVal.splice(idx, 1);
     else newVal.push(valStr);
-    emit("update:modelValue", newVal);
+    model.value = newVal;
     return;
   }
 
-  // quarterrange：与月份范围同一套首尾判定
-  if (panel === "right") {
-    if (!rangeStart.value) rangeStart.value = new Date();
-    rangeEnd.value = d;
-    if (rangeEnd.value < rangeStart.value) {
-      const temp = rangeStart.value;
-      rangeStart.value = rangeEnd.value;
-      rangeEnd.value = temp;
-    }
-  } else {
-    if (!rangeStart.value || (rangeStart.value && rangeEnd.value)) {
-      rangeStart.value = d;
-      rangeEnd.value = null;
-    } else if (d < rangeStart.value) {
-      rangeEnd.value = rangeStart.value;
-      rangeStart.value = d;
-    } else {
-      rangeEnd.value = d;
-    }
-  }
-  const val = [
-    formatDate(rangeStart.value),
-    rangeEnd.value ? formatDate(rangeEnd.value, "end") : "",
-  ];
-  emit("update:modelValue", val);
-  emitCalendarChange();
-  if (rangeStart.value && rangeEnd.value) emit("change", val);
+  range.pick(d, side);
+  commitRange();
 }
 
+/** 年 / 月 / 季度网格的点击按当前视图分派 */
+function selectUnit(panel: { side: PanelSide; year: number }, cell: UnitCell) {
+  if (currentView.value === "year") selectYear(cell.value, panel.side);
+  else if (currentView.value === "month") selectMonth(cell.value, panel.year, panel.side);
+  else selectQuarter(cell.value, panel.year, panel.side);
+}
+
+// --- 选中判定 ---
+
 /** 该季度是否为选中项（范围模式下仅首尾两端为选中项） */
-function isQuarterActive(q: number, yearContext?: number) {
+function isQuarterActive(q: number, year: number) {
   // 整面板禁用：不显示选中 / 范围高亮，所有格统一走禁用样式
   if (props.disabled) return false;
-  const targetYear = yearContext ?? viewYear.value;
-  const hit = (d: Date | null) => !!d && d.getFullYear() === targetYear && quarterOf(d) === q;
+  const hit = (d: Date | null) => !!d && d.getFullYear() === year && quarterOf(d) === q;
 
   if (props.type === "quarter") return hit(selectedDate.value);
   if (props.type === "quarters") {
-    return ((props.modelValue as any[]) || []).some((v) =>
+    return ((model.value as any[]) || []).some((v) =>
       hit(v instanceof Date ? v : parseValue(v)),
     );
   }
-  return hit(rangeStart.value) || hit(rangeEnd.value);
+  return hit(range.start.value) || hit(range.end.value);
 }
 
 /** 该季度是否落在范围内（含首尾，首尾由模板优先取选中样式） */
-function isQuarterInRange(q: number, yearContext?: number) {
+function isQuarterInRange(q: number, year: number) {
   if (props.disabled) return false;
-  const end = previewEnd.value;
-  if (props.type !== "quarterrange" || !rangeStart.value || !end) return false;
-  const targetYear = yearContext ?? viewYear.value;
-  const t = quarterStartDate(targetYear, q).getTime();
-  const min = Math.min(rangeStart.value.getTime(), end.getTime());
-  const max = Math.max(rangeStart.value.getTime(), end.getTime());
+  const start = range.start.value;
+  const end = range.previewEnd.value;
+  if (props.type !== "quarterrange" || !start || !end) return false;
+  const t = quarterStartDate(year, q).getTime();
+  const min = Math.min(start.getTime(), end.getTime());
+  const max = Math.max(start.getTime(), end.getTime());
   return t >= min && t <= max;
 }
 
@@ -1195,29 +841,29 @@ function isQuarterInRange(q: number, yearContext?: number) {
 function yearMonthRangeCap(
   kind: "year" | "month" | "quarter",
   value: number,
-  yearContext?: number,
+  year: number,
 ): "start" | "end" | "both" | null {
   if (props.disabled) return null;
-  const end = previewEnd.value;
-  if (!rangeStart.value || !end) return null;
-  const targetYear = yearContext ?? viewYear.value;
+  const start = range.start.value;
+  const end = range.previewEnd.value;
+  if (!start || !end) return null;
   let t: number;
   let a: number;
   let b: number;
   if (kind === "year") {
     if (props.type !== "yearrange") return null;
     t = value;
-    a = rangeStart.value.getFullYear();
+    a = start.getFullYear();
     b = end.getFullYear();
   } else if (kind === "month") {
     if (props.type !== "monthrange") return null;
-    t = new Date(targetYear, value - 1, 1).getTime();
-    a = new Date(rangeStart.value.getFullYear(), rangeStart.value.getMonth(), 1).getTime();
+    t = new Date(year, value - 1, 1).getTime();
+    a = new Date(start.getFullYear(), start.getMonth(), 1).getTime();
     b = new Date(end.getFullYear(), end.getMonth(), 1).getTime();
   } else {
     if (props.type !== "quarterrange") return null;
-    t = quarterStartDate(targetYear, value).getTime();
-    a = quarterStartDate(rangeStart.value.getFullYear(), quarterOf(rangeStart.value)).getTime();
+    t = quarterStartDate(year, value).getTime();
+    a = quarterStartDate(start.getFullYear(), quarterOf(start)).getTime();
     b = quarterStartDate(end.getFullYear(), quarterOf(end)).getTime();
   }
   const min = Math.min(a, b);
@@ -1228,197 +874,65 @@ function yearMonthRangeCap(
   return null;
 }
 
-/** defaultValue 的单项转为日期：数字按时间戳，字符串按 valueFormat 解析，不匹配时按常规日期格式兜底 */
-function toDefaultDate(v: unknown): Date | null {
-  if (v === undefined || v === null || v === "") return null;
-  if (typeof v === "number") return Number.isNaN(v) ? null : new Date(v);
-  const d = parseValue(v);
-  if (d) return new Date(d);
-  const fallback = dayjs(v as string);
-  return fallback.isValid() ? fallback.toDate() : null;
-}
-
-/** 按 defaultValue 的第一项定位左面板（单面板即唯一面板）；未传或解析失败时返回 false，视图保持不动 */
-function applyDefaultView(): boolean {
-  const list = Array.isArray(props.defaultValue) ? props.defaultValue : [props.defaultValue];
-  const first = toDefaultDate(list[0]);
-  if (!first) return false;
-  viewYear.value = first.getFullYear();
-  viewMonth.value = first.getMonth();
-  return true;
-}
-
-/**
- * 取消联动时按 defaultValue 的第二项定位右面板。联动时右面板恒紧跟左侧，第二项不生效；
- * 第二项不晚于左面板时仍以左侧为准把右面板推到紧邻位置，保证两侧不重叠。
- */
-function applyDefaultRightView() {
-  if (!isUnlinked.value || !Array.isArray(props.defaultValue)) return;
-  const second = toDefaultDate(props.defaultValue[1]);
-  if (!second) return;
-  rightYear.value = second.getFullYear();
-  rightMonth.value = second.getMonth();
-  rightYearPageStart.value = Math.floor(second.getFullYear() / 10) * 10;
-  ensureOrder("left");
-}
-
-/** 绑定值里是否没有任何日期：null、空串、空数组或 ["", ""] 都算未选 */
-function isValueEmpty() {
-  const v = props.modelValue;
-  if (Array.isArray(v)) return !v.some((item) => parseValue(item));
-  return !parseValue(v);
-}
-
-/**
- * 根据 modelValue 初始化状态
- */
-function initFromValue() {
-  if (props.modelValue) {
-    if (isRange.value && Array.isArray(props.modelValue)) {
-      const [start, end] = props.modelValue;
-      if (start) {
-        const d1 = parseValue(start);
-        if (d1) {
-          rangeStart.value = d1;
-          viewYear.value = d1.getFullYear();
-          viewMonth.value = d1.getMonth();
-        }
-      }
-      if (end) {
-        const d2 = parseValue(end);
-        if (d2) {
-          rangeEnd.value = d2;
-          selectedHour2.value = d2.getHours();
-          selectedMinute2.value = d2.getMinutes();
-          selectedSecond2.value = d2.getSeconds();
-        }
-      }
-    } else if (isMultiple.value && Array.isArray(props.modelValue)) {
-      const first = parseValue(props.modelValue[0]);
-      if (first) {
-        viewYear.value = first.getFullYear();
-        viewMonth.value = first.getMonth();
-      }
-    } else if (props.modelValue) {
-      const d = parseValue(props.modelValue);
-      if (d) {
-        selectedDate.value = d;
-        viewYear.value = d.getFullYear();
-        viewMonth.value = d.getMonth();
-        selectedHour.value = d.getHours();
-        selectedMinute.value = d.getMinutes();
-        selectedSecond.value = d.getSeconds();
-      }
-    }
-  } else {
-    selectedDate.value = null;
-    selectedDates.value = [];
-    rangeStart.value = null;
-    rangeEnd.value = null;
-  }
-  // 绑定值里没有日期时按 defaultValue 定位视图；它只决定面板显示哪个月 / 年，不写入绑定值
-  const useDefault = isValueEmpty() && applyDefaultView();
-  viewYearPageStart.value = Math.floor(viewYear.value / 10) * 10;
-  syncRightPanel();
-  if (useDefault) applyDefaultRightView();
-}
-
-/** 右面板回到紧跟左面板的位置（联动时的相对关系） */
-function resetRightPanel() {
-  rightYear.value = linkedYear2();
-  rightMonth.value = linkedMonth2();
-  rightYearPageStart.value = viewYearPageStart.value + 10;
-}
-
-// 取消联动后右面板是否已有独立位置：首次进入取消联动时需要先对齐到左侧
-let rightPanelInited = false;
-
-/**
- * 绑定值变化后同步右面板：联动时恒紧跟左侧；
- * 取消联动时保留用户翻到的位置，仅当终点落在右面板之后才翻过去，保证选中的终点看得见。
- */
-function syncRightPanel() {
-  if (!isUnlinked.value || !rightPanelInited) {
-    resetRightPanel();
-    rightPanelInited = isUnlinked.value;
-  }
-  if (isUnlinked.value && rangeEnd.value) {
-    const endYear = rangeEnd.value.getFullYear();
-    const endMonth = rangeEnd.value.getMonth();
-    const beyond = isYearUnitRange.value
-      ? endYear > rightYear.value
-      : monthIndex(endYear, endMonth) > monthIndex(rightYear.value, rightMonth.value);
-    if (beyond) {
-      rightYear.value = endYear;
-      rightMonth.value = endMonth;
-    }
-    const endPage = Math.floor(endYear / 10) * 10;
-    if (endPage > rightYearPageStart.value) rightYearPageStart.value = endPage;
-  }
-  ensureOrder("left");
-}
-
 function isYearActive(y: number) {
   // 整面板禁用：不显示选中 / 范围高亮，所有格统一走禁用样式
   if (props.disabled) return false;
   if (props.type === "year") return selectedDate.value?.getFullYear() === y;
   if (props.type === "years") {
-    return ((props.modelValue as any[]) || []).some((v) => {
+    return ((model.value as any[]) || []).some((v) => {
       const date = v instanceof Date ? v : parseValue(v);
       return date?.getFullYear() === y;
     });
   }
   if (props.type === "yearrange")
-    return rangeStart.value?.getFullYear() === y || rangeEnd.value?.getFullYear() === y;
+    return range.start.value?.getFullYear() === y || range.end.value?.getFullYear() === y;
   return false;
 }
 
 function isYearInRange(y: number) {
   if (props.disabled) return false;
-  if (props.type === "yearrange" && rangeStart.value && previewEnd.value) {
-    const start = rangeStart.value.getFullYear();
-    const end = previewEnd.value.getFullYear();
-    const min = Math.min(start, end);
-    const max = Math.max(start, end);
+  const start = range.start.value;
+  const end = range.previewEnd.value;
+  if (props.type === "yearrange" && start && end) {
+    const min = Math.min(start.getFullYear(), end.getFullYear());
+    const max = Math.max(start.getFullYear(), end.getFullYear());
     return y >= min && y <= max;
   }
   return false;
 }
 
-function isMonthActive(m: number, yearContext?: number) {
+function isMonthActive(m: number, year: number) {
   // 整面板禁用：不显示选中 / 范围高亮，所有格统一走禁用样式
   if (props.disabled) return false;
-  const targetYear = yearContext ?? viewYear.value;
   if (props.type === "month") {
     return (
-      selectedDate.value?.getFullYear() === targetYear && selectedDate.value?.getMonth() === m - 1
+      selectedDate.value?.getFullYear() === year && selectedDate.value?.getMonth() === m - 1
     );
   }
   if (props.type === "months") {
-    return ((props.modelValue as any[]) || []).some((v) => {
+    return ((model.value as any[]) || []).some((v) => {
       const date = v instanceof Date ? v : parseValue(v);
-      return date?.getFullYear() === targetYear && date?.getMonth() === m - 1;
+      return date?.getFullYear() === year && date?.getMonth() === m - 1;
     });
   }
   if (props.type === "monthrange") {
     return (
-      isSameDate(rangeStart.value, new Date(targetYear, m - 1, 1)) ||
-      isSameDate(rangeEnd.value, new Date(targetYear, m - 1, 1))
+      isSameDate(range.start.value, new Date(year, m - 1, 1)) ||
+      isSameDate(range.end.value, new Date(year, m - 1, 1))
     );
   }
   return false;
 }
 
-function isMonthInRange(m: number, yearContext?: number) {
+function isMonthInRange(m: number, year: number) {
   if (props.disabled) return false;
-  const targetYear = yearContext ?? viewYear.value;
-  if (props.type === "monthrange" && rangeStart.value && previewEnd.value) {
-    const d = new Date(targetYear, m - 1, 1);
-    const start = rangeStart.value.getTime();
-    const end = previewEnd.value.getTime();
-    const min = Math.min(start, end);
-    const max = Math.max(start, end);
-    return d.getTime() >= min && d.getTime() <= max;
+  const start = range.start.value;
+  const end = range.previewEnd.value;
+  if (props.type === "monthrange" && start && end) {
+    const t = new Date(year, m - 1, 1).getTime();
+    const min = Math.min(start.getTime(), end.getTime());
+    const max = Math.max(start.getTime(), end.getTime());
+    return t >= min && t <= max;
   }
   return false;
 }
@@ -1430,39 +944,101 @@ function isDateActive(d: Date) {
     return isSameDate(selectedDate.value, d);
   }
   if (props.type === "dates") {
-    const check = ((props.modelValue as any[]) || []).some((v) => isSameDate(v, d));
-    return check;
+    return selectedDayKeys.value.has(dayKey(d));
   }
   if (props.type === "week" || isRange.value) {
     return (
-      d.toDateString() === rangeStart.value?.toDateString() ||
-      d.toDateString() === rangeEnd.value?.toDateString()
+      d.toDateString() === range.start.value?.toDateString() ||
+      d.toDateString() === range.end.value?.toDateString()
     );
   }
   return false;
 }
 
+// --- 绑定值与 defaultValue ---
+
+/** defaultValue 的单项转为日期：数字按时间戳，字符串按 valueFormat 解析，不匹配时按常规日期格式兜底 */
+function toDefaultDate(v: unknown): Date | null {
+  if (v === undefined || v === null || v === "") return null;
+  if (typeof v === "number") return Number.isNaN(v) ? null : new Date(v);
+  const d = parseValue(v);
+  if (d) return new Date(d);
+  const fallback = dayjs(v as string);
+  return fallback.isValid() ? fallback.toDate() : null;
+}
+
+/** defaultValue 的第 index 项：第一项定位左面板（单面板即唯一面板），第二项在取消联动时定位右面板 */
+function defaultDate(index: number): Date | null {
+  const list = Array.isArray(props.defaultValue) ? props.defaultValue : [props.defaultValue];
+  return toDefaultDate(list[index]);
+}
+
+/** 绑定值里是否没有任何日期：null、空串、空数组或 ["", ""] 都算未选 */
+function isValueEmpty() {
+  const v = model.value;
+  if (Array.isArray(v)) return !v.some((item) => parseValue(item));
+  return !parseValue(v);
+}
+
+/**
+ * 根据 modelValue 初始化状态：先整体复位（含悬停与时分秒），再解析，
+ * 绑定值变成空数组或缺终点时不会残留旧的选中状态
+ */
+function initFromValue() {
+  selectedDate.value = null;
+  range.reset();
+  selectedHour.value = selectedMinute.value = selectedSecond.value = 0;
+  selectedHour2.value = selectedMinute2.value = selectedSecond2.value = 0;
+  // 绑定值里第一个能解析的日期决定面板定位
+  let focusDate: Date | null = null;
+  if (model.value) {
+    if (isRange.value && Array.isArray(model.value)) {
+      const [start, end] = model.value;
+      const d1 = start ? parseValue(start) : null;
+      const d2 = end ? parseValue(end) : null;
+      range.setRange(d1, d2);
+      if (d1) {
+        selectedHour.value = d1.getHours();
+        selectedMinute.value = d1.getMinutes();
+        selectedSecond.value = d1.getSeconds();
+        focusDate = d1;
+      }
+      if (d2) {
+        selectedHour2.value = d2.getHours();
+        selectedMinute2.value = d2.getMinutes();
+        selectedSecond2.value = d2.getSeconds();
+      }
+    } else if (isMultiple.value && Array.isArray(model.value)) {
+      focusDate = parseValue(model.value[0]);
+    } else {
+      const d = parseValue(model.value);
+      if (d) {
+        selectedDate.value = d;
+        selectedHour.value = d.getHours();
+        selectedMinute.value = d.getMinutes();
+        selectedSecond.value = d.getSeconds();
+        focusDate = d;
+      }
+    }
+  }
+  // 绑定值里没有日期时按 defaultValue 定位视图；它只决定面板显示哪个月 / 年，不写入绑定值
+  const firstDefault = isValueEmpty() ? defaultDate(0) : null;
+  nav.focus(focusDate ?? firstDefault);
+  if (focusDate || firstDefault) viewSettled.value = true;
+  nav.syncRight(range.end.value);
+  if (firstDefault) {
+    const second = defaultDate(1);
+    if (second) nav.placeRight(second);
+  }
+}
+
+// --- 交互 ---
+
 /** 标题点击切换视图；整面板禁用时不响应 */
 function switchView(view: ViewType) {
   if (props.disabled) return;
-  hoverDate.value = null;
-  if (currentView.value === view) return;
-  if (view === "year") {
-    // 十年页对齐到各面板当前所示年份；取消联动时右侧十年页须严格晚于左侧
-    viewYearPageStart.value = Math.floor(viewYear.value / 10) * 10;
-    rightYearPageStart.value = Math.max(
-      Math.floor(rightYear.value / 10) * 10,
-      viewYearPageStart.value + 10,
-    );
-  }
-  currentView.value = view;
-  emitPanelChange(view === "date" ? "month" : "year");
-}
-
-/** 记录范围预览的悬停格；传 null（移出网格 / 悬停到禁用格）即收起预览 */
-function previewHover(d: Date | null) {
-  if (props.disabled || !isRange.value) return;
-  hoverDate.value = d;
+  range.clearHover();
+  nav.switchView(view);
 }
 
 /** 点击头部「时间」段展开时间选择；整面板禁用时不响应 */
@@ -1476,18 +1052,16 @@ function handleShortcut(s: any) {
   const value = typeof s.value === "function" ? s.value() : s.value;
 
   if (Array.isArray(value)) {
-    rangeStart.value = value[0];
-    rangeEnd.value = value[1];
+    range.setRange(value[0], value[1]);
     const val = [formatDate(value[0]), formatDate(value[1])];
-    emit("update:modelValue", val);
+    model.value = val;
     emitCalendarChange();
     emit("change", val);
   } else {
     selectedDate.value = value;
-    viewYear.value = value.getFullYear();
-    viewMonth.value = value.getMonth();
+    nav.showMonthOf(value);
     const val = formatDate(value);
-    emit("update:modelValue", val);
+    model.value = val;
     emit("change", val);
   }
 }
@@ -1498,15 +1072,12 @@ function handleShortcut(s: any) {
  */
 function clear() {
   const had = isRange.value || isMultiple.value
-    ? Array.isArray(props.modelValue) && props.modelValue.some(Boolean)
-    : !!props.modelValue;
+    ? Array.isArray(model.value) && model.value.some(Boolean)
+    : !!model.value;
   selectedDate.value = null;
-  selectedDates.value = [];
-  rangeStart.value = null;
-  rangeEnd.value = null;
-  hoverDate.value = null;
+  range.reset();
   const val = isRange.value || isMultiple.value ? [] : "";
-  emit("update:modelValue", val);
+  model.value = val;
   if (had) emit("change", val);
   emit("clear");
 }
@@ -1526,15 +1097,16 @@ const todayText = computed(() => {
   return "今天";
 });
 
-/** 取当前日期在日历网格中的格子：复用网格的禁用判定（start / end / disabledMethod） */
+/** 取当前日期在日历网格中的格子，点击「今天」时交给 selectDay */
 function todayCell(now: Date): CalDay | undefined {
-  return getCalendarDays(now.getFullYear(), now.getMonth()).find(
+  return getBaseCalendarDays(now.getFullYear(), now.getMonth()).find(
     (d) => d.isCurrentMonth && d.date.getDate() === now.getDate(),
   );
 }
 
 /**
  * 「今天」是否不可点：整面板禁用，或当前时间所在单位被禁用。
+ * 日期类型只判定当天这一格，不生成整月网格；
  * datetime 另外校验当前时分秒是否落在 disabledHours / disabledMinutes / disabledSeconds 里。
  */
 function isTodayDisabledAt(now: Date) {
@@ -1544,7 +1116,7 @@ function isTodayDisabledAt(now: Date) {
   if (yearTypes.includes(type)) return isYearDisabled(y);
   if (monthTypes.includes(type)) return isMonthDisabled(now.getMonth() + 1, y);
   if (isQuarterType.value) return isQuarterDisabled(quarterOf(now), y);
-  if (todayCell(now)?.isDisabled ?? true) return true;
+  if (isDayBlocked(new Date(y, now.getMonth(), now.getDate()))) return true;
   if (type === "datetime") {
     const h = now.getHours();
     const m = now.getMinutes();
@@ -1555,8 +1127,8 @@ function isTodayDisabledAt(now: Date) {
   return false;
 }
 
-/** 底部栏的置灰样式；computed 只随 props 重算，点击时另按点击时刻重新判定 */
-const isTodayDisabled = computed(() => isTodayDisabledAt(new Date()));
+/** 底部栏的置灰样式：只随日期与禁用规则重算，范围悬停不影响；点击时另按点击时刻重新判定 */
+const isTodayDisabled = computed(() => !today.value || isTodayDisabledAt(today.value));
 
 /**
  * 选中当前时间所在的日 / 周 / 月 / 季度 / 年，并把视图拉回当前年月。
@@ -1574,15 +1146,11 @@ function selectToday() {
   const q = quarterOf(now);
   const type = props.type as string;
 
-  // 视图回到当前年月，选中结果才看得见
-  hoverDate.value = null;
-  currentView.value = getInitialView();
-  viewYear.value = y;
-  viewMonth.value = m;
-  viewYearPageStart.value = Math.floor(y / 10) * 10;
-  // 取消联动时右面板也回到紧跟左侧的位置，不停留在用户翻到的远处
-  rightPanelInited = false;
-  syncRightPanel();
+  // 视图回到当前年月，选中结果才看得见；取消联动时右面板也回到紧跟左侧的位置，不停留在用户翻到的远处
+  range.clearHover();
+  nav.resetView();
+  nav.focus(now);
+  nav.realignRight(range.end.value);
 
   if (isDual.value) {
     const unitStart = () => {
@@ -1591,13 +1159,9 @@ function selectToday() {
       if (type === "quarterrange") return quarterStartDate(y, q);
       return new Date(y, m, now.getDate());
     };
-    rangeStart.value = unitStart();
-    rangeEnd.value = unitStart();
     // 周范围起止取本周的周日与周六，与点选时的吸附一致
-    if (type === "weekrange") {
-      rangeStart.value = weekStartOf(now);
-      rangeEnd.value = weekEndOf(now);
-    }
+    if (type === "weekrange") range.setRange(weekStartOf(now), weekEndOf(now));
+    else range.setRange(unitStart(), unitStart());
     if (hasTime.value) {
       selectedHour.value = 0;
       selectedMinute.value = 0;
@@ -1606,10 +1170,7 @@ function selectToday() {
       selectedMinute2.value = 59;
       selectedSecond2.value = 59;
     }
-    const val = [formatDate(rangeStart.value), formatDate(rangeEnd.value, "end")];
-    emit("update:modelValue", val);
-    emitCalendarChange();
-    emit("change", val);
+    commitRange();
     return;
   }
 
@@ -1646,7 +1207,6 @@ defineExpose({
 });
 
 // --- 模板辅助 ---
-type TimeRole = "start" | "end";
 
 /** 按起止角色读写头部时间：start 对应左侧（或单面板的第一段），end 对应右侧 */
 function getTime(role: TimeRole): string {
@@ -1662,154 +1222,66 @@ function getDisplayDate(role: TimeRole): string {
 }
 
 /** 42 格日历按 7 格一行切开，便于在每行前插入周数 */
-function chunkWeeks(days: CalDay[]): CalDay[][] {
-  const rows: CalDay[][] = [];
+function chunkWeeks<T extends CalDay>(days: T[]): T[][] {
+  const rows: T[][] = [];
   for (let i = 0; i < days.length; i += 7) rows.push(days.slice(i, i + 7));
   return rows;
 }
 
-/** 一行（周日起）的 ISO 周数：以该行的周一为准，按 ISO 8601「周四所在年」规则计算 */
-function isoWeek(row: CalDay[]): number {
-  const monday = (row[1] ?? row[0])?.date;
-  if (!monday) return 0;
-  const d = new Date(Date.UTC(monday.getFullYear(), monday.getMonth(), monday.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-}
-
-// --- default 插槽的单元格数据 ---
-function cellYear(item: { year: number; isDisabled: boolean }, pageStart: number): DatePickerCell {
-  return {
-    type: "year",
-    text: item.year,
-    date: new Date(item.year, 0, 1),
-    disabled: item.isDisabled,
-    selected: isYearActive(item.year),
-    inRange: isYearInRange(item.year),
-    isToday: item.year === today.getFullYear(),
-    outside: item.year < pageStart || item.year > pageStart + 9,
-  };
-}
-function cellMonth(m: number, yearContext?: number): DatePickerCell {
-  const y = yearContext ?? viewYear.value;
-  return {
-    type: "month",
-    text: m,
-    date: new Date(y, m - 1, 1),
-    disabled: isMonthDisabled(m, yearContext),
-    selected: isMonthActive(m, yearContext),
-    inRange: isMonthInRange(m, yearContext),
-    isToday: y === today.getFullYear() && m - 1 === today.getMonth(),
-    outside: false,
-  };
-}
-function cellQuarter(q: number, yearContext?: number): DatePickerCell {
-  const y = yearContext ?? viewYear.value;
-  return {
-    type: "quarter",
-    text: q,
-    date: quarterStartDate(y, q),
-    disabled: isQuarterDisabled(q, yearContext),
-    selected: isQuarterActive(q, yearContext),
-    inRange: isQuarterInRange(q, yearContext),
-    isToday: y === today.getFullYear() && q === quarterOf(today),
-    outside: false,
-  };
-}
-function cellDay(day: CalDay): DatePickerCell {
-  return {
-    type: "date",
-    text: day.day,
-    date: new Date(day.date),
-    disabled: day.isDisabled,
-    selected: !isRangePlaceholder(day) && isDateActive(day.date),
-    inRange: showRangeBand(day),
-    isToday: day.isToday,
-    outside: !day.isCurrentMonth,
-  };
-}
-
-defineSlots<{
-  /** 自定义单元格内容：作用域参数即单元格数据，年 / 月 / 季度 / 日期四种视图共用 */
-  default?: (props: DatePickerCell) => any;
-  /** 上个月图标：仅日期视图的内侧单箭头 */
-  "prev-month"?: () => any;
-  /** 下个月图标：仅日期视图的内侧单箭头 */
-  "next-month"?: () => any;
-  /** 上一年图标：日期视图的外侧双箭头，以及年 / 月 / 季度视图的翻页按钮（这三种视图按年或十年翻页） */
-  "prev-year"?: () => any;
-  /** 下一年图标：日期视图的外侧双箭头，以及年 / 月 / 季度视图的翻页按钮 */
-  "next-year"?: () => any;
-}>();
-
 /**
  * 面板描述：单面板只有 left，双面板为 [left, right]。
- * 模板对每一侧渲染同一套结构，差异（数据源、翻页按钮的显隐与禁用、头部时间段）都收在这里。
+ * 模板对每一侧渲染同一套结构，差异（数据源、翻页按钮的显隐与禁用、头部时间段）都收在这里；
+ * 只为当前视图准备数据：日期视图给 rows，年 / 月 / 季度视图给 units
  */
-const panels = computed(() => {
-  const list = [
-    {
-      side: "left" as PanelSide,
-      year: viewYear.value,
-      month: viewMonth.value,
-      pageStart: viewYearPageStart.value,
-      headerTitle: headerTitle.value,
-      yearContext: undefined as number | undefined,
-      days: calendarDays.value,
-      years: yearList.value,
-      // 单面板的 datetimerange 两段时间都放在唯一的头部里
-      times: (showDual.value || !isDual.value || !hasTime.value
-        ? ["start"]
-        : ["start", "end"]) as TimeRole[],
-      // 联动双面板：左侧只保留朝前的按钮，朝后的由右侧承担
-      hidePrev: false,
-      hideNext: showDual.value && !isUnlinked.value,
-      disablePrev: false,
-      disablePrevYear: false,
-      disableNext: isUnlinked.value && !canConverge(),
-      disableNextYear: isUnlinked.value && !canConverge("year"),
-    },
-  ];
-  if (showDual.value) {
-    list.push({
-      side: "right",
-      year: viewYear2.value,
-      month: viewMonth2.value,
-      pageStart: viewYearPageStart2.value,
-      headerTitle: headerTitle2.value,
-      yearContext: viewYear2.value,
-      days: calendarDays2.value,
-      years: yearList2.value,
-      times: ["end"],
-      hidePrev: !isUnlinked.value,
-      hideNext: false,
-      disablePrev: isUnlinked.value && !canConverge(),
-      disablePrevYear: isUnlinked.value && !canConverge("year"),
-      disableNext: false,
-      disableNextYear: false,
-    });
-  }
-  return list.map((p) => ({ ...p, rows: chunkWeeks(p.days) }));
-});
+const panels = computed(() => nav.headers.value.map((header) => {
+  const isLeft = header.side === "left";
+  return {
+    ...header,
+    // 单面板的 datetimerange 两段时间都放在唯一的头部里
+    times: (isLeft ? (showDual.value || !isDual.value || !hasTime.value ? ["start"] : ["start", "end"]) : ["end"]) as TimeRole[],
+    rows: isUnitView.value ? [] : chunkWeeks((isLeft ? calendarDays : calendarDays2).value),
+    units: isUnitView.value ? (isLeft ? leftUnits : rightUnits).value : [],
+  };
+}));
 
-watch(() => props.modelValue, initFromValue, { immediate: true });
+let todayTimer: ReturnType<typeof setTimeout> | undefined;
+function refreshToday() {
+  today.value = new Date();
+  clearTimeout(todayTimer);
+  const now = today.value;
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  todayTimer = setTimeout(refreshToday, Math.max(1, tomorrow.getTime() - now.getTime()));
+}
+onMounted(() => {
+  refreshToday();
+  if (isValueEmpty()) {
+    const first = defaultDate(0);
+    if (first) {
+      nav.showMonthOf(first);
+    } else {
+      const now = today.value!;
+      nav.focus(now);
+      selectedHour.value = selectedHour2.value = now.getHours();
+      selectedMinute.value = selectedMinute2.value = now.getMinutes();
+      nav.syncRight(range.end.value);
+    }
+  }
+  viewSettled.value = true;
+  document.addEventListener('visibilitychange', refreshToday);
+});
+onBeforeUnmount(() => { clearTimeout(todayTimer); document.removeEventListener('visibilitychange', refreshToday); });
+watch(model, initFromValue, { immediate: true });
 watch(
   () => props.type,
   () => {
-    currentView.value = getInitialView();
-    rightPanelInited = false;
-    syncRightPanel();
+    nav.resetView();
+    nav.realignRight(range.end.value);
   },
 );
 // 联动方式或面板数量变化：右面板重新对齐到左侧
 watch(
   () => [props.unlinkPanels, props.singlePanel],
-  () => {
-    rightPanelInited = false;
-    syncRightPanel();
-  },
+  () => nav.realignRight(range.end.value),
 );
 // 父组件内联传数组时每次渲染都是新引用，按解析后的时间戳判断 defaultValue 是否真的变化
 const defaultValueKey = computed(() => {
@@ -1826,28 +1298,16 @@ watch(defaultValueKey, () => {
   <div :class="ui.wrapper({ class: props.class })">
     <div :class="ui.container()">
       <!-- 快捷选项侧栏 -->
-      <div
-        v-if="shortcuts.length"
-        :class="ui.shortcuts()"
-      >
-        <div
-          v-for="(s, i) in shortcuts"
-          :key="i"
-          :class="ui.shortcut()"
-          @click.stop="handleShortcut(s)"
-        >
+      <div v-if="shortcuts.length" :class="ui.shortcuts()">
+        <div v-for="(s, i) in shortcuts" :key="i" :class="ui.shortcut()" @click.stop="handleShortcut(s)">
           {{ s.text }}
         </div>
       </div>
 
-      <!-- 主内容区 -->
-      <div :class="ui.content()">
+      <!-- 主内容区：定位到实际月份之前先隐藏（只占位），服务端首屏不露出固定基准月 -->
+      <div :class="ui.content()" :style="viewSettled ? undefined : { visibility: 'hidden' }">
         <!-- 左侧 / 单面板；范围类型双面板时再渲染右侧。两侧结构一致，差异（数据源、翻页按钮）收在 panels 里 -->
-        <div
-          v-for="p in panels"
-          :key="p.side"
-          :class="p.side === 'left' ? ui.panelLeft() : ui.panelRight()"
-        >
+        <div v-for="p in panels" :key="p.side" :class="p.side === 'left' ? ui.panelLeft() : ui.panelRight()">
           <!-- 头部日期 / 时间：单面板的 datetimerange 起止两段都放在唯一的面板里 -->
           <template v-if="hasTime">
             <RebornTimePicker
@@ -1868,10 +1328,7 @@ watch(defaultValueKey, () => {
               @update:model-value="setTime(t, $event)"
             >
               <template #default="{ toggle }">
-                <div
-                  :class="ui.dateTimeHeader()"
-                  @click.stop
-                >
+                <div :class="ui.dateTimeHeader()" @click.stop>
                   <div
                     :class="[ui.dateTimeSegment(), ui.dateTimeSegmentDisabled()]"
                     @click="switchView('date')"
@@ -1879,10 +1336,7 @@ watch(defaultValueKey, () => {
                     {{ getDisplayDate(t) }}
                   </div>
                   <div :class="ui.dateTimeSeparator()">/</div>
-                  <div
-                    :class="[ui.dateTimeSegment(), ui.dateTimeSegmentActive()]"
-                    @click="openTime(toggle)"
-                  >
+                  <div :class="[ui.dateTimeSegment(), ui.dateTimeSegmentActive()]" @click="openTime(toggle)">
                     {{ getTime(t) }}
                   </div>
                 </div>
@@ -1890,365 +1344,47 @@ watch(defaultValueKey, () => {
             </RebornTimePicker>
           </template>
 
-          <!-- 年视图：翻页单位为十年，按钮走 prev-year / next-year 插槽 -->
-          <template v-if="currentView === 'year'">
-            <div :class="ui.header()">
-              <div :class="ui.navGroup()">
-                <span
-                  :class="ui.navBtn({ class: [p.hidePrev ? ui.navBtnHidden() : '', p.disablePrev ? ui.navBtnDisabled() : ''] })"
-                  @click.stop="prevPage(p.side)"
-                >
-                  <slot name="prev-year">
-                    <Icon
-                      name="lucide:chevron-left"
-                      :class="ui.icon()"
-                    />
-                  </slot>
-                </span>
-              </div>
-              <div :class="ui.dateTimeHeader()">
-                <span :class="ui.title()">{{ p.headerTitle }}</span>
-              </div>
-              <div :class="ui.navGroup()">
-                <span
-                  :class="ui.navBtn({ class: [p.hideNext ? ui.navBtnHidden() : '', p.disableNext ? ui.navBtnDisabled() : ''] })"
-                  @click.stop="nextPage(p.side)"
-                >
-                  <slot name="next-year">
-                    <Icon
-                      name="lucide:chevron-right"
-                      :class="ui.icon()"
-                    />
-                  </slot>
-                </span>
-              </div>
-            </div>
-            <div
-              :class="ui.grid4Year()"
-              @mouseleave="previewHover(null)"
-            >
-              <div
-                v-for="item in p.years"
-                :key="item.year"
-                :class="
-                  ui.yearMonthItem({
-                    class: [
-                      isYearActive(item.year)
-                        ? ui.dayActive()
-                        : isYearInRange(item.year)
-                          ? ui.yearMonthInRange()
-                          : '',
-                      yearMonthRangeCap('year', item.year) === 'start'
-                        ? ui.yearMonthRangeStart()
-                        : '',
-                      yearMonthRangeCap('year', item.year) === 'end' ? ui.yearMonthRangeEnd() : '',
-                      item.year === today.getFullYear() && !isYearActive(item.year)
-                        ? ui.dayToday()
-                        : '',
-                      item.isDisabled ? ui.dayDisabled() : '',
-                      item.year < p.pageStart || item.year >= p.pageStart + 10
-                        ? ui.yearMonthOutside()
-                        : '',
-                    ],
-                  })
-                "
-                @click.stop="selectYear(item.year, p.side)"
-                @mouseenter="previewHover(item.isDisabled ? null : new Date(item.year, 0, 1))"
-              >
-                <slot v-bind="cellYear(item, p.pageStart)">
-                  {{ item.year }}
-                </slot>
-              </div>
-            </div>
-          </template>
+          <DatePickerHeader
+            :panel="p"
+            :view="currentView"
+            :ui="ui"
+            @navigate="(direction, unit) => nav.navigate(p.side, direction, unit)"
+            @switch-view="switchView"
+          >
+            <template v-if="$slots['prev-year']" #prev-year><slot name="prev-year" /></template>
+            <template v-if="$slots['next-year']" #next-year><slot name="next-year" /></template>
+            <template v-if="$slots['prev-month']" #prev-month><slot name="prev-month" /></template>
+            <template v-if="$slots['next-month']" #next-month><slot name="next-month" /></template>
+          </DatePickerHeader>
 
-          <!-- 月视图：翻页单位为一年，按钮走 prev-year / next-year 插槽 -->
-          <template v-else-if="currentView === 'month'">
-            <div :class="ui.header()">
-              <div :class="ui.navGroup()">
-                <span
-                  :class="ui.navBtn({ class: [p.hidePrev ? ui.navBtnHidden() : '', p.disablePrev ? ui.navBtnDisabled() : ''] })"
-                  @click.stop="prevPage(p.side)"
-                >
-                  <slot name="prev-year">
-                    <Icon
-                      name="lucide:chevron-left"
-                      :class="ui.icon()"
-                    />
-                  </slot>
-                </span>
-              </div>
-              <div :class="ui.dateTimeHeader()">
-                <span
-                  :class="ui.title()"
-                  @click.stop="switchView('year')"
-                >{{ p.year }}年</span>
-              </div>
-              <div :class="ui.navGroup()">
-                <span
-                  :class="ui.navBtn({ class: [p.hideNext ? ui.navBtnHidden() : '', p.disableNext ? ui.navBtnDisabled() : ''] })"
-                  @click.stop="nextPage(p.side)"
-                >
-                  <slot name="next-year">
-                    <Icon
-                      name="lucide:chevron-right"
-                      :class="ui.icon()"
-                    />
-                  </slot>
-                </span>
-              </div>
-            </div>
-            <div
-              :class="ui.grid4Month()"
-              @mouseleave="previewHover(null)"
-            >
-              <div
-                v-for="m in monthList"
-                :key="m"
-                :class="
-                  ui.yearMonthItem({
-                    class: [
-                      isMonthActive(m, p.yearContext)
-                        ? ui.dayActive()
-                        : isMonthInRange(m, p.yearContext)
-                          ? ui.yearMonthInRange()
-                          : '',
-                      yearMonthRangeCap('month', m, p.yearContext) === 'start'
-                        ? ui.yearMonthRangeStart()
-                        : '',
-                      yearMonthRangeCap('month', m, p.yearContext) === 'end'
-                        ? ui.yearMonthRangeEnd()
-                        : '',
-                      isMonthDisabled(m, p.yearContext) ? ui.dayDisabled() : '',
-                      p.year === today.getFullYear() &&
-                        m === today.getMonth() + 1 &&
-                        !isMonthActive(m, p.yearContext)
-                        ? ui.dayToday()
-                        : '',
-                    ],
-                  })
-                "
-                @click.stop="selectMonth(m, p.yearContext, p.side)"
-                @mouseenter="previewHover(isMonthDisabled(m, p.yearContext) ? null : new Date(p.year, m - 1, 1))"
-              >
-                <slot v-bind="cellMonth(m, p.yearContext)">
-                  {{ m }}月
-                </slot>
-              </div>
-            </div>
-          </template>
-
-          <!-- 季度视图：翻页单位为一年，四个季度两列排布 -->
-          <template v-else-if="currentView === 'quarter'">
-            <div :class="ui.header()">
-              <div :class="ui.navGroup()">
-                <span
-                  :class="ui.navBtn({ class: [p.hidePrev ? ui.navBtnHidden() : '', p.disablePrev ? ui.navBtnDisabled() : ''] })"
-                  @click.stop="prevPage(p.side)"
-                >
-                  <slot name="prev-year">
-                    <Icon
-                      name="lucide:chevron-left"
-                      :class="ui.icon()"
-                    />
-                  </slot>
-                </span>
-              </div>
-              <div :class="ui.dateTimeHeader()">
-                <span
-                  :class="ui.title()"
-                  @click.stop="switchView('year')"
-                >{{ p.year }}年</span>
-              </div>
-              <div :class="ui.navGroup()">
-                <span
-                  :class="ui.navBtn({ class: [p.hideNext ? ui.navBtnHidden() : '', p.disableNext ? ui.navBtnDisabled() : ''] })"
-                  @click.stop="nextPage(p.side)"
-                >
-                  <slot name="next-year">
-                    <Icon
-                      name="lucide:chevron-right"
-                      :class="ui.icon()"
-                    />
-                  </slot>
-                </span>
-              </div>
-            </div>
-            <div
-              :class="ui.grid2Quarter()"
-              @mouseleave="previewHover(null)"
-            >
-              <div
-                v-for="q in quarterList"
-                :key="q"
-                :class="
-                  ui.yearMonthItem({
-                    class: [
-                      isQuarterActive(q, p.yearContext)
-                        ? ui.dayActive()
-                        : isQuarterInRange(q, p.yearContext)
-                          ? ui.yearMonthInRange()
-                          : '',
-                      yearMonthRangeCap('quarter', q, p.yearContext) === 'start'
-                        ? ui.yearMonthRangeStart()
-                        : '',
-                      yearMonthRangeCap('quarter', q, p.yearContext) === 'end'
-                        ? ui.yearMonthRangeEnd()
-                        : '',
-                      isQuarterDisabled(q, p.yearContext) ? ui.dayDisabled() : '',
-                      p.year === today.getFullYear() &&
-                        q === quarterOf(today) &&
-                        !isQuarterActive(q, p.yearContext)
-                        ? ui.dayToday()
-                        : '',
-                    ],
-                  })
-                "
-                @click.stop="selectQuarter(q, p.yearContext, p.side)"
-                @mouseenter="previewHover(isQuarterDisabled(q, p.yearContext) ? null : quarterStartDate(p.year, q))"
-              >
-                <slot v-bind="cellQuarter(q, p.yearContext)">
-                  第{{ q }}季度
-                </slot>
-              </div>
-            </div>
-          </template>
+          <!-- 年 / 月 / 季度视图：翻页单位为十年或一年，按钮走 prev-year / next-year 插槽；单元格状态由 panels 预先算好 -->
+          <DatePickerUnitGrid
+            v-if="isUnitView"
+            :kind="unitKind"
+            :cells="p.units"
+            :ui="ui"
+            @select="(cell) => selectUnit(p, cell)"
+            @hover="range.setHover"
+          >
+            <!-- 未传 default 插槽时由网格显示「2026」「3月」「第1季度」这类默认文本 -->
+            <template v-if="$slots.default" #default="cell">
+              <slot v-bind="cell" />
+            </template>
+          </DatePickerUnitGrid>
 
           <!-- 日期视图：外侧双箭头跨年、内侧单箭头跨月 -->
-          <template v-else>
-            <div :class="ui.header()">
-              <div :class="[ui.navGroup(), p.hidePrev ? ui.navBtnHidden() : '']">
-                <span
-                  :class="ui.navBtn({ class: [p.disablePrevYear ? ui.navBtnDisabled() : ''] })"
-                  @click.stop="prevYear(p.side)"
-                >
-                  <slot name="prev-year">
-                    <Icon
-                      name="lucide:chevrons-left"
-                      :class="ui.icon()"
-                    />
-                  </slot>
-                </span>
-                <span
-                  :class="ui.navBtn({ class: [p.disablePrev ? ui.navBtnDisabled() : ''] })"
-                  @click.stop="prevPage(p.side)"
-                >
-                  <slot name="prev-month">
-                    <Icon
-                      name="lucide:chevron-left"
-                      :class="ui.icon()"
-                    />
-                  </slot>
-                </span>
-              </div>
-              <div :class="ui.dateTimeHeader()">
-                <span
-                  :class="ui.title()"
-                  @click.stop="switchView('year')"
-                >{{ p.year }}年</span>
-                <span
-                  :class="ui.title()"
-                  @click.stop="switchView('month')"
-                >{{ p.month + 1 }}月</span>
-              </div>
-              <div :class="[ui.navGroup(), p.hideNext ? ui.navBtnHidden() : '']">
-                <span
-                  :class="ui.navBtn({ class: [p.disableNext ? ui.navBtnDisabled() : ''] })"
-                  @click.stop="nextPage(p.side)"
-                >
-                  <slot name="next-month">
-                    <Icon
-                      name="lucide:chevron-right"
-                      :class="ui.icon()"
-                    />
-                  </slot>
-                </span>
-                <span
-                  :class="ui.navBtn({ class: [p.disableNextYear ? ui.navBtnDisabled() : ''] })"
-                  @click.stop="nextYear(p.side)"
-                >
-                  <slot name="next-year">
-                    <Icon
-                      name="lucide:chevrons-right"
-                      :class="ui.icon()"
-                    />
-                  </slot>
-                </span>
-              </div>
-            </div>
-
-            <div :class="ui.weekdays()">
-              <!-- 周数列表头：与下方每行开头的周数对齐 -->
-              <span
-                v-if="showWeek"
-                :class="ui.weekNumberHeader()"
-              >周</span>
-              <span
-                v-for="w in weekdays"
-                :key="w"
-                :class="ui.weekday()"
-              >{{ w }}</span>
-            </div>
-
-            <div
-              :class="ui.days()"
-              @mouseleave="previewHover(null)"
-            >
-              <template
-                v-for="(row, ri) in p.rows"
-                :key="ri"
-              >
-                <!-- 周数：按 ISO 8601 计算，以该行的周一为准 -->
-                <span
-                  v-if="showWeek"
-                  :class="ui.weekNumber()"
-                >{{ isoWeek(row) }}</span>
-                <div
-                  v-for="(day, di) in row"
-                  :key="di"
-                  :class="
-                    ui.dayCell({
-                      class: [
-                        // 带子的取舍见 showRangeBand：起止同一天与双面板补位格都不画
-                        showRangeBand(day) ? ui.dayInRange() : '',
-                        showRangeBand(day) && day.isRangeStart ? ui.dayRangeStart() : '',
-                        showRangeBand(day) && day.isRangeEnd ? ui.dayRangeEnd() : '',
-                        // 禁用灰带：范围带子（选中高亮）优先，其余禁用格连成灰带
-                        day.isDisabledBand && !showRangeBand(day) ? ui.dayDisabledBand() : '',
-                      ],
-                    })
-                  "
-                >
-                  <div
-                    :class="
-                      ui.day({
-                        class: [
-                          // 补位格不上选中态：真实日期在另一侧面板渲染
-                          // 禁用样式排在选中态之前：规则禁用的格若恰为已选值，选中底色胜出以便辨认（整面板禁用时不显示选中态）
-                          day.isDisabled ? ui.dayDisabled() : '',
-                          !isRangePlaceholder(day) && isDateActive(day.date) ? ui.dayActive() : '',
-                          // 补位格淡色文字：未禁用、且没有以选中态显示时才上（双面板补位格不显示选中态）
-                          !day.isCurrentMonth
-                            && !day.isDisabled
-                            && !(!isRangePlaceholder(day) && isDateActive(day.date))
-                            ? ui.dayOutside()
-                            : '',
-                          day.isToday && !isDateActive(day.date) ? ui.dayToday() : '',
-                          showRangeBand(day) && !isDateActive(day.date) ? ui.dayInRange() : '',
-                        ],
-                      })
-                    "
-                    @click.stop="selectDay(day, p.side)"
-                    @mouseenter="previewHover(day.isDisabled ? null : day.date)"
-                  >
-                    <slot v-bind="cellDay(day)">
-                      {{ day.day }}
-                    </slot>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </template>
+          <DatePickerDateGrid
+            v-else
+            :rows="p.rows"
+            :show-week="showWeek"
+            :ui="ui"
+            @select="(day) => selectDay(day, p.side)"
+            @hover="range.setHover"
+          >
+            <template #default="cell">
+              <slot v-bind="cell">{{ cell.text }}</slot>
+            </template>
+          </DatePickerDateGrid>
         </div>
       </div>
     </div>

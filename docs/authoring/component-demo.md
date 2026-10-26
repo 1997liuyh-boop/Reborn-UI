@@ -36,7 +36,7 @@ demo 里的**文案**与组件文档遵循同一套写作规范，见 §7 与 `d
 ```
 <div class="flex w-full flex-col">
   <Playground v-model="state" :controls="controls" :code="xxxCode"
-    component-name="RebornX" title="交互演练场" description="调节左侧参数，实时查看…">
+    component-name="RebornX" title="交互演练场" description="调节上方参数，实时查看…">
     <template #tag>
       <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
         <template #leading><Icon name="lucide:rotate-ccw" size="12" /></template>
@@ -91,7 +91,7 @@ demo 里的所有说明文字与组件文档遵循**同一套**写作规范，�
 | 落点 | 要求 |
 | --- | --- |
 | `Playground` 的 `title` | 固定「交互演练场」，不要自创。 |
-| `Playground` 的 `description` | 一句话说明可调什么、看什么，动词开头：「调节左侧参数，实时查看按钮在不同语义色与变体下的表现」。 |
+| `Playground` 的 `description` | 一句话说明可调什么、看什么，动词开头：「调节上方参数，实时查看按钮在不同语义色与变体下的表现」。 |
 | `DemoSection` 的 `title` | **能力名**，不是 prop 名：写「加载与禁用」不写「loading 属性」；与文档 `## 用法` 的小节名对齐。 |
 | `DemoSection` 的 `description` | 一句话引子：这一节演示什么 + 由哪个 prop 控制 + 关键联动。prop 名与取值用 `<code>` 包裹。 |
 | `DemoNote` | 机制性旁注或事件回显说明，对应文档里的 `::tip`：给理由、给后果，不复述界面上已有的信息。 |

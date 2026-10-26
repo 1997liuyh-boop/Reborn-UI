@@ -13,6 +13,7 @@
     "仅 web 端可用，基于 WebGL（依赖 ogl）。",
     "shaderCode 为必填，需传入 ShaderToy 风格的 GLSL 片段着色器源码（含 mainImage 入口）。",
     "mouseMode 默认为 'click'，另有 mouseSensitivity、damping 调节鼠标交互。",
-    "运行时切换着色器需配合 :key 重建组件（见示例）。"
+    "shaderCode 与 mouseMode 挂载后修改即生效，切换着色器无需 :key 重建组件（重建会多占一个 WebGL 上下文）。",
+    "不支持 WebGL 2 时不会抛错，而是触发 error 事件并渲染 fallback 插槽。"
   ]
 }

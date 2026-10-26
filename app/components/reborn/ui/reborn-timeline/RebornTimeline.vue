@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { VNode } from 'vue'
-import type { TimelineDirection, TimelineItemData, TimelineLabelPosition, TimelineUI } from './reborn-timeline.config'
-import { Comment, computed, Fragment, isVNode, provide, reactive, ref, useSlots } from 'vue'
+import type { TimelineDirection, TimelineItemData, TimelineUI } from './reborn-timeline.config'
+import { Comment, computed, Fragment, h, isVNode, onBeforeUpdate, provide, shallowRef, useSlots } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme, { TIMELINE_INJECTION_KEY } from './reborn-timeline.config'
@@ -18,6 +18,7 @@ export interface RebornTimelineProps {
     ui?: TimelineUI
 }
 
+defineOptions({ inheritAttrs: false })
 const props = withDefaults(defineProps<RebornTimelineProps>(), {
     direction: 'vertical',
     reverse: false,
@@ -25,39 +26,6 @@ const props = withDefaults(defineProps<RebornTimelineProps>(), {
 })
 
 const slots = useSlots()
-
-// --- 节点登记：只收集各节点的内容侧，用来决定竖向网格的列轨道 ---
-/**
- * 根因：竖向布局要让所有节点的轴线落在同一列，列宽取决于「内容是否出现在左侧 / 右侧」，
- * 而默认插槽里的节点由使用者书写，父组件拿不到它们的 label-position。
- * 方案：节点在 setup 阶段登记，并持续上报自己的内容侧；这里只关心集合，不关心顺序，
- * 所以节点的增删、重排都不会让结果失真。
- */
-const itemSides = ref<Record<number, TimelineLabelPosition>>({})
-let idSeed = 0
-
-function registerItem() {
-    return ++idSeed
-}
-
-function unregisterItem(id: number) {
-    const next = { ...itemSides.value }
-    delete next[id]
-    itemSides.value = next
-}
-
-function reportSide(id: number, side: TimelineLabelPosition) {
-    if (itemSides.value[id] === side) { return }
-    itemSides.value = { ...itemSides.value, [id]: side }
-}
-
-const columns = computed(() => {
-    const sides = Object.values(itemSides.value)
-    const hasLeft = sides.includes('left')
-    const hasRight = sides.includes('right')
-    if (hasLeft && hasRight) { return 'both' }
-    return hasLeft ? 'start' : 'end'
-})
 
 // --- 倒序 ---
 /** items 模式直接翻转数据，DOM 顺序即视觉顺序 */
@@ -77,58 +45,65 @@ function flattenNodes(nodes: unknown[]): VNode[] {
     })
 }
 
-/**
- * 插槽模式的倒序：直接翻转插槽渲染出的节点，而不是用 CSS order 或 flex-reverse。
- * 这样 DOM 顺序与视觉顺序始终一致，键盘与读屏顺序都不需要额外换算。
- */
-function SlotItems() {
-    const nodes = flattenNodes(slots.default?.() ?? [])
-    return props.reverse ? nodes.reverse() : nodes
+const b = tv(theme)
+
+/** items 模式只挑出节点组件声明过的字段，数据里的 id、userId 等业务字段不会透传成每个 li 上的 DOM 属性 */
+function toItemProps(item: TimelineItemData, index: number) {
+    return {
+        key: item.key ?? index,
+        class: item.class,
+        timestamp: item.timestamp,
+        color: item.color,
+        content: item.content,
+        dangerouslyUseHTMLString: item.dangerouslyUseHTMLString,
+        icon: item.icon,
+        loading: item.loading,
+        labelPosition: item.labelPosition,
+        placement: item.placement,
+        ui: item.ui
+    }
 }
 
-// --- 样式计算 ---
-const b = tv(theme)
-const ui = computed(() => {
+/** 一次读取节点与轨道，服务端不依赖子级 setup 的登记副作用。 */
+function getView() {
+    let nodes = props.items?.length
+        ? orderedItems.value.map((item, index) => h(RebornTimelineItem, toItemProps(item, index)))
+        : flattenNodes(slots.default?.() ?? [])
+    // 插槽模式的倒序：直接翻转插槽渲染出的节点，而不是用 CSS order 或 flex-reverse，
+    // DOM 顺序与视觉顺序始终一致，键盘与读屏顺序都不需要额外换算
+    if (!props.items?.length && props.reverse) nodes = [...nodes].reverse()
+    const sides = nodes.map(node => node.props?.labelPosition ?? node.props?.['label-position'] ?? 'right')
+    const hasLeft = sides.includes('left')
+    const columns = hasLeft ? (sides.includes('right') ? 'both' : 'start') : 'end'
     const styles = b({
         direction: props.direction,
-        columns: props.direction === 'vertical' ? columns.value : undefined
+        columns: props.direction === 'vertical' ? columns : undefined
     })
-    return {
-        root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.ui?.root) })
-    }
+    return { nodes, rootClass: styles.root({ class: cn(props.ui?.root) }) }
+}
+
+/**
+ * 视图放进 computed，根节点保持单个 ol：组件 $el 指向真实元素，外层 Transition 也能作用于它。
+ * 父级替换插槽函数时会强制本组件更新，更新前让缓存失效；插槽内容读到的响应式状态由 computed 自己追踪
+ */
+const slotVersion = shallowRef(0)
+onBeforeUpdate(() => { slotVersion.value++ })
+const view = computed(() => {
+    void slotVersion.value
+    return getView()
 })
 
-const context = reactive({
+/** 节点作为显式输入，条件插槽与父级循环更新都会触发当前视图更新。 */
+function TimelineNodes(input: { nodes: VNode[] }) { return input.nodes }
+
+provide(TIMELINE_INJECTION_KEY, {
     direction: computed(() => props.direction),
-    ui: computed(() => props.ui || {}),
-    registerItem,
-    unregisterItem,
-    reportSide
+    ui: computed(() => props.ui || {})
 })
-
-provide(TIMELINE_INJECTION_KEY, context)
 </script>
 
 <template>
-  <ol :class="ui.root()">
-    <!-- items 模式：节点由组件渲染 -->
-    <template v-if="props.items?.length">
-      <RebornTimelineItem
-        v-for="(item, index) in orderedItems"
-        :key="item.key ?? index"
-        :class="item.class"
-        :timestamp="item.timestamp"
-        :color="item.color"
-        :content="item.content"
-        :icon="item.icon"
-        :loading="item.loading"
-        :label-position="item.labelPosition"
-        :placement="item.placement"
-        :ui="item.ui"
-      />
-    </template>
-
-    <!-- 默认插槽模式：使用者自行书写 RebornTimelineItem -->
-    <SlotItems v-else />
+  <ol v-bind="$attrs" :class="view.rootClass">
+    <TimelineNodes :nodes="view.nodes" />
   </ol>
 </template>

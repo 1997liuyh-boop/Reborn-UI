@@ -1,8 +1,12 @@
 <script setup lang="ts">
-defineProps({
-  rotate: Number,
-  scale: Number,
-});
+interface Props {
+  /** 绕 X 轴的旋转角度，单位度 */
+  rotate?: number;
+  /** 缩放倍数 */
+  scale?: number;
+}
+
+defineProps<Props>();
 </script>
 
 <template>

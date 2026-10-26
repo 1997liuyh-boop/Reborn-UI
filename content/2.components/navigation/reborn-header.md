@@ -3,21 +3,55 @@ title: 标题
 description: 用于站点顶部导航的响应式头部组件，移动端可切换为弹窗菜单。
 category: 布局
 platform: web
+tags: [vue, reborn-header]
 badge: New
 ---
 
-# RebornHeader 头部
-
-头部组件用于在多个页面之间进行导航，同时支持移动端响应式切换。
-
-## 基础用法
-
-通过 `title` 和 `to` 自动计算分页。
-
 ::ComponentViewer{demoFile="RebornHeaderDemo.vue" config="RebornHeaderConfig" componentId="reborn-header" :componentFiles='["RebornHeader.vue", "reborn-header.config.ts"]'}
+::
+
+## 简介
+
+Header 是仅 Web 的响应式站点头部，桌面导航与移动菜单由同一容器组织。
+
+`title` / `to` 定义品牌入口，`mode` 决定移动菜单的弹层类型，`toggleSide` 控制开关位置。
+
+`sticky` 控制吸顶，`autoClose` 决定路由切换后是否关闭，`beforeToggle` 可拦截展开；插槽提供导航内容，`ui` 细分样式入口。
+
+### 何时使用
+
+- 站点需要统一顶部标识——用 `title` / `to` 设置标题与链接。
+- 移动端需要切换导航容器——用 `mode` 选择弹层形式。
+- 需要在展开前校验条件——用 `beforeToggle` 提供拦截函数。
+
+### 何时不使用
+
+- 只需显示当前页面的层级路径——改用 `reborn-breadcrumb`。
+- 移动端需要底部主导航——改用 `reborn-tabbar`。
+
+## 用法
+
+### 插槽结构
+
+`title` / `to` 提供默认品牌链接，也可用插槽组织导航内容。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `title` | 站点标识链接 |
+| `mode` | 移动端菜单形式 |
+
+```vue
+<template>
+  <RebornHeader title="文档站" to="/" mode="popup">
+    <nav class="flex gap-4">
+      <a href="/">首页</a>
+      <a href="/components">组件</a>
+    </nav>
+  </RebornHeader>
+</template>
+```
 
 ## API
-
 ### Props
 
 | 属性 | 类型 | 默认值 | 描述 |
@@ -33,11 +67,17 @@ badge: New
 | `class` | `any` | - | 根元素的自定义类名 |
 | `ui` | `Partial<RebornHeaderUI>` | `{}` | UI 插槽样式覆盖 |
 
-### v-model
+### 模型绑定
 
 | 属性 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
-| `v-model:open` | `boolean` | `false` | 控制移动端菜单的展开/关闭状态 |
+| `open` | `boolean` | `undefined` | 控制移动端菜单显隐；缺省关闭，显式空值按关闭处理 |
+
+### Emits
+
+| 事件名 | 回调参数 | 描述 |
+| --- | --- | --- |
+| `update:open` | `(value: boolean)` | 移动菜单显隐变化时通知外部模型。 |
 
 ### Slots
 
@@ -64,7 +104,7 @@ badge: New
 | `root`        | 根节点（标签由 `as` 决定）。默认 `relative top-0 left-0 right-0 z-40 w-full bg-bg-base/80 backdrop-blur-md transition-all`，`sticky` 为真时叠加吸顶变体；底色、毛玻璃、层级改这里；`class` prop 也并到该节点。 |
 | `container`   | 内容容器。默认 `mx-auto h-full flex items-center justify-between gap-4 max-w-(--ui-container) min-h-(--ui-header-height)`，限宽与左右内边距改这里（高度请用 `--ui-header-height`）。 |
 | `left`        | 左侧区域。**仅存在 `left` / `title` 插槽、`title` prop 或切换按钮在左侧时渲染**，默认 `flex items-center gap-[8px] laptop:gap-[24px]`。                        |
-| `title`       | 标题链接 `<NuxtLink>`，默认 `text-xl font-bold flex items-center gap-2 hover:opacity-80 shrink-0`。**仅传了 `to` 且有 `title` / `title` 插槽时渲染**；填充 `left` 插槽会替换掉整块兜底内容，`ui.title` 随之失效。 |
+| `title` | 标题链接 `<NuxtLink>`，默认 `text-xl font-bold flex items-center gap-2 hover:opacity-80 shrink-0`。**仅传了 `to` 且有 `title` / `title` 插槽时渲染**；填充 `left` 插槽会替换掉整块兜底内容，`ui.title` 随之失效。 |
 | `center`      | 中间区域。**仅填充了 default 插槽时渲染**，默认 `hidden lg:flex items-center justify-center gap-8 flex-1`——桌面端才显示，导航项间距改这里。                    |
 | `right`       | 右侧区域。**仅填充了 `right` 插槽或切换按钮在右侧时渲染**，默认 `flex items-center justify-end gap-3 lg:flex-1`。                                             |
 | `toggle`      | 移动端汉堡按钮。默认 `desktop:hidden text-text-secondary hover:bg-bg-sub rounded-lg transition-colors`。**仅在未填充 `toggle` 插槽时渲染**，填充该插槽会替换掉按钮，`ui.toggle` 随之失效。 |
@@ -88,3 +128,8 @@ badge: New
   />
 </template>
 ```
+
+## 注意事项
+
+- **显式模型由父级决定菜单显隐。** 未绑定时保存本地开关；绑定 `false`、`undefined`、`null` 后按关闭展示，交互仍发送 `update:open`。
+- **过期打开请求不会覆盖父级状态。** `beforeToggle` 等待期间模型发生变化时，本次异步打开结果失效，后续点击可以重新请求。

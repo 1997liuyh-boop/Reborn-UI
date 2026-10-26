@@ -3,7 +3,7 @@ import type { ClassValue } from 'tailwind-variants';
 import type { Component } from 'vue';
 import type { AvatarFit, AvatarShape, AvatarSize, AvatarUI } from './reborn-avatar.config';
 import { Icon } from '#components';
-import { computed, inject, ref, watch } from 'vue';
+import { computed, inject, onMounted, shallowRef, useTemplateRef, watch } from 'vue';
 import { cn } from '~/lib/utils';
 import { avatarTheme } from './reborn-avatar.config';
 import { avatarGroupKey } from './reborn-avatar.context';
@@ -41,7 +41,8 @@ defineSlots<{
 }>();
 
 const group = inject(avatarGroupKey, undefined);
-const failed = ref(false);
+const failed = shallowRef(false);
+const img = useTemplateRef<HTMLImageElement>('img');
 const size = computed(() => props.size ?? group?.size.value ?? 'md');
 const shape = computed(() => props.shape ?? group?.shape.value ?? 'circle');
 const imageKey = computed(() => JSON.stringify([props.src, props.srcSet]));
@@ -66,6 +67,22 @@ function handleError(event: Event) {
   failed.value = true;
   emit('error', event);
 }
+
+/**
+ * SSR 首屏的图片在 HTML 解析时就开始请求，地址无效时 error 往往在水合挂上 @error 之前就已触发，
+ * 水合不会补发，回退内容就永远不出现。挂载后补查一次：已完成却没有固有尺寸，再用 decode() 确认确实解码失败
+ * （没有固有尺寸的 SVG 也是 naturalWidth 0，但能正常解码），失败就按 error 处理，载荷是新建的 Event。
+ */
+onMounted(() => {
+  const el = img.value;
+  if (!el?.complete || el.naturalWidth > 0) return;
+  const fail = () => {
+    // 期间换了图片或已经走过 @error，就不再重复处理
+    if (img.value === el && !failed.value) handleError(new Event('error'));
+  };
+  // 没有 decode() 的环境无法区分「坏图」与「无固有尺寸的 SVG」，宁可不补发，也不误把正常图片判成失败
+  if (typeof el.decode === 'function') el.decode().catch(fail);
+});
 </script>
 
 <template>
@@ -74,7 +91,7 @@ function handleError(event: Event) {
     :role="!showImage && alt ? 'img' : undefined" :aria-label="!showImage && alt ? alt : undefined"
   >
     <img
-      v-if="showImage" :key="imageKey" :src="src || undefined" :srcset="srcSet" :alt="alt ?? ''"
+      v-if="showImage" ref="img" :key="imageKey" :src="src || undefined" :srcset="srcSet" :alt="alt ?? ''"
       :class="styles.image({ class: props.ui.image })" @error="handleError"
     >
     <Icon v-else-if="iconName" :name="iconName" :class="styles.icon({ class: props.ui.icon })" aria-hidden="true" />

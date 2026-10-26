@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { ClassValue } from 'tailwind-variants'
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onBeforeUpdate, readonly, shallowRef, useTemplateRef, watch } from 'vue'
 import { motionPresets, runMotion, stopMotion } from '@/lib/motion'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
+import { useLayoutAnimationRegistration } from '~/composables/useLayoutAnimation'
 import theme from './reborn-collapse.config'
 
 export interface RebornCollapseProps {
@@ -27,14 +28,39 @@ const props = withDefaults(defineProps<RebornCollapseProps>(), {
 })
 
 const emit = defineEmits<{
+    (e: 'update:modelValue', value: boolean): void
     (e: 'toggle', value: boolean): void
 }>()
-const collapse = defineModel("modelValue", {
-    type: Boolean,
-    default: false
+const collapseModel = defineModel<boolean>({ default: undefined })
+/**
+ * 受控判断要区分「未传」与「显式传了 undefined / null」：前者由组件自己记住开合，后者按收起渲染。
+ * useModel 只看值、分不出这两种情况，所以读原始 vnode.props 的键（模板写法保留连字符键，两种都认）。
+ * 只在更新前同步一个布尔值，键集合没变时 controlled 不变，collapse 也不跟着重算
+ */
+const instance = getCurrentInstance()!
+function hasModelProp() {
+    const raw = instance.vnode.props
+    return !!raw && (Object.hasOwn(raw, 'modelValue') || Object.hasOwn(raw, 'model-value'))
+}
+const controlled = shallowRef(hasModelProp())
+onBeforeUpdate(() => { controlled.value = hasModelProp() })
+const localCollapse = shallowRef(false)
+const collapse = computed({
+    get: () => controlled.value ? !!instance.props.modelValue : localCollapse.value,
+    set: (value: boolean) => {
+        // 受控分支绕过了 useModel 的同值短路，自己比较：已是目标状态时不再派发 update:modelValue
+        if (controlled.value) {
+            if (!!instance.props.modelValue !== value) emit('update:modelValue', value)
+        }
+        else {
+            localCollapse.value = value
+            collapseModel.value = value
+        }
+    }
 })
 
-const isAnimating = ref(false)
+const isAnimating = shallowRef(false)
+const unregisterLayoutAnimation = useLayoutAnimationRegistration(readonly(isAnimating))
 const b = tv(theme)
 const ui = computed(() => b({
     open: collapse.value,
@@ -44,8 +70,8 @@ const ui = computed(() => b({
 }))
 const overrides = computed(() => props.ui || {})
 
-const triggerRef = ref<HTMLElement | null>(null)
-const contentRef = ref<HTMLElement | null>(null)
+const triggerRef = useTemplateRef<HTMLElement>('triggerRef')
+const contentRef = useTemplateRef<HTMLElement>('contentRef')
 let generation = 0
 
 /** 从动画中的可见高度续接；收起完成后才交回 0fr，避免提前裁掉内容。 */
@@ -88,19 +114,23 @@ function hide() { collapse.value = false }
 
 function toggle() {
     if (props.disabled) return
-    if (collapse.value) { hide() } else { show() }
-    emit('toggle', collapse.value)
+    // 受控绑定下赋值后 collapse.value 要等父组件回流才更新，载荷必须用本地算出的新值
+    const next = !collapse.value
+    collapse.value = next
+    emit('toggle', next)
 }
 
 function resize() { }
 
 onBeforeUnmount(() => {
+    unregisterLayoutAnimation?.()
     generation++
     stopMotion(triggerRef.value)
     stopMotion(contentRef.value)
 })
 
-defineExpose({ show, hide, toggle, resize, isAnimating })
+// isAnimating 只读暴露：动画收尾与 animating 变体都依赖它，不允许外部改写
+defineExpose({ show, hide, toggle, resize, isAnimating: readonly(isAnimating) })
 </script>
 
 <template>

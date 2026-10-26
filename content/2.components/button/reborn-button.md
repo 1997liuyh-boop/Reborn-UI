@@ -451,7 +451,7 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 | --- | --- | --- |
 | `default` | `{ ui }` | 按钮主体内容，优先于 `label` prop 渲染。 |
 | `leading` | `{ ui }` | 前置内容，常放图标；`loading` 时被加载动画替代。 |
-| `trailing` | `{ ui }` | 后置内容，常放图标；`loading` 时不渲染。当前实现下 `ui` 为 `trailingIcon` 类名字符串。 |
+| `trailing` | `{ ui }` | 后置内容，常放图标；`loading` 时不渲染。`ui` 与 `leading` 相同是样式函数集合，图标类名取 `ui.trailingIcon()`。 |
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}

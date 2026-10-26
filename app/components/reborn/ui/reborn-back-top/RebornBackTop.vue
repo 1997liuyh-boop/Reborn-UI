@@ -6,7 +6,7 @@ import type {
     backTopShapes,
     backTopSizes} from "./reborn-back-top.config";
 import { useResizeObserver, useWindowScroll, useWindowSize } from '@vueuse/core'
-import { computed, onMounted, ref, shallowRef } from "vue";
+import { computed, onMounted, shallowRef } from "vue";
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme, {
@@ -30,10 +30,10 @@ const props = withDefaults(defineProps<BackTopProps>(), {
     size: 'md'
 });
 
-const emit = defineEmits([
+const emit = defineEmits<{
     /** 点击按钮时触发，无参数；组件已先发起滚动（回到顶部或去底部），无需在回调中重复处理 */
-    "click",
-]);
+    click: []
+}>();
 
 export interface BackTopProps {
     // Web: 也可以传入自定义的 scrollTop，如果不传则自动监听 window
@@ -107,7 +107,7 @@ const viewBottom = computed(() => {
 const { height: windowHeight } = useWindowSize()
 
 // 文档高度不是响应式的，需要观察后手动同步
-const docHeight = ref(0)
+const docHeight = shallowRef(0)
 // 观察目标延后到 onMounted 赋值：SSR 阶段没有 document，直接引用会报错
 const docEl = shallowRef<HTMLElement | null>(null)
 

@@ -1,6 +1,2 @@
-// @ts-ignore
-import RebornLoading from './reborn-loading.vue'
-
-export default RebornLoading
-export { RebornLoading }
-export type { LoadingType } from './reborn-loading.vue'
+export { default as RebornLoading } from './RebornLoading.vue'
+export type { RebornLoadingProps } from './RebornLoading.vue'

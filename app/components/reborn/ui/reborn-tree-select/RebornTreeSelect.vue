@@ -6,7 +6,7 @@ import type { TreeCheckedKeys, TreeDataNode, TreeEntity, TreeKey } from "../rebo
 import type { RebornTreeProps } from "../reborn-tree/RebornTree.vue";
 import type { TreeConductResult } from "../reborn-tree/useTree";
 import type { treeSelectColors, treeSelectSizes, TreeSelectUI, TreeSelectValue, treeSelectVariants } from "./reborn-tree-select.config";
-import { computed, nextTick, ref, useId, watch } from "vue";
+import { computed, nextTick, shallowRef, useId, useTemplateRef, watch } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -107,14 +107,16 @@ const expandedKeys = defineModel<TreeKey[]>("expandedKeys");
  * 子级为空的节点再次展开时又会显示箭头并重复请求，所以由选择器自己保存；不传时同样在内部保留。
  */
 const loadedKeys = defineModel<TreeKey[]>("loadedKeys");
+/** 多选时下发给内部树的空选中集合，实例内固定引用，不随渲染新建。 */
+const EMPTY_KEYS: TreeKey[] = [];
 const { disabled: isDisabled, size: fieldSize, isError, validate } = useFormInject(props);
-const isOpen = ref(false);
+const isOpen = shallowRef(false);
 const treeId = useId();
-const searchValue = ref("");
-const searchInput = ref<HTMLInputElement>();
+const searchValue = shallowRef("");
+const searchInput = useTemplateRef<HTMLInputElement>("searchInput");
 const isSearching = computed(() => props.allowSearch && isOpen.value);
 const keyword = computed(() => props.allowSearch ? searchValue.value.trim().toLowerCase() : "");
-const searchExpandedKeys = ref<TreeKey[]>([]);
+const searchExpandedKeys = shallowRef<TreeKey[]>([]);
 /** 字段名补齐默认值，搜索、节点索引、父子联动与内部树共用；唯一标识未配置 fieldNames.key 时读取 key。 */
 const fields = computed(() => ({
   title: props.fieldNames?.title ?? "title",
@@ -149,7 +151,7 @@ const displayedExpandedKeys = computed({
   },
 });
 watch(filteredTree, (tree) => { searchExpandedKeys.value = tree.ancestors; });
-const trigger = ref<InstanceType<typeof RebornSelectTrigger>>();
+const trigger = useTemplateRef<InstanceType<typeof RebornSelectTrigger>>("trigger");
 const b = tv(theme);
 const splitUi = computed(() => splitTriggerUi(props.triggerUi));
 const fieldUi = computed(() => splitUi.value.field as SelectFieldUI);
@@ -183,6 +185,8 @@ const modelKeys = computed<TreeKey[]>(() => {
 const conducted = computed<TreeConductResult | null>(() =>
   isConduct.value ? conductCheck(modelKeys.value, entities.value, isConductBlocked) : null);
 const selectedKeys = computed<TreeKey[]>(() => conducted.value ? [...conducted.value.checked] : modelKeys.value);
+/** 多选时内部树不使用选中态；固定引用避免每次渲染都下发新数组，引发树的选中集合重算与整树重渲染。 */
+const treeSelectedKeys = computed<TreeKey[]>(() => props.multiple ? EMPTY_KEYS : selectedKeys.value);
 /** 内部树固定 checkStrictly，联动结果在这里算好后连同半选一起下发。 */
 const treeCheckedKeys = computed<TreeCheckedKeys>(() => {
   if (!props.multiple) return [];
@@ -208,11 +212,15 @@ const ui = computed(() => b({
   clearable: showClear.value, disabled: isDisabled.value, error: isError.value,
 }));
 
-/** 统一用户操作出口，程序化回填不重复触发表单校验。 */
+/**
+ * 统一用户操作出口，程序化回填不重复触发表单校验。
+ * 受控绑定下赋值要等父组件回流才在本地可见，紧接着读 model.value 仍是旧值，所以事件载荷用本地算好的新值。
+ */
 function updateValue(keys: TreeKey[]) {
   if (isDisabled.value) return;
-  model.value = props.multiple ? keys : (keys[0] ?? null);
-  emit("change", model.value);
+  const next = props.multiple ? keys : (keys[0] ?? null);
+  model.value = next;
+  emit("change", next);
   validate("change");
 }
 function selectNode(keys: TreeKey[]) {
@@ -343,7 +351,7 @@ watch(isSearching, async (searching) => {
       <div :class="ui.dropdown({ class: cn('max-h-none overflow-visible', props.ui?.dropdown) })" @keydown="onPanelKeydown">
         <RebornTree
           v-if="filteredTree.data.length" :id="treeId" :key="keyword" v-model:expanded-keys="displayedExpandedKeys"
-          :tree-data="filteredTree.data" :field-names="fields" :selected-keys="multiple ? [] : selectedKeys"
+          :tree-data="filteredTree.data" :field-names="fields" :selected-keys="treeSelectedKeys"
           :checked-keys="treeCheckedKeys" :checkable="multiple" check-strictly
           :selectable="!multiple" block-node :disabled="isDisabled" :color="color"
           :default-expand-all="defaultExpandAll" :default-expanded-keys="defaultExpandedKeys"

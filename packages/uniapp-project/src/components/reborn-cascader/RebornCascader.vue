@@ -3,11 +3,11 @@
  * RebornCascader 级联选择器
  * 用于多层级的数据选择，如省市区、分类层级等。
  */
-import { ref, computed, nextTick, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-cascader.config'
-import type { CascaderUI, CascaderColor, CascaderSize, CascaderOption, CascaderProps } from './reborn-cascader.config'
+import type { CascaderUI, CascaderColor, CascaderSize, CascaderOption, CascaderProps, CascaderValue } from './reborn-cascader.config'
 import RebornSelectTrigger from '../reborn-select-trigger/RebornSelectTrigger.vue'
 import RebornText from '../reborn-text/RebornText.vue'
 import RebornPopup from '../reborn-popup/RebornPopup.vue'
@@ -22,7 +22,6 @@ defineOptions({
 
 
 const props = withDefaults(defineProps<CascaderProps>(), {
-    modelValue: () => [],
     options: () => [],
     title: '请选择',
     placeholder: '请选择',
@@ -44,9 +43,9 @@ const props = withDefaults(defineProps<CascaderProps>(), {
 })
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: (string | number)[] | (string | number)[][]): void
     (e: 'change', value: (string | number)[] | (string | number)[][]): void
 }>()
+const model = defineModel<CascaderValue>({ default: undefined })
 
 // 字段别名：未在 fieldNames 中配置的字段沿用默认名
 const labelField = computed(() => props.fieldNames?.label ?? 'label')
@@ -68,10 +67,10 @@ const ui = computed(() => {
         tabs: (opts?: { class?: any }) => s.tabs({ class: cn(opts?.class, u.tabs) }),
         tab: (opts?: { class?: any }) => s.tab({ class: cn(opts?.class, u.tab) }),
         list: (opts?: { class?: any }) => s.list({ class: cn(opts?.class, u.list) }),
-        item: (opts?: { class?: any }) => s.item({ class: cn(opts?.class, u.item) }),
-        itemActive: (opts?: { class?: any }) => s.itemActive({ class: cn(opts?.class, u.itemActive) }),
-        itemText: (opts?: { class?: any }) => s.itemText({ class: cn(opts?.class, u.itemText) }),
-        itemTextActive: (opts?: { class?: any }) => s.itemTextActive({ class: cn(opts?.class, u.itemTextActive) }),
+        item: s.item({ class: cn(u.item) }),
+        itemActive: s.itemActive({ class: cn(u.itemActive) }),
+        itemText: s.itemText({ class: cn(u.itemText) }),
+        itemTextActive: s.itemTextActive({ class: cn(u.itemTextActive) }),
         footer: (opts?: { class?: any }) => s.footer({ class: cn(opts?.class, u.footer) }),
         footerText: (opts?: { class?: any }) => s.footerText({ class: cn(opts?.class, u.footerText) }),
         loading: (opts?: { class?: any }) => s.loading({ class: cn(opts?.class, u.loading) }),
@@ -80,35 +79,46 @@ const ui = computed(() => {
         listInner: (opts?: { class?: any }) => s.listInner({ class: cn(opts?.class, u.listInner) }),
         column: (opts?: { class?: any }) => s.column({ class: cn(opts?.class, u.column) }),
         columnScroll: (opts?: { class?: any }) => s.columnScroll({ class: cn(opts?.class, u.columnScroll) }),
-        itemInner: (opts?: { class?: any }) => s.itemInner({ class: cn(opts?.class, u.itemInner) }),
-        checkbox: (opts?: { class?: any }) => s.checkbox({ class: cn(opts?.class, u.checkbox) }),
-        nodeLoading: (opts?: { class?: any }) => s.nodeLoading({ class: cn(opts?.class, u.nodeLoading) }),
-        nodeArrow: (opts?: { class?: any }) => s.nodeArrow({ class: cn(opts?.class, u.nodeArrow) }),
+        itemInner: s.itemInner({ class: cn(u.itemInner) }),
+        checkbox: s.checkbox({ class: cn(u.checkbox) }),
+        nodeLoading: s.nodeLoading({ class: cn(u.nodeLoading) }),
+        nodeArrow: s.nodeArrow({ class: cn(u.nodeArrow) }),
         footerActions: (opts?: { class?: any }) => s.footerActions({ class: cn(opts?.class, u.footerActions) }),
     }
 })
 
 // 状态
-const visible = ref(false)
-const isRootLoading = ref(false)
-const current = ref(0) // 当前操作的层级索引
-const activePath = ref<(string | number)[]>([]) // 当前显示的路径
+const visible = shallowRef(false)
+const isRootLoading = shallowRef(false)
+const current = shallowRef(0) // 当前操作的层级索引
+const activePath = shallowRef<(string | number)[]>([]) // 当前显示的路径
 const selectedPaths = ref<(string | number)[][]>([]) // 多选选中的路径集合
-const tabScrollIntoViewId = ref('') // 顶部标签滚动 ID
-const listScrollIntoViewId = ref('') // 列表区域滚动 ID
+const tabScrollIntoViewId = shallowRef('') // 顶部标签滚动 ID
+const listScrollIntoViewId = shallowRef('') // 列表区域滚动 ID
 const loadingNodes = ref<Record<string, boolean>>({}) // 记录加载状态
-const internalOptions = ref<CascaderOption[]>([])
+const internalOptions = shallowRef<CascaderOption[]>([])
+let optionsToken = 0
+let rootLoadToken = 0
+let disposed = false
+let alignToken = 0
 let scrollAlignTimers: ReturnType<typeof setTimeout>[] = []
 
-watch(() => props.options, (val) => {
-    internalOptions.value = JSON.parse(JSON.stringify(val || []))
-}, { immediate: true, deep: true })
+// 只在父级替换数据时复制结构，保留函数与非JSON字段；懒加载通过替换根数组通知。
+function cloneOptions(options: CascaderOption[]): CascaderOption[] {
+  return options.map(node => ({ ...node, ...(Array.isArray(node[childrenField.value]) ? { [childrenField.value]: cloneOptions(node[childrenField.value]) } : {}) }))
+}
+watch(() => props.options, val => {
+  optionsToken++
+  isRootLoading.value = false
+  loadingNodes.value = {}
+  internalOptions.value = cloneOptions(val || [])
+}, { immediate: true })
 
 /** 根据 v-model（已保存的值）重置面板内的浏览与多选勾选，丢弃上次打开未确认的修改 */
 function syncInternalFromModel() {
-    const val = props.modelValue
+    const val = model.value
     if (props.multiple) {
-        selectedPaths.value = JSON.parse(JSON.stringify(val ?? []))
+        selectedPaths.value = ((val ?? []) as (string | number)[][]).map(path => [...path])
         activePath.value = selectedPaths.value[0] ? [...selectedPaths.value[0]] : []
     } else {
         activePath.value = [...((val as (string | number)[]) ?? [])]
@@ -116,7 +126,7 @@ function syncInternalFromModel() {
 }
 
 // 监听外界 modelValue 变化
-watch(() => props.modelValue, () => {
+watch(() => model.value, () => {
     syncInternalFromModel()
 }, { immediate: true, deep: true })
 
@@ -153,6 +163,7 @@ const columnWidthClass = computed(() => {
 })
 
 function clearScrollAlignTimers() {
+    alignToken++
     scrollAlignTimers.forEach(timer => clearTimeout(timer))
     scrollAlignTimers = []
 }
@@ -175,11 +186,13 @@ function alignCurrentColumn(val = current.value, force = false) {
         listScrollIntoViewId.value = ''
     }
 
+    const token = alignToken
     nextTick(() => {
+        if (disposed || token !== alignToken || !visible.value) return
         const delays = force ? [60, 180, 360] : [40]
         delays.forEach((delay) => {
             const timer = setTimeout(() => {
-                align()
+                if (!disposed && token === alignToken && visible.value) align()
                 scrollAlignTimers = scrollAlignTimers.filter(item => item !== timer)
             }, delay)
             scrollAlignTimers.push(timer)
@@ -197,6 +210,8 @@ watch(visible, (val) => {
         clearScrollAlignTimers()
     }
 })
+
+onBeforeUnmount(() => { disposed = true; optionsToken++; clearScrollAlignTimers() })
 
 const onPopupOpened = () => {
     alignCurrentColumn(current.value, true)
@@ -243,7 +258,7 @@ const triggerText = computed(() => {
     const texts: string[] = []
     let data = internalOptions.value
 
-    for (const val of (props.modelValue as (string | number)[])) {
+    for (const val of ((model.value ?? []) as (string | number)[])) {
         const found = data.find(item => item[valueField.value] === val)
         if (found) {
             texts.push(found[labelField.value])
@@ -261,12 +276,14 @@ const triggerText = computed(() => {
 // 方法
 const open = async () => {
     if (props.disabled) return
+    const token = optionsToken
     visible.value = true
     // 每次打开都恢复到当前已提交的 modelValue（关闭前未确认的浏览/勾选不保留）
     syncInternalFromModel()
 
     // 懒加载初始化
     if (props.lazy && internalOptions.value.length === 0) {
+        const request = ++rootLoadToken
         isRootLoading.value = true
         try {
             const children = await new Promise<CascaderOption[]>((resolve, reject) => {
@@ -277,13 +294,16 @@ const open = async () => {
                 } as unknown as CascaderOption
                 props.lazyLoad?.(rootNode, resolve, reject)
             })
-            internalOptions.value = children
+            if (disposed || token !== optionsToken || request !== rootLoadToken) return
+            internalOptions.value = cloneOptions(children)
         } catch (e) {
             console.error('Initial lazy load failed', e)
         } finally {
-            isRootLoading.value = false
+            if (!disposed && token === optionsToken && request === rootLoadToken) isRootLoading.value = false
         }
     }
+
+    if (disposed || token !== optionsToken || !visible.value) return
 
     // 定位到最后一级；打开动画结束后会再次强制对齐，兼容 H5/App 渲染时序。
     const nextCurrent = activePath.value.length > 0
@@ -346,6 +366,7 @@ const checkboxControlClass = (checked: boolean) => cn(
 
 const onItemTap = async (item: CascaderOption, listIndex: number, fromCheckbox = false) => {
     if (props.disabled) return
+    const requestToken = optionsToken
     const val = item[valueField.value]
     const childrenKey = childrenField.value
     const isLeaf = isLeafNode(item, listIndex)
@@ -369,14 +390,14 @@ const onItemTap = async (item: CascaderOption, listIndex: number, fromCheckbox =
             toggleMultiSelection(item, newPath, !isItemSelected(item, listIndex))
         } else {
             // 单选：直接提交
-            emit('update:modelValue', activePath.value)
+            model.value = [...activePath.value]
             emit('change', activePath.value)
             close()
         }
     } else {
         // 严格模式单选：非叶子节点点一下即选中，值落在当前路径上；弹窗不关，下一级照常展开供继续往下选
         if (props.checkStrictly && !props.multiple) {
-            emit('update:modelValue', [...activePath.value])
+            model.value = [...activePath.value]
             emit('change', [...activePath.value])
         }
         // 需要加载子节点或者显示下一级
@@ -387,23 +408,28 @@ const onItemTap = async (item: CascaderOption, listIndex: number, fromCheckbox =
                 const children = await new Promise<CascaderOption[]>((resolve, reject) => {
                     props.lazyLoad?.(item, resolve, reject)
                 })
-                item[childrenKey] = children
+                if (disposed || requestToken !== optionsToken) return
+                item[childrenKey] = cloneOptions(children)
+                internalOptions.value = [...internalOptions.value]
             } catch (e) {
                 console.error('Lazy load failed', e)
+                return
             } finally {
-                loadingNodes.value[nodeId] = false
+                if (!disposed && requestToken === optionsToken) loadingNodes.value[nodeId] = false
             }
         }
         // 自动跳转到新的一级
         nextTick(() => {
-            current.value = listIndex + 1
+            if (!disposed && visible.value && requestToken === optionsToken && newPath.every((value, index) => activePath.value[index] === value) && item[childrenKey]?.length) {
+                current.value = listIndex + 1
+            }
         })
     }
 }
 
 
 const onConfirm = () => {
-    emit('update:modelValue', selectedPaths.value)
+    model.value = selectedPaths.value.map(path => [...path])
     emit('change', selectedPaths.value)
     close()
 }
@@ -412,10 +438,11 @@ const clear = () => {
     activePath.value = []
     selectedPaths.value = []
     current.value = 0
-    emit('update:modelValue', props.multiple ? [] : [])
+    model.value = []
     emit('change', props.multiple ? [] : [])
 }
 
+const selectedKeys = computed(() => new Set(selectedPaths.value.map(path => JSON.stringify(path))))
 const isItemSelected = (item: CascaderOption, listIndex: number) => {
     if (props.multiple) {
         const col = lists.value[listIndex]
@@ -431,7 +458,7 @@ const isItemSelected = (item: CascaderOption, listIndex: number) => {
         // 严格模式只认节点自身的路径是否在选中集合里，父子勾选互不影响，也不存在「叶子全选则父选中」的推导
         if (props.checkStrictly) {
             const ownStr = JSON.stringify([...prefix, item[valueField.value]])
-            return selectedPaths.value.some(sp => JSON.stringify(sp) === ownStr)
+            return selectedKeys.value.has(ownStr)
         }
         const leaves = getLeafPaths(item, prefix)
         // [].every(...) 恒为 true，会导致未选却短暂显示为勾选
@@ -440,11 +467,14 @@ const isItemSelected = (item: CascaderOption, listIndex: number) => {
         }
         return leaves.every(p => {
             const pStr = JSON.stringify(p)
-            return selectedPaths.value.some(sp => JSON.stringify(sp) === pStr)
+            return selectedKeys.value.has(pStr)
         })
     }
     return activePath.value[listIndex] === item[valueField.value]
 }
+
+const selectedState = computed(() => lists.value.map((column, index) => column.map(item => isItemSelected(item, index))))
+const checkboxClasses = [checkboxControlClass(false), checkboxControlClass(true)]
 
 defineExpose({
     /** 打开底部弹出层（禁用状态下无效）；懒加载模式下首次打开会请求根级选项 */
@@ -495,32 +525,32 @@ defineExpose({
                                 :key="`col-${listIndex}-${activePath.slice(0, listIndex).join('\u001f')}`"
                                 :id="`column-${listIndex}`" :class="ui.column({ class: columnWidthClass })">
                                 <scroll-view scroll-y :class="ui.columnScroll()">
-                                    <view v-for="item in listData" :key="getItemRenderKey(item, listIndex)"
+                                    <view v-for="(item, itemIndex) in listData" :key="getItemRenderKey(item, listIndex)"
                                         :class="[
-                                            ui.item(),
-                                            activePath[listIndex] === item[valueField] ? ui.itemActive() : ''
+                                            ui.item,
+                                            activePath[listIndex] === item[valueField] ? ui.itemActive : ''
                                         ]" @tap="onItemTap(item, listIndex)">
-                                        <view :class="ui.itemInner()">
-                                            <view v-if="props.multiple" :class="ui.checkbox()"
+                                        <view :class="ui.itemInner">
+                                            <view v-if="props.multiple" :class="ui.checkbox"
                                                 @tap.stop="onItemTap(item, listIndex, true)">
-                                                <view :class="checkboxControlClass(isItemSelected(item, listIndex))">
-                                                    <view v-if="isItemSelected(item, listIndex)"
+                                                <view :class="checkboxClasses[selectedState[listIndex]?.[itemIndex] ? 1 : 0]">
+                                                    <view v-if="selectedState[listIndex]?.[itemIndex]"
                                                         class="i-lucide-check size-4 text-white" />
                                                 </view>
                                             </view>
                                             <slot name="item" :item="item" :listIndex="listIndex"
                                                 :active="activePath[listIndex] === item[valueField]">
                                                 <RebornText
-                                                    :custom-class="activePath[listIndex] === item[valueField] ? ui.itemTextActive() : ui.itemText()"
+                                                    :custom-class="activePath[listIndex] === item[valueField] ? ui.itemTextActive : ui.itemText"
                                                     :ellipsis="ellipsis" :lines="lines">
                                                     {{ item[labelField] }}
                                                 </RebornText>
                                             </slot>
                                         </view>
-                                        <view v-if="loadingNodes[String(item[valueField])]" :class="ui.nodeLoading()">
+                                        <view v-if="loadingNodes[String(item[valueField])]" :class="ui.nodeLoading">
                                             <RebornLoading type="outline" :color="color" size="32rpx" />
                                         </view>
-                                        <view v-else-if="!isLeafNode(item, listIndex)" :class="ui.nodeArrow()" />
+                                        <view v-else-if="!isLeafNode(item, listIndex)" :class="ui.nodeArrow" />
                                     </view>
                                 </scroll-view>
                             </view>

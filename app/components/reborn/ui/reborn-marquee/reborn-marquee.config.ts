@@ -15,7 +15,7 @@ export type RebornMarqueeUI = {
 
 const rebornMarquee = tv({
     slots: {
-        root: 'reborn-marquee group relative flex overflow-hidden [--duration:40s] [--gap:1rem] [gap:var(--gap)]',
+        root: 'reborn-marquee group/marquee relative flex overflow-hidden [--duration:40s] [--gap:1rem] [gap:var(--gap)]',
         content: 'flex shrink-0 justify-around [gap:var(--gap)] will-change-transform',
         overlayStart: 'pointer-events-none absolute z-[1]',
         overlayEnd: 'pointer-events-none absolute z-[1]',
@@ -37,7 +37,11 @@ const rebornMarquee = tv({
         },
         pauseOnHover: {
             true: {
-                content: 'group-hover:[animation-play-state:paused!important]',
+                // 用 v4 的 `!` 后缀写 important：`paused!important` 写在方括号里扫描器提取不到，类不会生成；
+                // important 不能省，组件 scoped 样式里的 animation 简写不在层内，会压过 utilities 层的普通声明；
+                // 分组必须具名（root 上的 group/marquee）：未命名的 group-hover 匹配任意一层带 group 的祖先，
+                // 跑马灯放进带 group 的卡片里时，悬停卡片任意位置都会让它停下
+                content: 'group-hover/marquee:[animation-play-state:paused]!',
             },
             false: {},
         },

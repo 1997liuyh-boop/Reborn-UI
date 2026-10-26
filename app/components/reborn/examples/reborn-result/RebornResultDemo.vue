@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
+import { computed, ref, shallowRef } from 'vue';
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
 import { resultIcons } from "~/components/reborn/ui/reborn-result/reborn-result.config"
 import RebornResult from "~/components/reborn/ui/reborn-result/RebornResult.vue"
@@ -41,7 +43,7 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 操作区点击回显，让预览区的交互「有回应」 */
-const lastAction = ref("");
+const lastAction = shallowRef("");
 function onAction(name: string) {
   lastAction.value = name;
 }
@@ -120,7 +122,7 @@ const resultCode = computed(() => {
   <div class="flex w-full flex-col">
     <Playground
       v-model="state" :controls="controls" :code="resultCode" component-name="RebornResult"
-      title="交互演练场" description="调节左侧参数，观察三段结构在不同状态与缺省组合下的排布。"
+      title="交互演练场" description="调节上方参数，观察三段结构在不同状态与缺省组合下的排布。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -156,7 +158,7 @@ const resultCode = computed(() => {
       <DemoBlock layout="grid" class="sm:grid-cols-2 xl:grid-cols-4">
         <div v-for="i in resultIcons" :key="i" class="flex flex-col items-center gap-3">
           <DemoNote tone="dimmed" class="font-mono text-xs">{{ ICON_LABEL[i] }}</DemoNote>
-          <RebornResult :icon="i" :title="ICON_SAMPLE[i]!.title" :sub-title="ICON_SAMPLE[i]!.subTitle" />
+          <RebornResult :icon="i" :title="ICON_SAMPLE[i]?.title ?? ''" :sub-title="ICON_SAMPLE[i]?.subTitle ?? ''" />
         </div>
       </DemoBlock>
     </DemoSection>

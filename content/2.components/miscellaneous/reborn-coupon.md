@@ -3,17 +3,54 @@ title: 卡券 Coupon
 description: 用于渲染缺口、撕线、邮票等形态优惠券外观的卡券组件，仅 web 端。
 category: 数据展示
 platform: web
+tags: [vue, reborn-coupon]
 ---
-
-## 基础用法
-
-RebornCoupon 提供强大的 CSS Mask 遮罩能力，仅通过配置属性即可渲染出市面上多数形式的优惠券形态。组件默认提供 `left` 和 `right` 两个插槽供内容分发。
 
 ::ComponentViewer{demoFile="RebornCouponDemo.vue" config="RebornCouponConfig" componentId="reborn-coupon" :componentFiles='["RebornCoupon.vue", "reborn-coupon.config.ts"]'}
 ::
 
-## API 
+## 简介
 
+Coupon 是仅 Web 的卡券外观容器，通过遮罩生成缺口、锯齿和撕线。
+
+`type` 决定券面形态，`direction` 决定内容排列，`radius` / `corner` / `gap` 调整不同形态的几何关系。
+
+`width` / `height` 与响应式覆盖控制尺寸，`left` / `right` 插槽承载券面内容，`hoverable` 开启悬停反馈，`ui` 覆盖区域样式。
+
+### 何时使用
+
+- 优惠券需要缺口、邮票或撕线外形——用 `type` 选择形态。
+- 卡券在不同布局中需要改变主轴——用 `direction` 选择方向。
+- 同一卡券需要响应不同屏宽——用 `sm` / `md` / `lg` 覆盖对应参数。
+
+### 何时不使用
+
+- 普通信息容器不需要缺口——改用 `reborn-card`。
+- 只需显示优惠状态标签——改用 `reborn-chip`。
+
+## 用法
+
+### 响应式尺寸
+
+`sm` / `md` / `lg` 在对应断点覆盖基础参数，`type` 仍决定卡券形态。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `md` | 桌面断点调整尺寸 |
+| `type` | 选择券面形态 |
+
+```vue
+<template>
+  <RebornCoupon type="notch" :md="{ width: 480 }">
+    <template #left>优惠券</template>
+    <template #right>
+      满额可用
+    </template>
+  </RebornCoupon>
+</template>
+```
+
+## API
 ### Props
 
 | 属性 | 说明 | 类型 | 默认值 |
@@ -46,7 +83,7 @@ RebornCoupon 提供强大的 CSS Mask 遮罩能力，仅通过配置属性即可
 | `left` | 优惠券左侧/顶部内容插槽区 |
 | `right` | 优惠券右侧/底部内容插槽区 |
 
-### Emits
+### 交互说明
 
 该纯 UI 布局组件目前没有特殊的抛出事件。你可以直接在其内部的插槽结构中添加对应的点击或业务事件。
 
@@ -75,3 +112,7 @@ RebornCoupon 提供强大的 CSS Mask 遮罩能力，仅通过配置属性即可
   </RebornCoupon>
 </template>
 ```
+
+## 注意事项
+
+- **响应式覆盖项（`sm` / `md` / `lg` / `xl` / `xxl`）在组件挂载后才生效。** 服务端没有媒体查询，断点一律按未命中处理；为了让水合首帧与服务端输出一致（水合不会修正内联 `style`），组件挂载前只按基础 props 渲染，挂载后再叠加当前断点的覆盖项。走服务端渲染的页面在宽屏下会于挂载后切换一次尺寸；纯客户端渲染时这次切换发生在首帧之后，通常察觉不到。

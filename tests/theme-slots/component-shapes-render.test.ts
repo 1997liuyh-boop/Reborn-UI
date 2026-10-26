@@ -12,18 +12,21 @@ import {  createSSRApp, h } from 'vue'
 let server: ViteDevServer
 let Button: Component
 let Badge: Component
+let formKey: symbol
 
 before(async () => {
   server = await createServer({
     configFile: false,
     plugins: [vue()],
-    resolve: { alias: { '~': fileURLToPath(new URL('../../app', import.meta.url)) } },
-    server: { middlewareMode: true, watch: null, hmr: { port: 0 } },
+    resolve: { alias: { '~': fileURLToPath(new URL('../../app', import.meta.url)), '@': fileURLToPath(new URL('../../app', import.meta.url)) } },
+    // Vite 7 关闭 HMR 后仍会创建 WebSocket，测试需同时禁止监听端口。
+    server: { middlewareMode: true, watch: null, hmr: false, ws: false },
     optimizeDeps: { noDiscovery: true, include: [] },
     appType: 'custom',
   })
   Button = (await server.ssrLoadModule('/app/components/reborn/ui/reborn-button/RebornButton.vue')).default
   Badge = (await server.ssrLoadModule('/app/components/reborn/ui/reborn-badge/RebornBadge.vue')).default
+  formKey = (await server.ssrLoadModule('/app/composables/useFieldGroup.ts')).FORM_KEY
 })
 
 after(async () => { await server?.close() })
@@ -32,7 +35,7 @@ after(async () => { await server?.close() })
 async function render(component: Component, props: Record<string, unknown>, slots?: Record<string, () => unknown>, groupSize?: string) {
   const app = createSSRApp({ render: () => h(component, props, slots) })
   app.component('Icon', { render: () => h('svg', { 'data-close-icon': '' }) })
-  if (groupSize) app.provide('rebornForm', { props: { size: groupSize } })
+  if (groupSize) app.provide(formKey, { props: { size: groupSize } })
   return renderToString(app)
 }
 
@@ -46,7 +49,7 @@ it('Button 声明独立形状参数，描边圆形不变为实底配色', async 
 
 it('Button text 圆形及 Badge 圆形继承表单尺寸', async () => {
   for (const [component, name, variant] of [[Button, 'button', 'text'], [Badge, 'badge', 'soft']] as const) {
-    const html = await render(component, { circle: true, variant, size: 'sm', label: '1' }, undefined, 'lg')
+    const html = await render(component, { circle: true, variant, label: '1' }, undefined, 'lg')
     const step = name === 'button' ? 10 : 8
     assert.ok(html.includes(`w-${step}!`))
     assert.ok(html.includes(`h-${step}!`))

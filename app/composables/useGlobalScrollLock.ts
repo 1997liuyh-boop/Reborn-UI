@@ -1,16 +1,16 @@
 import type { Ref } from 'vue';
 import { useScrollLock } from '@vueuse/core';
-import { effectScope } from 'vue';
+import { effectScope, getCurrentScope, onScopeDispose } from 'vue';
 
 /**
  * 全局滚动锁（引用计数）
  *
- * ⚠️ 根因：若 RebornOverlay 与 v-loading / useLoading 各自维护一套锁，
+ * ⚠️ 根因：若 RebornOverlay 与 v-loading / showLoading 各自维护一套锁，
  * 一方释放时会把另一方仍需要的锁一并解开（互相踩踏）。
  * ✅ 修复：所有使用方共享同一个模块级计数器，计数 > 0 开锁、归零才真正解锁。
  */
 
-// 模块级共享状态：Drawer / Overlay / v-loading / useLoading 共用
+// 模块级共享状态：Drawer / Overlay / v-loading / showLoading 共用
 let globalLockCount = 0;
 let isHtmlLocked: Ref<boolean> | null = null;
 const scrollbarGutterClass = '[scrollbar-gutter:stable]';
@@ -20,6 +20,8 @@ let addedScrollbarGutter = false;
  * 获取一个全局滚动锁的使用凭据
  * - 每个调用方持有独立的持锁标记，acquire / release 幂等（重复调用不会重复计数）
  * - 仅锁实际页面滚动元素，不改变 body 的滚动容器语义，禁止手写间距补偿
+ * - 在组件 setup / effectScope 内调用时，作用域销毁会自动 release 兜底：调用方漏写释放也不会把整站滚动锁死。
+ *   需要比调用方活得更久的持锁者（如服务式加载遮罩）要在独立作用域里调用
  */
 export function useGlobalScrollLock() {
   // 当前调用方是否持有锁（闭包内独立标记）
@@ -74,6 +76,9 @@ export function useGlobalScrollLock() {
 
   /** 当前调用方是否持有锁 */
   const isHolding = () => lockedByMe;
+
+  // 随调用方作用域兜底释放；release 幂等，调用方已手动释放时这里什么也不做
+  if (getCurrentScope()) onScopeDispose(release);
 
   return { acquire, release, isHolding };
 }

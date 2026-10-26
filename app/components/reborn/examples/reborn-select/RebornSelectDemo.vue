@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import type { FormProps } from "~/components/reborn/ui/reborn-form/RebornForm.vue";
+import type { SelectFieldNames, SelectOption, SelectProps } from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
+import { DemoBlock, DemoItem, DemoNote, DemoSection, Icon, Playground } from '#components';
+import { computed, onBeforeUnmount, reactive, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import { z } from "zod";
-import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
-import type { SelectOption } from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 import RebornForm from "~/components/reborn/ui/reborn-form/RebornForm.vue";
 import RebornFormItem from "~/components/reborn/ui/reborn-form/RebornFormItem.vue";
 import { selectColors, selectSizes, selectVariants } from "~/components/reborn/ui/reborn-select/reborn-select.config";
+import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 
 // --- 数据源 ---
 
@@ -145,9 +147,9 @@ const controls: any = [
 /** 本地搜索：默认的 label 包含匹配 */
 // --- 基础用法 ---
 
-const basicValue = ref(null);
-const basicNoClearValue = ref("vue");
-const basicDisabledValue = ref("react");
+const basicValue = shallowRef(null);
+const basicNoClearValue = shallowRef("vue");
+const basicDisabledValue = shallowRef("react");
 
 // --- 字段别名 ---
 
@@ -157,18 +159,20 @@ const regionOptions = [
     { id: "cn-south", name: "华南节点", sla: "99.9%" },
     { id: "cn-north", name: "华北节点（维护中）", sla: "—", closed: true },
 ];
-const regionValue = ref("cn-east");
-const regionMultipleValue = ref<string[]>(["cn-east", "cn-south"]);
+/** 字段映射：把接口里的 id / name / closed 依次当作 value / label / disabled */
+const regionFieldNames: SelectFieldNames = { label: 'name', value: 'id', disabled: 'closed' };
+const regionValue = shallowRef("cn-east");
+const regionMultipleValue = shallowRef<string[]>(["cn-east", "cn-south"]);
 
 // --- 多选与标签折叠 ---
 
-const multipleValue = ref<string[]>(["vue", "react", "svelte"]);
-const collapseValue = ref<string[]>(["vue", "react", "svelte", "solid"]);
-const limitValue = ref<string[]>(["vue"]);
+const multipleValue = shallowRef<string[]>(["vue", "react", "svelte"]);
+const collapseValue = shallowRef<string[]>(["vue", "react", "svelte", "solid"]);
+const limitValue = shallowRef<string[]>(["vue"]);
 
-const searchValue = ref("vue");
+const searchValue = shallowRef("vue");
 /** 自定义过滤：filter-option 传函数，关键词同时命中 label 与 desc */
-const customFilterValue = ref<string[]>([]);
+const customFilterValue = shallowRef<string[]>([]);
 
 /**
  * 自定义匹配规则：关键词同时在展示文本与描述里查找。
@@ -183,19 +187,31 @@ function filterByLabelOrDesc(keyword: string, option: SelectOption) {
 }
 
 /** 远程搜索：filter-option=false 关掉本地过滤，列表完全由请求结果决定 */
-const remoteValue = ref(null);
+const remoteValue = shallowRef<string | null>(null);
 /** 兜底推荐：面板一展开就先摆出这几条，避免开局是一片「暂无数据」 */
 const remoteDefaultOptions = cityOptions.slice(0, 8);
-const remoteOptions = ref<SelectOption[]>([...remoteDefaultOptions]);
-const remoteLoading = ref(false);
+const remoteOptions = shallowRef<SelectOption[]>([...remoteDefaultOptions]);
+const remoteLoading = shallowRef(false);
 let remoteTimer: ReturnType<typeof setTimeout> | null = null;
+let scrollTimer: ReturnType<typeof setTimeout> | null = null;
+/** 默认推荐仍保留已选站点，确保结果列表重置后可以回显。 */
+function resetRemoteOptions() {
+    const picked = cityOptions.find(option => option.value === remoteValue.value);
+    remoteOptions.value = picked && !remoteDefaultOptions.some(option => option.value === picked.value)
+        ? [picked, ...remoteDefaultOptions]
+        : [...remoteDefaultOptions];
+}
+onBeforeUnmount(() => {
+    if (remoteTimer !== null) clearTimeout(remoteTimer);
+    if (scrollTimer !== null) clearTimeout(scrollTimer);
+});
 
 /** 收起时把列表还原成默认推荐，下次展开又是一份干净的初始内容 */
 function onRemoteVisibleChange(visible: boolean) {
     if (visible) return;
     if (remoteTimer) clearTimeout(remoteTimer);
     remoteLoading.value = false;
-    remoteOptions.value = [...remoteDefaultOptions];
+    resetRemoteOptions();
 }
 
 /** 模拟一次带防抖的远程请求：请求期间用 loading 接管下拉面板 */
@@ -205,32 +221,33 @@ function onRemoteSearch(keyword: string) {
     const query = keyword.trim();
     if (!query) {
         // 关键词被清空：回到默认推荐，而不是留一个空面板
-        remoteOptions.value = [...remoteDefaultOptions];
+        resetRemoteOptions();
         remoteLoading.value = false;
         return;
     }
 
     remoteLoading.value = true;
     remoteTimer = setTimeout(() => {
+        remoteTimer = null;
         remoteOptions.value = cityOptions.filter((o) => o.label.includes(query)).slice(0, 20);
         remoteLoading.value = false;
     }, 600);
 }
 
 /** 虚拟滚动：一万条数据，DOM 里始终只有可视区的十几行 */
-const virtualValue = ref("asset-6666");
-const virtualSearchValue = ref<string[]>([]);
+const virtualValue = shallowRef("asset-6666");
+const virtualSearchValue = shallowRef<string[]>([]);
 
 /** 加载态：静态展示触发器与下拉面板同时进入 loading */
-const loadingValue = ref("vue");
+const loadingValue = shallowRef("vue");
 
 /** 页头 / 页脚插槽 */
-const headerFooterValue = ref<string[]>(["vue"]);
+const headerFooterValue = shallowRef<string[]>(["vue"]);
 
 /** 滚动加载：初始只给 12 项，触底后由 dropdown-scroll 续接 */
-const scrollLoadValue = ref(null);
-const scrollLoadOptions = ref<SelectOption[]>(cityOptions.slice(0, 12));
-const scrollLoadPending = ref(false);
+const scrollLoadValue = shallowRef(null);
+const scrollLoadOptions = shallowRef<SelectOption[]>(cityOptions.slice(0, 12));
+const scrollLoadPending = shallowRef(false);
 /** 是否已经把数据源全部加载完 */
 const scrollLoadDone = computed(() => scrollLoadOptions.value.length >= cityOptions.length);
 
@@ -246,24 +263,38 @@ function onDropdownScroll(e: Event) {
     if (el.scrollHeight - el.scrollTop - el.clientHeight > 24) return;
 
     scrollLoadPending.value = true;
-    setTimeout(() => {
+    scrollTimer = setTimeout(() => {
+        scrollTimer = null;
         scrollLoadOptions.value = cityOptions.slice(0, scrollLoadOptions.value.length + 12);
         scrollLoadPending.value = false;
     }, 500);
 }
 
 /** 浮层定位：分别放在滚动容器内与页面流中 */
-const scrollBoxValue = ref("city-20");
-const followValue = ref("city-45");
+const scrollBoxValue = shallowRef("city-20");
+const followValue = shallowRef("city-45");
 /** portal 关闭后的对照组：浮层留在触发器内，会被容器 overflow 裁掉 */
-const clippedValue = ref("city-20");
+const clippedValue = shallowRef("city-20");
 
 /** 插槽定制 */
-const slotOptionValue = ref("react");
-const coverValue = ref("svelte");
+const slotOptionValue = shallowRef("react");
+/** option 插槽里是图标加两行文字，选项改为随内容撑高 */
+const twoLineOptionUi: SelectProps['ui'] = { option: 'h-auto py-2.5' };
+const coverValue = shallowRef("svelte");
+/** cover 插槽自带渐变卡片，去掉触发器默认的高度、内边距、边框与底色 */
+const bareTriggerUi: SelectProps['triggerUi'] = { trigger: 'h-auto p-0 border-none bg-transparent' };
 
 /** 深度样式定制 */
-const customUiValue = ref("solid");
+const customUiValue = shallowRef("solid");
+/** 触发器：虚线粗边框、大圆角、加高 */
+const dashedTriggerUi: SelectProps['triggerUi'] = {
+    trigger: 'border-dashed border-2 rounded-2xl border-indigo-200 dark:border-indigo-800 px-4 h-14',
+};
+/** 下拉列表：与触发器同色系的圆角面板和高亮项 */
+const indigoDropdownUi: SelectProps['ui'] = {
+    dropdown: 'rounded-2xl border-indigo-100 dark:border-indigo-900',
+    optionHighlight: 'bg-indigo-50 dark:bg-indigo-900/40',
+};
 
 // --- 表单集成 ---
 
@@ -272,7 +303,9 @@ const customUiValue = ref("solid");
  * 收起面板（blur）与选中（change）都会触发校验。
  */
 const formModel = reactive({ framework: null as string | null, stack: [] as string[] });
-const formRef = ref<any>(null);
+const formRef = useTemplateRef<InstanceType<typeof RebornForm>>("formRef");
+/** 选中时按 change、收起面板时按 blur 触发校验 */
+const formTrigger: FormProps['trigger'] = ['change', 'blur'];
 
 const formRules = z.object({
     framework: z.string({ message: "请选择主框架" }).min(1, "请选择主框架"),
@@ -297,7 +330,7 @@ function onChange(value: any) {
     <div class="flex w-full flex-col">
         <!-- 1. 交互演练场：Playground 自带标题栏，不再额外套 DemoSection -->
         <Playground v-model="state" :controls="controls" component-name="RebornSelect" title="交互体验"
-            description="调节左侧参数实时查看反馈；数据源为 60 个站点，展开时会自动定位到已选项">
+            description="调节上方参数实时查看反馈；数据源为 60 个站点，展开时会自动定位到已选项">
             <template #tag>
                 <RebornButton variant="soft" size="sm" @click="resetState">
                     <template #leading>
@@ -382,7 +415,7 @@ function onChange(value: any) {
           <RebornSelect
             v-model="regionValue"
             :options="regionOptions"
-            :field-names="{ label: 'name', value: 'id', disabled: 'closed' }"
+            :field-names="regionFieldNames"
             class="w-full"
           >
             <template #option="{ option }">
@@ -401,7 +434,7 @@ function onChange(value: any) {
           <RebornSelect
             v-model="regionMultipleValue"
             :options="regionOptions"
-            :field-names="{ label: 'name', value: 'id', disabled: 'closed' }"
+            :field-names="regionFieldNames"
             multiple
             class="w-full"
           />
@@ -621,7 +654,7 @@ function onChange(value: any) {
             <DemoBlock layout="grid" :columns="2" align="start">
                 <DemoItem label="option 插槽" note="在选项内渲染图标与副标题，作用域提供 option 与 active" mono>
                     <RebornSelect v-model="slotOptionValue" :options="frameworkOptions"
-                        :ui="{ option: 'h-auto py-2.5' }" class="w-full">
+                        :ui="twoLineOptionUi" class="w-full">
                         <template #option="{ option, active }">
                             <div class="flex w-full items-center gap-3">
                                 <Icon :name="option.icon" class="size-5 shrink-0" />
@@ -637,7 +670,7 @@ function onChange(value: any) {
 
                 <DemoItem label="cover 插槽" note="完全接管触发器内容，自带箭头与状态样式由业务决定" mono>
                     <RebornSelect v-model="coverValue" :options="frameworkOptions"
-                        :trigger-ui="{ trigger: 'h-auto p-0 border-none bg-transparent' }" class="w-full">
+                        :trigger-ui="bareTriggerUi" class="w-full">
                         <template #cover="{ displayText, placeholder, isOpen }">
                             <div
                                 class="rounded-2xl flex w-full cursor-pointer items-center gap-3 bg-linear-to-r from-violet-500 to-fuchsia-500 px-5 py-3.5 text-white transition-all active:scale-[0.98]">
@@ -663,7 +696,7 @@ function onChange(value: any) {
                 </DemoNote>
 
                 <RebornForm ref="formRef" :model-value="formModel" :rules="formRules" label-width="100px"
-                    label-position="left" size="md" :trigger="['change', 'blur']" class="w-full max-w-lg">
+                    label-position="left" size="md" :trigger="formTrigger" class="w-full max-w-lg">
                     <RebornFormItem prop="framework" label="主框架" required>
                         <RebornSelect v-model="formModel.framework" :options="frameworkOptions" placeholder="请选择主框架" />
                     </RebornFormItem>
@@ -683,12 +716,7 @@ function onChange(value: any) {
 
         <!-- 12. 自定义样式 -->
         <DemoSection title="自定义样式：ui / triggerUi" description="triggerUi 覆盖触发器各槽位，ui 覆盖下拉列表各槽位，二者都会与内置类做 twMerge 合并。">
-            <RebornSelect v-model="customUiValue" :options="frameworkOptions" :trigger-ui="{
-                trigger: 'border-dashed border-2 rounded-2xl border-indigo-200 dark:border-indigo-800 px-4 h-14',
-            }" :ui="{
-                dropdown: 'rounded-2xl border-indigo-100 dark:border-indigo-900',
-                optionHighlight: 'bg-indigo-50 dark:bg-indigo-900/40',
-            }" class="w-full max-w-md" />
+            <RebornSelect v-model="customUiValue" :options="frameworkOptions" :trigger-ui="dashedTriggerUi" :ui="indigoDropdownUi" class="w-full max-w-md" />
         </DemoSection>
     </div>
 </template>

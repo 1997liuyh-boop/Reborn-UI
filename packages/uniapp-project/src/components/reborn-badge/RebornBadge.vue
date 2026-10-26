@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { badgeColors, badgeSizes, badgeVariants } from './reborn-badge.config'
 import { computed, nextTick } from 'vue'
+import { useBooleanModel } from '@/composables/useBooleanModel'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import RebornTransition from '../reborn-transition/RebornTransition.vue'
@@ -8,7 +9,6 @@ import theme from './reborn-badge.config'
 
 defineOptions({
   name: 'RebornBadge',
-  inheritAttrs: false,
 })
 
 const props = withDefaults(defineProps<BadgeProps>(), {
@@ -19,6 +19,8 @@ const props = withDefaults(defineProps<BadgeProps>(), {
   gap: false
 })
 const emit = defineEmits<{
+  'update:show': [value: boolean]
+  'update:checked': [value: boolean]
   /** 点击关闭按钮、徽章隐藏后触发 */
   close: [ev: unknown]
   /** 点击徽章时触发 */
@@ -67,20 +69,21 @@ export interface BadgeProps {
   }
 }
 
-const show = defineModel<boolean>('show', { default: true })
-/** 可选中模式的选中态：默认 false，未传 v-model:checked 时走内部非受控状态 */
-const checked = defineModel<boolean>('checked', { default: false })
+defineModel<boolean>('show', { default: undefined })
+defineModel<boolean>('checked', { default: undefined })
+const show = useBooleanModel('show', true)
+const checked = useBooleanModel('checked')
 
 const b = tv(theme)
 
 const uiOverrides = computed(() => props.ui || {})
 
-const ui = computed(() => {
+function buildUi(square: boolean) {
   const styles = b({
     color: props.color,
     variant: props.variant,
     size: props.size,
-    square: props.square || (!props.label && !props.icon && !slots.default),
+    square,
     round: props.round,
     unchecked: props.check && !checked.value,
     disabled: props.disabled,
@@ -96,7 +99,15 @@ const ui = computed(() => {
     closeButton: (opts?: { class?: any }) => styles.closeButton({ class: cn(opts?.class, uiOverrides.value.closeButton) }),
     closeIcon: (opts?: { class?: any }) => styles.closeIcon({ class: cn(opts?.class, uiOverrides.value.closeIcon) }),
   }
-})
+}
+
+// 插槽不是响应式来源，不能在 computed 里读；square 只有「是否有默认插槽」这一处依赖插槽，
+// 按两种取值各缓存一套样式，模板渲染时按 $slots 二选一，避免每次 ui() 调用都重跑变体计算
+/** 有默认插槽：只按 square prop 判断方形 */
+const uiWithDefaultSlot = computed(() => buildUi(!!props.square))
+/** 无默认插槽：没有 label 与 icon 时也按方形（纯数字 / 圆点） */
+const uiWithoutDefaultSlot = computed(() => buildUi(!!props.square || (!props.label && !props.icon)))
+const ui = () => (slots.default ? uiWithDefaultSlot.value : uiWithoutDefaultSlot.value)
 
 function onClick(e: any) {
   if (props.disabled) return
@@ -120,28 +131,28 @@ function handleClose(e: any) {
 </script>
 
 <template>
-  <RebornTransition :show="show" name="badge-custom" :duration="200" destroy :custom-class="ui.root()">
+  <RebornTransition :show="show" name="badge-custom" :duration="200" destroy :custom-class="ui().root()">
     <view
-      :class="ui.base({
+      :class="ui().base({
         class: cn(props.customClass)
       })" @tap="onClick"
     >
-      <slot name="leading" :ui="ui">
-        <view v-if="props.icon" :class="cn(props.icon, ui.leadingIcon())" />
+      <slot name="leading" :ui="ui()">
+        <view v-if="props.icon" :class="cn(props.icon, ui().leadingIcon())" />
       </slot>
 
       <!-- 微信小程序中 text 内不得再嵌套 text/slot 文本节点，否则子内容不渲染只剩占位；用 view 包住 -->
-      <view v-if="props.label || slots.default" :class="ui.label()">
-        <slot :ui="ui">
+      <view v-if="props.label || slots.default" :class="ui().label()">
+        <slot :ui="ui()">
           <text v-if="props.label">{{ props.label }}</text>
         </slot>
       </view>
 
-      <slot name="trailing" :ui="ui" />
+      <slot name="trailing" :ui="ui()" />
 
-      <view v-if="props.closable" :class="ui.closeButton()" @tap.stop="handleClose">
-        <slot name="close" :ui="ui" :close="handleClose">
-          <view :class="cn(props.closeIcon, ui.closeIcon())" />
+      <view v-if="props.closable" :class="ui().closeButton()" @tap.stop="handleClose">
+        <slot name="close" :ui="ui()" :close="handleClose">
+          <view :class="cn(props.closeIcon, ui().closeIcon())" />
         </slot>
       </view>
     </view>

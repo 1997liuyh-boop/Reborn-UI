@@ -1,6 +1,7 @@
 <script setup lang="ts">
+
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, ref } from "vue";
+import { computed, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornCrowd from "~/components/reborn/ui/reborn-crowd/RebornCrowd.vue";
 
@@ -16,10 +17,10 @@ const defaultState: Record<string, any> = {
   height: 240,
 };
 
-const state = ref<Record<string, any>>({ ...defaultState });
+const state = shallowRef<Record<string, any>>({ ...defaultState });
 
 /** 演练场实例的事件回显 */
-const playgroundStatus = ref("等待进入视口");
+const playgroundStatus = shallowRef("等待进入视口");
 
 /** 重置演练场配置 */
 function resetState() {
@@ -31,14 +32,32 @@ const controls: any = [
   {
     title: "人群",
     children: [
-      { label: "同时在场人数", key: "count", component: "slider" as const, defaultValue: 105, props: { min: 1, max: 105, step: 1 } },
-      { label: "走完一趟（秒）", key: "duration", component: "slider" as const, defaultValue: 14, props: { min: 4, max: 30, step: 1 } },
+      {
+        label: "同时在场人数",
+        key: "count",
+        component: "slider" as const,
+        defaultValue: 105,
+        props: { min: 1, max: 105, step: 1 },
+      },
+      {
+        label: "走完一趟（秒）",
+        key: "duration",
+        component: "slider" as const,
+        defaultValue: 14,
+        props: { min: 4, max: 30, step: 1 },
+      },
     ],
   },
   {
     title: "画布",
     children: [
-      { label: "画布高度（px）", key: "height", component: "slider" as const, defaultValue: 240, props: { min: 120, max: 360, step: 10 } },
+      {
+        label: "画布高度（px）",
+        key: "height",
+        component: "slider" as const,
+        defaultValue: 240,
+        props: { min: 120, max: 360, step: 10 },
+      },
     ],
   },
 ];
@@ -49,8 +68,8 @@ const crowdCode = computed(() => {
   return [
     "<RebornCrowd",
     `  src="${SHEET_SRC}"`,
-    "  :cols=\"15\"",
-    "  :rows=\"7\"",
+    '  :cols="15"',
+    '  :rows="7"',
     `  :count="${s.count}"`,
     `  :duration="${s.duration}"`,
     `  class="h-[${s.height}px] w-full"`,
@@ -61,15 +80,19 @@ const crowdCode = computed(() => {
 // ─── 场景演示状态 ─────────────────────────────────────────────────
 
 /** 「加载与事件」两个实例各自的事件回显 */
-const okStatus = ref("等待进入视口");
-const brokenStatus = ref("等待进入视口");
+const okStatus = shallowRef("等待进入视口");
+const brokenStatus = shallowRef("等待进入视口");
 </script>
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground
-      v-model="state" :controls="controls" :code="crowdCode" component-name="RebornCrowd"
-      title="交互演练场" description="调节左侧参数，查看人群密度、行走速度与画布高度对人物大小的影响。"
+      v-model="state"
+      :controls="controls"
+      :code="crowdCode"
+      component-name="RebornCrowd"
+      title="交互演练场"
+      description="调节上方参数，查看人群密度、行走速度与画布高度对人物大小的影响。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -82,8 +105,11 @@ const brokenStatus = ref("等待进入视口");
 
       <div class="flex w-full flex-col gap-4">
         <RebornCrowd
-          :src="SHEET_SRC" :count="state.count" :duration="state.duration"
-          class="border-default w-full border-b" :style="{ height: `${state.height}px` }"
+          :src="SHEET_SRC"
+          :count="state.count"
+          :duration="state.duration"
+          class="border-default w-full border-b"
+          :style="{ height: `${state.height}px` }"
           @ready="playgroundStatus = 'ready：精灵图已加载，人群就位'"
           @error="playgroundStatus = 'error：精灵图加载失败'"
         />
@@ -95,7 +121,10 @@ const brokenStatus = ref("等待进入视口");
 
     <DemoSection title="基础用法">
       <template #description>
-        传入精灵图 <code>src</code>，尺寸写在 <code>class</code> 上；默认按 15 列 × 7 行切格，全部人物同时上场。
+        传入精灵图
+        <code>src</code>，尺寸写在
+        <code>class</code>
+        上；默认按 15 列 × 7 行切格，全部人物同时上场。
       </template>
       <DemoBlock layout="stack">
         <RebornCrowd :src="SHEET_SRC" class="border-default h-56 w-full border-b" />
@@ -107,7 +136,12 @@ const brokenStatus = ref("等待进入视口");
 
     <DemoSection title="精灵图的要求">
       <template #description>
-        下面就是演示用的 <code>src</code>，叠了一层切格线：按 <code>cols</code> × <code>rows</code> 等分，每格一个人物，格子不能留空。
+        下面就是演示用的
+        <code>src</code>，叠了一层切格线：按
+        <code>cols</code>
+        ×
+        <code>rows</code>
+        等分，每格一个人物，格子不能留空。
       </template>
       <DemoBlock layout="stack">
         <figure class="flex w-full flex-col items-center gap-2">
@@ -115,9 +149,7 @@ const brokenStatus = ref("等待进入视口");
             <img :src="SHEET_SRC" alt="Open Peeps 人物精灵图" class="block w-full">
             <div class="crowd-sheet-grid pointer-events-none absolute inset-0" />
           </div>
-          <figcaption class="text-muted text-xs">
-            src：3600×2268，透明背景，15 列 × 7 行，单格 240×324
-          </figcaption>
+          <figcaption class="text-muted text-xs">src：3600×2268，透明背景，15 列 × 7 行，单格 240×324</figcaption>
         </figure>
       </DemoBlock>
       <DemoNote tone="dimmed">
@@ -127,7 +159,9 @@ const brokenStatus = ref("等待进入视口");
 
     <DemoSection title="人数与速度">
       <template #description>
-        <code>count</code> 限制同时在场的人数，走完的人回到候场、再随机换一个人上场；<code>duration</code> 是走完一趟的基础秒数，每人再随机放慢到约 1.05~2.6 倍。
+        <code>count</code>
+        限制同时在场的人数，走完的人回到候场、再随机换一个人上场；<code>duration</code>
+        是走完一趟的基础秒数，每人再随机放慢到约 1.05~2.6 倍。
       </template>
       <DemoBlock layout="grid" :columns="2">
         <div class="flex flex-col gap-2">
@@ -143,33 +177,39 @@ const brokenStatus = ref("等待进入视口");
 
     <DemoSection title="渐隐与摆放">
       <template #description>
-        组件不带遮罩，上沿渐隐写在 <code>class</code> 上：<code>mask-image</code> 让后排的人从内容区里慢慢浮现，而不是被一条硬边截断。
+        组件不带遮罩，上沿渐隐写在
+        <code>class</code>
+        上：<code>mask-image</code>
+        让后排的人从内容区里慢慢浮现，而不是被一条硬边截断。
       </template>
       <DemoBlock layout="stack">
         <div class="flex w-full flex-col">
-          <p class="text-highlighted text-sm font-medium">
-            页面正文的最后一段
-          </p>
+          <p class="text-highlighted text-sm font-medium">页面正文的最后一段</p>
           <RebornCrowd
-            :src="SHEET_SRC" :count="60"
+            :src="SHEET_SRC"
+            :count="60"
             class="h-56 w-full [mask-image:linear-gradient(to_bottom,transparent_0%,#000_24%)]"
           />
-          <div class="border-default text-muted border-t pt-3 text-xs">
-            页脚：人群底边贴住它的上沿
-          </div>
+          <div class="border-default text-muted border-t pt-3 text-xs">页脚：人群底边贴住它的上沿</div>
         </div>
       </DemoBlock>
     </DemoSection>
 
     <DemoSection title="加载与事件">
       <template #description>
-        进入视口附近才加载精灵图，加载完成派发 <code>ready</code>，失败派发 <code>error</code>。右侧故意写错了 <code>src</code>。
+        进入视口附近才加载精灵图，加载完成派发
+        <code>ready</code>，失败派发
+        <code>error</code>。右侧故意写错了
+        <code>src</code>。
       </template>
       <DemoBlock layout="grid" :columns="2">
         <div class="flex flex-col gap-2">
           <RebornCrowd
-            :src="SHEET_SRC" :count="20" class="border-default h-40 w-full border-b"
-            @ready="okStatus = 'ready：精灵图已加载，人群就位'" @error="okStatus = 'error：精灵图加载失败'"
+            :src="SHEET_SRC"
+            :count="20"
+            class="border-default h-40 w-full border-b"
+            @ready="okStatus = 'ready：精灵图已加载，人群就位'"
+            @error="okStatus = 'error：精灵图加载失败'"
           />
           <DemoNote tone="dimmed" class="font-mono text-xs">
             {{ okStatus }}
@@ -177,8 +217,11 @@ const brokenStatus = ref("等待进入视口");
         </div>
         <div class="flex flex-col gap-2">
           <RebornCrowd
-            src="/images/peeps/not-exist.png" :count="20" class="border-default h-40 w-full border-b"
-            @ready="brokenStatus = 'ready：精灵图已加载，人群就位'" @error="brokenStatus = 'error：精灵图加载失败'"
+            src="/images/peeps/not-exist.png"
+            :count="20"
+            class="border-default h-40 w-full border-b"
+            @ready="brokenStatus = 'ready：精灵图已加载，人群就位'"
+            @error="brokenStatus = 'error：精灵图加载失败'"
           />
           <DemoNote tone="dimmed" class="font-mono text-xs">
             {{ brokenStatus }}

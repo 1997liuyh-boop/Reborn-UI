@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import type { PageHeaderUI } from "~/components/reborn/ui/reborn-page-header/reborn-page-header.config";
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef } from 'vue';
 import RebornBadge from "~/components/reborn/ui/reborn-badge/RebornBadge.vue";
 import RebornBreadcrumb from "~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumb.vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
@@ -27,6 +28,8 @@ const detailRoutes = [
   { label: "订单列表", path: "#" },
   { label: "订单详情" },
 ];
+/** 组合示例：去掉左右与顶部边框，只保留底边，与下方内容区衔接 */
+const bottomBorderUi: PageHeaderUI = { root: 'border-x-0 border-t-0' };
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -42,7 +45,7 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 返回区被触发的次数 */
-const backCount = ref(0);
+const backCount = shallowRef(0);
 
 /** 重置演练场配置 */
 function resetState() {
@@ -89,7 +92,7 @@ const pageHeaderCode = computed(() => {
 // ─── 场景演示状态 ─────────────────────────────────────────────────
 
 /** 「返回事件」一节的回显 */
-const lastBack = ref("尚未触发");
+const lastBack = shallowRef("尚未触发");
 
 function onBack(event: MouseEvent | KeyboardEvent) {
   lastBack.value = event instanceof KeyboardEvent ? `键盘触发（${event.key === " " ? "空格" : event.key}）` : "鼠标点击触发";
@@ -100,7 +103,7 @@ function onBack(event: MouseEvent | KeyboardEvent) {
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="pageHeaderCode" component-name="RebornPageHeader"
-      title="交互演练场" description="调节左侧参数，查看标题、内容、图标与面包屑、扩展操作两个插槽在页头里的排布。"
+      title="交互演练场" description="调节上方参数，查看标题、内容、图标与面包屑、扩展操作两个插槽在页头里的排布。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -161,7 +164,7 @@ function onBack(event: MouseEvent | KeyboardEvent) {
       </template>
       <DemoBlock layout="stack">
         <div class="flex w-full flex-col gap-4">
-          <RebornPageHeader content="下单时间 2026-10-16 10:24" :ui="{ root: 'border-x-0 border-t-0' }">
+          <RebornPageHeader content="下单时间 2026-10-16 10:24" :ui="bottomBorderUi">
             <template #breadcrumb>
               <RebornBreadcrumb :routes="detailRoutes" />
             </template>

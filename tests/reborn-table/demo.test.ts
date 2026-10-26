@@ -7,7 +7,7 @@ import { after, it } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { compileScript, parse } from '@vue/compiler-sfc';
 import { build } from 'esbuild';
-import { createRenderer, h, nextTick } from 'vue';
+import { createRenderer, h, markRaw, nextTick } from 'vue';
 
 /** 只替换演示框架壳；表格、按钮、输入、选择、文本及滚动条均编译真实源码。 */
 const folder = await mkdtemp(resolve('tests/reborn-table/.demo-runtime-'));
@@ -15,7 +15,7 @@ const output = resolve(folder, 'demo.mjs');
 after(async () => { await unlink(output); await rmdir(folder); });
 await build({
   entryPoints: [resolve('app/components/reborn/examples/reborn-table/RebornTableDemo.vue')],
-  outfile: output, bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app') },
+  outfile: output, bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app'), '@': resolve('app') },
   plugins: [{ name: 'table-demo-test', setup(builder) {
     builder.onResolve({ filter: /^#components$/ }, () => ({ path: 'demo-shell', namespace: 'demo-shell' }));
     builder.onLoad({ filter: /.*/, namespace: 'demo-shell' }, () => ({ contents: `
@@ -55,13 +55,13 @@ interface Element {
 }
 let focused: Element | undefined;
 function element(type: string, text = ''): Element {
-  return {
+  return markRaw({
     type, text, props: {}, children: [], style: {}, scrollTop: 0, scrollLeft: 0,
     clientWidth: 400, clientHeight: 220, scrollWidth: 1800, scrollHeight: 900,
     get textContent() { return content(this); },
     querySelector(selector) { return flatten(this).find(node => selector === '[role="radio"]' && node.props.role === 'radio'); },
     focus() { focused = this; },
-  };
+  });
 }
 function flatten(node: Element): Element[] { return [node, ...node.children.flatMap(flatten)]; }
 function content(node: Element): string { return node.type === '#comment' ? '' : node.text + node.children.map(content).join(''); }
@@ -80,10 +80,18 @@ const renderer = createRenderer<Element, Element>({
   remove(node) { if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1); },
 });
 const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+const previousComputedStyle = Object.getOwnPropertyDescriptor(globalThis, 'getComputedStyle');
 Object.defineProperty(globalThis, 'document', { configurable: true, value: { fonts: undefined, removeEventListener() {}, body: { style: {} } } });
+Object.defineProperty(globalThis, 'window', { configurable: true, value: { getComputedStyle: () => ({ paddingRight: '0', paddingBottom: '0' }) } });
+Object.defineProperty(globalThis, 'getComputedStyle', { configurable: true, value: () => ({ left: 'auto', right: 'auto' }) });
 after(() => {
   if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
   else Reflect.deleteProperty(globalThis, 'document');
+  for (const [name, descriptor] of [['window', previousWindow], ['getComputedStyle', previousComputedStyle]] as const) {
+    if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+    else Reflect.deleteProperty(globalThis, name);
+  }
 });
 function mount(section: string | string[]) {
   const root = element('root');
@@ -116,7 +124,11 @@ async function dispatch(target: Element, name = 'onClick', extra: Record<string,
 }
 function radio(root: Element, key: number) { return find(row(root, key), node => node.props.role === 'radio', '缺少真实单选按钮'); }
 function checkbox(root: Element) { return find(root, node => node.type === 'input' && node.props.type === 'checkbox', '缺少真实复选框'); }
-function switchLabel(root: Element, label: string) { return find(root, node => node.type === 'label' && content(node).includes(label), `缺少开关：${label}`); }
+function switchLabel(root: Element, label: string) {
+  const wrapper = find(root, node => node.type === 'label' && content(node).includes(label), `缺少开关：${label}`);
+  // 内存渲染器没有浏览器的 label 激活行为，直接点击其原生输入入口。
+  return find(wrapper, node => node.type === 'input', `缺少开关输入：${label}`);
+}
 
 it('状态类只标记一条警告与一条成功，其余行保留默认底色', () => {
   const t = mount('带状态表格');

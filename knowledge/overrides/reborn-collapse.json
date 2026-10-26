@@ -11,7 +11,9 @@
   "pitfalls": [
     "web 与 uniapp 双端可用。",
     "触发区放默认插槽，被折叠的内容必须放 content 插槽，二者不可混放。",
-    "内容尺寸动态变化后需调用暴露的 resize 方法重新测量高度。",
-    "position 可设 top 使内容向上展开，absolute 控制展开内容是否脱离文档流。"
+    "UniApp 端展开过渡结束后高度放开为 auto，内容尺寸变化会自动跟随；resize 只在 300ms 展开过渡期间用于校正终点，Web 端为空实现。",
+    "UniApp 端 ui.content 不能加 absolute / fixed：展开后外壳 height: auto 由内容节点撑开，脱离文档流会塌成 0。",
+    "position 可设 top 使内容向上展开，absolute 控制展开内容是否脱离文档流。",
+    "modelValue 模型默认 undefined（两端一致）：未绑定时内部默认收起，显式 undefined/null 也按收起渲染；点击触发区与 show/hide/toggle 都会回写 v-model。"
   ]
 }

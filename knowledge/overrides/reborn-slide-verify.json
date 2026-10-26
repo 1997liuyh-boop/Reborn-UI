@@ -13,7 +13,7 @@
     "platforms 仅 uniapp 端提供。",
     "threshold 默认 0.92（滑到约 92% 即通过）；若传大于 1 的数（如 92），内部会除以 100 当作比例。",
     "splitText 默认 true 的左右分层文案，仅在未使用默认插槽、未验证、非加载、非失败展示时生效。",
-    "defaultVerified=true 且 v-model 仍为 false 时，挂载即视为已通过。",
-    "showToast 通过后调用 uni.showToast，toastText 为空时用 successText。"
+    "showToast 通过后调用 uni.showToast，toastText 为空时用 successText。",
+    "defaultVerified 只在未传 modelValue 时初始化本地值；显式 false/null/undefined 均为未通过，不会被 defaultVerified=true 覆盖。父级拒收通过请求时保持父值；移除绑定恢复本地值，初始化不发 update:modelValue/change/success。"
   ]
 }

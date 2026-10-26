@@ -9,7 +9,7 @@
   ],
   "pitfalls": [
     "仅 web 端可用，依赖 motion-v。",
-    "所选文件通过 onChange 事件抛出（payload 为 File[]），组件本身不含上传请求逻辑，需在回调中自行处理。",
+    "所选文件通过 change 事件抛出（payload 为 File[] 副本，监听写 @change），组件本身不含上传请求逻辑，需在回调中自行处理。",
     "背景网格是独立子组件 FileUploadGrid，需放入默认插槽。"
   ]
 }

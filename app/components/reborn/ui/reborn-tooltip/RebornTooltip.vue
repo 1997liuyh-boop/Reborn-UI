@@ -8,10 +8,13 @@ import {
 
   nextTick,
   onBeforeUnmount,
+  onBeforeUpdate,
   onMounted,
-  ref,
+  shallowRef,
   useId,
-  useSlots, watch
+  useSlots,
+  useTemplateRef,
+  watch
 } from 'vue';
 import { useFloatingHost } from '~/composables/useFloatingHost';
 import {
@@ -134,24 +137,32 @@ const getArrowLength = (crossExtent: number) =>
     Math.max(ARROW_LENGTH_MIN, crossExtent - FLOATING_PANEL_RADIUS * 2 - ARROW_MIN_SPAN),
   );
 
-const isMounted = ref(false);
+const isMounted = shallowRef(false);
 
-const wrapperRef = ref<HTMLElement | null>(null);
-const triggerRef = ref<HTMLElement | null>(null);
+const wrapperRef = useTemplateRef<HTMLElement>('wrapperRef');
+const triggerRef = useTemplateRef<HTMLElement>('triggerRef');
 /** 普通触发器与外部触发器共用定位和容器逻辑 */
 const anchorRef = computed(() => props.virtualTriggering ? props.virtualRef : triggerRef.value);
-const contentRefComponent = ref<any>(null);
-const contentWrapperRef = computed(() => contentRefComponent.value?.el as HTMLElement | undefined);
-const contentRef = ref<HTMLElement | null>(null);
+const contentRefComponent = useTemplateRef<{ el?: HTMLElement | null }>('contentRefComponent');
+const contentWrapperRef = computed(() => contentRefComponent.value?.el ?? undefined);
+const contentRef = useTemplateRef<HTMLElement>('contentRef');
 
-const isVisible = ref(false);
-const contentStyle = ref<CSSProperties>({ top: '0px', left: '0px' });
-const arrowStyle = ref<CSSProperties>({});
+const isVisible = shallowRef(false);
+/** 定位样式与箭头样式每次都整体替换，用 shallowRef */
+const contentStyle = shallowRef<CSSProperties>({ top: '0px', left: '0px' });
+const arrowStyle = shallowRef<CSSProperties>({});
 /** 当前箭头底边长（px），短面板下会收缩，同时驱动 SVG 的渲染高度 */
-const arrowLength = ref(ARROW_LENGTH);
+const arrowLength = shallowRef(ARROW_LENGTH);
 
 const slots = useSlots();
-const hasContentSlot = computed(() => !!slots.content);
+/**
+ * content 插槽是否存在。useSlots() 在生产构建下不是响应式的，放进 computed 只会算一次；
+ * 父级用 v-if 增删插槽时会强制本组件更新，onBeforeUpdate 在重渲染前同步一次，本次渲染即可读到新值
+ */
+const hasContentSlot = shallowRef(!!slots.content);
+onBeforeUpdate(() => {
+  hasContentSlot.value = !!slots.content;
+});
 
 let openTimer: ReturnType<typeof setTimeout> | null = null;
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -161,7 +172,7 @@ let rafId: number | null = null;
 const placementState = computed(() => resolvePlacement(props.placement));
 
 /** 实际渲染方向：autoAdjustOverflow 翻转后可能与 placement 声明的方向不同 */
-const actualSide = ref<TooltipSide>('bottom');
+const actualSide = shallowRef<TooltipSide>('bottom');
 watch(placementState, (state) => { actualSide.value = state.side; }, { immediate: true });
 
 /** 各节点样式：主题槽位 + ui 覆盖，根节点再并入 class prop */
@@ -206,7 +217,7 @@ const liveText = computed(() => (props.title === undefined ? props.content : (pr
  * fresh=false（默认）时关闭期间冻结文案：destroyOnHidden=false 的场景下 DOM 保留，
  * 冻结可避免隐藏期间外部数据变化引起提示层内容抖动；fresh=true 则始终实时
  */
-const frozenText = ref('');
+const frozenText = shallowRef('');
 watch(
   [isVisible, liveText],
   ([visible, text]) => {

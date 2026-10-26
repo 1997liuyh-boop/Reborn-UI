@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { SegmentedOption, SegmentedValue } from "~/components/reborn/ui/reborn-segmented";
+import type { SegmentedOption, SegmentedProps, SegmentedUI, SegmentedValue } from "~/components/reborn/ui/reborn-segmented";
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef } from 'vue';
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { segmentedDirections, segmentedSizes } from "~/components/reborn/ui/reborn-segmented/reborn-segmented.config";
 import RebornSegmented from "~/components/reborn/ui/reborn-segmented/RebornSegmented.vue";
@@ -34,9 +34,9 @@ const defaultState: Record<string, any> = {
 };
 
 const state = ref<Record<string, any>>({ ...defaultState });
-const playgroundValue = ref<SegmentedValue>("周");
+const playgroundValue = shallowRef<SegmentedValue>("周");
 /** 演练场最近一次 change 事件的回显 */
-const lastChange = ref("尚未切换");
+const lastChange = shallowRef("尚未切换");
 
 /** 重置演练场配置 */
 function resetState() {
@@ -88,17 +88,21 @@ const segmentedCode = computed(() => {
 
 // ─── 场景演示状态 ─────────────────────────────────────────────────
 
-const basicValue = ref<SegmentedValue>("周");
-const sizeValue = ref<SegmentedValue>("list");
-const iconValue = ref<SegmentedValue>("board");
-const disabledValue = ref<SegmentedValue>("周");
-const blockValue = ref<SegmentedValue>("周");
-const verticalValue = ref<SegmentedValue>("list");
-const slotValue = ref<SegmentedValue>("pro");
-const mappedValue = ref<SegmentedValue>(2);
-const boolValue = ref<SegmentedValue>(true);
-const filledValue = ref<SegmentedValue>("board");
-const pillValue = ref<SegmentedValue>("周");
+const basicValue = shallowRef<SegmentedValue>("周");
+const sizeValue = shallowRef<SegmentedValue>("list");
+const iconValue = shallowRef<SegmentedValue>("board");
+const disabledValue = shallowRef<SegmentedValue>("周");
+const blockValue = shallowRef<SegmentedValue>("周");
+const verticalValue = shallowRef<SegmentedValue>("list");
+const slotValue = shallowRef<SegmentedValue>("pro");
+const mappedValue = shallowRef<SegmentedValue>(2);
+const boolValue = shallowRef<SegmentedValue>(true);
+const filledValue = shallowRef<SegmentedValue>("board");
+/** 定制配色：选中块用主题色，选中项文字转白 */
+const primaryFilledUi: SegmentedUI = { slider: 'bg-primary', item: 'data-[checked=true]:text-white' };
+const pillValue = shallowRef<SegmentedValue>("周");
+/** 胶囊描边：root / slider / item 一起改成全圆角，外框只留描边 */
+const pillOutlineUi: SegmentedUI = { root: 'rounded-full border border-gray-3 bg-transparent', slider: 'rounded-full bg-brand-1', item: 'rounded-full data-[checked=true]:text-primary' };
 /** 每个星期对应一种语义色，完整工具类保证 Tailwind 能静态识别。 */
 const weekdayOptions = [
   { value: "primary", label: "星期一", backgroundClass: "bg-primary", foregroundClass: "data-[checked=true]:text-white data-[checked=true]:hover:text-white" },
@@ -110,7 +114,7 @@ const weekdayOptions = [
   { value: "neutral", label: "星期日", backgroundClass: "bg-neutral", foregroundClass: "data-[checked=true]:text-gray-10 data-[checked=true]:hover:text-gray-10" },
 ];
 /** 绑定语义色值，初始选中星期一。 */
-const weekdayValue = ref<SegmentedValue>("primary");
+const weekdayValue = shallowRef<SegmentedValue>("primary");
 /** 当前星期决定滑块背景和选中文字颜色。 */
 const selectedWeekday = computed(() => weekdayOptions.find(option => option.value === weekdayValue.value) ?? weekdayOptions[0]!);
 /** 外框保持橙色胶囊，选中项在悬停时仍保留对应的文字颜色。 */
@@ -134,6 +138,8 @@ const plans: SegmentedOption[] = [
   { value: "pro", label: "专业版", price: "¥99" },
   { value: "team", label: "团队版", price: "¥299" },
 ];
+/** 插槽内是名称加价格两行，选项改为随内容撑高 */
+const twoLineItemUi: SegmentedUI = { item: 'h-auto py-2' };
 
 /** 字段名不是 value / label 的后端数据 */
 const levels = [
@@ -142,13 +148,18 @@ const levels = [
   { id: 3, name: "高" },
   { id: 4, name: "紧急", locked: true },
 ];
+/** 把后端的 id / name / locked 依次当作 value / label / disabled */
+const levelFieldNames: SegmentedProps['fieldNames'] = { value: 'id', label: 'name', disabled: 'locked' };
+
+/** 布尔取值：value 直接用 true / false */
+const switchOptions: SegmentedOption[] = [{ label: '开启', value: true }, { label: '关闭', value: false }];
 </script>
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="segmentedCode" component-name="RebornSegmented"
-      title="交互演练场" description="调节左侧参数，点击选项或用方向键切换，查看选中块的滑动与各尺寸的比例。"
+      title="交互演练场" description="调节上方参数，点击选项或用方向键切换，查看选中块的滑动与各尺寸的比例。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -243,11 +254,11 @@ const levels = [
         默认插槽替换每一项的内容，作用域里有 <code>item</code>（原始选项数据）、<code>checked</code>、<code>disabled</code>；插槽内容同样垫在选中块上面。
       </template>
       <DemoBlock layout="stack">
-        <RebornSegmented v-model="slotValue" :options="plans" size="lg" :ui="{ item: 'h-auto py-2' }">
+        <RebornSegmented v-model="slotValue" :options="plans" size="lg" :ui="twoLineItemUi">
           <template #default="{ item, checked }">
             <span class="flex flex-col items-center leading-tight">
-              <span>{{ item.label }}</span>
-              <span class="text-sm" :class="checked ? 'text-primary' : 'text-gray-5'">{{ item.price }}</span>
+              <span>{{ typeof item === 'object' ? item.label : item }}</span>
+              <span class="text-sm" :class="checked ? 'text-primary' : 'text-gray-5'">{{ typeof item === 'object' ? item.price : '' }}</span>
             </span>
           </template>
         </RebornSegmented>
@@ -259,18 +270,18 @@ const levels = [
 
     <DemoSection title="字段映射与值类型">
       <template #description>
-        后端字段不叫 <code>value</code> / <code>label</code> / <code>disabled</code> 时用 <code>props</code> 映射；值可以是字符串、数字或布尔，按全等比较。
+        后端字段不叫 <code>value</code> / <code>label</code> / <code>disabled</code> 时用 <code>field-names</code> 映射；值可以是字符串、数字或布尔，按全等比较。
       </template>
       <DemoBlock layout="grid" :columns="2">
         <div class="flex flex-col items-start gap-2">
           <RebornSegmented
-            v-model="mappedValue" :options="levels" :props="{ value: 'id', label: 'name', disabled: 'locked' }"
+            v-model="mappedValue" :options="levels" :field-names="levelFieldNames"
           />
           <span class="font-mono text-xs text-gray-6">v-model：{{ mappedValue }}（{{ typeof mappedValue }}）</span>
         </div>
         <div class="flex flex-col items-start gap-2">
           <RebornSegmented
-            v-model="boolValue" :options="[{ label: '开启', value: true }, { label: '关闭', value: false }]"
+            v-model="boolValue" :options="switchOptions"
           />
           <span class="font-mono text-xs text-gray-6">v-model：{{ boolValue }}（{{ typeof boolValue }}）</span>
         </div>
@@ -285,14 +296,14 @@ const levels = [
         <div class="flex flex-col items-start gap-2">
           <RebornSegmented
             v-model="filledValue" :options="viewOptions"
-            :ui="{ slider: 'bg-primary', item: 'data-[checked=true]:text-white' }"
+            :ui="primaryFilledUi"
           />
           <span class="font-mono text-xs text-gray-6">:ui="{ slider: 'bg-primary', item: 'data-[checked=true]:text-white' }"</span>
         </div>
         <div class="flex flex-col items-start gap-2">
           <RebornSegmented
             v-model="pillValue" :options="periods"
-            :ui="{ root: 'rounded-full border border-gray-3 bg-transparent', slider: 'rounded-full bg-brand-1', item: 'rounded-full data-[checked=true]:text-primary' }"
+            :ui="pillOutlineUi"
           />
           <span class="font-mono text-xs text-gray-6">胶囊描边：root / slider / item 一起改圆角</span>
         </div>

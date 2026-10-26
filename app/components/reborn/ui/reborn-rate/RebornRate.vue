@@ -10,7 +10,7 @@ import type {
   rateSizes,
   RateTrigger,
 } from "./reborn-rate.config";
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, shallowRef } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 
 import { tv } from "~/lib/tv";
@@ -22,7 +22,6 @@ defineOptions({
 });
 
 const props = withDefaults(defineProps<RateProps>(), {
-  modelValue: 0,
   count: 5,
   allowHalf: false,
   clearable: false,
@@ -40,13 +39,25 @@ const props = withDefaults(defineProps<RateProps>(), {
 });
 
 const emit = defineEmits<{
-  (e: "update:modelValue", value: number): void;
+  /** 分值变化时触发，与 update:modelValue 同时发出 */
   (e: "change", value: number): void;
 }>();
 
+defineSlots<{
+  /** 自定义单颗星的图标：每颗星渲染两次，active 为 false 是未选中层、为 true 是选中层 */
+  icon?: (props: { index: number; active: boolean }) => any;
+  /** 自定义分数区域：value 为已提交的分值，text 为 formatText 的返回值（未传时为空串） */
+  value?: (props: { value: number; text: string }) => any;
+}>();
+
+/**
+ * 当前评分（v-model），读取时按 0 ~ count 夹取，越界值不会进入渲染。
+ * 受控时只显示父级给的值：父级不接收更新，星形就停在原值，不会与绑定值分叉；
+ * 只传 :model-value 不监听更新、或完全不绑定时，由 defineModel 在本地暂存改动。
+ */
+const model = defineModel<number>({ default: 0, get: value => clamp(value) });
+
 export interface RateProps {
-  /** 当前评分 */
-  modelValue?: number;
   /** 星星总数，也是最大分值：分数与自定义文案都以它为上限 */
   count?: number;
   /** 允许半星 */
@@ -144,12 +155,9 @@ function clamp(value: number) {
   return Math.max(0, Math.min(props.count, value));
 }
 
-// 当前评分（已提交的值）
-const currentValue = ref<number>(clamp(props.modelValue));
-
-// 判断当前星星是否为半星状态
+// 判断当前星星是否为半星状态（按已提交的值）
 function isHalf(index: number): boolean {
-  return props.allowHalf && currentValue.value >= index - 0.5 && currentValue.value < index;
+  return props.allowHalf && model.value >= index - 0.5 && model.value < index;
 }
 
 /** 单颗星的选中图标名：半星优先用 halfIcon，其余用 activeIcon（未传 icons 时的默认逻辑） */
@@ -161,18 +169,18 @@ function getActiveIcon(index: number) {
 }
 
 // Web 增强：鼠标移动时按指针位置换算分数。click 模式只做悬停预览（hoverValue），hover 模式直接写入分数
-const hoverValue = ref(-1);
+const hoverValue = shallowRef(-1);
 let moveRaf = 0;
 
 /**
  * 点击后锁住的预览位（click 模式）：指针仍停在刚点过的那颗星上时不再做悬停预览，
  * 否则清零后指针稍一移动，那几颗星又会以预览态亮起来，看起来像没清掉；移到别的星或移出后解锁
  */
-const lockedPreview = ref<number | null>(null);
+const lockedPreview = shallowRef<number | null>(null);
 
 /** 当前展示的分值：悬停预览优先，其次是已提交的值。只驱动星形（点亮、分段颜色、分段图标）；分数与自定义文案显示已提交的值 */
 const displayValue = computed(() =>
-  hoverValue.value >= 0 ? hoverValue.value : currentValue.value,
+  hoverValue.value >= 0 ? hoverValue.value : model.value,
 );
 
 function isHalfDisplay(index: number): boolean {
@@ -254,7 +262,7 @@ function activeStyle(index: number) {
 
 /** formatText 返回的文案（基于已提交的分值，不随悬停预览变化）；未传时为空 */
 const formattedText = computed(() =>
-  props.formatText ? props.formatText(currentValue.value) : "",
+  props.formatText ? props.formatText(model.value) : "",
 );
 
 /** 该星是否整颗点亮：此时未选中层被完全盖住，直接隐藏，避免形状不同的分段图标叠在一起露出边角 */
@@ -296,7 +304,7 @@ function onClick(e: MouseEvent, index: number) {
   hoverValue.value = -1;
 
   // 再次点击当前分值：开启 clearable 才清零，否则保持不变
-  if (currentValue.value === next) {
+  if (model.value === next) {
     if (props.clearable) updateValue(0);
     return;
   }
@@ -313,6 +321,7 @@ function onMouseMove(e: MouseEvent) {
   const wrapper = e.currentTarget as HTMLElement;
 
   moveRaf = requestAnimationFrame(() => {
+    moveRaf = 0;
     const stars = wrapper.querySelectorAll<HTMLElement>(".reborn-rate__star");
     const last = stars[stars.length - 1];
     // 指针滑到星形右侧（分数 / 自定义文案区域）时不再换算：否则预览或分数会被顶成满分
@@ -350,29 +359,24 @@ function onMouseMove(e: MouseEvent) {
 
 function onMouseLeave() {
   if (moveRaf) cancelAnimationFrame(moveRaf);
+  moveRaf = 0;
   hoverValue.value = -1;
   lockedPreview.value = null;
 }
 
-// 更新值
-function updateValue(newValue: number) {
-  if (currentValue.value !== newValue) {
-    currentValue.value = newValue;
-    emit("update:modelValue", newValue);
-    emit("change", newValue);
-    validate("change");
-  }
-}
+// 卸载时取消排队中的指针换算：hover 模式的回调会写分值并发事件，不能在卸载后还向父级发出 update:modelValue
+onBeforeUnmount(() => {
+  if (moveRaf) cancelAnimationFrame(moveRaf);
+  moveRaf = 0;
+});
 
-// 同步外部值
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (val !== currentValue.value) {
-      currentValue.value = clamp(val);
-    }
-  },
-);
+// 更新值：受控时赋值后同步读到的仍是旧值，事件载荷用本地算出的新值
+function updateValue(newValue: number) {
+  if (model.value === newValue) return;
+  model.value = newValue;
+  emit("change", newValue);
+  validate("change");
+}
 
 // ─── 实例方法 ───────────────────────────────────────────────
 
@@ -387,10 +391,16 @@ function setCurrentValue(value: number) {
   updateValue(next);
 }
 
-/** 重置当前分数：清除悬停预览，并把内部值同步回 modelValue（非受控用法下可撤销未被父级接收的改动） */
+/**
+ * 重置当前分数：清除悬停预览，并把本地暂存的值同步回 modelValue。
+ * 只有本地暂存过改动（只传 :model-value 不监听更新、或完全不绑定）时才有可见效果；
+ * 写回的是父级当前的值，即使发出 update:modelValue，父级取值也不变，不触发 change。
+ */
 function resetCurrentValue() {
   hoverValue.value = -1;
-  currentValue.value = clamp(props.modelValue);
+  lockedPreview.value = null;
+  // defineModel 声明的 modelValue 同样在 props 上，只是不在 RateProps 类型里
+  model.value = clamp((props as RateProps & { modelValue?: number }).modelValue ?? 0);
 }
 
 defineExpose({ setCurrentValue, resetCurrentValue });
@@ -419,8 +429,8 @@ defineExpose({ setCurrentValue, resetCurrentValue });
     </div>
 
     <!-- 分数 / 自定义文案：显示已提交的值，悬停只预览星形；传了 formatText 时显示其返回值 -->
-    <slot name="value" :value="currentValue" :text="formattedText">
-      <span v-if="formatText || showValue" :class="ui.value()">{{ formatText ? formattedText : currentValue }}</span>
+    <slot name="value" :value="model" :text="formattedText">
+      <span v-if="formatText || showValue" :class="ui.value()">{{ formatText ? formattedText : model }}</span>
     </slot>
   </div>
 </template>

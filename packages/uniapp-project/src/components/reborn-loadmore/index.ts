@@ -1,6 +1,3 @@
-// @ts-ignore
-import RebornLoadmore from './reborn-loadmore.vue'
-
-export default RebornLoadmore
-export { RebornLoadmore }
-export type { LoadMoreState } from './reborn-loadmore.vue'
+export { LoadMoreState } from './reborn-loadmore.config'
+export type { LoadMoreProps } from './RebornLoadmore.vue'
+export { default as RebornLoadmore } from './RebornLoadmore.vue'

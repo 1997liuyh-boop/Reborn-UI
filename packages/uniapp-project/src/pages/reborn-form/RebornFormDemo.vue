@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import * as z from 'zod'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
@@ -19,7 +19,7 @@ import RebornTextarea from '@/components/reborn-textarea/RebornTextarea.vue'
 
 interface FormData {
   username: string
-  gender: string
+  gender: 0 | 1 | 2 | undefined
   password: string
   newPassword: string
   email: string
@@ -35,21 +35,22 @@ interface FormData {
 }
 
 interface Contact {
+  id: number
   name: string
   phone: string
   email: string
   no: number
 }
 
-const formRef = ref()
-const immediateValidate = ref(true)
+const formRef = ref<InstanceType<typeof RebornForm> | null>(null)
+const immediateValidate = shallowRef(true)
 const formTrigger = computed<'none' | Array<'blur' | 'change'>>(() => immediateValidate.value ? ['change', 'blur'] : 'none')
 /** 关闭后表单项不再渲染错误文字，控件的错误描边仍在，用来对照 show-message 的效果 */
-const showMessage = ref(true)
+const showMessage = shallowRef(true)
 
 const form = ref<FormData>({
   username: '乐一番',
-  gender: 'male',
+  gender: 1,
   password: 'aA123456789!',
   newPassword: 'aA1234562789!',
   email: '1114321@qq.com',
@@ -132,8 +133,10 @@ const rules = z.object({
     }),
 })
 
+let contactId = 0
 function addContact() {
   form.value.contacts.push({
+    id: ++contactId,
     phone: '',
     email: '',
     name: '',
@@ -142,12 +145,10 @@ function addContact() {
 }
 
 async function submit() {
-  console.log(form.value)
   if (!formRef.value) { return }
 
-  const valid = await formRef.value.validate((isValid: boolean, errors: any[]) => {
+  const valid = await formRef.value.validate((isValid: boolean) => {
     if (!isValid) {
-      console.log('Validation failed:', errors)
       uni.showToast({
         title: '请检查表单',
         icon: 'none',
@@ -160,7 +161,6 @@ async function submit() {
       title: '提交成功',
       icon: 'success',
     })
-    console.log('Form data:', form.value)
   }
 }
 
@@ -284,7 +284,7 @@ function scrollToBio() {
               </RebornButton>
             </view>
           </template>
-          <view v-for="(contact, index) in form.contacts" :key="index"
+          <view v-for="(contact, index) in form.contacts" :key="contact.id"
             class="mb-4 flex flex-col rounded-xl p-4 ring-1 ring-gray-200">
             <view class="
                 mb-4 flex items-center gap-1 border-b border-gray-200 pb-2

@@ -12,6 +12,7 @@
   "pitfalls": [
     "仅 web 端可用，依赖 @number-flow/vue、@vueuse/core、motion-v。",
     "展开区内容通过默认插槽传入。",
-    "title 默认为 \"Progress\"，height 默认 44。"
+    "title 默认为 \"Progress\"，height 默认 44。",
+    "深浅配色读取 Nuxt 的 useColorMode（@nuxtjs/color-mode，@nuxt/ui 已内置），只读不改写 html 的主题类；页面不可滚动时进度为 0。"
   ]
 }

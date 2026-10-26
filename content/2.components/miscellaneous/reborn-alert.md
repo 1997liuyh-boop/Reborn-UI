@@ -94,7 +94,7 @@ Alert 是嵌在页面流里的提示条，用来说明当前状态，不打断�
 
 `closable` 展示关闭按钮。点击后组件先把 `show` 置为 `false`，再触发 `close`；淡出过渡结束后触发 `after-close`。
 
-不绑定 `show` 时，组件自行维护显隐（默认 `true`），关掉后无法从外部重新唤起。需要「重新显示」时才绑定 `v-model:show`。
+不绑定 `show` 时，组件自行维护显隐（默认 `true`），关掉后无法从外部重新唤起。需要「重新显示」时才绑定 `v-model:show`；绑定后显式的 `undefined` / `null` 按隐藏渲染，两端一致。
 
 ```vue
 <script setup lang="ts">
@@ -222,7 +222,7 @@ const current = ref(0);
 | `direction`    | `'vertical' \| 'horizontal'`                                                           | `'vertical'` | 轮播方向，`horizontal` 为水平跑马灯。                             |
 | `speed`        | `number`                                                                               | `60`         | 水平跑马灯的滚动速率，单位 px/s。                                 |
 | `rows`         | `number`                                                                               | `1`          | 垂直轮播同时可见的行数，按 `Math.max(1, Math.floor(rows))` 取整。 |
-| `v-model:show` | `boolean`                                                                              | `true`       | 显隐状态，点击关闭按钮会置为 `false`。                            |
+| `v-model:show` | `boolean` | `undefined` | 显隐状态；未绑定时内部默认可见，显式 `undefined` / `null` 按隐藏渲染，关闭按钮会置为 `false`。 |
 | `class`        | `any`                                                                                  | -            | 根节点类名，与 `ui.root` 一起并入根节点。                         |
 | `ui`           | `AlertUI`                                                                              | -            | 细粒度样式覆盖，键位见「自定义样式（ui）」。                      |
 
@@ -249,7 +249,7 @@ const current = ref(0);
 | `direction`    | `'vertical' \| 'horizontal'`                                                           | `'vertical'`   | 轮播方向，`horizontal` 为水平跑马灯。                             |
 | `speed`        | `number`                                                                               | `60`           | 水平跑马灯的滚动速率，单位 px/s。                                 |
 | `rows`         | `number`                                                                               | `1`            | 垂直轮播同时可见的行数，按 `Math.max(1, Math.floor(rows))` 取整。 |
-| `v-model:show` | `boolean`                                                                              | `true`         | 显隐状态，点击关闭按钮会置为 `false`。                            |
+| `v-model:show` | `boolean` | `undefined` | 显隐状态；未绑定时内部默认可见，显式 `undefined` / `null` 按隐藏渲染，关闭按钮会置为 `false`。与 Web 端语义相同。 |
 | `custom-class` | `string`                                                                               | `''`           | 根节点类名。小程序里 `class` 不能透传到组件内部，所以改用此属性。 |
 | `ui`           | `AlertUI`                                                                              | `{}`           | 细粒度样式覆盖，键位见「自定义样式（ui）」。                      |
 

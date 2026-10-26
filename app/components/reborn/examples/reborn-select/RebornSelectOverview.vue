@@ -5,10 +5,10 @@
  * 只渲染触发框、不展开下拉面板：面板默认挂到 body 上，会逃出卡片。
  */
 import type { SelectOption } from '~/components/reborn/ui/reborn-select/RebornSelect.vue'
-import { ref } from 'vue'
+import { shallowRef } from 'vue';
 import RebornSelect from '~/components/reborn/ui/reborn-select/RebornSelect.vue'
 
-const city = ref('beijing')
+const city = shallowRef('beijing')
 
 const options: SelectOption[] = [
   { label: '北京', value: 'beijing' },

@@ -12,18 +12,22 @@ badge: New
 
 ## 简介
 
-验证码输入将一个隐藏的真实输入框渲染为 `length` 个分格，逐位回显输入内容并在当前位显示闪烁光标；输满指定位数时触发 `done` 事件并自动收起焦点/键盘，适合「输完即提交」的验证码流程。web 端输入框带 `autocomplete="one-time-code"`，支持系统短信验证码自动填充。web 与 uniapp 双端可用。
+InputOtp 是 Web 与 UniApp 均可用的固定位数分格输入组件，适合验证码与 OTP。
 
-适用场景：
+`modelValue` 保存文本，`length` 决定位数，`inputType` 决定允许的输入类型；达到指定位数时派发 `done` 并收起焦点。
 
-- 登录、注册时输入短信/邮箱验证码。
-- 支付密码等固定位数的分格输入。
-- 输入满位后需要自动触发提交（`done` 事件）时。
+`autofocus` / `disabled` 控制聚焦与交互，`size` / `color` 控制尺寸和颜色，`ui` 可覆盖格子、文字和光标区域。
 
-不适用场景：
+### 何时使用
 
-- 普通文本输入，改用 `reborn-input`。
-- 数值步进增减，改用 `reborn-input-number`。
+- 短信验证码分格录入——用 `length` 指定固定位数。
+- 需要从外部回填或清空验证码——用 `modelValue` 同步文本。
+- 验证请求期间禁止继续输入——用 `disabled` 控制交互。
+
+### 何时不使用
+
+- 长度不固定的普通文本——改用 `reborn-input`。
+- 需要加减步进的数值——改用 `reborn-input-number`。
 
 ## 用法
 
@@ -86,7 +90,6 @@ function onDone(value: string) {
 ```
 
 ## API
-
 ### Props
 
 | 属性名 | 类型 | 默认值 | 描述 |
@@ -122,10 +125,18 @@ function onDone(value: string) {
 | `value` | 格子内回显的字符。 |
 | `cursor` | 当前位的闪烁光标。 |
 
+## 两端差异对照
+
+| 维度 | Web | UniApp |
+| --- | --- | --- |
+| 输入类型 | text / number | text / number / digit |
+| 类名入口 | class | customClass |
+
 ## 注意事项
 
-- web、uniapp 双端可用。
-- `length` 默认 4 位；输满指定位数触发 `done` 事件并自动失焦（uniapp 端调用 `uni.hideKeyboard()`）。
-- `inputType` 默认 `number`（自动过滤非数字并唤起数字键盘）；web 端支持 `text` / `number`，uniapp 端额外支持 `digit`。
-- 无插槽，格子样式通过 `ui` / `size` / `color` 配置；根节点类名 web 端用 `class`、uniapp 端用 `customClass`。
-- web 端真实输入框隐藏在格子后方并带 `autocomplete="one-time-code"`，支持短信验证码自动填充；点击任意格子会聚焦该输入框。
+- **两端使用同一位数模型**。两端均按 length 分格并以字符串同步模型，接入时应保留验证码前导零。
+- **输满后自动结束输入**。`length` 默认 4 位；输满指定位数触发 `done` 事件并自动失焦（uniapp 端调用 `uni.hideKeyboard()`）。
+- **输入类型决定过滤与键盘**。`inputType` 默认 `number`（自动过滤非数字并唤起数字键盘）；web 端支持 `text` / `number`，uniapp 端额外支持 `digit`。web 端 `text` 时 `inputmode` 随之切换为 `text`，移动端弹出全键盘，字母数字混合的验证码可以输入。
+- **web 端透传属性落在隐藏的原生输入框上**。`id`、`name`、`aria-label`、`data-*` 与未声明的事件监听都作用于真实的 input（`<label for>` 关联、表单提交、读屏都以它为准）；`style` 作用于根节点，`class` 照旧走 prop。
+- **格子外观通过属性定制**。无插槽，格子样式通过 `ui` / `size` / `color` 配置；根节点类名 web 端用 `class`、uniapp 端用 `customClass`。
+- **短信填充依赖真实输入框**。web 端真实输入框隐藏在格子后方并带 `autocomplete="one-time-code"`，支持短信验证码自动填充；点击任意格子会聚焦该输入框。

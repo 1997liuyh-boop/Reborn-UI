@@ -4,11 +4,11 @@
  *
  * 只放三个平铺菜单项、不放子菜单：展开的子菜单会把高度撑出卡片。
  */
-import { ref } from 'vue'
+import { shallowRef } from 'vue';
 import RebornMenu from '~/components/reborn/ui/reborn-menu/RebornMenu.vue'
 import RebornMenuItem from '~/components/reborn/ui/reborn-menu/RebornMenuItem.vue'
 
-const selectedKeys = ref(['1'])
+const selectedKeys = shallowRef(['1'])
 </script>
 
 <template>

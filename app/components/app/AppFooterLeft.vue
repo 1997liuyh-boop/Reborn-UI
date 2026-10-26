@@ -4,7 +4,7 @@ const year = new Date().getFullYear();
 </script>
 
 <template>
-  <div class="text-muted text-sm">
+  <div class="text-muted text-sm" data-allow-mismatch="text">
     © {{ year }} Reborn UI. Be yourself.
   </div>
 </template>

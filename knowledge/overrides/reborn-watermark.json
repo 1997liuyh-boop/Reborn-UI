@@ -12,7 +12,7 @@
   "pitfalls": [
     "web 与 uniapp 双端均可用。",
     "被加水印的内容须放在 default 插槽内，水印覆盖该容器。",
-    "image 建议使用 2x 或 3x 图像；知识条目未说明 image 与 content 同时传入时的优先级。",
+    "image 建议使用 2x 或 3x 图像；与 content 同时传入时优先绘制图片，Web 端图片加载失败时回退为 content 文字水印。",
     "offset 默认为 gap 的一半，rotate 默认 -22 度。"
   ]
 }

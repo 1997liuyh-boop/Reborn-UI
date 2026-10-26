@@ -5,10 +5,10 @@
  * 属性组默认 24px 的组间距在卡片里显得松散，用 ui 收到 12px；标题降一档字号。
  * 标题自带 dark:text-gray-1，而 gray 色阶在暗色下会反转成近底色，这里同时覆盖暗色下的文字色，避免标题消失。
  */
-import { ref } from 'vue'
+import { shallowRef } from 'vue';
 import RebornSku from '~/components/reborn/ui/reborn-sku/RebornSku.vue'
 
-const selected = ref<Record<string, any>>({
+const selected = shallowRef<Record<string, any>>({
   color: 'black',
   size: 'M',
 })

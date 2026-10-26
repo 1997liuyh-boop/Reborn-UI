@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Component } from "vue";
 import type { PageHeaderUI } from "./reborn-page-header.config";
-import { computed, useSlots } from "vue";
+import { computed } from "vue";
 import { cn } from "~/lib/utils";
 import { pageHeaderTheme } from "./reborn-page-header.config";
 
@@ -43,11 +43,6 @@ const emit = defineEmits<{
   back: [event: MouseEvent | KeyboardEvent];
 }>();
 
-const slots = useSlots();
-
-const showIcon = computed(() => Boolean(slots.icon || props.icon));
-const hasContent = computed(() => Boolean(slots.content || props.content));
-
 function handleKeydown(event: KeyboardEvent) {
   if (event.key !== "Enter" && event.key !== " ")
     return;
@@ -84,7 +79,8 @@ const ui = computed(() => {
     <div :class="ui.header()">
       <div :class="ui.left()">
         <div :class="ui.back()" role="button" tabindex="0" @click="emit('back', $event)" @keydown="handleKeydown">
-          <div v-if="showIcon" :class="ui.icon()" aria-hidden="true">
+          <!-- 插槽有无在渲染期判断：slots 不是响应式对象，放进 computed 会一直缓存首次结果 -->
+          <div v-if="$slots.icon || icon" :class="ui.icon()" aria-hidden="true">
             <slot name="icon">
               <Icon v-if="typeof icon === 'string'" :name="icon" class="size-6" />
               <component :is="icon" v-else class="size-6" />
@@ -97,7 +93,7 @@ const ui = computed(() => {
           </div>
         </div>
 
-        <template v-if="hasContent">
+        <template v-if="$slots.content || content">
           <div :class="ui.divider()" aria-hidden="true" />
           <div :class="ui.content()">
             <slot name="content">

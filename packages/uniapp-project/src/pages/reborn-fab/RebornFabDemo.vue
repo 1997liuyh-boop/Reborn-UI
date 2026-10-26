@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornFab from '@/components/reborn-fab/RebornFab.vue'
@@ -9,13 +9,12 @@ import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornText from '@/components/reborn-text/RebornText.vue'
 import { fabColors, fabDirections, fabPositions, type FabActionItem } from '@/components/reborn-fab/reborn-fab.config'
 
-const active1 = ref(false)
-const defaultActive = ref(false)
-const draggable = ref(false)
-const useTriggerSlot = ref(false)
-const demoColor = ref<any>('primary')
-const demoDirection = ref<any>('top')
-const demoPosition = ref<any>('right-bottom')
+const active1 = shallowRef(false)
+const draggable = shallowRef(false)
+const useTriggerSlot = shallowRef(false)
+const demoColor = shallowRef<typeof fabColors[number]>('primary')
+const demoDirection = shallowRef<typeof fabDirections[number]>('top')
+const demoPosition = shallowRef<typeof fabPositions[number]>('right-bottom')
 
 const fabDemoItems: FabActionItem[] = [
     { name: '分享', icon: 'i-lucide-share-2', color: 'primary' },
@@ -59,8 +58,8 @@ function handleAction(name: string) {
             </RebornRadioGroup>
 
             <view class="flex items-center justify-between">
-                <RebornText color="neutral">默认展开 (activeProp)</RebornText>
-                <RebornSwitch v-model="defaultActive" />
+                <RebornText color="neutral">当前展开 (v-model)</RebornText>
+                <RebornSwitch v-model="active1" />
             </view>
 
             <view class="flex items-center justify-between">
@@ -79,7 +78,7 @@ function handleAction(name: string) {
         </RebornCard>
 
         <!-- 演示组件 -->
-        <RebornFab v-if="!useTriggerSlot" v-model="active1" :active="defaultActive" :color="demoColor"
+        <RebornFab v-if="!useTriggerSlot" v-model="active1" :color="demoColor"
             :draggable="draggable" :direction="demoDirection" expandable :position="demoPosition" :items="fabDemoItems"
             @click="handleClick" @action="({ name }) => handleAction(name)" />
 

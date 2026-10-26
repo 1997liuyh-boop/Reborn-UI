@@ -41,9 +41,9 @@ const notifications = [
 <template>
   <ClientOnly>
     <div class="relative flex h-[500px] w-full flex-col overflow-hidden p-6">
-      <AnimatedList>
-        <template #default>
-          <Notification v-for="(item, idx) in notifications" :key="idx" :name="item.name"
+      <AnimatedList :items="notifications">
+        <template #item="{ item }">
+          <Notification :name="item.name"
             :description="item.description" :icon="item.icon" :color="item.color" :time="item.time" />
         </template>
       </AnimatedList>

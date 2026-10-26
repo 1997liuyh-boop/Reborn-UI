@@ -1,6 +1,6 @@
 ---
 title: Tabs 标签页
-description: 双端标签页：key 驱动切换，7 种类型 × 4 种尺寸，支持可编辑、懒加载与滚动定位。
+description: 双端标签页：paneKey 驱动切换，7 种类型 × 4 种尺寸，支持可编辑、懒加载与滚动定位。
 category: 导航
 platform: both
 tags: [css, tailwind, tabs, uniapp]
@@ -16,7 +16,7 @@ Tabs 用于在多个平级内容区之间切换，Web 与 UniApp 两端同名同
 
 它的样式体系由两个正交维度构成：`type` 决定**标签的形态**（下划线、卡片、胶囊还是纯文字），`color` 决定**选中态的语义色**。7 种类型 × 7 种语义色覆盖了从页面级主导航到局部分段控件的完整梯度；`color` 直接落成色板的语义类名（`bg-primary`、`text-primary` 这类），下划线、选中态文字、胶囊底色都取同一档色值，因此换色不需要为每种类型单独定制。
 
-在此之上，其余 API 分成四组：**布局**由 `position`（四向）、`direction`、`justify`、`stretch`、`header-padding`（仅 UniApp）控制；**尺寸**由 `size` 的 3 档控制；**渲染策略**由 `lazy-load`、`destroy-on-hidden`、`animation`、`hide-content` 控制；**交互**由 `trigger`、`scroll-position`、`overflow`（仅 Web）、`draggable`（仅 Web）、`editable` / `show-add-button` / `auto-switch` 控制。其中 `animation` 是一个总开关而不只是淡入淡出：开启后内容切换走缩放、位移与模糊的复合过渡，内容区高度也随之平滑过渡，详见[切换动画](#切换动画)。选中项统一用 `key` 标识（`v-model:active-key`），而不是索引，因此增删标签不会让选中项发生漂移。
+在此之上，其余 API 分成四组：**布局**由 `position`（四向）、`direction`、`justify`、`stretch`、`header-padding`（仅 UniApp）控制；**尺寸**由 `size` 的 3 档控制；**渲染策略**由 `lazy-load`、`destroy-on-hidden`、`animation`、`hide-content` 控制；**交互**由 `trigger`、`scroll-position`、`overflow`（仅 Web）、`draggable`（仅 Web）、`editable` / `show-add-button` / `auto-switch` 控制。其中 `animation` 是一个总开关而不只是淡入淡出：开启后内容切换走缩放、位移与模糊的复合过渡，内容区高度也随之平滑过渡，详见[切换动画](#切换动画)。选中项统一用 `paneKey` 标识（`v-model:active-key`），而不是索引，因此增删标签不会让选中项发生漂移。
 
 ### 何时使用
 
@@ -38,7 +38,7 @@ Tabs 用于在多个平级内容区之间切换，Web 与 UniApp 两端同名同
 
 ### 基础用法
 
-用 `v-model:active-key` 绑定选中标签的 key。每个 `RebornTabPane` 的 key 来自 Vue 的 `key` 属性，`title` 决定头部文本。
+用 `v-model:active-key` 绑定选中标签的 key。每个 `RebornTabPane` 的业务标识来自 `paneKey` prop，`title` 决定头部文本。
 
 ```vue
 <script setup lang="ts">
@@ -50,9 +50,9 @@ const activeKey = ref("overview");
 
 <template>
   <RebornTabs v-model:active-key="activeKey">
-    <RebornTabPane key="overview" title="概览">概览内容</RebornTabPane>
-    <RebornTabPane key="detail" title="详情">详情内容</RebornTabPane>
-    <RebornTabPane key="log" title="日志">日志内容</RebornTabPane>
+    <RebornTabPane key="overview" pane-key="overview" title="概览">概览内容</RebornTabPane>
+    <RebornTabPane key="detail" pane-key="detail" title="详情">详情内容</RebornTabPane>
+    <RebornTabPane key="log" pane-key="log" title="日志">日志内容</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -60,7 +60,7 @@ const activeKey = ref("overview");
 不需要受控时可以省略 `v-model:active-key`，用 `default-active-key` 给初值；两者都不写则选中第一个标签。
 
 ::warning
-选中标识取自 `RebornTabPane` 的 **Vue `key` 属性**，不是同名 prop。省略 `key` 时父组件会按注册顺序补 `0`、`1`、`2`… 的序号，此时增删标签会让 key 整体错位，因此除固定不变的静态标签外都应显式写 `key`。
+选中标识使用 `pane-key`，Vue `key` 只负责组件身份。Web 端省略 `pane-key` 时按面板在插槽里的书写位置编号，`v-if` 隐藏的面板仍占一位，所以前面的面板显隐不会改变后面面板的编号；UniApp 端按登记顺序编号。`v-for` 生成的面板必须同时传稳定 `:key`、`:pane-key` 与 `:order="index"`，插入、删除与换序后才能保留业务选中项与面板内的状态。
 ::
 
 ### 类型与位置
@@ -80,8 +80,8 @@ const activeKey = ref("overview");
 ```vue
 <template>
   <RebornTabs type="card-gutter">
-    <RebornTabPane key="a" title="标签 A">A</RebornTabPane>
-    <RebornTabPane key="b" title="标签 B">B</RebornTabPane>
+    <RebornTabPane key="a" pane-key="a" title="标签 A">A</RebornTabPane>
+    <RebornTabPane key="b" pane-key="b" title="标签 B">B</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -96,8 +96,8 @@ const activeKey = ref("overview");
 <template>
   <div class="h-40">
     <RebornTabs position="left">
-      <RebornTabPane key="base" title="基本信息">基本信息</RebornTabPane>
-      <RebornTabPane key="safe" title="安全设置">安全设置</RebornTabPane>
+      <RebornTabPane key="base" pane-key="base" title="基本信息">基本信息</RebornTabPane>
+      <RebornTabPane key="safe" pane-key="safe" title="安全设置">安全设置</RebornTabPane>
     </RebornTabs>
   </div>
 </template>
@@ -152,8 +152,8 @@ const activeKey = ref("overview");
 ```vue
 <template>
   <RebornTabs>
-    <RebornTabPane key="a" title="可用">可用</RebornTabPane>
-    <RebornTabPane key="b" title="禁用" disabled>禁用</RebornTabPane>
+    <RebornTabPane key="a" pane-key="a" title="可用">可用</RebornTabPane>
+    <RebornTabPane key="b" pane-key="b" title="禁用" disabled>禁用</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -189,7 +189,7 @@ function handleDelete(key: string) {
 
 <template>
   <RebornTabs v-model:active-key="activeKey" editable show-add-button @add="handleAdd" @delete="handleDelete">
-    <RebornTabPane v-for="pane in panes" :key="pane.key" :title="pane.title" />
+    <RebornTabPane v-for="(pane, paneIndex) in panes" :order="paneIndex" :key="pane.key" :pane-key="pane.key" :title="pane.title" />
   </RebornTabs>
 </template>
 ```
@@ -208,7 +208,7 @@ function handleDelete(key: string) {
 ```vue
 <template>
   <RebornTabs>
-    <RebornTabPane key="inbox">
+    <RebornTabPane key="inbox" pane-key="inbox">
       <template #title>
         <Icon name="lucide:inbox" />
         <span>收件箱</span>
@@ -242,7 +242,7 @@ function handleDelete(key: string) {
     <template #right-extra>
       <RebornButton size="sm" variant="text" color="neutral">刷新</RebornButton>
     </template>
-    <RebornTabPane key="a" title="全部">全部</RebornTabPane>
+    <RebornTabPane key="a" pane-key="a" title="全部">全部</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -262,7 +262,7 @@ function handleDelete(key: string) {
 ```vue
 <template>
   <RebornTabs v-model:active-key="activeKey" scroll-position="center">
-    <RebornTabPane v-for="i in 20" :key="String(i)" :title="`标签 ${i}`">第 {{ i }} 项</RebornTabPane>
+    <RebornTabPane v-for="(i, paneIndex) in 20" :order="paneIndex" :key="String(i)" :pane-key="String(i)" :title="`标签 ${i}`">第 {{ i }} 项</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -280,7 +280,7 @@ function handleDelete(key: string) {
 ```vue
 <template>
   <RebornTabs v-model:active-key="activeKey" overflow="arrows">
-    <RebornTabPane v-for="i in 24" :key="String(i)" :title="`标签 ${i}`">第 {{ i }} 项</RebornTabPane>
+    <RebornTabPane v-for="(i, paneIndex) in 24" :order="paneIndex" :key="String(i)" :pane-key="String(i)" :title="`标签 ${i}`">第 {{ i }} 项</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -300,9 +300,9 @@ UniApp 端没有该参数。触屏上滑动本身就是自然手势，`<scroll-v
 ```vue
 <template>
   <RebornTabs type="capsule" stretch>
-    <RebornTabPane key="day" title="日">按日统计</RebornTabPane>
-    <RebornTabPane key="week" title="周">按周统计</RebornTabPane>
-    <RebornTabPane key="month" title="月">按月统计</RebornTabPane>
+    <RebornTabPane key="day" pane-key="day" title="日">按日统计</RebornTabPane>
+    <RebornTabPane key="week" pane-key="week" title="周">按周统计</RebornTabPane>
+    <RebornTabPane key="month" pane-key="month" title="月">按月统计</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -323,15 +323,15 @@ function handleSort(keys: (string | number)[]) {
 
 <template>
   <RebornTabs v-model:active-key="activeKey" draggable @sort="handleSort">
-    <RebornTabPane key="home" title="首页">首页</RebornTabPane>
-    <RebornTabPane key="monitor" title="监控">监控</RebornTabPane>
-    <RebornTabPane key="report" title="报表">报表</RebornTabPane>
+    <RebornTabPane key="home" pane-key="home" title="首页">首页</RebornTabPane>
+    <RebornTabPane key="monitor" pane-key="monitor" title="监控">监控</RebornTabPane>
+    <RebornTabPane key="report" pane-key="report" title="报表">报表</RebornTabPane>
   </RebornTabs>
 </template>
 ```
 
 ::warning
-拖拽排序过一次之后，组件不再按内容节点的 DOM 顺序重排头部（两套顺序会互相打架）。此后用 `v-if` 往中间插入的新标签会排到末尾，动态增删频繁的列表建议在 `sort` 事件里同步调整数据顺序。
+拖拽后的本地头部顺序会保留，旧 `order` 不会自动覆盖它。父级在 `sort` 后改写完整 `order` 时才重新接管排序；需要持久化时同步重排数据，并重新传入每项下标。
 ::
 
 ### 触发方式：悬停切换
@@ -341,8 +341,8 @@ function handleSort(keys: (string | number)[]) {
 ```vue
 <template>
   <RebornTabs trigger="hover" type="rounded">
-    <RebornTabPane key="day" title="日">日视图</RebornTabPane>
-    <RebornTabPane key="week" title="周">周视图</RebornTabPane>
+    <RebornTabPane key="day" pane-key="day" title="日">日视图</RebornTabPane>
+    <RebornTabPane key="week" pane-key="week" title="周">周视图</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -361,8 +361,8 @@ UniApp 端 `hover` 仅在 H5 生效。小程序与 APP 没有鼠标悬停事件�
 ```vue
 <template>
   <RebornTabs lazy-load>
-    <RebornTabPane key="a" title="立即挂载">A</RebornTabPane>
-    <RebornTabPane key="b" title="首次进入才挂载">B</RebornTabPane>
+    <RebornTabPane key="a" pane-key="a" title="立即挂载">A</RebornTabPane>
+    <RebornTabPane key="b" pane-key="b" title="首次进入才挂载">B</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -378,8 +378,8 @@ UniApp 端 `hover` 仅在 H5 生效。小程序与 APP 没有鼠标悬停事件�
 ```vue
 <template>
   <RebornTabs type="rounded" animation>
-    <RebornTabPane key="brief" title="摘要">两行文字</RebornTabPane>
-    <RebornTabPane key="detail" title="明细">
+    <RebornTabPane key="brief" pane-key="brief" title="摘要">两行文字</RebornTabPane>
+    <RebornTabPane key="detail" pane-key="detail" title="明细">
       <p v-for="index in 8" :key="index">第 {{ index }} 行明细</p>
     </RebornTabPane>
   </RebornTabs>
@@ -410,8 +410,8 @@ UniApp 端 `hover` 仅在 H5 生效。小程序与 APP 没有鼠标悬停事件�
 <template>
   <div class="h-56">
     <RebornTabs justify>
-      <RebornTabPane key="list" title="列表">列表内容</RebornTabPane>
-      <RebornTabPane key="chart" title="图表">图表内容</RebornTabPane>
+      <RebornTabPane key="list" pane-key="list" title="列表">列表内容</RebornTabPane>
+      <RebornTabPane key="chart" pane-key="chart" title="图表">图表内容</RebornTabPane>
     </RebornTabs>
   </div>
 </template>
@@ -432,8 +432,8 @@ UniApp 端 `hover` 仅在 H5 生效。小程序与 APP 没有鼠标悬停事件�
       tab: 'tracking-wide',
     }"
   >
-    <RebornTabPane key="a" title="设计">设计</RebornTabPane>
-    <RebornTabPane key="b" title="研发">研发</RebornTabPane>
+    <RebornTabPane key="a" pane-key="a" title="设计">设计</RebornTabPane>
+    <RebornTabPane key="b" pane-key="b" title="研发">研发</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -443,7 +443,7 @@ UniApp 端 `hover` 仅在 H5 生效。小程序与 APP 没有鼠标悬停事件�
 ```vue
 <template>
   <RebornTabs class="[--color-primary:#7c3aed]">
-    <RebornTabPane key="a" title="标签 A">A</RebornTabPane>
+    <RebornTabPane key="a" pane-key="a" title="标签 A">A</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -530,6 +530,8 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 :::tabs-item{label="Web" icon="tabler:world"}
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
+| `paneKey` | `string \| number` | - | 业务选中标识；省略时按插槽书写位置编号：顶层面板为数字下标，`v-for` 或 `<template>` 内的面板为「外层位置-内层位置」字符串，前面面板的显隐不影响编号。 |
+| `order` | `number` | - | 显式序位；所有项为有限数值时升序排列，同值保持原相对次序。小程序动态列表必须逐项传入。 |
 | `title` | `string` | - | 标签标题文本，需要富内容时改用 `title` 插槽。 |
 | `disabled` | `boolean` | `false` | 禁用该标签，点击与悬停都不切换。 |
 | `closable` | `boolean` | `true` | 是否允许关闭该标签，仅在父级 `editable` 为真时生效。 |
@@ -539,6 +541,8 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
+| `paneKey` | `string \| number` | - | 业务选中标识；省略时静态面板自动编号。 |
+| `order` | `number` | - | 显式序位；所有项为有限数值时升序排列，同值保持原相对次序。小程序动态列表必须逐项传入。 |
 | `title` | `string` | - | 标签标题文本，只能传纯文本（该端不支持 `title` 插槽）。 |
 | `disabled` | `boolean` | `false` | 禁用该标签，点击不切换。 |
 | `closable` | `boolean` | `true` | 是否允许关闭该标签，仅在父级 `editable` 为真时生效。 |
@@ -548,7 +552,7 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 ::
 
 ::tip
-选中标识不是 prop，而是 `RebornTabPane` 的 Vue `key` 属性。
+选中标识为 `paneKey` prop。Vue `key` 不再作为业务值读取，这是两端统一的破坏性迁移。
 ::
 
 ### Emits
@@ -690,8 +694,8 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
       content: 'rounded-md bg-gray-2 p-4',
     }"
   >
-    <RebornTabPane key="a" title="设计">设计</RebornTabPane>
-    <RebornTabPane key="b" title="研发">研发</RebornTabPane>
+    <RebornTabPane key="a" pane-key="a" title="设计">设计</RebornTabPane>
+    <RebornTabPane key="b" pane-key="b" title="研发">研发</RebornTabPane>
   </RebornTabs>
 </template>
 ```
@@ -713,12 +717,15 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 
 ## 注意事项
 
-- **选中标识来自 Vue `key`，不是 prop**。`RebornTabPane` 从自身 vnode 上读 `key`；省略时父组件按注册顺序补 `0`、`1`、`2`… 的序号，此时增删标签会让所有 key 错位、选中项漂移。动态标签列表必须显式写 `key`。
+- **动态面板同时传 `key`、`pane-key` 与 `order`。** `key` 负责组件身份，`pane-key` 负责业务选中，`order` 负责头部次序。MP 静态缺省保留登记顺序，H5 缺省按实际节点顺序；完整有限数值序位优先。混传或包含 NaN/Infinity 时整组忽略显式排序，同值保留当前相对次序，动态场景应使用唯一连续下标。
+
+- **选中标识已迁移为 `paneKey`。** 两端均不再读取 Vue `key` 作为业务值，旧用法应补 `pane-key`。动态列表省略 `pane-key` 会退回自动编号，编号随列表项的位置变化，增删后选中项会漂移。
+- **静态面板不必写 Vue `key`，`v-for` 面板必须写。** Web 端按插槽原有结构渲染面板，`v-if` 留下的占位与 `v-for` 的列表边界都保留，前面的面板被 `v-if` 隐藏、或前面的 `v-for` 列表增删时，后面静态面板的组件实例与表单输入都不受影响。`v-for` 内部的面板靠 Vue `key` 对应新旧节点，缺了 `key` 时列表中间增删会把状态串到相邻面板。
 - **组件只派发增删事件，不改数据**。`add` / `delete` 不会自动增删 `RebornTabPane`，也不会在删掉当前项后自动切换。删除当前项后如果不重设 `activeKey`，头部将没有任何选中项——回退到相邻标签的逻辑需要使用方自己写（见「可编辑：增删标签」示例）。
 - **`destroy-on-hidden` 与 `lazy-load` 同时开启时前者优先**。`destroy-on-hidden` 意味着被隐藏即销毁，`lazy-load` 的「挂载后保留」不再成立，此时两者等价于只开 `destroy-on-hidden`。
 - **切换标签默认不丢失内容状态**。面板用 `v-show` 控制显隐，表单填写与滚动位置都会保留；如果期望每次进入都是干净状态，必须显式开 `destroy-on-hidden`。
 - **溢出导航按钮只在标签真正溢出时渲染**（仅 Web）。`overflow="arrows"` / `"dropdown"` 写上后未必立即可见——容器足够宽时按钮不出现，这是刻意的：未溢出时没有可滚动的内容，按钮只会占位。容器尺寸变化由 `ResizeObserver` 跟踪，缩窄到溢出的瞬间按钮才补进来。
-- **拖拽排序后，内容节点的 DOM 顺序不再接管头部顺序**（仅 Web）。组件默认在面板挂载时按 DOM 先后重排头部（条件渲染插到中间也正确），但用户拖过一次后这套重排永久让位，否则任何一次面板增删都会把拖出来的顺序打回书写顺序。代价是此后 `v-if` 插入中间的新标签会排到末尾，动态列表建议在 `sort` 事件里同步调整数据顺序，让两套顺序保持一致。
+- **Web 拖拽保留本地顺序直到父级改写 `order`。** `sort` 发出完整 `paneKey` 数组，组件不修改业务数据；父级可按该数组重排数据并传入新的下标，旧 `order` 和无关更新不会打回拖拽结果。
 - **指示条只属于 `line`，另外五种类型换成滑动底板，只有 `text` 两者都不渲染**。`card` / `card-gutter` / `card-fill` / `rounded` / `capsule` 不渲染指示器节点而渲染 `ui.tabSlider`。所以在这五种类型上覆盖 `ui.indicator` 没有任何视觉变化，要改选中态得覆盖 `ui.tabSlider`；在 `text` 上两者都无效，只能改 `ui.tab` 或换 `color`。
 - **这五种类型的选中态整块搬到了底板上，标签自己不再换底色**。底色、边框、圆角都写在 `ui.tabSlider` 上，选中标签只剩文字色与字重；标签的底色改为恒定（`card` / `card-gutter` 恒为 `gray-2`，`card-fill` / `rounded` / `capsule` 恒为透明；三种卡片里只有 `card-gutter` 带边框）。这是滑动动画能被看见的前提：若底色仍随选中切换，新标签会在底板滑到之前就自己亮起来、旧标签立刻变灰，结果先于动画呈现，滑动也就没有意义。三处连带的机制不要改动——① 标签列有 `isolate`，底板取 `z-index: 0` 恰好压住所有标签的背景与边框（标签本身不定位，属于更下层），标题与关闭图标取 `z-[1]` 压在底板之上，底板才能滑过沿途标签而不遮字；② 底板是标签列的**末位**子节点，并由行内 `margin: 0` 抹掉任何落在相邻子节点上的负外边距（早先 `card` 共用边框时的 `[&>*+*]:-ml-px` 就曾命中它），放到首位则会让首个标签整体偏移；③ `card` 的圆角按标签在列中的首尾分配，而底板永远既非首也非末，用不了 `first:` / `last:`，因此组件按选中项下标推导端位（首 / 末 / 唯一 / 中间）再取对应圆角——圆角也参与过渡，从端部滑向中间时能看到外角逐渐收平。
 - **`rounded` 的选中文字靠底板托底，覆盖 `ui.tabSlider` 关掉底色会让它在浅色模式下看不见**。这个类型的选中标题是近白的 `gray-1`，自身没有任何底色，可读性完全来自底板那块主题色实心胶囊。若用 `ui.tabSlider` 把背景改成透明或浅色，浅色模式下就是白字打在页面底色上。要改配色得同时改 `ui.tab` 的选中文字色，或换 `color` / 在实例上改写色板变量（`class="[--color-primary:#7c3aed]"`）。

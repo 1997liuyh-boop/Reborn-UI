@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, shallowRef } from "vue";
 
-const value = ref(0);
+const value = shallowRef(0);
 
 function handleIncrement(prev: number) {
   return prev === 100 ? 0 : prev + 10;

@@ -1,26 +1,17 @@
 <script setup lang="ts">
-import { useElementBounding, useScroll, useWindowSize } from "@vueuse/core";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { useElementBounding, useMounted, useWindowScroll, useWindowSize } from "@vueuse/core";
+import { computed, useTemplateRef } from "vue";
 
-const containerRef = ref(null);
-const isMobile = ref(false);
+const containerRef = useTemplateRef<HTMLElement>("containerRef");
 
-function updateIsMobile() {
-  isMobile.value = window.innerWidth <= 768;
-}
-
-onMounted(() => {
-  updateIsMobile();
-  window.addEventListener("resize", updateIsMobile);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("resize", updateIsMobile);
-});
-
-const { height } = useWindowSize();
-const { y: scrollY } = useScroll(window);
+// 不直接访问 window：服务端渲染时这些组合式函数拿不到 window 会返回默认值，不会抛错
+const { width, height } = useWindowSize();
+const { y: scrollY } = useWindowScroll();
 const { bottom } = useElementBounding(containerRef);
+const mounted = useMounted();
+
+// 挂载前固定为 false，与服务端首屏一致，避免水合时缩放比例不一致
+const isMobile = computed(() => mounted.value && width.value <= 768);
 
 const scrollYProgress = computed(() => {
   if (!bottom.value) return 0;

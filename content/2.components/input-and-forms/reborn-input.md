@@ -12,20 +12,22 @@ badge: New
 
 ## 简介
 
-Input 是 Web 与 UniApp 双端可用的基础输入框：`v-model` 绑定输入值，内置清除按钮、密码明文/密文切换、聚焦高亮配色与前后缀插槽。Web 端还可通过 `type="textarea"` 渲染多行文本，并支持 `v-model` 的 `.trim` / `.number` 修饰符；UniApp 端提供 `confirmType`、`adjustPosition`、`holdKeyboard` 等原生键盘控制能力。两端都能放入 `RebornForm` 表单参与校验。
+RebornInput 是 Web 与 UniApp 均可用的基础文本输入框，支持清空、密码切换、聚焦配色及前后缀。
 
-适用场景：
+`modelValue` 绑定输入值，`variant` 决定形态，`size` 控制尺寸；两端均可放入 RebornForm 参与校验。
 
-- 表单中录入文本、密码等单行内容。
-- 需要前后缀图标或按钮（`prefix` / `suffix` 插槽）的输入框。
-- Web 端通过 `type="textarea"` 的多行输入（`rows` 默认 2）。
-- UniApp 端需要 `confirmType`、`adjustPosition`、`holdKeyboard` 等键盘控制时。
+Web 通过 `type="textarea"` 渲染多行文本并支持模型修饰符 `.trim` / `.number`；UniApp 提供 `confirmType`、`adjustPosition`、`holdKeyboard` 等原生键盘配置，具体差异在下方列出。
 
-不适用场景：
+### 何时使用
 
-- 数字步进增减，改用 `reborn-input-number`。
-- 验证码分格输入，改用 `reborn-input-otp`。
-- 带历史记录、推荐词下拉的搜索，改用 `reborn-search-box`。
+- 账号、名称等单行录入——用 `modelValue` 绑定内容。
+- 需要快速清空当前内容——开启 `clearable`。
+- 需要按业务层级调整视觉——用 `variant` / `size` 组合形态和尺寸。
+
+### 何时不使用
+
+- 数量需要上下限和步进——改用 `reborn-input-number`。
+- 验证码需要固定位数分格——改用 `reborn-input-otp`。
 
 ## 用法
 
@@ -224,7 +226,6 @@ const keyword = ref("");
 ::
 
 ## API
-
 ::tip
 两端属性尽量同名同义，但**默认值、可用属性与事件集合都有差异**。四个属性的默认值两端不同：`size`、`variant`、`maxlength`、`clearIcon`。完整差异见文末「两端差异对照」。
 ::
@@ -398,7 +399,7 @@ UniApp 端没有原生表单属性（`name` / `form` / `max` / `min` / `step` / 
 | `blur` | `() => void` | 使输入框失去焦点。 |
 | `select` | `() => void` | 选中输入框中的全部文字。 |
 | `clear` | `() => void` | 清空输入内容并触发 `update:modelValue` 与 `clear` 事件。 |
-| `ref` / `inputRef` | `Ref<HTMLInputElement \| HTMLTextAreaElement \| null>` | 内部原生 input / textarea 元素引用（`inputRef` 为旧名，保留兼容）。 |
+| `ref` / `inputRef` | `Readonly<ShallowRef<HTMLInputElement \| HTMLTextAreaElement \| null>>` | 内部原生 input / textarea 元素引用，只读（`inputRef` 为旧名，保留兼容）。 |
 | `input` | `ComputedRef<HTMLInputElement \| null>` | 单行模式下的原生 input 元素（textarea 模式为 `null`）。 |
 | `textarea` | `ComputedRef<HTMLTextAreaElement \| null>` | 多行模式下的原生 textarea 元素（单行模式为 `null`）。 |
 | `resizeTextarea` | `() => void` | 重新计算 textarea 高度（`autosize` 时使用）。 |
@@ -522,13 +523,13 @@ UniApp 端只抽出高度令牌，水平内边距与图标尺寸直接写在配�
 | 维度 | Web | UniApp |
 | --- | --- | --- |
 | 自定义类名 | `class`（落在 `wrapper`） | `customClass`（落在 `root`） |
-| `size` 默认值 | `'md'` | `'sm'` |
-| `variant` 默认值 | `'outlined'` | `'filled'` |
+| `size` | `'md'` | `'sm'` |
+| `variant` | `'outlined'` | `'filled'` |
 | `maxlength` | `string \| number`，默认不限长 | `number`，默认 `140`，`-1` 不限制 |
-| `clearIcon` 取值 | Iconify 名称 `'lucide:x-circle'` | Iconify class `'i-lucide-x-circle'` |
+| `clearIcon` | Iconify 名称 `'lucide:x-circle'` | Iconify class `'i-lucide-x-circle'` |
 | 圆角令牌单位 | 4 / 6 / 8 **px** | 4 / 6 / 8 **rpx** |
 | 字号 | sm/md 14px、lg 16px | 26 / 28 / 30 **rpx** 递进 |
-| `type` 取值 | 自由字符串（原生 type） | 受约束的原生键盘类型联合 + `'textarea'` |
+| `type` | 自由字符串（原生 type） | 受约束的原生键盘类型联合 + `'textarea'` |
 | 多行高度 | `rows` + `autosize`（支持 `{ minRows, maxRows }`）+ `resize` | `rows` 仅估算高度，`autosize` 映射 `auto-height`，无 `resize` |
 | 聚焦高亮 | CSS `:focus-within` | 组件内 JS 聚焦态驱动（小程序不支持 `:focus-within`） |
 | `change` 时机 | 失焦或 Enter 且值变化 | 与 `input` 同步 |
@@ -539,7 +540,7 @@ UniApp 端只抽出高度令牌，水平内边距与图标尺寸直接写在配�
 | 原生表单属性 | `name` / `form` / `max` / `min` / `step` / `autocomplete` / `minlength` / `id` / `tabindex` / `inputmode` | 全部不支持 |
 | 字数统计 | 可用 `countGraphemes` 自定义计数 | 仅按原生长度统计 |
 | 表单校验开关 | `validateEvent` | 无开关，始终参与 |
-| `ui` 独有键位 | `icon` | `inputItem` |
+| `ui` | `icon` | `inputItem` |
 | `prepend` / `append` 默认内边距 | 无，需在插槽内容或 `ui` 里自己给 | `px-3` |
 | `ui.clear` 默认样式 | 共用 `iconSection`（手型光标、`text-gray-5`） | 取自 `icon` 槽，无基础类名 |
 | Expose | 含原生元素引用、`blur` / `select` / `resizeTextarea` 等 11 项 | 仅 `focus` / `clear` / `isFocus` / `passwordVisible` |
@@ -572,3 +573,4 @@ UniApp 端透传原生 input 的键盘能力：`confirmType` 设定确认键文�
 - **UniApp 端 `focus` prop 当前未接入内部逻辑**，需要程序聚焦时请用 `autofocus` 或通过 ref 调用 `focus()`。
 - **事件时序差异**：UniApp 端同一次输入依次触发 `update:modelValue`、`input`、`change`（参数相同）；Web 端 `input` 随键入触发（输入法合成期间静默），`change` 仅在失焦或 Enter 且值变化时触发。跨端共用的「值确认」逻辑请挂在 `blur` 上。
 - **放入 FieldGroup / 表单中时**，尺寸与禁用态会被表单注入的 size / disabled 覆盖，并在值变化与失焦时自动触发表单校验（Web 端可用 `validateEvent` 关闭，UniApp 端无此开关）。
+- **Web 端透传属性分三处落地**：`class` 作用于输入框外壳（`wrapper`），`style` 作用于根节点（`root`），其余属性（`data-*`、`aria-*`、未声明的事件监听等）落在原生 input / textarea 上。因此 `style="width: 240px"` 控制的是整个组件的宽度，要改输入文字区域的样式用 `inputStyle`。

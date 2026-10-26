@@ -4,7 +4,7 @@
  *
  * 表单项默认 24px 的行间距在卡片里显得松散，用 class 收到 12px；标签宽度按三个字给 56px。
  */
-import { reactive } from 'vue'
+import { reactive } from 'vue';
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'
 import RebornForm from '~/components/reborn/ui/reborn-form/RebornForm.vue'
 import RebornFormItem from '~/components/reborn/ui/reborn-form/RebornFormItem.vue'

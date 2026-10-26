@@ -4,11 +4,12 @@ import type { SelectOption } from '../reborn-picker-view/RebornPickerView.vue'
 import type { datePickerColors, datePickerSizes } from './reborn-date-picker.config'
 import type { DatePickerShortcut } from './types'
 import { isEmpty, isNull } from 'lodash-es'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 
 import { useFormInject } from '@/composables/useFieldGroup'
 import { dayUts } from '@/lib/dayUts'
 import { tv } from '@/lib/tv'
+import { cn } from '@/lib/utils'
 
 import RebornButton from '../reborn-button/RebornButton.vue'
 import RebornPickerView from '../reborn-picker-view/RebornPickerView.vue'
@@ -74,8 +75,6 @@ export interface DatePickerUiShape {
 }
 
 export interface DatePickerProps {
-  modelValue?: string
-  values?: string[]
   title?: string
   headers?: string[]
   placeholder?: string
@@ -111,8 +110,6 @@ export interface DatePickerProps {
 const props = withDefaults(
   defineProps<DatePickerProps>(),
   {
-    modelValue: '',
-    values: () => [],
     title: '请选择',
     headers: () => ['年', '月', '日', '时', '分', '秒'],
     placeholder: '请选择',
@@ -143,9 +140,10 @@ const props = withDefaults(
   },
 )
 
-const emit = defineEmits(['update:modelValue', 'change', 'update:values', 'range-change'])
+const emit = defineEmits<{ change: [value: string]; 'range-change': [value: string[]] }>()
+const model = defineModel<string>({ default: '' })
+const rangeModel = defineModel<string[]>('values', { default: () => [] })
 
-const popupRef = ref<any>(null)
 
 // Form integration
 const { disabled: formDisabled, validate } = useFormInject(props as any)
@@ -154,6 +152,7 @@ const isDisabled = computed(() => formDisabled.value || props.disabled)
 const b = tv(theme)
 const ui = computed(() => {
   const styles = b({ color: props.color })
+  const shortcutClasses = [false, true].map(active => b({ color: props.color, shortcutActive: active }).shortcutItem({ class: cn(props.ui?.shortcutItem) }))
   return {
     wrapper: (opts?: { class?: any }) => styles.wrapper({ class: [opts?.class, props.ui?.wrapper] }),
     popupOp: (opts?: { class?: any }) => styles.popupOp({ class: [opts?.class, props.ui?.popupOp] }),
@@ -162,7 +161,7 @@ const ui = computed(() => {
     rangeStart: (opts?: { class?: any }) => styles.rangeStart({ class: [opts?.class, props.ui?.rangeStart] }),
     rangeEnd: (opts?: { class?: any }) => styles.rangeEnd({ class: [opts?.class, props.ui?.rangeEnd] }),
     shortcuts: (opts?: { class?: any }) => styles.shortcuts({ class: [opts?.class, props.ui?.shortcuts] }),
-    shortcutItem: (opts?: { class?: any, active?: boolean }) => b({ color: props.color, shortcutActive: opts?.active === true }).shortcutItem({ class: [opts?.class, props.ui?.shortcutItem] }),
+    shortcutItem: (opts?: { class?: any, active?: boolean }) => [shortcutClasses[opts?.active ? 1 : 0], opts?.class],
     separator: (opts?: { class?: any }) => styles.separator({ class: [opts?.class, props.ui?.separator] }),
     rangeValueText: (opts?: { class?: any }) => styles.rangeValueText({ class: [opts?.class, props.ui?.rangeValueText] }),
     rangePlaceholder: (opts?: { class?: any }) => styles.rangePlaceholder({ class: [opts?.class, props.ui?.rangePlaceholder] }),
@@ -213,7 +212,7 @@ const valueFormat = computed(() => {
   return props.valueFormat
 })
 
-const shortcutsIndex = ref<number>(-1)
+const shortcutsIndex = shallowRef<number>(-1)
 
 const shortcuts = computed<DatePickerShortcut[]>(() => {
   if (!isEmpty(props.shortcuts)) {
@@ -256,9 +255,9 @@ const shortcuts = computed<DatePickerShortcut[]>(() => {
   ]
 })
 
-const rangeIndex = ref<number>(0)
+const rangeIndex = shallowRef<number>(0)
 const values = ref<string[]>(['', ''])
-const value = ref<number[]>([])
+const value = shallowRef<number[]>([])
 
 const start = computed(() => {
   if (props.rangeable) {
@@ -404,22 +403,10 @@ function checkDate(values: number[]): number[] {
   return [year, month, date, hour, minute, second]
 }
 
-const text = ref('')
-
-function updateText() {
-  if (props.rangeable) {
-    text.value = values.value
-      .filter(e => e)
-      .map(e => dayUts(e).format(displayFormat.value))
-      .join(` ${props.rangeSeparator} `)
-  }
-  else {
-    if (!props.modelValue) {
-      text.value = ''
-    }
-    else { text.value = dayUts(toDate()).format(displayFormat.value) }
-  }
-}
+// 触发器只显示已提交的值，滚轮草稿不会污染文本。
+const text = computed(() => props.rangeable
+  ? rangeModel.value.filter(Boolean).map(e => dayUts(e).format(displayFormat.value)).join(` ${props.rangeSeparator} `)
+  : model.value ? dayUts(model.value).format(displayFormat.value) : '')
 
 async function onChange(data: number[]) {
   value.value = checkDate([...data])
@@ -441,22 +428,22 @@ async function onChange(data: number[]) {
 function setValue(val: string) {
   if (isNull(val) || isEmpty(val)) {
     value.value = checkDate(dayUts().toArray())
-    text.value = ''
+
   }
   else {
     value.value = checkDate(dayUts(val).toArray())
-    updateText()
+
   }
 }
 
 function setValues(val: string[]) {
   if (isEmpty(val)) {
     values.value = ['', '']
-    text.value = ''
+
   }
   else {
     values.value = [...val]
-    updateText()
+
   }
 }
 
@@ -472,8 +459,8 @@ function setRangeValue(val: string[], index: number) {
   pickerKey.value += 1
 }
 
-const visible = ref(false)
-const pickerKey = ref(0)
+const visible = shallowRef(false)
+const pickerKey = shallowRef(0)
 let callback: ((value: string | string[]) => void) | null = null
 
 function open(cb: ((value: string | string[]) => void) | null = null) {
@@ -484,7 +471,7 @@ function open(cb: ((value: string | string[]) => void) | null = null) {
   nextTick(() => {
     if (props.rangeable) {
       rangeIndex.value = 0
-      setValues(props.values)
+      setValues(rangeModel.value)
       setValue(values.value[0])
       // 打开时若无已选范围，滚轮会显示当前时间，把当前展示同步到 values 以便直接点确定即可选中
       const currentStr = dayUts(toDate()).format(valueFormat.value)
@@ -494,7 +481,7 @@ function open(cb: ((value: string | string[]) => void) | null = null) {
         values.value[1] = values.value[0]
     }
     else {
-      setValue(props.modelValue)
+      setValue(model.value)
     }
     visible.value = true
     pickerKey.value += 1
@@ -506,14 +493,14 @@ function close() {
 }
 
 function clear() {
-  text.value = ''
+
 
   if (props.rangeable) {
-    emit('update:values', [] as string[])
+    rangeModel.value = [] as string[]
     emit('range-change', [] as string[])
   }
   else {
-    emit('update:modelValue', '')
+    model.value = ''
     emit('change', '')
   }
   if (validate) { validate('change') }
@@ -534,7 +521,7 @@ function confirm() {
       return
     }
 
-    emit('update:values', values.value)
+    rangeModel.value = values.value
     emit('range-change', values.value)
     if (validate) { validate('change') }
 
@@ -547,23 +534,18 @@ function confirm() {
     }
     const val = dayUts(toDate()).format(valueFormat.value)
 
-    emit('update:modelValue', val)
+    model.value = val
     emit('change', val)
     if (validate) { validate('change') }
 
     if (callback != null) { callback!(val) }
   }
 
-  updateText()
-  // 非范围模式：确认后用当前选中值更新展示（props 未同步时避免文案被清空）
-  if (!props.rangeable && !isEmpty(value.value)) {
-    text.value = dayUts(toDate()).format(displayFormat.value)
-  }
   close()
 }
 
 watch(
-  computed(() => props.modelValue),
+  () => model.value,
   (val: string) => {
     if (!props.rangeable) {
       setValue(val)
@@ -573,7 +555,7 @@ watch(
 )
 
 watch(
-  computed(() => props.values),
+  () => rangeModel.value,
   (val: string[]) => {
     if (props.rangeable) {
       setValues(val)
@@ -582,12 +564,6 @@ watch(
   { immediate: true },
 )
 
-watch(
-  computed(() => props.format),
-  () => {
-    updateText()
-  },
-)
 
 defineExpose({
   /** 打开底部选择弹出层（禁用状态下无效）；可传入回调，在确认时接收选中值 */
@@ -609,7 +585,7 @@ defineExpose({
 
 <template>
   <view>
-    <RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="popupRef?.isOpen"
+    <RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="visible"
       :text="text" arrow-icon="i-lucide-calendar" :ui="triggerUi" :color="color" :size="size" :clearable="clearable"
       @open="open()" @clear="clear">
 
@@ -625,7 +601,7 @@ defineExpose({
       </template>
     </RebornSelectTrigger>
 
-    <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi" position="bottom" :color="color">
+    <RebornPopup v-model="visible" :title="title" :ui="popupUi" position="bottom" :color="color">
       <view @touchmove.stop class="bg-white">
         <view v-if="rangeable" :class="ui.rangeBox()">
           <view v-if="showShortcuts" :class="ui.shortcuts()">

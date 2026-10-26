@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 const config = ref({
-  textGlowStartColor: "",
+  textGlowStartColor: "#38ef7d80",
   perspective: 600,
-  textGlowEndColor: "",
+  textGlowEndColor: "#38ef7d",
   rotateX: -1,
   rotateY: -15,
 });

@@ -4,7 +4,7 @@
  *
  * 只放单个示例，取 lg 尺寸：默认 md 只有 24px 高，在缩略预览里显得太小。
  */
-import RebornBadge from '~/components/reborn/ui/reborn-badge/RebornBadge.vue'
+import RebornBadge from "~/components/reborn/ui/reborn-badge/RebornBadge.vue";
 </script>
 
 <template>

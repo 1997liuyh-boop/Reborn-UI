@@ -10,6 +10,7 @@
  * 没有源码（如标题为动态绑定、抽取不到）时，只保留「预览」。
  */
 import { useClipboard } from '@vueuse/core'
+import { computed, getCurrentInstance, onBeforeUpdate, shallowRef } from 'vue'
 import { tv } from '~/lib/tv'
 import { actionsConfig } from './demo.config'
 
@@ -41,10 +42,43 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 /** 源码是否展开（由调用方持有折叠面板） */
-const open = defineModel<boolean>('open', { default: false })
+const emit = defineEmits<{
+  'update:open': [value: boolean];
+  'update:themeOpen': [value: boolean];
+}>();
+
+const openModel = defineModel<boolean>('open', { default: undefined });
+const instance = getCurrentInstance()!;
+const modelProps = shallowRef(instance.vnode.props ?? {});
+onBeforeUpdate(() => { modelProps.value = { ...instance.vnode.props }; });
+// 显式空模型按关闭读取，缺省状态独立保留本地交互。
+const localOpen = shallowRef(false);
+const open = computed({
+  get: () => Object.hasOwn(modelProps.value, 'open') ? !!instance.props.open : localOpen.value,
+  set: (value: boolean) => {
+    if (Object.hasOwn(modelProps.value, 'open')) emit('update:open', value);
+    else {
+      localOpen.value = value;
+      openModel.value = value;
+    }
+  },
+});
 
 /** Theme slots 面板是否展开（面板同样由调用方渲染，动作组只负责翻开关） */
-const themeOpen = defineModel<boolean>('themeOpen', { default: false })
+const themeOpenModel = defineModel<boolean>('themeOpen', { default: undefined });
+const hasThemeOpen = computed(() => Object.hasOwn(modelProps.value, 'themeOpen') || Object.hasOwn(modelProps.value, 'theme-open'));
+// 显式空模型按关闭读取，缺省状态独立保留本地交互。
+const localThemeOpen = shallowRef(false);
+const themeOpen = computed({
+  get: () => hasThemeOpen.value ? !!instance.props.themeOpen : localThemeOpen.value,
+  set: (value: boolean) => {
+    if (hasThemeOpen.value) emit('update:themeOpen', value);
+    else {
+      localThemeOpen.value = value;
+      themeOpenModel.value = value;
+    }
+  },
+});
 
 const hasCode = computed(() => !!props.code.trim())
 

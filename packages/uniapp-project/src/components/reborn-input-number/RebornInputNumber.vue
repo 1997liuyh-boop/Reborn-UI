@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { ClassValue } from 'clsx'
 import type { inputNumberColors, inputNumberShapes, inputNumberSizes, inputNumberVariants } from './reborn-input-number.config'
-import { computed, nextTick, ref, toRef, watch } from 'vue'
+import { computed, nextTick, shallowRef, toRef, watch } from 'vue'
 
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
@@ -15,7 +15,6 @@ defineOptions({
 })
 
 const props = withDefaults(defineProps<InputNumberProps>(), {
-  modelValue: 0,
   defaultValue: 0,
   min: 0,
   max: 200,
@@ -33,24 +32,18 @@ const props = withDefaults(defineProps<InputNumberProps>(), {
   changeOnWheel: false,
 })
 
-const emit = defineEmits([
-  /** 数值经 min/max 修正且与旧值不同时触发，回调为最新数值 */
-  'update:modelValue',
-  /** 与 update:modelValue 同时触发，回调为修正后的最新数值 */
-  'change',
-  /** 输入框键入时透传原生 input 事件对象（此时数值尚未经 min/max 修正） */
-  'input',
-  /** 输入框失焦并完成数值修正后触发，透传原生事件对象 */
-  'blur',
-  /** 输入框获得焦点时触发，透传原生事件对象 */
-  'focus',
-])
+const emit = defineEmits<{
+  change: [value: number]
+  input: [event: any]
+  blur: [event: any]
+  focus: [event: any]
+}>()
+const model = defineModel<number>({ default: undefined })
 
 /** 调用 focus() 时焦点的落位方式 */
 export type InputNumberFocusCursor = 'start' | 'end' | 'all'
 
 export interface InputNumberProps {
-  modelValue?: number
   defaultValue?: number
   min?: number
   max?: number
@@ -144,16 +137,17 @@ const ui = computed(() => {
 /** 按钮是否上下堆叠（controls-position="left" / "right"） */
 const isControlsStacked = computed(() => props.controlsPosition === 'left' || props.controlsPosition === 'right')
 
-const value = ref(props.modelValue)
+const value = shallowRef(model.value ?? props.defaultValue)
+let committed = value.value
 
 /** 输入框是否持有焦点：聚焦期间不做定长补零，避免把光标顶到末尾 */
-const isFocused = ref(false)
+const isFocused = shallowRef(false)
 
 /** 受控 focus 的三个入参，undefined 表示不指定，交给平台默认行为 */
-const focusFlag = ref(false)
-const cursorPos = ref<number | undefined>(undefined)
-const selectionStart = ref<number | undefined>(undefined)
-const selectionEnd = ref<number | undefined>(undefined)
+const focusFlag = shallowRef(false)
+const cursorPos = shallowRef<number | undefined>(undefined)
+const selectionStart = shallowRef<number | undefined>(undefined)
+const selectionEnd = shallowRef<number | undefined>(undefined)
 
 const isPlus = computed(() => !fieldGroupDisabled.value && value.value < props.max)
 const isMinus = computed(() => !fieldGroupDisabled.value && value.value > props.min)
@@ -204,8 +198,9 @@ function update() {
 
     value.value = val
 
-    if (val !== props.modelValue) {
-      emit('update:modelValue', val)
+    if (val !== committed) {
+      committed = val
+      model.value = val
       emit('change', val)
       if (validate) { validate('change') }
     }
@@ -278,7 +273,8 @@ function onBlur(e: any) {
     value.value = props.min || 0
   }
   else {
-    value.value = Number.parseFloat(e.detail.value)
+    const parsed = Number.parseFloat(e.detail.value)
+    value.value = Number.isFinite(parsed) ? parsed : committed
   }
   update()
   emit('blur', e)
@@ -326,10 +322,11 @@ defineExpose({
 })
 
 watch(
-  () => props.modelValue,
+  model,
   (val) => {
     if (val !== undefined && val !== value.value) {
       value.value = val
+      committed = val
     }
   },
   { immediate: true },

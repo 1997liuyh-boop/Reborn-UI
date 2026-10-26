@@ -418,8 +418,12 @@ export function buildComponent(id: string): {
   annotateUiKeys(props, uiKeys);
 
   // 演示代码 → examples（只存路径引用，不内联源码，避免改 demo 就重写整份 JSON）
-  const examples: ExampleInfo[] = findDemoFiles(id).map((d) => ({
-    title: `${d.platform === "web" ? "Web" : "UniApp"} 演示`,
+  // 同一端有多份演示时标题带上文件名，否则「Web 演示」重复几条、无从区分
+  const demos = findDemoFiles(id);
+  const examples: ExampleInfo[] = demos.map((d) => ({
+    title: demos.filter((x) => x.platform === d.platform).length > 1
+      ? `${d.platform === "web" ? "Web" : "UniApp"} 演示 · ${path.basename(d.relPath, ".vue")}`
+      : `${d.platform === "web" ? "Web" : "UniApp"} 演示`,
     path: d.relPath,
     source: "demo" as const,
     platform: d.platform,

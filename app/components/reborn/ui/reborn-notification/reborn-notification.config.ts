@@ -118,6 +118,8 @@ export interface NotificationInstance extends NotificationOptions {
   pauseOnHover: boolean;
   /** 计时器是否处于暂停态（进度条动画据此暂停） */
   paused: boolean;
+  /** 版本号：同 key 更新时自增，进度条以它为 key 重建，动画随计时一起从头开始 */
+  version: number;
 }
 
 /** 命令式调用返回的实例句柄 */
@@ -231,7 +233,7 @@ export function addNotification(options: NotificationOptions): NotificationHandl
   if (options.offset !== undefined) notificationState.offset = options.offset;
   if (options.zIndex !== undefined) notificationState.zIndex = options.zIndex;
 
-  const merged: Omit<NotificationInstance, 'id' | 'paused'> = {
+  const merged: Omit<NotificationInstance, 'id' | 'paused' | 'version'> = {
     ...options,
     type: options.type ?? '',
     placement: options.placement ?? 'top-end',
@@ -240,17 +242,19 @@ export function addNotification(options: NotificationOptions): NotificationHandl
     pauseOnHover: options.pauseOnHover ?? true,
   };
 
-  // 同 key 更新：替换内容并重置计时，句柄仍指向同一条通知
+  // 同 key 更新：以本次配置整体替换实例（不沿用上次传过、这次没传的字段），id 不变所以不触发进出场，句柄仍指向同一条通知
   if (options.key !== undefined) {
-    const existing = notificationState.list.find(item => item.key === options.key);
-    if (existing) {
-      Object.assign(existing, merged);
-      startTimer(existing);
-      return { close: () => closeNotification(existing.id) };
+    const index = notificationState.list.findIndex(item => item.key === options.key);
+    if (index >= 0) {
+      const existing = notificationState.list[index]!;
+      const next: NotificationInstance = { ...merged, id: existing.id, paused: false, version: existing.version + 1 };
+      notificationState.list.splice(index, 1, next);
+      startTimer(next);
+      return { close: () => closeNotification(next.id) };
     }
   }
 
-  const item: NotificationInstance = { ...merged, id: ++seed, paused: false };
+  const item: NotificationInstance = { ...merged, id: ++seed, paused: false, version: 0 };
   notificationState.list.push(item);
   startTimer(item);
   return { close: () => closeNotification(item.id) };

@@ -34,7 +34,7 @@ const props = withDefaults(defineProps<Props>(), {
     tone: 'plain',
 })
 
-const b = tv(blockConfig)
+const b = tv({ ...blockConfig, compoundVariants: [...blockConfig.compoundVariants] })
 const ui = computed(() =>
     b({ layout: props.layout, columns: props.columns, align: props.align, tone: props.tone }),
 )

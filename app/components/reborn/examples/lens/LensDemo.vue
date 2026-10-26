@@ -1,9 +1,6 @@
 <script setup lang="ts">
-const hovering = ref(false);
+const hovering = shallowRef(false);
 
-function setHovering(value: boolean) {
-  hovering.value = value;
-}
 </script>
 
 <template>
@@ -21,8 +18,7 @@ function setHovering(value: boolean) {
         <Beams />
         <div class="relative z-10">
           <Lens
-            :hovering="hovering"
-            @hover-update="setHovering"
+            v-model:hovering="hovering"
           >
             <img
               src="https://images.unsplash.com/photo-1713869820987-519844949a8a?q=80&w=3500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"

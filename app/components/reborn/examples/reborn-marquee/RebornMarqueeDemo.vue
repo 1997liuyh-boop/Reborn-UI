@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed, shallowRef } from 'vue';
+
 /** 用户评价数据 */
 const reviews = [
     {
@@ -54,7 +56,7 @@ const logos = [
 ]
 
 /** 演练场状态 */
-const state = ref({
+const state = shallowRef({
     reverse: false,
     pauseOnHover: true,
     overlay: true,
@@ -103,13 +105,24 @@ const screenshotSets = [
     [5, 6, 7, 8],
     [9, 10, 11, 12],
 ]
+/** 时长通过 CSS 变量配置；生成代码只包含实际存在的组件参数。 */
+const marqueeCode = computed(() => `<RebornMarquee
+  :reverse="${state.value.reverse}"
+  :pause-on-hover="${state.value.pauseOnHover}"
+  :overlay="${state.value.overlay}"
+  :repeat="${state.value.repeat}"
+  orientation="horizontal"
+  :style="{ '--duration': '${state.value.duration}s' }"
+>
+  <!-- 滚动内容 -->
+</RebornMarquee>`)
 </script>
 
 <template>
     <div class="flex w-full min-w-0 flex-col">
-        <Playground v-model="state" :controls="controls" component-name="RebornMarquee" title="交互演练场"
+        <Playground v-model="state" :controls="controls" :code="marqueeCode" component-name="RebornMarquee" title="交互演练场"
             description="调节滚动方向、悬停暂停与遮罩，观察跑马灯的实时表现。">
-            <RebornMarquee v-bind="state" orientation="horizontal" :style="{ '--duration': `${state.duration}s` }">
+            <RebornMarquee :reverse="state.reverse" :pause-on-hover="state.pauseOnHover" :overlay="state.overlay" :repeat="state.repeat" orientation="horizontal" :style="{ '--duration': `${state.duration}s` }">
                 <div v-for="logo in logos" :key="logo"
                     class="border-default rounded-lg text-muted mx-2 flex items-center justify-center gap-2 border px-6 py-4">
                     <UIcon :name="logo" class="size-8" />

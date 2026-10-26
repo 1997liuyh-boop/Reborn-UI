@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { textareaColors, textareaSizes } from './reborn-textarea.config'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, readonly, shallowRef } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 
 import { tv } from '@/lib/tv'
@@ -8,14 +8,13 @@ import { cn } from '@/lib/utils'
 import theme from './reborn-textarea.config'
 
 defineOptions({
-  name: 'ClTextarea',
+  name: 'RebornTextarea',
 })
 
 const props = withDefaults(defineProps<RebornTextareaProps>(), {
   color: 'primary',
   customClass: '',
   ui: () => ({}),
-  modelValue: '',
   size: 'md',
   border: true,
   disabled: false,
@@ -45,16 +44,21 @@ const props = withDefaults(defineProps<RebornTextareaProps>(), {
   adjustKeyboardTo: 'cursor',
 })
 // 事件定义
-const emit = defineEmits([
-  'update:modelValue', // 输入内容变化时触发，同步 v-model 绑定值
-  'input', // 每次输入时触发，参数为原生事件对象（e.detail.value 为当前文本）
-  'change', // 输入内容与上一次不同时触发，参数为最新文本
-  'focus', // 输入框聚焦、键盘弹起时触发
-  'blur', // 输入框失焦、键盘收起时触发，并执行表单 blur 校验
-  'confirm', // 点击键盘右下角确认按钮时触发（按钮文字由 confirmType 决定）
-  'linechange', // 输入行数变化时触发，e.detail 含 height、lineCount 等信息
-  'keyboardheightchange', // 键盘高度变化时触发，e.detail 含 height 与 duration
-])
+const emit = defineEmits<{
+  input: [event: TextareaEvent<{ value: string; cursor?: number }>]
+  change: [value: string]
+  focus: [event: TextareaEvent<{ value: string; height?: number }>]
+  blur: [event: TextareaEvent<{ value: string; cursor?: number }>]
+  confirm: [event: TextareaEvent<{ value: string }>]
+  linechange: [event: TextareaEvent<{ height: number; heightRpx?: number; lineCount: number }>]
+  keyboardheightchange: [event: TextareaEvent<{ height: number; duration: number }>]
+}>()
+
+/** 原生文本域事件按 detail 描述，兼容各端事件对象，不依赖 DOM 事件方法。 */
+export interface TextareaEvent<Detail> {
+  detail: Detail
+}
+
 export interface RebornTextareaProps {
   // 颜色
   color?: typeof textareaColors[number]
@@ -62,8 +66,6 @@ export interface RebornTextareaProps {
   customClass?: string
   // UI 覆盖
   ui?: Record<string, any>
-  // 绑定值
-  modelValue: string
   // 尺寸
   size?: typeof textareaSizes[number]
   // 是否显示边框
@@ -122,13 +124,18 @@ export interface RebornTextareaProps {
 const { disabled: isDisabled, isError, validate } = useFormInject(props)
 
 // 绑定值
-const value = ref(props.modelValue)
+const model = defineModel<string | null>({ default: '' })
+const value = computed(() => model.value ?? '')
 
 // 是否聚焦（样式作用）
-const isFocus = ref<boolean>(props.autofocus)
+const isFocus = shallowRef<boolean>(props.autofocus)
 
 // 是否聚焦（输入框作用）
-const isFocusing = ref<boolean>(props.autofocus)
+const isFocusing = shallowRef<boolean>(props.autofocus)
+let blurTimer: ReturnType<typeof setTimeout> | undefined
+let focusTimer: ReturnType<typeof setTimeout> | undefined
+let disposed = false
+let focusVersion = 0
 
 const b = tv(theme)
 
@@ -179,6 +186,7 @@ function onTap() {
 
 // 获取焦点事件
 function onFocus(e: any) {
+  clearTimeout(blurTimer)
   isFocus.value = true
   emit('focus', e)
 }
@@ -188,7 +196,8 @@ function onBlur(e: any) {
   emit('blur', e)
   if (validate) { validate('blur') }
 
-  setTimeout(() => {
+  clearTimeout(blurTimer)
+  blurTimer = setTimeout(() => {
     isFocus.value = false
   }, 0)
 }
@@ -198,9 +207,7 @@ function onInput(e: any) {
   const v1 = e.detail.value
   const v2 = value.value
 
-  value.value = v1
-
-  emit('update:modelValue', v1)
+  model.value = v1
   emit('input', e)
 
   if (v1 != v2) {
@@ -226,25 +233,27 @@ function onLineChange(e: any) {
 
 // 聚焦方法
 function focus() {
-  setTimeout(() => {
+  const version = ++focusVersion
+  clearTimeout(focusTimer)
+  focusTimer = setTimeout(() => {
     isFocusing.value = false
 
     nextTick(() => {
-      isFocusing.value = true
+      if (!disposed && version === focusVersion) isFocusing.value = true
     })
   }, 0)
 }
 
-watch(
-  computed(() => props.modelValue),
-  (val: string) => {
-    value.value = val
-  },
-)
+onBeforeUnmount(() => {
+  disposed = true
+  focusVersion++
+  clearTimeout(blurTimer)
+  clearTimeout(focusTimer)
+})
 
 defineExpose({
-  /** 当前是否处于聚焦状态（响应式 ref，可读取样式聚焦态） */
-  isFocus,
+  /** 当前样式聚焦态，只允许读取。 */
+  isFocus: readonly(isFocus),
   /** 让输入框重新聚焦并唤起键盘 */
   focus,
 })
@@ -252,7 +261,7 @@ defineExpose({
 
 <template>
   <view :class="ui.root({ class: cn(props.customClass) })" @tap="onTap">
-    <textarea :class="ui.inner()" :style="textareaStyle" :value="value" :name="name" :disabled="readonly || isDisabled"
+    <textarea :class="ui.inner()" :style="textareaStyle" :value="value" :name="name" :disabled="props.readonly || isDisabled"
       :placeholder="placeholder" :placeholder-class="`text-gray-4 ${placeholderClass}`"
       :placeholder-style="placeholderStyle" :maxlength="maxlength" :focus="isFocusing" :cursor="cursor"
       :cursor-spacing="cursorSpacing" :cursor-color="cursorColor" :show-confirm-bar="showConfirmBar"

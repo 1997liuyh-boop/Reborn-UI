@@ -129,3 +129,18 @@ it('初始受控打开可等待虚拟节点挂载', async () => {
   const p = mount({ virtualTriggering: true, virtualRef: null, content: '延后挂载', open: true }); await tick(); assert.equal(popup(), null);
   const button = anchor(); p.props.value = { ...p.props.value, virtualRef: button }; await tick(); assert.equal(popup()?.textContent, '延后挂载');
 });
+it('content 插槽条件增删后提示层随之出现或消失', async () => {
+  const withSlot = ref(false);
+  const container = document.createElement('div'); document.body.append(container);
+  const app = createApp({ setup: () => () => h(Tooltip, { trigger: 'click', openDelay: 0, closeDelay: 0 }, withSlot.value
+    ? { default: () => h('button', '触发'), content: () => h('em', '插槽提示') }
+    : { default: () => h('button', '触发') }) });
+  app.mount(container); mounted.push(() => { app.unmount(); container.remove(); });
+  container.querySelector('button').click(); await tick();
+  assert.equal(popup(), null);
+  withSlot.value = true; await tick();
+  container.querySelector('button').click(); await tick();
+  assert.equal(popup()?.querySelector('em')?.textContent, '插槽提示');
+  withSlot.value = false; await tick();
+  assert.equal(popup(), null);
+});

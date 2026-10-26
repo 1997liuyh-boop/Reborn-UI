@@ -12,7 +12,7 @@ const allPackageName = computed(
   () => `${Array.isArray(packageName) ? packageName.join(" ") : packageName}`,
 );
 
-const items = ref([
+const items = computed(() => [
   {
     label: "pnpm",
     icon: "vscode-icons:file-type-pnpm",
@@ -47,7 +47,7 @@ const mdc = computed(
 // "Failed to resolve component: ProsePre" 警告；这里通过 components prop 注入组件引用，
 // 让 findMappedTag 直接命中组件对象，彻底绕开运行时组件名解析。
 const { data } = await useAsyncData(
-  `pm-tabs-${allPackageName.value}-${isDev ? "dev" : "prod"}`,
+  () => `pm-tabs-${allPackageName.value}-${isDev ? "dev" : "prod"}`,
   async () => {
     const { parseMarkdown } = await import("@nuxtjs/mdc/runtime");
     return parseMarkdown(mdc.value);

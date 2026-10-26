@@ -7,7 +7,7 @@ import type { CliConfig, PackageManager } from "../types.js";
 import { copyDirRecursive, ensureDir, listFilesRecursive, pathExists, writeJsonFile, writeTextFile } from "../utils/fs.js";
 import { detectPackageManager } from "../utils/pm.js";
 import { DEFAULT_CONFIG_PATH, defaultConfig, loadConfigCompat } from "../utils/registry.js";
-import { findNearestPackageRoot } from "../utils/templates.js";
+import { findNearestPackageRoot, WEB_SITE_COMPOSABLE_FILES } from "../utils/templates.js";
 import { TEMPLATES } from "../generated/templates.js";
 import { gradientText, showLogo, typewriter } from "../utils/ui.js";
 
@@ -101,7 +101,7 @@ async function copyTemplates(params: {
       fromDir: currentRepoPaths.composables,
       toDir: path.join(cwd, cfg.composablesDir),
       overwrite,
-      ignoreFileNames: platform === "web" ? new Set(["useComponentCode.ts", "useCopyToClipboard.ts","getComponentCode.ts","getUniappCode.ts"]) : undefined,
+      ignoreFileNames: platform === "web" ? WEB_SITE_COMPOSABLE_FILES : undefined,
     });
     copiedFromRepo = true;
   }

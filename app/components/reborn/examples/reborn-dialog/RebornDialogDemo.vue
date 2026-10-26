@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { useOverlay } from "~/composables/useOverlay";
-import RebornDialog from "~/components/reborn/ui/reborn-dialog/RebornDialog.vue";
+import { onBeforeUnmount, shallowRef } from 'vue';
+import { createDemoTasks } from "~/components/reborn/examples/shared/demo-tasks";
 import { Modal } from "~/components/reborn/ui/reborn-dialog";
-import EditProfileDialog from "./dialogs/EditProfileDialog.vue";
-import NestedDialog from "./dialogs/NestedDialog.vue";
-import UserAgreementDialog from "./dialogs/UserAgreementDialog.vue";
+import RebornDialog from "~/components/reborn/ui/reborn-dialog/RebornDialog.vue";
+import { useOverlay } from "~/composables/useOverlay";
 import CloudSyncDialog from "./dialogs/CloudSyncDialog.vue";
 import DraggableDialog from "./dialogs/DraggableDialog.vue";
+import EditProfileDialog from "./dialogs/EditProfileDialog.vue";
+import NestedDialog from "./dialogs/NestedDialog.vue";
 import SuccessDialog from "./dialogs/SuccessDialog.vue";
+import UserAgreementDialog from "./dialogs/UserAgreementDialog.vue";
+
+
+const tasks = createDemoTasks();
+const modals: Array<{ destroy: () => void }> = [];
 
 // 1. Playground 状态对象（属性命名对齐 Element Plus Dialog）
-const state = ref({
+const state = shallowRef({
   title: "编辑个人资料",
   describe: "在此修改您的个人账户信息，完成后点击保存。",
   width: "",
@@ -84,22 +89,22 @@ const controls = [
   {
     title: "高级配置",
     children: [
-      { label: "打开延迟(ms)", key: "openDelay", component: "input" as const, defaultValue: 0 },
-      { label: "关闭延迟(ms)", key: "closeDelay", component: "input" as const, defaultValue: 0 },
-      { label: "层级(z-index)", key: "zIndex", component: "input" as const, defaultValue: 2400 },
+      { label: "打开延迟(ms)", key: "openDelay", component: "input-number" as const, defaultValue: 0 },
+      { label: "关闭延迟(ms)", key: "closeDelay", component: "input-number" as const, defaultValue: 0 },
+      { label: "层级(z-index)", key: "zIndex", component: "input-number" as const, defaultValue: 2400 },
     ],
   },
 ];
 
 // 3. 业务状态
-const nestedOpen1 = ref(false);
-const nestedOpen2 = ref(false);
-const asyncOpen = ref(false);
-const saving = ref(false);
-const layoutOpen = ref(false);
-const layoutMode = ref<"top" | "alignCenter" | "center">("top");
-const transitionOpen = ref(false);
-const transitionMode = ref<"scale" | "slide" | "fade" | "bounce">("scale");
+const nestedOpen1 = shallowRef(false);
+const nestedOpen2 = shallowRef(false);
+const asyncOpen = shallowRef(false);
+const saving = shallowRef(false);
+const layoutOpen = shallowRef(false);
+const layoutMode = shallowRef<"top" | "alignCenter" | "center">("top");
+const transitionOpen = shallowRef(false);
+const transitionMode = shallowRef<"scale" | "slide" | "fade" | "bounce">("scale");
 
 /** 打开过渡动画演示：scale 缩放 / slide 滑动 / fade 淡入淡出 / bounce 弹跳 */
 function openTransitionDialog(mode: "scale" | "slide" | "fade" | "bounce") {
@@ -110,7 +115,7 @@ function openTransitionDialog(mode: "scale" | "slide" | "fade" | "bounce") {
 /** 关闭后重开一次，回放当前过渡动画的入场效果 */
 function replayTransition() {
   transitionOpen.value = false;
-  setTimeout(() => {
+  tasks.schedule(() => {
     transitionOpen.value = true;
   }, 300);
 }
@@ -131,7 +136,7 @@ const profileFields = [
 
 function handleAsyncConfirm() {
   saving.value = true;
-  setTimeout(() => {
+  tasks.schedule(() => {
     saving.value = false;
     asyncOpen.value = false;
   }, 2000);
@@ -146,37 +151,37 @@ function openLayoutDialog(mode: "top" | "alignCenter" | "center") {
 // ─── 命令式调用：Modal 类型方法 ───────────────────────────────────────────
 
 function openModalInfo() {
-  Modal.info({
+  modals.push(Modal.info({
     title: "版本更新提示",
     content: "检测到新版本 v2.4.0，包含性能优化与若干问题修复，建议尽快更新体验。",
     cancelText: "稍后再说",
     okText: "立即更新",
-  });
+  }));
 }
 
 function openModalSuccess() {
-  Modal.success({
+  modals.push(Modal.success({
     title: "发布成功",
     content: "组件文档已发布至生产环境，全站缓存将在 5 分钟内刷新。",
-  });
+  }));
 }
 
 function openModalWarning() {
-  Modal.warning({
+  modals.push(Modal.warning({
     title: "存储空间不足",
     content: "当前工作区剩余空间不足 5%，请及时清理历史构建产物。",
-  });
+  }));
 }
 
 function openModalError() {
-  Modal.error({
+  modals.push(Modal.error({
     title: "同步失败",
     content: "与远端仓库的连接超时，请检查网络后重试。",
-  });
+  }));
 }
 
 function openModalConfirm() {
-  Modal.confirm({
+  modals.push(Modal.confirm({
     title: "确认删除该分支？",
     content: "删除后分支上的未合并提交将无法恢复，此操作不可撤销。",
     okText: "删除",
@@ -188,26 +193,26 @@ function openModalConfirm() {
       console.log("已取消");
       close();
     },
-  });
+  }));
 }
 
 /** onBeforeOk 异步门控：确定按钮进入 loading，两秒后 done(true) 关闭 */
 function openModalAsyncConfirm() {
-  Modal.confirm({
+  modals.push(Modal.confirm({
     title: "提交审核",
     content: "点击确定后将模拟 2 秒的异步提交，期间确定按钮保持 loading；失败场景可 done(false) 仅结束加载。",
     okText: "提交",
     onBeforeOk: (done) => {
-      setTimeout(() => done(true), 2000);
+      tasks.schedule(() => done(true), 2000);
     },
-  });
+  }));
 }
 
 /** 批量弹出后一键销毁，模拟路由切换场景 */
 function openModalBatch() {
-  Modal.info({ title: "第一个确认框", content: "3 秒后 Modal.destroyAll() 将统一销毁。", top: "10vh", alignCenter: false });
-  Modal.warning({ title: "第二个确认框", content: "无需持有实例句柄即可被批量销毁。", top: "26vh", alignCenter: false });
-  setTimeout(() => Modal.destroyAll(), 3000);
+  modals.push(Modal.info({ title: "第一个确认框", content: "3 秒后 Modal.destroyAll() 将统一销毁。", top: "10vh", alignCenter: false }));
+  modals.push(Modal.warning({ title: "第二个确认框", content: "无需持有实例句柄即可被批量销毁。", top: "26vh", alignCenter: false }));
+  tasks.schedule(() => Modal.destroyAll(), 3000);
 }
 
 // 4. useOverlay composables
@@ -236,6 +241,10 @@ const userAgreementDialog = overlay.create(UserAgreementDialog, {
 // 云端同步 overlay 实例 - 使用二次封装组件
 const cloudSyncDialog = overlay.create(CloudSyncDialog, {
   props: {},
+  /** 确认期间由服务托管加载与关闭门控，卸载时取消等待。 */
+  onConfirm: async () => {
+    if (!await tasks.wait(2000)) throw new Error("演示已卸载");
+  },
 });
 
 // 拖拽演示 overlay 实例 - 使用二次封装组件
@@ -252,7 +261,7 @@ const successDialog = overlay.create(SuccessDialog, {
 const delayedDialog = overlay.create(RebornDialog, {
   props: {
     title: "延迟效果演示",
-    description: "此对话框有 500ms 的打开和关闭延迟",
+    describe: "此对话框有 500ms 的打开和关闭延迟",
     openDelay: 500,
     closeDelay: 500,
     confirmBtn: "确定",
@@ -264,7 +273,7 @@ const delayedDialog = overlay.create(RebornDialog, {
 const fullscreenDialog = overlay.create(RebornDialog, {
   props: {
     title: "全屏模式",
-    description: "全屏显示的对话框，适合展示大量内容",
+    describe: "全屏显示的对话框，适合展示大量内容",
     fullscreen: true,
     confirmBtn: "关闭",
   },
@@ -274,7 +283,7 @@ const fullscreenDialog = overlay.create(RebornDialog, {
 const customIconDialog = overlay.create(RebornDialog, {
   props: {
     title: "自定义关闭按钮",
-    description: "使用不同的图标作为关闭按钮",
+    describe: "使用不同的图标作为关闭按钮",
     closeIcon: "lucide:arrow-left",
     confirmBtn: "确定",
   },
@@ -303,17 +312,7 @@ async function openUserAgreementDialog() {
 
 // 打开云端同步 Dialog
 async function openCloudSyncDialog() {
-  const result = await cloudSyncDialog.open();
-
-  // 如果用户点击了确认按钮
-  if (result === "confirm") {
-    // 模拟异步操作
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // 关闭弹窗
-    cloudSyncDialog.close("synced");
-    console.log("同步完成");
-  }
+  await cloudSyncDialog.open();
 }
 
 // 打开拖拽 Dialog
@@ -342,12 +341,18 @@ async function openFullscreenDialog() {
 async function openCustomIconDialog() {
   await customIconDialog.open();
 }
+/** 页面卸载时注销本页创建的服务实例和定时任务。 */
+onBeforeUnmount(() => {
+  tasks.dispose();
+  [playgroundDialog, editProfileDialog, nestedDialog, userAgreementDialog, cloudSyncDialog, draggableDialog, successDialog, delayedDialog, fullscreenDialog, customIconDialog].forEach(item => overlay.unmount(item.id));
+  modals.forEach(item => item.destroy());
+});
 </script>
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground v-model="state" :controls="controls" component-name="RebornDialog" title="交互演练场"
-      description="调节左侧属性，实时预览 Dialog 的视觉效果与交互反馈；属性命名与 Element Plus Dialog 对齐。">
+      description="调节上方属性，实时预览 Dialog 的视觉效果与交互反馈；属性命名与 Element Plus Dialog 对齐。">
       <DemoBlock>
         <RebornDialog v-bind="state" @confirm="() => console.log('Confirm clicked')"
           @cancel="() => console.log('Cancel clicked')">
@@ -392,7 +397,7 @@ async function openCustomIconDialog() {
         <RebornButton label="center 头尾居中 + width 360" variant="outlined" @click="openLayoutDialog('center')" />
 
         <RebornDialog v-model="layoutOpen" title="布局演示"
-          :description="layoutMode === 'top' ? '当前按 top: 8vh 顶部落位。' : layoutMode === 'alignCenter' ? '当前为 align-center 垂直居中。' : '当前 center 头尾居中，宽度 360px。'"
+          :describe="layoutMode === 'top' ? '当前按 top: 8vh 顶部落位。' : layoutMode === 'alignCenter' ? '当前为 align-center 垂直居中。' : '当前 center 头尾居中，宽度 360px。'"
           :top="layoutMode === 'top' ? '8vh' : '15vh'" :align-center="layoutMode !== 'top'"
           :center="layoutMode === 'center'" :width="layoutMode === 'center' ? 360 : ''" confirm-btn="知道了"
           :cancel-btn="false">
@@ -419,7 +424,7 @@ async function openCustomIconDialog() {
 
     <DemoSection title="嵌套弹窗" description="内层 Dialog 写在外层的插槽里即可叠放；各层 z-index 相同，靠挂载先后决定上下，内层后挂载所以在上。">
       <DemoBlock>
-        <RebornDialog v-model="nestedOpen1" title="第一层对话框" description="您可以点击下方按钮开启更深一层的交互。">
+        <RebornDialog v-model="nestedOpen1" title="第一层对话框" describe="您可以点击下方按钮开启更深一层的交互。">
           <template #trigger>
             <RebornButton label="开启嵌套流程（组件式）" color="neutral" variant="outlined" />
           </template>
@@ -431,7 +436,7 @@ async function openCustomIconDialog() {
           </div>
 
           <template #footer>
-            <RebornDialog v-model="nestedOpen2" title="第二层确认" description="确定要执行这项操作吗？">
+            <RebornDialog v-model="nestedOpen2" title="第二层确认" describe="确定要执行这项操作吗？">
               <template #trigger>
                 <RebornButton label="下一步" color="primary" />
               </template>
@@ -449,7 +454,7 @@ async function openCustomIconDialog() {
 
     <DemoSection title="长内容：scrollable 正文滚动" description="开启 scrollable 属性，使正文区域在高度受限时独立滚动，页头与页脚保持固定。">
       <DemoBlock>
-        <RebornDialog title="用户服务协议" scrollable description="更新日期：2026年3月">
+        <RebornDialog title="用户服务协议" scrollable describe="更新日期：2026年3月">
           <template #trigger>
             <RebornButton label="阅读协议详情（组件式）" color="neutral" variant="soft" />
           </template>
@@ -465,7 +470,7 @@ async function openCustomIconDialog() {
 
     <DemoSection title="异步确认：按钮 loading" description="confirmBtn 传入对象可携带 loading 状态，模拟后端请求成功后再关闭弹窗。">
       <DemoBlock>
-        <RebornDialog v-model="asyncOpen" title="同步云端设置" description="正在将您的配置上传至私有云端节点..."
+        <RebornDialog v-model="asyncOpen" title="同步云端设置" describe="正在将您的配置上传至私有云端节点..."
           :confirm-btn="{ label: '立即同步', loading: saving }" :cancel-btn="saving ? false : '稍后再说'"
           @confirm="handleAsyncConfirm">
           <template #trigger>
@@ -488,7 +493,7 @@ async function openCustomIconDialog() {
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">自由拖拽 · <code>draggable</code> / <code>overflow</code></span>
           <DemoBlock>
-            <RebornDialog title="自由拖拽" draggable description="按住标题区域即可平移位置（默认不出可视区）。">
+            <RebornDialog title="自由拖拽" draggable describe="按住标题区域即可平移位置（默认不出可视区）。">
               <template #trigger>
                 <RebornButton label="拖拽演示（组件式）" variant="outlined" />
               </template>
@@ -498,7 +503,7 @@ async function openCustomIconDialog() {
               </div>
             </RebornDialog>
 
-            <RebornDialog title="可拖出屏幕" draggable overflow description="开启 overflow 后拖动范围可超出可视区。">
+            <RebornDialog title="可拖出屏幕" draggable overflow describe="开启 overflow 后拖动范围可超出可视区。">
               <template #trigger>
                 <RebornButton label="overflow 拖拽" variant="soft" />
               </template>

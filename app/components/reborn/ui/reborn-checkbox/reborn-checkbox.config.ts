@@ -1,13 +1,29 @@
+import type { InjectionKey, Ref } from 'vue';
+
+/** 组状态只读，所有交互统一经过 updateValue。 */
+export interface CheckboxGroupContext {
+  modelValue: Readonly<Ref<readonly CheckboxValue[]>>;
+  disabled: Readonly<Ref<boolean>>;
+  size: Readonly<Ref<(typeof size)[number]>>;
+  color: Readonly<Ref<(typeof color)[number]>>;
+  variant: Readonly<Ref<(typeof variant)[number]>>;
+  max: Readonly<Ref<number | undefined>>;
+  limitReached: Readonly<Ref<boolean>>;
+  isError?: Readonly<Ref<boolean>>;
+  updateValue: (value: CheckboxValue, ev: Event) => CheckboxValue[] | undefined;
+}
+export const CHECKBOX_GROUP_KEY: InjectionKey<CheckboxGroupContext> = Symbol('RebornCheckboxGroup');
+
 const size = ["sm", "md", "lg"] as const;
 const color = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
 const variant = ["filled", "outlined"] as const;
 const direction = ["horizontal", "vertical"] as const;
 
 export {
-  size as checkboxSizes,
   color as checkboxColors,
-  variant as checkboxVariants,
   direction as checkboxDirections,
+  size as checkboxSizes,
+  variant as checkboxVariants,
 };
 
 /** 多选框选项值类型 */

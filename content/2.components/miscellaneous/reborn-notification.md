@@ -161,7 +161,7 @@ const handle = notification.warning({ title: "存在未保存的更改", duratio
 handle.close();
 ```
 
-传相同 `key` 再次调用会**原位更新内容并重置计时**，不新增一条。典型用法是把进行中的提示换成最终结果：
+传相同 `key` 再次调用会**原位更新内容并重置计时**，不新增一条；更新以最后一次的 config 为准，上次传过、这次没传的字段回到默认值。典型用法是把进行中的提示换成最终结果：
 
 ```ts
 notification.info({ key: "sync-task", title: "正在同步", duration: 0 });
@@ -377,8 +377,8 @@ notification.open({
 - `ui.wrapper` 作用在某一角的定位容器上，而容器是该角所有通知共用的，所以只读取队列里第一条通知的 `ui.wrapper`；后续通知传的 `wrapper` 不会生效。
 - 设置了 `type` 时 `icon` 会被类型图标覆盖；需要自定义图标就不要传 `type`，配色改用 `ui: { icon: '...' }`。`icon` 传 VNode 时 `ui.icon` 与类型配色都不作用于它，样式要写在 VNode 自己身上。
 - `duration: 0` 的通知不会自动关闭，也**不会显示进度条**，必须靠句柄 `close()`、同 `key` 更新或 `notification.destroy(key)` 收尾。
-- 同 `key` 更新是把新 config 合并进旧实例（`Object.assign`）：新调用里没写的字段会沿用旧值，例如旧通知的 `footer`、`ribbon` 在新调用未传时仍然保留，需要去掉时显式传 `undefined` 或 `false`。
-- 同 `key` 更新会重置计时器，但进度条节点不重建，CSS 动画不会从头播放；`duration` 不变时，进度条与剩余时间可能对不上。需要进度条准确时，先 `destroy(key)` 再重新打开。
+- **同 `key` 更新以最后一次的 config 为准**。组件用新 config 整体替换旧实例（位置与身份不变，不触发进出场），新调用里没写的字段回到默认值，例如旧通知的 `footer`、`ribbon`、`onClose` 不会保留；需要沿用的字段要在新调用里重新传。
+- **同 `key` 更新会重置计时器并重建进度条**。填充层以版本号为 key，替换后动画从头播放，与重置后的剩余时间保持一致。
 - `onClose` 在每一种关闭路径上都会触发，包括 `notification.destroy()` 批量关闭；在 `onClose` 里再次打开通知时要注意避免循环。
 - `dangerouslyUseHTMLString` 只对字符串 `message` 生效，且会直接插入 HTML，务必自行确保内容可信。
 - `progress` 传对象时仅支持 `strokeColor` / `size` / `striped` / `stripedFlow` / `class`；`percentage` / `type` / `duration` / `indeterminate` / `width` 由通知自身接管，传了不会生效。

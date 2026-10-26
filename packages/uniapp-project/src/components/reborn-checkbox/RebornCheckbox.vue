@@ -6,11 +6,7 @@ import { computed, inject, ref } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
-import theme from './reborn-checkbox.config'
-
-defineOptions({
-  inheritAttrs: false,
-})
+import theme, { CHECKBOX_GROUP_KEY } from './reborn-checkbox.config'
 
 const props = withDefaults(defineProps<CheckboxProps>(), {
   // 运行时类型含 Boolean：未传时会被 Vue 强转为 false，
@@ -38,17 +34,17 @@ const b = tv(theme)
 /** CheckboxGroup 通过 provide 下发的上下文 */
 export interface CheckboxGroupContext {
   /** 组内当前选中值数组 */
-  modelValue: ComputedRef<CheckboxValue[]>
+  modelValue: Readonly<Ref<readonly CheckboxValue[]>>
   /** 组级禁用（含 Form 级禁用） */
   disabled: ComputedRef<boolean>
   /** 组级尺寸 */
   size: ComputedRef<typeof checkboxSizes[number]>
   /** 组级配色 */
-  color: Ref<typeof checkboxColors[number]>
+  color: Readonly<Ref<typeof checkboxColors[number]>>
   /** 组级样式变体 */
-  variant: Ref<typeof checkboxVariants[number]>
+  variant: Readonly<Ref<typeof checkboxVariants[number]>>
   /** 组级最多可选数量 */
-  max: Ref<number | undefined>
+  max: Readonly<Ref<number | undefined>>
   /** 组内选中数量是否已达 max 上限 */
   limitReached: ComputedRef<boolean>
   /** 表单校验错误态 */
@@ -91,7 +87,7 @@ export interface CheckboxProps {
 }
 
 /** 注入父级 CheckboxGroup 状态（如果存在） */
-const checkboxGroup = inject<CheckboxGroupContext | null>('RebornCheckboxGroup', null)
+const checkboxGroup = inject(CHECKBOX_GROUP_KEY, null)
 
 const { size: fieldGroupSize, disabled: fieldGroupDisabled, isError, validate } = useFormInject(props)
 
@@ -102,7 +98,7 @@ const innerValue = ref<boolean | CheckboxValue[]>(props.defaultValue ?? props.de
  * 当前实际生效的值
  * 优先级：CheckboxGroup.modelValue > v-model 绑定值 > 非受控内部值
  */
-const currentValue = computed<boolean | CheckboxValue[]>(() => {
+const currentValue = computed<boolean | readonly CheckboxValue[]>(() => {
   if (checkboxGroup) {
     return checkboxGroup.modelValue.value
   }
@@ -112,8 +108,16 @@ const currentValue = computed<boolean | CheckboxValue[]>(() => {
 
 const optionValue = computed<CheckboxValue>(() => props.value ?? props.label ?? '')
 
+/**
+ * 是否为数组值（含组上下文下发的只读数组）。
+ * v-model 绑定 null 等空值时必须按布尔处理，不能写成 typeof !== 'boolean'，否则会对 null 调用 includes 而抛错。
+ */
+function isValueArray(value: unknown): value is readonly CheckboxValue[] {
+  return Array.isArray(value)
+}
+
 const isChecked = computed(() => {
-  if (Array.isArray(currentValue.value)) {
+  if (isValueArray(currentValue.value)) {
     return currentValue.value.includes(optionValue.value)
   }
 
@@ -217,7 +221,7 @@ function toggle(event: Event) {
   }
 
   // 情况 B: v-model 绑定的是数组
-  if (Array.isArray(currentValue.value)) {
+  if (isValueArray(currentValue.value)) {
     const next = new Set(currentValue.value)
     if (next.has(optionValue.value)) {
       next.delete(optionValue.value)
@@ -237,10 +241,10 @@ function toggle(event: Event) {
 <template>
   <view
     :class="cn(ui.wrapper({ class: customClass }), isChecked && 'is-checked', isIndeterminate && `
-      is-indeterminate
-    `, isDisabled && `
-      is-disabled
-    `)" :data-disabled="isDisabled" hover-class="none" style="-webkit-tap-highlight-color: transparent;"
+        is-indeterminate
+      `, isDisabled && `
+        is-disabled
+      `)" :data-disabled="isDisabled" hover-class="none" style="-webkit-tap-highlight-color: transparent;"
     @tap="toggle"
   >
     <!-- checkbox 插槽整体替换勾选框；一旦填充，ui.control / ui.icon 将不再生效 -->

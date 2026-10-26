@@ -4,7 +4,7 @@ import type { InputUi } from "../reborn-input/RebornInput.vue";
 import type { mentionPlacements, MentionUI } from "./reborn-mention.config";
 import type { MentionContext } from "./reborn-mention.utils";
 import { useEventListener, useResizeObserver } from "@vueuse/core";
-import { computed, nextTick, ref, useAttrs, useSlots, watch } from "vue";
+import { computed, nextTick, shallowRef, useAttrs, useSlots, useTemplateRef, watch } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
 import { cn } from "~/lib/utils";
@@ -140,21 +140,27 @@ if (import.meta.dev) {
     console.warn("[RebornMention] split 必须是 1 个字符");
 }
 
-/** 透传给 RebornInput 的属性：style 留给根容器 */
-const inputAttrs = computed(() => {
+/**
+ * 透传给 RebornInput 的属性：style 留给根容器。
+ * 在模板里调用、每次渲染求值：attrs 代理只在读取具体键时追踪，放进 computed 时初始为空就没有任何依赖，之后新增的属性永远转交不过去
+ */
+function inputAttrs() {
   const { style: _style, ...rest } = attrs;
   return rest;
-});
+}
 
 const slots = useSlots();
 /** 下拉面板自己的插槽，其余插槽都属于输入框 */
 const DROPDOWN_SLOTS = new Set(["label", "loading", "header", "footer"]);
-const inputSlotNames = computed(() => Object.keys(slots).filter(name => !DROPDOWN_SLOTS.has(name)));
+/** 输入框插槽名：在模板里调用、每次渲染取当次的插槽；slots 不是响应式对象，放进 computed 会一直缓存首次结果 */
+function inputSlotNames() {
+  return Object.keys(slots).filter(name => !DROPDOWN_SLOTS.has(name));
+}
 
-const inputRef = ref<InstanceType<typeof RebornInput> | null>(null);
-const rootRef = ref<HTMLElement | null>(null);
-const dropdownRef = ref<HTMLElement | null>(null);
-const listRef = ref<HTMLElement | null>(null);
+const inputRef = useTemplateRef<InstanceType<typeof RebornInput>>("inputRef");
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
+const dropdownRef = useTemplateRef<HTMLElement>("dropdownRef");
+const listRef = useTemplateRef<HTMLElement>("listRef");
 
 /** 内部原生 input / textarea 元素 */
 function getInputEl(): HTMLInputElement | HTMLTextAreaElement | null {
@@ -171,10 +177,10 @@ const isDisabled = (option: MentionOption) => Boolean(option[fieldNames.value.di
 const prefixList = computed(() => (Array.isArray(props.prefix) ? props.prefix : [props.prefix]));
 
 /** 光标所在的提及上下文；为 undefined 时说明光标不在任何提及里 */
-const mentionCtx = ref<MentionContext>();
+const mentionCtx = shallowRef<MentionContext>();
 /** 光标是否停在检索词里；Esc 收起后置 false，直到下一次输入或移动光标 */
-const searching = ref(false);
-const isFocus = ref(false);
+const searching = shallowRef(false);
+const isFocus = shallowRef(false);
 
 /** 默认筛选：选项文本包含检索词，不区分大小写 */
 function defaultFilter(pattern: string, option: MentionOption) {
@@ -195,7 +201,7 @@ const dropdownVisible = computed(
 );
 
 /** 当前指向的选项下标（filteredOptions 中的位置），-1 表示没有 */
-const hoveringIndex = ref(-1);
+const hoveringIndex = shallowRef(-1);
 
 function firstEnabledIndex() {
   return filteredOptions.value.findIndex(option => !isDisabled(option));
@@ -345,9 +351,9 @@ const ARROW_GAP = 10;
 /** 箭头中心距面板左端的最小内缩量：8px 圆角 + 半个箭头底边，与 RebornPopover 同一口径 */
 const ARROW_INSET = 17;
 
-const side = ref<"top" | "bottom">("bottom");
-const positionStyle = ref<CSSProperties>({});
-const arrowStyle = ref<CSSProperties>({});
+const side = shallowRef<"top" | "bottom">("bottom");
+const positionStyle = shallowRef<CSSProperties>({});
+const arrowStyle = shallowRef<CSSProperties>({});
 
 /**
  * 面板与输入框等宽并左对齐；箭头仍指向前缀字符，输入检索词时不会横向移动面板。
@@ -457,13 +463,13 @@ defineExpose({
 <template>
   <div ref="rootRef" :class="ui.root()" :style="rootStyle">
     <RebornInput
-      ref="inputRef" v-bind="inputAttrs" :model-value="model" :ui="inputUi" role="combobox"
+      ref="inputRef" v-bind="inputAttrs()" :model-value="model" :ui="inputUi" role="combobox"
       aria-autocomplete="list" :aria-expanded="dropdownVisible" @update:model-value="model = String($event ?? '')"
       @input="handleInput" @keydown="handleKeydown" @keyup="handleKeyup" @click="syncContext" @focus="handleFocus"
       @blur="handleBlur"
     >
       <!-- 输入框插槽（prefix / suffix / prepend / append / password-icon）原样转交 RebornInput -->
-      <template v-for="name in inputSlotNames" :key="name" #[name]="scope">
+      <template v-for="name in inputSlotNames()" :key="name" #[name]="scope">
         <slot :name="name" v-bind="scope ?? {}" />
       </template>
     </RebornInput>

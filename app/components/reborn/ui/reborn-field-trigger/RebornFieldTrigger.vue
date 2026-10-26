@@ -38,6 +38,14 @@ export interface FieldTriggerProps {
   error?: boolean;
 }
 
+/** 作用域插槽下发的参数；ui 为内部样式函数集合，调用后返回合并好的类名 */
+export interface FieldTriggerSlotProps {
+  displayText: string;
+  placeholder: string;
+  isOpen: boolean;
+  ui: Record<"trigger" | "triggerText" | "triggerIconWrapper" | "placeholder" | "clearBtn" | "arrow", (opts?: { class?: any }) => string>;
+}
+
 const props = withDefaults(defineProps<FieldTriggerProps>(), {
   displayText: "",
   placeholder: "",
@@ -56,6 +64,13 @@ const props = withDefaults(defineProps<FieldTriggerProps>(), {
 const emit = defineEmits<{
   (e: "click", event: MouseEvent): void;
   (e: "clear", event: Event): void;
+}>();
+
+defineSlots<{
+  /** 整体接管触发器内容，连清空按钮与箭头一并交由调用方绘制 */
+  cover?: (props: FieldTriggerSlotProps) => any;
+  /** 替换文案区域，保留清空按钮与箭头 */
+  default?: (props: FieldTriggerSlotProps) => any;
 }>();
 
 const b = tv(theme);

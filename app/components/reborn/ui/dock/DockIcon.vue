@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, inject, ref } from "vue";
+import type { DataOrientation } from "./types";
+import { computed, inject, shallowRef, useTemplateRef } from "vue";
 import {
   DISTANCE_INJECTION_KEY,
   MAGNIFICATION_INJECTION_KEY,
@@ -8,16 +9,15 @@ import {
   ORIENTATION_INJECTION_KEY,
 } from "./injectionKeys";
 
-const iconRef = ref<HTMLDivElement | null>(null);
+const iconRef = useTemplateRef<HTMLDivElement>("iconRef");
 
-const mouseX = inject(MOUSE_X_INJECTION_KEY, ref(Infinity));
-const mouseY = inject(MOUSE_Y_INJECTION_KEY, ref(Infinity));
+const mouseX = inject(MOUSE_X_INJECTION_KEY, shallowRef(Infinity));
+const mouseY = inject(MOUSE_Y_INJECTION_KEY, shallowRef(Infinity));
 const distance = inject(DISTANCE_INJECTION_KEY);
-const orientation = inject(ORIENTATION_INJECTION_KEY, "vertical");
+// 缺省值与 Dock 的默认方向一致
+const orientation = inject(ORIENTATION_INJECTION_KEY, shallowRef<DataOrientation>("horizontal"));
 const magnification = inject(MAGNIFICATION_INJECTION_KEY);
-const isVertical = computed(() => orientation === "vertical");
-
-const margin = ref(0);
+const isVertical = computed(() => orientation.value === "vertical");
 
 function calculateDistance(val: number) {
   if (isVertical.value) {
@@ -51,10 +51,6 @@ const iconWidth = computed(() => {
     :style="{
       width: `${iconWidth}px`,
       height: `${iconWidth}px`,
-    }"
-    :hovered="{
-      marginLeft: margin,
-      marginRight: margin,
     }"
   >
     <slot />

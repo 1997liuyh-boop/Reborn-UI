@@ -14,7 +14,7 @@ import type {
   TreeUI,
 } from "./reborn-tree.config";
 import type { TreeConductResult } from "./useTree";
-import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from "vue";
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, reactive, ref, shallowRef, toRaw, useTemplateRef, watch } from "vue";
 import { useMotionList } from '@/composables/useMotionList';
 import { cn } from "~/lib/utils";
 import theme from "./reborn-tree.config";
@@ -228,7 +228,7 @@ function isCheckConductBlocked(entity: TreeEntity): boolean {
 /** （受控）已加载的节点 key，需配合 loadData 使用 */
 const loadedKeysModel = defineModel<TreeKey[]>("loadedKeys", { default: undefined });
 /** 非受控模式下的已加载集合 */
-const innerLoadedKeys = ref<TreeKey[]>([]);
+const innerLoadedKeys = shallowRef<TreeKey[]>([]);
 const mergedLoadedKeys = computed(() => loadedKeysModel.value ?? innerLoadedKeys.value);
 const loadedSet = computed(() => new Set(mergedLoadedKeys.value));
 /** 正在加载中的节点 key，驱动加载图标 */
@@ -278,34 +278,60 @@ function initialExpandedKeys(): TreeKey[] {
 }
 
 /** 非受控模式下的展开集合 */
-const innerExpandedKeys = ref<TreeKey[]>(initialExpandedKeys());
+const innerExpandedKeys = shallowRef<TreeKey[]>(initialExpandedKeys());
 
 /** 实际生效的展开集合：受控值优先 */
 const mergedExpandedKeys = computed(() => expandedKeysModel.value ?? innerExpandedKeys.value);
 const expandedSet = computed(() => new Set(mergedExpandedKeys.value));
 
-/** 内部写入标记：区分「组件自己更新模型」与「外部变更」，避免 autoExpandParent 把用户刚收起的父级又撑开 */
-let internalExpandWrite = false;
+/**
+ * 组件自己最后一次写入的展开集合：区分「内部写入回流」与「外部变更」，
+ * 避免 autoExpandParent 把用户刚收起的父级又撑开。
+ * 记内容而不用布尔标记：父组件某次拒绝回写时 watch 不触发，布尔标记会滞留并吞掉下一次外部变更。
+ * 识别出回流后立即清空，只跳过紧随内部写入的那一次；否则之后内容相同的外部写入（如从快照恢复）也会被当成回流
+ */
+let lastInternalExpandKeys: TreeKey[] | null = null;
+
+/** 判断回流的展开集合是否就是组件自己写入的那一份（父组件原样回写或复制后回写都算） */
+function isInternalExpandWrite(keys: TreeKey[]): boolean {
+  const last = lastInternalExpandKeys;
+  if (!last) return false;
+  if (toRaw(keys) === last) return true;
+  return keys.length === last.length && keys.every((key, index) => key === last[index]);
+}
 
 /** 统一的展开集合写入口 */
 function setExpandedKeys(keys: TreeKey[]) {
-  internalExpandWrite = true;
+  lastInternalExpandKeys = keys;
   innerExpandedKeys.value = keys;
   expandedKeysModel.value = keys;
+}
+
+const instance = getCurrentInstance();
+/**
+ * 父组件是否以非 undefined 的值传入了 expandedKeys：传了即受控，展开集合归外部所有。
+ * 不能用模型值判断：未绑定时 defineModel 走本地模式，组件自己写入一次后模型值就不再是 undefined
+ */
+function isExpandedControlled(): boolean {
+  const raw = instance?.vnode.props;
+  if (!raw) return false;
+  const value = "expandedKeys" in raw ? raw.expandedKeys : raw["expanded-keys"];
+  return value !== undefined;
 }
 
 /** 外部改动 expandedKeys 且开启 autoExpandParent 时，补全父节点展开态 */
 watch(
   () => expandedKeysModel.value,
   (val) => {
-    if (internalExpandWrite) {
-      internalExpandWrite = false;
+    if (!val) return;
+    if (isInternalExpandWrite(val)) {
+      lastInternalExpandKeys = null;
       return;
     }
-    if (!props.autoExpandParent || !val) return;
+    if (!props.autoExpandParent) return;
     const conducted = withAncestors(val);
     if (conducted.length !== val.length) {
-      internalExpandWrite = true;
+      lastInternalExpandKeys = conducted;
       expandedKeysModel.value = conducted;
     }
   },
@@ -355,7 +381,7 @@ async function maybeLoadData(entity: TreeEntity) {
 /** （受控）选中的节点 key；default: undefined 的理由同 expandedKeys */
 const selectedKeysModel = defineModel<TreeKey[]>("selectedKeys", { default: undefined });
 /** 非受控模式下的选中集合 */
-const innerSelectedKeys = ref<TreeKey[]>([...props.defaultSelectedKeys]);
+const innerSelectedKeys = shallowRef<TreeKey[]>([...props.defaultSelectedKeys]);
 const mergedSelectedKeys = computed(() => selectedKeysModel.value ?? innerSelectedKeys.value);
 const selectedSet = computed(() => new Set(mergedSelectedKeys.value));
 
@@ -368,9 +394,9 @@ const selectedSet = computed(() => new Set(mergedSelectedKeys.value));
  */
 const checkedKeysModel = defineModel<TreeCheckedKeys>("checkedKeys", { default: undefined });
 /** 非受控模式下的勾选集合 */
-const innerCheckedKeys = ref<TreeKey[]>([...props.defaultCheckedKeys]);
+const innerCheckedKeys = shallowRef<TreeKey[]>([...props.defaultCheckedKeys]);
 /** 非受控 + checkStrictly 下独立维护的半选集合 */
-const innerHalfCheckedKeys = ref<TreeKey[]>([]);
+const innerHalfCheckedKeys = shallowRef<TreeKey[]>([]);
 
 /**
  * 父子联动归一：以给定 key 为种子，向下填满后代、向上归并父级，
@@ -454,6 +480,11 @@ function handleCheck(entity: TreeEntity, targetChecked: boolean, event: Event) {
   });
 }
 
+/** 将插槽的原生事件传回当前节点，类型约束保留在脚本中。 */
+function checkboxToggle(entity: TreeEntity) {
+  return (event: Event) => handleCheck(entity, !checkedSet.value.has(entity.key), event);
+}
+
 /**
  * 点击标题：
  * - checkable 树：等同于点击复选框，直接切换勾选（不再走点选高亮——复选树的
@@ -533,32 +564,37 @@ const listMotion = useMotionList({ enabled: () => listAnimated.value });
 const vMotionList = listMotion.directive;
 
 /** 滚动容器引用 */
-const scrollRef = ref<HTMLElement | null>(null);
+const scrollRef = useTemplateRef<HTMLElement>("scrollRef");
 /** 当前滚动位置，虚拟滚动切片的依据 */
-const scrollTop = ref(0);
+const scrollTop = shallowRef(0);
 /** 视口外上下各多渲染的行数，避免快速滚动露白 */
 const OVERSCAN = 5;
 
-/** 虚拟滚动的可见切片范围 [start, end) */
-const visibleRange = computed<[number, number]>(() => {
-  if (!useVirtual.value) return [0, flatNodes.value.length];
+/**
+ * 虚拟滚动的可见切片起点（含）。起止拆成两个返回数字的 computed：
+ * 滚动时只要起止下标不变，下游切片就不重算，不会每个 scroll 事件都重渲染整棵树
+ */
+const startIndex = computed(() =>
+  useVirtual.value ? Math.max(0, Math.floor(scrollTop.value / props.itemHeight) - OVERSCAN) : 0,
+);
+/** 虚拟滚动的可见切片终点（不含） */
+const endIndex = computed(() => {
+  if (!useVirtual.value) return flatNodes.value.length;
   const viewportCount = Math.ceil((props.height ?? 0) / props.itemHeight);
-  const start = Math.max(0, Math.floor(scrollTop.value / props.itemHeight) - OVERSCAN);
-  const end = Math.min(flatNodes.value.length, start + viewportCount + OVERSCAN * 2);
-  return [start, end];
+  return Math.min(flatNodes.value.length, startIndex.value + viewportCount + OVERSCAN * 2);
 });
 
 /** 实际渲染的节点 */
 const renderNodes = computed(() =>
   useVirtual.value
-    ? flatNodes.value.slice(visibleRange.value[0], visibleRange.value[1])
+    ? flatNodes.value.slice(startIndex.value, endIndex.value)
     : flatNodes.value,
 );
 
 /** 虚拟滚动内容总高度 */
 const totalHeight = computed(() => flatNodes.value.length * props.itemHeight);
 /** 切片相对内容顶部的位移 */
-const offsetY = computed(() => visibleRange.value[0] * props.itemHeight);
+const offsetY = computed(() => startIndex.value * props.itemHeight);
 
 function handleScroll(event: Event) {
   scrollTop.value = (event.target as HTMLElement).scrollTop;
@@ -696,6 +732,27 @@ function handleDragOver(entity: TreeEntity, event: DragEvent) {
 
 function handleDragLeave(entity: TreeEntity, event: DragEvent) {
   emit("dragleave", { event, node: entity.node });
+}
+
+/** 拖拽指针是否仍在树内：优先看 relatedTarget，部分浏览器（Safari）拖拽事件不提供它，退回按指针坐标判断 */
+function isPointerInsideTree(event: DragEvent): boolean {
+  const root = scrollRef.value;
+  if (!root) return false;
+  const next = event.relatedTarget;
+  if (next instanceof Node) return root.contains(next);
+  const rect = root.getBoundingClientRect();
+  return event.clientX > rect.left && event.clientX < rect.right && event.clientY > rect.top && event.clientY < rect.bottom;
+}
+
+/**
+ * 拖出整棵树时撤销悬停自动展开与放置指示。
+ * 节点级 dragleave 分不清「移到相邻节点」与「移出树外」，所以在根容器上按指针去向判断
+ */
+function handleRootDragLeave(event: DragEvent) {
+  if (dragState.dragKey === null || isPointerInsideTree(event)) return;
+  clearDragExpandTimer();
+  dragState.dropKey = null;
+  dragState.allowed = false;
 }
 
 function handleDrop(entity: TreeEntity, event: DragEvent) {
@@ -877,7 +934,18 @@ function animateScrollTop(container: HTMLElement, target: number) {
   scrollAnimationFrame = requestAnimationFrame(step);
 }
 
-/** 滚动到指定 key 的节点（虚拟滚动按行高换算，普通模式回退 scrollIntoView） */
+/** 节点相对滚动容器内容顶部的布局位置：沿 offsetParent 链累加，不含 transform，行级过渡途中也取最终位置 */
+function offsetTopWithin(el: HTMLElement, container: HTMLElement): number {
+  let top = 0;
+  let current: HTMLElement | null = el;
+  while (current && current !== container) {
+    top += current.offsetTop;
+    current = current.offsetParent as HTMLElement | null;
+  }
+  return top;
+}
+
+/** 滚动到指定 key 的节点（虚拟滚动按行高换算，非虚拟的滚动容器按节点实际位置，无滚动容器回退 scrollIntoView） */
 async function scrollTo(options: TreeScrollToOptions) {
   const { key, align = "auto", offset = 0, autoExpand = false, behavior = "auto" } = options;
   const entity = entitiesState.value.map.get(key);
@@ -889,9 +957,10 @@ async function scrollTo(options: TreeScrollToOptions) {
     !(typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 
-  // 仅非受控模式代为展开：受控模式下 expandedKeys 归外部所有，不越权改写
-  if (autoExpand && expandedKeysModel.value === undefined) {
-    innerExpandedKeys.value = [...new Set([...innerExpandedKeys.value, ...ancestorKeys(entity)])];
+  // 仅非受控模式代为展开：受控模式下 expandedKeys 归外部所有，不越权改写；
+  // 统一走 setExpandedKeys，本地模式下的模型值与内部集合一起更新，否则写入会被模型值盖住
+  if (autoExpand && !isExpandedControlled()) {
+    setExpandedKeys([...new Set([...mergedExpandedKeys.value, ...ancestorKeys(entity)])]);
     await nextTick();
   }
 
@@ -899,29 +968,42 @@ async function scrollTo(options: TreeScrollToOptions) {
   if (index < 0) return;
 
   const container = scrollRef.value;
+  const element = container?.querySelector<HTMLElement>(`[data-key="${CSS.escape(String(key))}"]`);
   if (!container || props.height === undefined) {
     // 无滚动容器：退化为浏览器原生滚动定位。
     // 这里只能交给原生 smooth——滚动发生在页面级祖先上，rAF 动画无从接管；
     // 原生 smooth 被环境丢弃时表现为即时跳转，定位本身不受影响
-    container
-      ?.querySelector(`[data-key="${CSS.escape(String(key))}"]`)
-      ?.scrollIntoView({ block: "nearest", behavior: smooth ? "smooth" : "auto" });
+    element?.scrollIntoView({ block: "nearest", behavior: smooth ? "smooth" : "auto" });
     return;
   }
 
-  const itemTop = index * props.itemHeight;
+  // 虚拟滚动的行被内联样式固定为 itemHeight，可直接换算；
+  // 非虚拟模式行高由内容决定，按 itemHeight 换算会随节点数累积偏差，改读节点的实际位置
+  let itemTop: number;
+  let itemHeight: number;
+  let viewHeight: number;
+  if (useVirtual.value) {
+    itemTop = index * props.itemHeight;
+    itemHeight = props.itemHeight;
+    viewHeight = props.height;
+  } else {
+    if (!element) return;
+    itemTop = offsetTopWithin(element, container);
+    itemHeight = element.offsetHeight;
+    viewHeight = container.clientHeight;
+  }
   const viewTop = container.scrollTop;
-  const viewBottom = viewTop + props.height - props.itemHeight;
+  const viewBottom = viewTop + viewHeight - itemHeight;
 
   let target: number | null = null;
   if (align === "top") {
     target = itemTop - offset;
   } else if (align === "bottom") {
-    target = itemTop - props.height + props.itemHeight + offset;
+    target = itemTop - viewHeight + itemHeight + offset;
   } else if (itemTop < viewTop) {
     target = itemTop - offset;
   } else if (itemTop > viewBottom) {
-    target = itemTop - props.height + props.itemHeight + offset;
+    target = itemTop - viewHeight + itemHeight + offset;
   }
   if (target !== null) {
     // 上限截到最大可滚动距离：目标在列表末尾时避免把动画终点定在滚不到的位置
@@ -949,6 +1031,7 @@ defineExpose({
   <div
     ref="scrollRef" :class="ui.root({ class: props.class })" :style="rootStyle" role="tree"
     :aria-multiselectable="props.multiple || undefined" @scroll.passive="useVirtual && handleScroll($event)"
+    @dragleave="handleRootDragLeave"
     @wheel.passive="cancelScrollAnimation" @touchmove.passive="cancelScrollAnimation"
   >
     <!-- 虚拟滚动时由占位层撑出总高度，列表整体位移到切片起点 -->
@@ -1020,12 +1103,12 @@ defineExpose({
             <slot
               name="checkbox" :node="entity.node" :checked="checkedSet.has(entity.key)"
               :half-checked="halfCheckedSet.has(entity.key)" :disabled="isCheckboxDisabled(entity)"
-              :toggle="(ev: Event) => handleCheck(entity, !checkedSet.has(entity.key), ev)"
+              :toggle="checkboxToggle(entity)"
             >
               <RebornCheckbox
                 size="sm" :color="props.color" :model-value="checkedSet.has(entity.key)"
                 :indeterminate="halfCheckedSet.has(entity.key)" :disabled="isCheckboxDisabled(entity)"
-                @change="(_val: unknown, ev: Event) => handleCheck(entity, !checkedSet.has(entity.key), ev)"
+                @change="(_val, ev) => handleCheck(entity, !checkedSet.has(entity.key), ev)"
               />
             </slot>
           </span>

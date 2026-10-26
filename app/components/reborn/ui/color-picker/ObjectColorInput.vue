@@ -11,31 +11,6 @@ interface ObjectColorInputProps {
 const props = defineProps<ObjectColorInputProps>();
 const emit = defineEmits<{ "value-change": [value: HslaColor | RgbaColor] }>();
 
-const inputValues = computed(() => {
-  return getInputValues(props.value);
-});
-
-function getInputValues(value: HslaColor | RgbaColor): number[] {
-  const isHsl = props.label === "hsl" || props.label === "hsla";
-  const hasAlpha = props.label === "hsla" || props.label === "rgba";
-
-  if (isHsl) {
-    const hsl = value as HslaColor;
-    const values = [Math.round(hsl.h), Math.round(hsl.s), Math.round(hsl.l)];
-    if (hasAlpha) {
-      values.push(Math.round(hsl.a * 100));
-    }
-    return values;
-  } else {
-    const rgb = value as RgbaColor;
-    const values = [Math.round(rgb.r), Math.round(rgb.g), Math.round(rgb.b)];
-    if (hasAlpha) {
-      values.push(Math.round(rgb.a * 100));
-    }
-    return values;
-  }
-}
-
 function getInputClass(index: number, totalInputs: number): string {
   const baseClass =
     "flex-1 w-0 h-8 px-2 py-1 text-sm border border-input bg-background text-center overflow-hidden focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0";
@@ -56,11 +31,22 @@ function getInputClass(index: number, totalInputs: number): string {
   return `${baseClass} ${positionClasses}`;
 }
 
-const inputs = computed(() => {
+interface ChannelInput {
+  key: string;
+  /** 输入框显示的值：透明度按 0-100 显示 */
+  value: number;
+  min: number;
+  max: number;
+  prop: string;
+  class: string;
+}
+
+// 各通道的显示值与取值范围只算一次，模板与事件处理共用
+const inputs = computed<ChannelInput[]>(() => {
   const isHsl = props.label === "hsl" || props.label === "hsla";
   const hasAlpha = props.label === "hsla" || props.label === "rgba";
 
-  let inputsData;
+  let inputsData: Omit<ChannelInput, "class">[];
   if (isHsl) {
     const hsl = props.value as HslaColor;
     inputsData = [
@@ -83,28 +69,56 @@ const inputs = computed(() => {
     }
   }
 
-  return inputsData?.map((input, index) => ({
+  return inputsData.map((input, index) => ({
     ...input,
     class: getInputClass(index, inputsData.length),
   }));
 });
 
-function handleChange(idx: number, event: Event) {
-  const target = event.target as HTMLInputElement;
-  const value = Number(target.value);
-  if (Number.isNaN(value)) return;
-
-  const input = inputs.value[idx];
-  const clampedValue = Math.max(input.min, Math.min(input.max, value));
-  const finalValue = input.prop === "a" ? clampedValue / 100 : clampedValue;
-
+function emitChannel(input: ChannelInput, value: number) {
+  const finalValue = input.prop === "a" ? value / 100 : value;
   emit("value-change", { ...props.value, [input.prop]: finalValue } as HslaColor | RgbaColor);
+}
+
+// 输入过程中：空串（正在删除重输）、非数字与超出范围的中间值都不提交，避免立刻回写覆盖输入
+function handleInput(idx: number, event: Event) {
+  const input = inputs.value[idx];
+  if (!input) return;
+  const raw = (event.target as HTMLInputElement).value.trim();
+  if (raw === "") return;
+  const value = Number(raw);
+  if (Number.isNaN(value) || value < input.min || value > input.max) return;
+  emitChannel(input, value);
+}
+
+// 失焦或回车时：夹取到合法范围后提交，空串或非法输入恢复为当前值
+function handleChange(idx: number, event: Event) {
+  const input = inputs.value[idx];
+  if (!input) return;
+  const target = event.target as HTMLInputElement;
+  const value = Number(target.value.trim());
+  if (target.value.trim() === "" || Number.isNaN(value)) {
+    target.value = String(input.value);
+    return;
+  }
+  const clampedValue = Math.max(input.min, Math.min(input.max, value));
+  target.value = String(clampedValue);
+  if (clampedValue !== input.value) emitChannel(input, clampedValue);
 }
 </script>
 
 <template>
   <div class="flex w-full min-w-0">
-    <input v-for="(input, idx) in inputs" :key="input.key" :value="inputValues[idx]" :min="input.min" :max="input.max"
-      :class="input.class" step="1" @input="handleChange(idx, $event)" />
+    <input
+      v-for="(input, idx) in inputs"
+      :key="input.key"
+      :value="input.value"
+      :min="input.min"
+      :max="input.max"
+      :class="input.class"
+      step="1"
+      @input="handleInput(idx, $event)"
+      @change="handleChange(idx, $event)"
+    >
   </div>
 </template>

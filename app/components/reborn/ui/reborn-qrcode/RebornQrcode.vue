@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ClQrcodeMode } from './types'
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 import { generateFrame } from './qrcode'
 import { eccLevel } from './types'
 
@@ -182,7 +182,8 @@ const eyeCenter = (eye: EyeRect) => {
   return { x: eye.x + 2, y: eye.y + 2 }
 }
 
-const qrcodeId = computed(() => `qr-${Math.random().toString(36).slice(2, 9)}`)
+/** 渐变与图片填充的 id 前缀：useId 在服务端和客户端保持一致，水合后 url(#…) 引用不会落空 */
+const qrcodeId = `qr-${useId()}`
 
 const getGradientStops = (gradient: any) => {
   if (!gradient || !gradient.colorStops) return []
@@ -200,44 +201,68 @@ const getGradientCoords = (gradient: any) => {
 }
 
 const dotsFill = computed(() => {
-  if (props.dotsImage) return `url(#${qrcodeId.value}-dots-img)`
-  if (props.dotsGradient) return `url(#${qrcodeId.value}-dots-grad)`
+  if (props.dotsImage) return `url(#${qrcodeId}-dots-img)`
+  if (props.dotsGradient) return `url(#${qrcodeId}-dots-grad)`
   return finalForeground.value
 })
 
 const bgFill = computed(() => {
   if (props.backgroundTransparent) return 'transparent'
-  if (props.backgroundGradient) return `url(#${qrcodeId.value}-bg-grad)`
+  if (props.backgroundGradient) return `url(#${qrcodeId}-bg-grad)`
   return finalBackground.value
 })
 
 const cornerSquareFill = computed(() => {
-  if (props.cornersSquareGradient) return `url(#${qrcodeId.value}-cs-grad)`
+  if (props.cornersSquareGradient) return `url(#${qrcodeId}-cs-grad)`
   if (props.cornersSquareOptions?.color) return props.cornersSquareOptions.color
   if (props.pdColor) return props.pdColor
   return finalForeground.value
 })
 
 const cornerDotFill = computed(() => {
-  if (props.cornersDotGradient) return `url(#${qrcodeId.value}-cd-grad)`
+  if (props.cornersDotGradient) return `url(#${qrcodeId}-cd-grad)`
   if (props.cornersDotOptions?.color) return props.cornersDotOptions.color
   if (props.pdColor) return props.pdColor
   return finalForeground.value
 })
 
+/** 圆角矩形路径（顺时针）；r <= 0 时退化为直角矩形 */
 const getRoundRectPath = (x: number, y: number, w: number, h: number, r: number) => {
-  if (r <= 0) return `M ${x} ${y} h ${w} v ${h} h ${-w} Z`
+  if (r <= 0) return `M${x} ${y}h${w}v${h}h${-w}Z`
   const radius = Math.min(r, w / 2, h / 2)
-  return `M ${x + radius} ${y} 
-          h ${w - 2 * radius} 
-          a ${radius} ${radius} 0 0 1 ${radius} ${radius} 
-          v ${h - 2 * radius} 
-          a ${radius} ${radius} 0 0 1 ${-radius} ${radius} 
-          h ${-(w - 2 * radius)} 
-          a ${radius} ${radius} 0 0 1 ${-radius} ${-radius} 
-          v ${-(h - 2 * radius)} 
-          a ${radius} ${radius} 0 0 1 ${radius} ${-radius} Z`
+  return `M${x + radius} ${y}h${w - 2 * radius}a${radius} ${radius} 0 0 1 ${radius} ${radius}`
+    + `v${h - 2 * radius}a${radius} ${radius} 0 0 1 ${-radius} ${radius}`
+    + `h${-(w - 2 * radius)}a${radius} ${radius} 0 0 1 ${-radius} ${-radius}`
+    + `v${-(h - 2 * radius)}a${radius} ${radius} 0 0 1 ${radius} ${-radius}Z`
 }
+
+/** 圆形路径：两段半圆弧拼成整圆，与圆角矩形同为顺时针，合并进同一条 path 时按 nonzero 规则全部填充 */
+const getCirclePath = (cx: number, cy: number, r: number) =>
+  `M${cx - r} ${cy}a${r} ${r} 0 1 1 ${2 * r} 0a${r} ${r} 0 1 1 ${-2 * r} 0Z`
+
+/**
+ * 全部点阵模块拼成一条 path 的 d：常见内容就有上千个模块，逐个渲染成 SVG 元素会让 text 每次变化都重建并 diff 上千个节点。
+ * 四种 mode 的几何与原先逐个渲染的 circle / rect 一致。
+ */
+const dotsPath = computed(() => {
+  const c = cellSize.value
+  const p = finalPadding.value
+  const mode = finalMode.value
+  const parts: string[] = []
+  for (const { x, y } of dots.value) {
+    const left = p + x * c
+    const top = p + y * c
+    if (mode === 'circular')
+      parts.push(getCirclePath(left + c / 2, top + c / 2, c * 0.42))
+    else if (mode === 'rectSmall')
+      parts.push(getRoundRectPath(left + c * 0.2, top + c * 0.2, c * 0.6, c * 0.6, 1))
+    else if (mode === 'line')
+      parts.push(getRoundRectPath(left, top + c * 0.15, c, c * 0.7, 0))
+    else
+      parts.push(getRoundRectPath(left, top, c, c, 0))
+  }
+  return parts.join('')
+})
 </script>
 
 <template>
@@ -281,18 +306,8 @@ const getRoundRectPath = (x: number, y: number, w: number, h: number, r: number)
 
       <rect :width="finalSize" :height="finalSize" :fill="bgFill" />
 
-      <template v-for="dot in dots" :key="`${dot.x}-${dot.y}`">
-        <circle v-if="finalMode === 'circular'" :cx="finalPadding + (dot.x + 0.5) * cellSize"
-          :cy="finalPadding + (dot.y + 0.5) * cellSize" :r="cellSize * 0.42" :fill="dotsFill" />
-        <rect v-else-if="finalMode === 'rectSmall'" :x="finalPadding + dot.x * cellSize + cellSize * 0.2"
-          :y="finalPadding + dot.y * cellSize + cellSize * 0.2" :width="cellSize * 0.6" :height="cellSize * 0.6" rx="1"
-          :fill="dotsFill" />
-        <rect v-else-if="finalMode === 'line'" :x="finalPadding + dot.x * cellSize"
-          :y="finalPadding + dot.y * cellSize + cellSize * 0.15" :width="cellSize" :height="cellSize * 0.7"
-          :fill="dotsFill" />
-        <rect v-else :x="finalPadding + dot.x * cellSize" :y="finalPadding + dot.y * cellSize" :width="cellSize"
-          :height="cellSize" :fill="dotsFill" />
-      </template>
+      <!-- 点阵：所有模块合并为一条 path，节点数不随内容长度增长 -->
+      <path v-if="dotsPath" :d="dotsPath" :fill="dotsFill" />
 
       <template v-for="eye in eyeRects" :key="`${eye.x}-${eye.y}`">
         <!-- Position Ring (Outer 7x7 - Inner 5x5) -->

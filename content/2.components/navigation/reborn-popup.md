@@ -6,7 +6,7 @@ platform: uniapp
 tags: [uniapp, tailwind, popup]
 ---
 
-::ComponentViewer{demoFile="RebornPopupDemo.vue" config="RebornPopupConfig" componentId="reborn-popup" :componentFiles='[]' :uniappFiles='["RebornPopup.vue", "reborn-popup.config.ts", "RebornTransition.vue", "reborn-transition.config.ts", "RebornOverlay.vue", "reborn-overlay.config.ts", "RebornRootPortal.vue", "reborn-root-portal.config.ts"]'}
+::ComponentViewer{demoFile="RebornPopupDemo.vue" config="RebornPopupConfig" componentId="reborn-popup" :componentFiles='[]' :uniappFiles='["RebornPopup.vue", "RebornPopupPanel.vue", "reborn-popup.config.ts", "RebornTransition.vue", "reborn-transition.config.ts", "RebornOverlay.vue", "reborn-overlay.config.ts", "RebornRootPortal.vue"]'}
 ::
 
 ## 简介
@@ -58,21 +58,21 @@ Popup 是 UniApp 的边缘或居中弹出面板。Web 实现已重构为 `reborn
 
 | 属性名                | 类型                                                                                   | 默认值      | 描述                                                                                      |
 | --------------------- | -------------------------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------- |
-| `v-model`             | `boolean`                                                                              | `false`     | 是否显示弹出层                                                                            |
+| `modelValue`          | `boolean`                                                                              | `undefined` | 显隐状态，对应 `v-model`；未传时本地初始关闭，显式 `false` / `null` / `undefined` 均关闭                                                                            |
 | `position`            | `'top' \| 'bottom' \| 'left' \| 'right' \| 'center'`                                   | `'bottom'`  | 弹出位置，未指定 `transition` 时按方位选用动画                                            |
-| `size`                | `number \| string`                                                                     | `'30%'`     | 面板尺寸：左右方向为宽度，上下方向为高度                                                  |
+| `size` | `number \| string` | `undefined` | 面板尺寸：左右与居中为宽度，上下为高度；未传时由内容和默认布局决定，customStyle 可覆盖。 |
 | `title`               | `string`                                                                               | `''`        | 头部标题文本                                                                              |
 | `showHeader`          | `boolean`                                                                              | `true`      | 是否显示头部（包含标题和关闭图标）                                                        |
 | `showClose`           | `boolean`                                                                              | `true`      | 是否显示关闭图标（位于头部右侧）                                                          |
 | `round`               | `boolean`                                                                              | `true`      | 是否显示圆角，只圆朝内的一侧（居中为四角）                                                |
-| `modal`               | `boolean`                                                                              | `true`      | 是否显示遮罩层；因 `showMask` 默认 `true` 且优先，单独设为 `false` 不生效                 |
-| `showMask`            | `boolean`                                                                              | `true`      | `modal` 的别名，优先于 `modal`；关闭遮罩要传 `:show-mask="false"`                         |
-| `closeOnClickModal`   | `boolean`                                                                              | `true`      | 是否可以通过点击遮罩层关闭；因 `maskClosable` 默认 `true` 且优先，单独设为 `false` 不生效 |
-| `maskClosable`        | `boolean`                                                                              | `true`      | `closeOnClickModal` 的别名，优先；禁止点遮罩关闭要传 `:mask-closable="false"`             |
+| `modal` | `boolean` | `true` | 是否显示遮罩；showMask 显式传入时优先。 |
+| `showMask` | `boolean` | `undefined` | modal 的别名，未传时回退 modal。 |
+| `closeOnClickModal` | `boolean` | `true` | 是否点击遮罩关闭；maskClosable 显式传入时优先。 |
+| `maskClosable` | `boolean` | `undefined` | closeOnClickModal 的别名，未传时回退主属性。 |
 | `transition`          | `TransitionName`                                                                       | -           | 自定义过渡动画名称，覆盖 `position` 推导出的默认动画                                      |
 | `duration`            | `number \| boolean`                                                                    | `300`       | 动画时长（ms），设为 `false` 禁用动画                                                     |
-| `zIndex`              | `number`                                                                               | `25`        | 层级；因 `overlayZIndex` 默认 `25` 且优先，单独修改不生效                                 |
-| `overlayZIndex`       | `number`                                                                               | `25`        | `zIndex` 的别名，非 0 时优先；调整层级请改这个                                            |
+| `zIndex` | `number` | `25` | 弹层和遮罩层级，overlayZIndex 显式传入时优先。 |
+| `overlayZIndex` | `number` | `undefined` | zIndex 的别名，包含 0 在内的显式值优先。 |
 | `lockScroll`          | `boolean`                                                                              | `true`      | 是否在出现时锁定背景滚动；由遮罩层执行                                                    |
 | `lazyRender`          | `boolean`                                                                              | `true`      | 是否在首次显示时才渲染内容                                                                |
 | `swipeClose`          | `boolean`                                                                              | `true`      | 是否开启手势下滑关闭（仅 `position="bottom"` 时生效）                                     |
@@ -130,9 +130,11 @@ Popup 是 UniApp 的边缘或居中弹出面板。Web 实现已重构为 `reborn
 
 ## 注意事项
 
+- **传入 `modelValue` 后父级持有显隐状态**。`close()` 等操作请求更新，父级拒收时面板保持父值；未传时内部管理，移除绑定后恢复本地值。初始化不派发 `update:modelValue`。
+
 - **Web 与 UniApp 名称已拆分。** Web 使用 reborn-drawer；本组件继续保留移动端原有 API，不提供 beforeClose、resizable 或 appendTo。
-- **关闭遮罩使用 showMask，禁止遮罩关闭使用 maskClosable。** 两个别名默认 true 且优先，单独设置 modal 或 closeOnClickModal 为 false 不生效。
-- **层级应设置 overlayZIndex。** 它默认 25 且优先于 zIndex，嵌套时需自行分配层级。
+- **遮罩别名只在显式传入时覆盖主属性。** showMask / maskClosable 未传时分别读取 modal / closeOnClickModal，单独传主属性 false 可正常关闭遮罩或禁止遮罩关闭。
+- **层级主属性与别名均可单独使用。** overlayZIndex 未传时读取 zIndex；嵌套时需自行分配层级。
 - **滚动锁定由遮罩执行。** showMask=false 时不渲染遮罩，也不会持有滚动锁。
 - **手势关闭仅支持底部。** swipeCloseThreshold 默认 120px，快速下滑也可触发关闭。
 - **默认插槽没有内边距或滚动包装。** 业务内容需自行添加布局；header 插槽仅替换标题，不替换右侧关闭图标。

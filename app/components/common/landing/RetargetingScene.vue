@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RetargetingController } from "~/lib/three/retargetingScene";
 import { useRuntimeConfig } from "#imports";
-import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from "vue";
 import { ensureWebGPUGlobals } from "~/lib/three/webgpuGlobals";
 
 interface Props {
@@ -16,8 +16,8 @@ const emit = defineEmits<{
 }>();
 const config = useRuntimeConfig();
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas");
-const canvasVersion = ref(0);
-const ready = ref(false);
+const canvasVersion = shallowRef(0);
+const ready = shallowRef(false);
 const abort = new AbortController();
 let controller: RetargetingController | undefined;
 

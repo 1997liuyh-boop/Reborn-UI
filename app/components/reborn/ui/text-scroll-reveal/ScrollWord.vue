@@ -13,11 +13,11 @@ const computedOpacity = computed(() => {
   const [start, end] = props.range;
   const progress = props.progress;
 
-  // Calculate opacity based on the progress and range
+  // 按进度与区间计算不透明度
   if (progress < start) return 0;
   if (progress > end) return 1;
 
-  // Linear interpolation for opacity between 0 and 1
+  // 区间内在 0 到 1 之间线性插值
   return (progress - start) / (end - start);
 });
 </script>

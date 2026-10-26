@@ -9,7 +9,8 @@ Web 组件开发涉及以下核心目录：
 | 组件目录 | `app/components/reborn/ui/reborn-[name]/` | 包含 [Name].vue, index.ts 和 .config.ts |
 | Playground | `app/components/reborn/configs/reborn-[name]/` | 包含 Reborn[Name]Config.vue |
 | 组件文档 | `content/2.components/[category]/reborn-[name].md` | Markdown 说明文档 |
-| 组合式函数 | `app/composables/` | 如 useOverlay.ts、useCopyToClipboard.ts，Nuxt 自动导入 |
+| 组合式函数 | `app/composables/` | 如 useOverlay.ts、useLoading.ts，Nuxt 自动导入 |
+| 纯工具函数 | `app/utils/` | 如 copyToClipboard.ts，不依赖组件实例，Nuxt 自动导入 |
 | 库工具 | `app/lib/` | 包含 tv.ts（createTV 定制实例）与 utils.ts（cn 等工具） |
 
 ## 2. 文件命名规范

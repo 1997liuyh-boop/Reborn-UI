@@ -2,7 +2,7 @@
 import type { GuideStep } from "~/components/reborn/ui/reborn-guide/RebornGuide.vue";
 import type { Placement } from "~/lib/placement";
 import { DemoBlock, DemoNote, DemoSection, Playground } from "#components";
-import { computed, markRaw, ref } from "vue";
+import { computed, markRaw, shallowRef, useTemplateRef } from 'vue';
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { guideModes, guidePlacements } from "~/components/reborn/ui/reborn-guide/reborn-guide.config";
 import RebornGuide from "~/components/reborn/ui/reborn-guide/RebornGuide.vue";
@@ -22,20 +22,20 @@ const defaultState = {
   hidePrev: false,
   hideSkip: true,
 };
-const state = ref({ ...defaultState });
-const current = ref(-1);
-const scenario = ref<Scenario>("playground");
-const scenarioIndicator = ref<"counter" | "dots">("counter");
-const lastEvent = ref("尚未开始");
-const targetClicks = ref(0);
-const playgroundTarget = ref<HTMLElement | null>(null);
-const basicTarget = ref<HTMLElement | null>(null);
-const actionTarget = ref<HTMLElement | null>(null);
-const indicatorTarget = ref<HTMLElement | null>(null);
-const coverTarget = ref<HTMLElement | null>(null);
-const parentTarget = ref<HTMLElement | null>(null);
-const nestedTarget = ref<HTMLElement | null>(null);
-const componentTarget = ref<HTMLElement | null>(null);
+const state = shallowRef({ ...defaultState });
+const current = shallowRef(-1);
+const scenario = shallowRef<Scenario>("playground");
+const scenarioIndicator = shallowRef<"counter" | "dots">("counter");
+const lastEvent = shallowRef("尚未开始");
+const targetClicks = shallowRef(0);
+const playgroundTarget = useTemplateRef<HTMLElement>("playgroundTarget");
+const basicTarget = useTemplateRef<HTMLElement>("basicTarget");
+const actionTarget = useTemplateRef<HTMLElement>("actionTarget");
+const indicatorTarget = useTemplateRef<HTMLElement>("indicatorTarget");
+const coverTarget = useTemplateRef<HTMLElement>("coverTarget");
+const parentTarget = useTemplateRef<HTMLElement>("parentTarget");
+const nestedTarget = useTemplateRef<HTMLElement>("nestedTarget");
+const componentTarget = useTemplateRef<HTMLElement>("componentTarget");
 
 /** 控件直接绑定引导实例，不另外覆盖演练场的步骤定位。 */
 const controls = [

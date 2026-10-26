@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { computed, shallowRef } from "vue";
 import RebornWatermark from "~/components/reborn/ui/reborn-watermark/RebornWatermark.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
+const state = shallowRef<Record<string, any>>({
   content: "Reborn UI Premium",
+  customClass: "",
   rotate: -22,
   gapX: 100,
   gapY: 100,
@@ -17,6 +19,7 @@ const controls = [
   {
     title: "内容",
     children: [
+      { label: "根节点类名", key: "customClass", component: "input" as const, defaultValue: "", props: { placeholder: "例如 rounded-xl" } },
       {
         label: "水印文本",
         key: "content",
@@ -83,6 +86,7 @@ const watermarkCode = computed(() => {
   const s = state.value;
   return `<RebornWatermark
   content="${s.content}"
+  custom-class="${s.customClass}"
   :rotate="${s.rotate}"
   :gap="[${s.gapX}, ${s.gapY}]"
   :font="{ color: '${s.color}', fontSize: ${s.fontSize}, fontWeight: '600' }"
@@ -114,6 +118,7 @@ const payrollRows = [
       <RebornWatermark
         class="w-full"
         :content="state.content"
+        :custom-class="state.customClass"
         :rotate="state.rotate"
         :gap="gap"
         :font="font"

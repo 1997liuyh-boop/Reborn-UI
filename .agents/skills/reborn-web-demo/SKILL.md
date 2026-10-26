@@ -8,7 +8,7 @@ metadata:
 
 # Reborn Web Demo 设计规范
 
-> 本 skill 定义 Reborn UI Web 端组件演示页面（Demo）的标准：整页由 `DemoSection` 纵向排列，交互演练场用全局 `<Playground>` 组件（左侧控制面板控件统一 lg 尺寸、传参明细全量输出），视觉克制——不铺底色、不画卡片、不加装饰。Demo 的任务是把组件每个能力讲清楚，而不是炫技。
+> 本 skill 定义 Reborn UI Web 端组件演示页面（Demo）的标准：整页由 `DemoSection` 纵向排列，交互演练场用全局 `<Playground>` 组件（上方控制区、下方预览区，控件统一 lg 尺寸、传参明细全量输出），视觉克制——不铺底色、不画卡片、不加装饰。Demo 的任务是把组件每个能力讲清楚，而不是炫技。
 
 ## 0. Demo 文件的位置与接入方式
 
@@ -55,8 +55,8 @@ Demo 页面只允许用这三个原语组织内容，源码与完整铁律见 `a
 
 ### 3.1 Playground API 摘要
 
-- Props：`v-model`（状态对象 `Record<string, any>`）、`controls`（分组控件配置）、`componentName`、`code`（可选，自定义等价代码字符串）、`title` / `description`、`direction`（`horizontal` 默认左面板右预览；`vertical` 上下堆叠，适合宽幅组件）。
-- 插槽：`#default` 预览区、`#tag` 标题栏右侧（放「重置配置」按钮）、`#left` 控制面板底部追加内容。
+- Props：`v-model`（状态对象 `Record<string, any>`）、`controls`（分组控件配置）、`componentName`、`code`（可选，自定义等价代码字符串）、`title` / `description`、`surface`（默认 true 自成一张描边卡片；嵌进别的表面时传 false）。布局固定为上方控制区、下方预览区：分组标题独占一行，组内控件一行四个，默认只显示前两行，其余收进 `RebornCollapse`，点「展开全部参数」展开。
+- 插槽：`#default` 预览区、`#tag` 标题栏右侧（放「重置配置」按钮）、`#extra` 控制区底部追加内容（如事件回执）。
 - 控件类型五种：`select`（渲染 `RebornSelect`，选项字段是 `options`）、`input`、`checkbox`、`slider`（数值属性优先用它）、`color-picker`；`hide` 回调可做条件显隐（支持异步）。控制面板控件统一以 **lg 尺寸**渲染（Playground 内置，demo 无需配置）。
 - 「传参明细」**完整列出当前所有参数（含等于默认值的项）**，不做默认值过滤。**优先用自动生成，不要手写 `:code`**：控件 key 会自动转 kebab-case（`showPassword` → `show-password`），布尔 / 数字以 `:prop="值"` 带值输出；controls 之外的固定参数与事件用 `code-extras`（如 `['placeholder="请输入内容"', '@change="handleChange"']`）追加；「空 = 未传」语义的选项（如 `controlsPosition` 的空串）给该控件配 `codeSkipEmpty: true`，纯演示用的辅助开关配 `codeIgnore: true`。仅当组件无 `v-model` 或结构复杂（多插槽 / 嵌套子组件，如 Button / Menu）时才传自定义 `:code`。
 
@@ -96,7 +96,7 @@ const controls: any = [
 
 <template>
   <Playground v-model="state" :controls="controls" component-name="RebornXxx"
-    title="交互演练场" description="调节左侧参数，实时查看组件表现。">
+    title="交互演练场" description="调节上方参数，实时查看组件表现。">
     <template #tag>
       <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
         <template #leading>
@@ -117,7 +117,7 @@ const controls: any = [
 
 ### 3.3 规则
 
-- **左侧控制面板的控件统一 lg 尺寸**：由 Playground 内部对 Select / Input / Checkbox / Slider / ColorPicker 统一设定，demo 不要在 `controls` 里传 size 覆盖；预览区组件的尺寸交给 `defaultState`（取组件真实默认值）由用户自行调节。
+- **控制区的控件统一 lg 尺寸**：由 Playground 内部对 Select / Input / Checkbox / Slider / ColorPicker 统一设定，demo 不要在 `controls` 里传 size 覆盖；预览区组件的尺寸交给 `defaultState`（取组件真实默认值）由用户自行调节。
 - **传参明细全量输出**：不论参数是否等于默认值都要出现在代码里；自定义 `:code` 时布尔项写成 `:prop="true|false"` 带值形式，未选择的可选参数（如空的 `controls-position`）不输出。
 - **选项列表从组件 config 派生**（如 `buttonColors` / `inputNumberSizes`），保证 Demo 选项与组件真实能力永远同步。
 - **让交互有回应**：预览区下方用 `DemoNote tone="dimmed"` 回显绑定值与最近一次事件参数（如点击计数、`change` 的新旧值）。
@@ -146,7 +146,7 @@ const controls: any = [
 - **命令式 Overlay 类**（Dialog、Drawer，基于 `useOverlay`）：必须演示两条路线——① 原始组件 + 演练场状态透传；② `dialogs/` 子目录的二次封装演示表单、嵌套、异步确认（`onConfirm` 回调的 loading→关闭→可重试流程）。实例方法 `open / close / patch` 都值得专项展示。
 - **声明式遮罩 / 提示类**（Overlay、Tooltip、Popover）：Overlay 同时演示全屏与「指定节点」（`absolute` + 父容器 `relative h-[300px] overflow-hidden`，这正是 `tone="inset"` 的合法场景）；Tooltip 的 12 个 `placement` 用九宫格环形平铺。自带表面的组件裸渲染，不要再套 inset。
 - **滚动依赖类**（Sticky、Affix）：生成足量占位列表制造滚动空间，多实例用不同 `offset-top` 与主题色横条形成层叠对比，页面末尾放 `<RebornBackTop />`。
-- **宽幅富媒体类**(Carousel、Marquee)：给 Playground 传 `direction="vertical"` 换成上下堆叠的全宽预览；轮播内容严禁占位灰块，用渐变色卡配编辑感排版——渐变属于「被演示对象自己的表面」，不违反背景铁律。
+- **宽幅富媒体类**(Carousel、Marquee)：演练场的预览区本就在控制区下方、占满整行宽度，无需额外配置；轮播内容严禁占位灰块，用渐变色卡配编辑感排版——渐变属于「被演示对象自己的表面」，不违反背景铁律。
 
 ## 6. 代码实现规范
 

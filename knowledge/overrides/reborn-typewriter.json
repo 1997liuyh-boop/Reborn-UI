@@ -14,6 +14,7 @@
     "platforms 仅 web 端提供。",
     "文本只能经 text prop 传入，组件无插槽。",
     "text 变化默认会重置动画（resetOnChange=true），不需要时须显式关闭。",
-    "可通过 exposes 的 startTyping / startDeleting / clear 手动控制流程，isTyping / isDeleting 反映当前状态。"
+    "可通过 exposes 的 startTyping / startDeleting / clear 手动控制流程（手动调用会先中断在途动画），displayText / isTyping / isDeleting 为只读状态，不能直接赋值。",
+    "动画在挂载后才开始，SSR 只输出空文本；resetOnChange=false 只阻止后续文本变化重播，首次播放照常进行。"
   ]
 }

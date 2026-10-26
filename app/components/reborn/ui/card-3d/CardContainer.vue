@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { provide } from "vue";
-import { useMouseState } from "~/composables/useMouseState";
+import { provide, useTemplateRef } from "vue";
+import { CARD_3D_MOUSE_STATE_KEY, useMouseState } from "./useMouseState";
 
 interface Props {
   class?: string;
@@ -9,10 +9,11 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const containerRef = useTemplateRef("containerRef");
+const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
 
-const mouseState = useMouseState(); // Use the composable
-provide("use3DCardMouseState", mouseState);
+// 悬停状态以带类型的注入键下发给内部的 CardItem；组件目录自包含，不依赖全局 composables
+const mouseState = useMouseState();
+provide(CARD_3D_MOUSE_STATE_KEY, mouseState);
 
 function handleMouseMove(e: MouseEvent) {
   if (!containerRef.value) return;

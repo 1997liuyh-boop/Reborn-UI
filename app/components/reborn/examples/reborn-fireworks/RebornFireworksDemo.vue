@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { computed, shallowRef } from 'vue';
+
 /** 默认粒子参数：抽出便于一键重置 */
 const defaultState = {
   burstCount: 160,
@@ -9,20 +11,14 @@ const defaultState = {
   particleScale: 1,
 };
 
-const state = ref<Record<string, any>>({ ...defaultState });
+const state = shallowRef<Record<string, any>>({ ...defaultState });
 
 function resetState() {
   state.value = { ...defaultState };
 }
 
-/** 滑块步进可能带来浮点误差，粒子大小统一保留一位小数 */
-watch(
-  () => state.value.particleScale,
-  (val) => {
-    const rounded = Math.round(val * 10) / 10;
-    if (rounded !== val) state.value.particleScale = rounded;
-  },
-);
+/** 组件与代码面板共用规范化粒子大小，源滑块状态保持不变。 */
+const particleScale = computed(() => Math.round(state.value.particleScale * 10) / 10);
 
 /** 演练场控制面板配置 */
 const controls = [
@@ -54,7 +50,7 @@ const fireworksCode = computed(() => {
   if (s.angleSpread !== 130) props.push(`:angle-spread="${s.angleSpread}"`);
   if (s.speedMin !== 8) props.push(`:speed-min="${s.speedMin}"`);
   if (s.speedMax !== 24) props.push(`:speed-max="${s.speedMax}"`);
-  if (s.particleScale !== 1) props.push(`:particle-scale="${s.particleScale}"`);
+  if (particleScale.value !== 1) props.push(`:particle-scale="${particleScale.value}"`);
 
   const attrs = props.length ? `\n  ${props.join("\n  ")}\n` : "";
 
@@ -103,7 +99,7 @@ const playgroundCaption = computed(
         :angle-spread="state.angleSpread"
         :speed-min="state.speedMin"
         :speed-max="state.speedMax"
-        :particle-scale="state.particleScale"
+        :particle-scale="particleScale"
       />
     </Playground>
 

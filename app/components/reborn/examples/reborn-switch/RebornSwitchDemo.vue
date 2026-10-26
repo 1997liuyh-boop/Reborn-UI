@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { SwitchProps } from "~/components/reborn/ui/reborn-switch/RebornSwitch.vue";
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
+import { computed, onBeforeUnmount, ref, shallowRef } from 'vue';
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { switchColors, switchSizes, switchTypes } from "~/components/reborn/ui/reborn-switch/reborn-switch.config";
 import RebornSwitch from "~/components/reborn/ui/reborn-switch/RebornSwitch.vue";
@@ -25,11 +28,11 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 演练场开关绑定值 */
-const playValue = ref(true);
+const playValue = shallowRef(true);
 
 /** change 触发次数与最近载荷，让预览区的交互「有回应」 */
-const changeCount = ref(0);
-const lastChange = ref("—");
+const changeCount = shallowRef(0);
+const lastChange = shallowRef("—");
 function onPlayChange(value: any) {
   changeCount.value++;
   lastChange.value = JSON.stringify(value);
@@ -87,37 +90,56 @@ const switchCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 基础用法演示 */
-const basicValue = ref(true);
+const basicValue = shallowRef(true);
 /** 颜色矩阵演示 */
-const colorValue = ref(true);
+const colorValue = shallowRef(true);
 /** 形态演示 */
-const typeValue = ref(true);
+const typeValue = shallowRef(true);
 /** 自定义颜色演示 */
-const customColorValue = ref(true);
+const customColorValue = shallowRef(true);
+/** 轨道配色：开为绿、关为红，ring 随状态一起加深 */
+const greenRedTrackUi: SwitchProps['ui'] = { activeTrack: 'bg-[#13ce66] ring-[#0f9d4e]', inactiveTrack: 'bg-[#ff4949] ring-[#d9363e]' };
+/** 轨道配色：track 给两态通用的 ring-2，开态用主题色、关态用浅灰 */
+const outlinedTrackUi: SwitchProps['ui'] = { track: 'ring-2', activeTrack: 'bg-primary ring-primary/40', inactiveTrack: 'bg-[#f5f7fa] ring-[#dcdfe6]' };
 /** 点内文本演示 */
-const inlineValue = ref(true);
+const inlineValue = shallowRef(true);
+/** 图文混排示例：两态轨道换成深红 / 深蓝，衬托白色文字与表情 */
+const emojiPromptUi: SwitchProps['ui'] = { activeTrack: 'bg-[#9f1422]', inactiveTrack: 'bg-[#006ba8]' };
 /** 切换波纹演示：三个开关共用一个值，点一下可同时对比三种波纹色 */
-const waveValue = ref(false);
+const waveValue = shallowRef(false);
 /** 尺寸演示 */
-const sizeValue = ref(true);
+const sizeValue = shallowRef(true);
 /** 自定义取值演示：绑定 'yes' / 'no' 而非布尔 */
-const customValue = ref("yes");
+const customValue = shallowRef("yes");
 /** 拦截切换演示：Promise resolve(false) 时取消切换 */
-const beforeChangeValue = ref(false);
+const beforeChangeValue = shallowRef(false);
 /** 加载与插槽演示 */
-const loadingValue = ref(true);
-const iconValue = ref(true);
+const loadingValue = shallowRef(true);
+const iconValue = shallowRef(true);
 /** 样式定制演示 */
-const styledValue = ref(true);
+const styledValue = shallowRef(true);
+/** 方形轨道：轨道与滑块都改成小圆角 */
+const squareUi: SwitchProps['ui'] = { track: 'rounded-sm', thumb: 'rounded-sm' };
+/** 超大轨道：放大轨道并同步滑块尺寸变量，选中位移自动适配 */
+const extraLargeUi: SwitchProps['ui'] = { track: 'h-9 w-16', thumb: '[--re-switch-thumb-size:32px]' };
+
+/** 未完成的确认随页面卸载取消，并结束对应 Promise。 */
+const pendingConfirmations = new Map<ReturnType<typeof setTimeout>, (allowed: boolean) => void>();
+onBeforeUnmount(() => {
+  pendingConfirmations.forEach((resolve, timer) => { clearTimeout(timer); resolve(false); });
+  pendingConfirmations.clear();
+});
 
 /** 模拟异步二次确认：500ms 后弹出 confirm，取消则回滚 */
 function handleBeforeChange() {
   return new Promise<boolean>((resolve) => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      pendingConfirmations.delete(timer);
       // demo 语境下用原生 confirm 模拟二次确认，业务中请换成对话框组件
       // eslint-disable-next-line no-alert
       resolve(window.confirm("确认切换状态吗？"));
     }, 500);
+    pendingConfirmations.set(timer, resolve);
   });
 }
 </script>
@@ -125,7 +147,7 @@ function handleBeforeChange() {
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground v-model="state" :controls="controls" :code="switchCode" component-name="RebornSwitch" title="交互演练场"
-      description="调节左侧参数，实时查看开关表现；点击开关观察 change 事件回显。">
+      description="调节上方参数，实时查看开关表现；点击开关观察 change 事件回显。">
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
           <template #leading>
@@ -204,7 +226,7 @@ function handleBeforeChange() {
       </DemoBlock>
       <DemoBlock class="items-center gap-8 mt-8">
         <RebornSwitch v-model="inlineValue" inline-prompt auto-width size="lg"
-          :ui="{ activeTrack: 'bg-[#9f1422]', inactiveTrack: 'bg-[#006ba8]' }">
+          :ui="emojiPromptUi">
           <template #inactiveLabel>
             <div class="flex items-center gap-1 text-white">
               我很不开心
@@ -308,9 +330,9 @@ function handleBeforeChange() {
       </template>
       <DemoBlock class="items-center gap-8">
         <RebornSwitch v-model="customColorValue"
-          :ui="{ activeTrack: 'bg-[#13ce66] ring-[#0f9d4e]', inactiveTrack: 'bg-[#ff4949] ring-[#d9363e]' }" />
+          :ui="greenRedTrackUi" />
         <RebornSwitch v-model="customColorValue"
-          :ui="{ track: 'ring-2', activeTrack: 'bg-primary ring-primary/40', inactiveTrack: 'bg-[#f5f7fa] ring-[#dcdfe6]' }" />
+          :ui="outlinedTrackUi" />
       </DemoBlock>
     </DemoSection>
 
@@ -324,12 +346,12 @@ function handleBeforeChange() {
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">方形轨道 · <code>ui.track</code> / <code>ui.thumb</code></span>
           <RebornSwitch v-model="styledValue" active-label="方形 UI"
-            :ui="{ track: 'rounded-sm', thumb: 'rounded-sm' }" />
+            :ui="squareUi" />
         </div>
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">超大尺寸 · 设置滑块尺寸变量，位移自动适配</span>
           <RebornSwitch v-model="styledValue" active-label="自定义 XL"
-            :ui="{ track: 'h-9 w-16', thumb: '[--re-switch-thumb-size:32px]' }" />
+            :ui="extraLargeUi" />
         </div>
       </DemoBlock>
     </DemoSection>

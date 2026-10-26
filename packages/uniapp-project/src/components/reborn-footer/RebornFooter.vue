@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
-import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, shallowRef, watch } from 'vue'
 import { isHarmony } from '@/lib/device'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -48,8 +48,8 @@ const ui = computed(() => {
   }
 })
 
-const placeholderHeight = ref(0)
-const visible = ref(true)
+const placeholderHeight = shallowRef(0)
+const visible = shallowRef(true)
 
 const contentStyle = computed(() => {
   const style: Record<string, string> = {}
@@ -85,18 +85,27 @@ function setHeight(val: number) {
   rebornFooterOffset.set(visible.value ? val : 0)
 }
 
+let measureToken = 0
+let measureTimer: ReturnType<typeof setTimeout> | undefined
+let disposed = false
+onBeforeUnmount(() => { disposed = true; measureToken++; clearTimeout(measureTimer); rebornFooterOffset.set(0) })
 function getHeight() {
+  const token = ++measureToken
+  clearTimeout(measureTimer)
   if (props.height != null) {
     setHeight(props.height + getSafeAreaHeight('bottom'))
     return
   }
 
   nextTick(() => {
-    setTimeout(() => {
+    if (disposed || token !== measureToken) return
+    measureTimer = setTimeout(() => {
+      if (disposed || token !== measureToken) return
       uni.createSelectorQuery()
         .in(proxy)
         .select('#reborn-footer-node')
         .boundingClientRect((res) => {
+          if (disposed || token !== measureToken || !res) return
           setHeight(Math.floor((res as NodeInfo).height ?? 0))
         })
         .exec()
@@ -104,16 +113,10 @@ function getHeight() {
   })
 }
 
-onMounted(() => {
-  watch(
-    () => props.vt,
-    () => {
-      visible.value = true
-      getHeight()
-    },
-    { immediate: true },
-  )
-})
+watch(() => [props.vt, props.height, props.minHeight], () => {
+  visible.value = true
+  getHeight()
+}, { immediate: true, flush: 'post' })
 </script>
 
 <template>

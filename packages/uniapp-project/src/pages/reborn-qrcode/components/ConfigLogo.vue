@@ -1,18 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-
-const props = defineProps<{
-    modelValue: any
-    logoSizeOptions: any[]
-    logoMarginOptions: any[]
-}>()
-
-const emit = defineEmits(['update:modelValue', 'uploadLogo', 'removeLogo', 'selectPredefinedLogo'])
-
-const qrConfig = computed({
-    get: () => props.modelValue,
-    set: (val) => emit('update:modelValue', val)
-})
+import type { QrConfig, ValueOption } from '../types'
+interface Props {
+  logoSizeOptions: readonly ValueOption<QrConfig['logoSize']>[]
+  logoMarginOptions: readonly ValueOption<QrConfig['logoMargin']>[]
+}
+defineProps<Props>()
+defineEmits<{ uploadLogo: [], removeLogo: [], selectPredefinedLogo: [image: string] }>()
+const qrConfig = defineModel<QrConfig>({ required: true })
+function patch<K extends keyof QrConfig>(key: K, value: QrConfig[K]) {
+  qrConfig.value = { ...qrConfig.value, [key]: value }
+}
+/** 同时兼容原生 switch 事件与 DOM 事件声明，只提交布尔载荷。 */
+function setShadow(event: Event | { detail: { value: boolean } }) {
+  if ('detail' in event && typeof event.detail?.value === 'boolean') patch('logoShadow', event.detail.value)
+}
+function setBackgroundVisibility(event: Event | { detail: { value: boolean } }) {
+  if ('detail' in event && typeof event.detail?.value === 'boolean') patch('logoHideBackgroundDots', event.detail.value)
+}
 </script>
 
 <template>
@@ -61,7 +65,7 @@ const qrConfig = computed({
                 <view v-for="item in logoSizeOptions" :key="item.value"
                     class="flex flex-col items-center justify-center py-[12rpx] px-[8rpx] border-[2rpx] border-solid rounded-[12rpx] bg-[#fafafa] min-h-[50rpx]"
                     :class="qrConfig.logoSize === item.value ? 'border-[#1890ff] bg-[#e6f7ff]' : 'border-[#e8e8e8]'"
-                    @tap="qrConfig.logoSize = item.value">
+                    @tap="patch('logoSize', item.value)">
                     <text class="text-[22rpx] font-medium text-center"
                         :class="qrConfig.logoSize === item.value ? 'text-[#1890ff]' : 'text-[#666]'">{{
                             item.name }}</text>
@@ -75,7 +79,7 @@ const qrConfig = computed({
                 <view v-for="item in logoMarginOptions" :key="item.value"
                     class="flex flex-col items-center justify-center py-[12rpx] px-[8rpx] border-[2rpx] border-solid rounded-[12rpx] bg-[#fafafa] min-h-[50rpx]"
                     :class="qrConfig.logoMargin === item.value ? 'border-[#1890ff] bg-[#e6f7ff]' : 'border-[#e8e8e8]'"
-                    @tap="qrConfig.logoMargin = item.value">
+                    @tap="patch('logoMargin', item.value)">
                     <text class="text-[22rpx] font-medium text-center"
                         :class="qrConfig.logoMargin === item.value ? 'text-[#1890ff]' : 'text-[#666]'">{{
                             item.name }}</text>
@@ -88,14 +92,14 @@ const qrConfig = computed({
                 <view
                     class="flex items-center justify-between flex-1 bg-[#fafafa] p-3 rounded-lg border border-[#e8e8e8]">
                     <text class="text-[24rpx] font-medium text-[#262626]">投影效果</text>
-                    <switch :checked="qrConfig.logoShadow" @change="(e: any) => qrConfig.logoShadow = e.detail.value"
+                    <switch :checked="qrConfig.logoShadow" @change="setShadow"
                         color="#1890ff" style="transform:scale(0.7)" />
                 </view>
                 <view
                     class="flex items-center justify-between flex-1 bg-[#fafafa] p-3 rounded-lg border border-[#e8e8e8]">
                     <text class="text-[24rpx] font-medium text-[#262626]">隐藏背景</text>
                     <switch :checked="qrConfig.logoHideBackgroundDots"
-                        @change="(e: any) => qrConfig.logoHideBackgroundDots = e.detail.value" color="#1890ff"
+                        @change="setBackgroundVisibility" color="#1890ff"
                         style="transform:scale(0.7)" />
                 </view>
             </view>

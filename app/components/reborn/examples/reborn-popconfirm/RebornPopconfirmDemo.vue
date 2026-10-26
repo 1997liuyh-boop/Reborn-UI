@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PlaygroundControlGroup } from '~/components/common/play-ground/Playground.vue';
-import type { PopconfirmPlacement } from '~/components/reborn/ui/reborn-popconfirm/RebornPopconfirm.vue';
-import { computed, ref } from 'vue';
+import type { PopconfirmPlacement, PopconfirmProps } from '~/components/reborn/ui/reborn-popconfirm/RebornPopconfirm.vue';
+import { computed, onBeforeUnmount, ref, shallowRef } from 'vue';
 import DemoBlock from '~/components/common/demo/DemoBlock.vue';
 import DemoNote from '~/components/common/demo/DemoNote.vue';
 import DemoSection from '~/components/common/demo/DemoSection.vue';
@@ -28,6 +28,8 @@ const placementExamples = [
   { placement: 'bottom', label: 'Bottom', cell: 'col-start-3 row-start-5' },
   { placement: 'bottom-end', label: 'BR', cell: 'col-start-4 row-start-5' },
 ] as const;
+/** 触发器撑满网格单元格，按钮宽度一致，方位对比不受文字长短影响 */
+const fullWidthTriggerUi: PopconfirmProps['ui'] = { popover: { trigger: 'w-full' } };
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -80,11 +82,11 @@ const popconfirmCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 记录最近一次操作，展示事件确实已触发。 */
-const lastAction = ref('等待操作');
+const lastAction = shallowRef('等待操作');
 
 /** 异步确认：加载期间气泡保持打开，完成后手动关闭。 */
-const asyncOpen = ref(false);
-const asyncLoading = ref(false);
+const asyncOpen = shallowRef(false);
+const asyncLoading = shallowRef(false);
 let asyncTimer: ReturnType<typeof setTimeout> | null = null;
 
 function onAsyncConfirm() {
@@ -93,11 +95,17 @@ function onAsyncConfirm() {
   lastAction.value = '异步删除中…';
   if (asyncTimer) clearTimeout(asyncTimer);
   asyncTimer = setTimeout(() => {
+    asyncTimer = null;
     asyncLoading.value = false;
     asyncOpen.value = false;
     lastAction.value = '异步删除完成';
   }, 1200);
 }
+/** 页面卸载时取消尚未完成的模拟请求。 */
+onBeforeUnmount(() => {
+  if (asyncTimer !== null) clearTimeout(asyncTimer);
+  asyncTimer = null;
+});
 </script>
 
 <template>
@@ -140,7 +148,7 @@ function onAsyncConfirm() {
       <DemoBlock layout="stack" align="center" class="py-14">
         <div class="grid w-full max-w-[528px] grid-cols-5 gap-2 sm:gap-3">
           <div v-for="item in placementExamples" :key="item.placement" :class="item.cell">
-            <RebornPopconfirm title="确定执行该操作吗？" :placement="item.placement" class="w-full" :ui="{ popover: { trigger: 'w-full' } }">
+            <RebornPopconfirm title="确定执行该操作吗？" :placement="item.placement" class="w-full" :ui="fullWidthTriggerUi">
               <RebornButton size="sm" class="w-full px-1" :aria-label="item.placement">{{ item.label }}</RebornButton>
             </RebornPopconfirm>
           </div>

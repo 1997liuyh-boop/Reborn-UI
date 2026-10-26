@@ -11,7 +11,7 @@
   ],
   "pitfalls": [
     "仅 web 端可用，依赖 @vueuse/core 与 motion-v。",
-    "text 与 animateOnLoad 标注为必填；animateOnLoad 控制是否在加载时自动播放（默认 true）。",
+    "text 与 animateOnLoad 标注为必填；animateOnLoad 为 true 时挂载后自动播放一次，为 false 时只在悬停时播放（未传按 false 处理）。",
     "duration 单位为毫秒（默认 800），控制整段乱序动画的总时长。"
   ]
 }

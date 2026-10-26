@@ -329,4 +329,5 @@ Header / Footer 的 `height` 为字符串，默认 `60px`；Aside 的 `width` �
 - **外层要有确定高度，Main 才会独立滚动。** Main 的 `overflow-auto` 只在父级高度受限时生效，最外层 `RebornLayout` 通常需要 `h-screen` 或固定高度。
 - **收起宽度只在 `collapsible` 为真时生效。** 未开启时即使 `collapsed` 为 `true`，宽度仍取 `width`；零宽触发器同样要求 `collapsible`。
 - **`breakpoint` 挂载时只会收起、不会展开。** 挂载时视口已低于断点才收起，否则保留 `defaultCollapsed` 或受控值；之后跨过断点才会双向切换。
+- **`breakpoint` 的首次判定在挂载之后。** 服务端拿不到视口，首帧必须与服务端一样按展开态输出，否则水合后侧栏会停在展开宽度；因此窄屏打开时会先展开再收起，有一次宽度过渡。需要首帧就收起的，传 `default-collapsed` 或受控 `v-model:collapsed`。
 - **`trigger` 传 `null` 与不传是两回事。** 不传显示默认箭头，`null` 隐藏底部与零宽两种触发器，此时只能通过 `v-model:collapsed` 或 `toggle()` 控制。

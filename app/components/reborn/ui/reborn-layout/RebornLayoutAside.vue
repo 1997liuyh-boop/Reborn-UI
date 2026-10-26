@@ -68,7 +68,7 @@ export interface LayoutAsideSlots {
 </script>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, shallowRef, watch } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import theme, { LAYOUT_ASIDE_WIDTH_VAR, layoutSiderBreakpoints } from "./reborn-layout.config";
@@ -97,7 +97,7 @@ defineSlots<LayoutAsideSlots>();
 /** 受控收起状态；未传保持 undefined 走非受控逻辑，含 Boolean 的模型必须显式给 undefined 默认值 */
 const collapsedModel = defineModel<boolean>("collapsed", { default: undefined });
 /** 非受控内部状态，初始值取受控值或 defaultCollapsed */
-const innerCollapsed = ref(collapsedModel.value ?? props.defaultCollapsed);
+const innerCollapsed = shallowRef(collapsedModel.value ?? props.defaultCollapsed);
 const isCollapsed = computed(() => collapsedModel.value ?? innerCollapsed.value);
 
 function setCollapsed(value: boolean, type: LayoutSiderCollapseType) {
@@ -160,11 +160,22 @@ function teardownBreakpoint() {
   onMediaChange = null;
 }
 
+/**
+ * 是否已挂载：视口判定必须等到挂载之后。
+ * setup 阶段同步读取 matchMedia 会让客户端水合首帧与服务端输出（展开态）不一致，
+ * 而水合不会修正 style / data-* 属性，窄屏首屏会停在展开宽度。
+ */
+const isMounted = shallowRef(false);
+onMounted(() => {
+  isMounted.value = true;
+});
+
 watch(
-  () => props.breakpoint,
-  (breakpoint) => {
+  [() => props.breakpoint, isMounted],
+  ([breakpoint, mounted]) => {
     teardownBreakpoint();
-    if (!breakpoint || typeof window === "undefined") return;
+    // 挂载前不读视口，保证水合首帧与服务端一致
+    if (!breakpoint || !mounted) return;
     mediaQuery = window.matchMedia(`(max-width: ${layoutSiderBreakpoints[breakpoint] - 0.02}px)`);
     onMediaChange = (event) => {
       emit("breakpoint", event.matches);
@@ -177,7 +188,6 @@ watch(
     }
     mediaQuery.addEventListener("change", onMediaChange);
   },
-  { immediate: true },
 );
 
 onBeforeUnmount(teardownBreakpoint);

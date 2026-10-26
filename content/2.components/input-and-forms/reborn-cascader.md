@@ -7,7 +7,7 @@ tags: [cascader, select, tree, form, uniapp]
 badge: New
 ---
 
-::ComponentViewer{demoFile="RebornCascaderDemo.vue" config="RebornCascaderConfig" componentId="reborn-cascader" :componentFiles='["RebornCascader.vue", "RebornCascaderPanel.vue", "useCascaderTree.ts", "reborn-cascader.config.ts"]' :uniappFiles='["RebornCascader.vue", "reborn-cascader.config.ts"]'}
+::ComponentViewer{demoFile="RebornCascaderDemo.vue" config="RebornCascaderConfig" componentId="reborn-cascader" :componentFiles='["RebornCascader.vue", "RebornCascaderPanel.vue", "reborn-cascader.tree.ts", "reborn-cascader.context.ts", "reborn-cascader.config.ts"]' :uniappFiles='["RebornCascader.vue", "reborn-cascader.config.ts"]'}
 ::
 
 ## 简介
@@ -132,7 +132,7 @@ const options = [
 
 ### 异步加载：load-more
 
-传入 `load-more` 即开启懒加载：展开一个非叶子节点时调用它，`done(children)` 回传的子节点会写回该选项对象。数据里必须自己标 `isLeaf`——组件看到「没有 children」时，无从判断是「真的到底了」还是「还没请求」。
+传入 `load-more` 即开启懒加载：展开一个非叶子节点时调用它，`done(children)` 回传的子节点保存在组件内部，不会写回 `options`。数据里必须自己标 `isLeaf`——组件看到「没有 children」时，无从判断是「真的到底了」还是「还没请求」。
 
 ```vue
 <template>
@@ -205,7 +205,7 @@ function loadMore(option, done) {
 | `popupContainer` | `string \| HTMLElement` | - | 弹出框的挂载容器 |
 | `maxTagCount` | `number` | `0` | 多选模式下最多显示的标签数量，`0` 表示不限制 |
 | `formatLabel` | `(options: CascaderOption[]) => string` | - | 格式化展示内容，入参是从根到该项的整条路径 |
-| `triggerProps` | `CascaderTriggerProps` | - | 下拉菜单的触发器属性，透传给 `RebornSelectTrigger`；其中 `closeOn` 未传时为 `'mousedown'`（外部按下、滚轮或页面滚动即收起），传 `'click'` 改为外部点击完成后收起 |
+| `triggerProps` | `CascaderTriggerProps` | - | 下拉菜单的触发器属性，透传给 `RebornSelectTrigger`；其中 `closeOn` 未传时为 `'mousedown'`（外部按下、滚轮或页面滚动即收起），传 `'click'` 改为外部点击完成后收起；开启 `arrow` 且未传 `offset` 时间距自动取 12px，留够箭头伸出面板的长度 |
 | `checkStrictly` | `boolean` | `false` | 是否开启严格选择模式 |
 | `loadMore` | `(option: CascaderOption, done: (children?: CascaderOption[]) => void) => void` | - | 数据懒加载函数，传入时开启懒加载 |
 | `loading` | `boolean` | `false` | 是否为加载中状态 |
@@ -279,8 +279,8 @@ function loadMore(option, done) {
 
 | 属性名 | 类型 | 默认值 | 描述 |
 | :--- | :--- | :--- | :--- |
-| `modelValue` | `(string \| number)[] \| (string \| number)[][]` | `[]` | 绑定值，单选为路径数组，多选为路径数组的数组 |
-| `options` | `CascaderOption[]` | `[]` | 选项数据 |
+| `modelValue` | `(string \| number)[] \| (string \| number)[][]` | `undefined` | 绑定值，单选为路径数组，多选为路径数组的数组；未绑定或为空值时按未选中处理 |
+| `options` | `CascaderOption[]` | `[]` | 选项数据。只在数组引用变化时刷新面板，原地 `push`、改某个节点的 `children` 不会生效，需整体替换数组 |
 | `title` | `string` | `'请选择'` | 弹窗标题 |
 | `placeholder` | `string` | `'请选择'` | 占位提示 |
 | `showTrigger` | `boolean` | `true` | 是否显示触发器 |
@@ -559,7 +559,9 @@ Web 端不自带私有尺寸变量，触发器使用 Tailwind 原生刻度；字
 - **值的匹配是严格的。** 绑定值与选项值按「类型 + 值」比对，数字 `1` 匹配不上字符串 `'1'`；对象值只比对 `value-key` 指定的那个属性。匹配不上的值不会消失，而是交给 `fallback` 兜底展示（默认把值本身转成文本）——回显成一串 id 时，先检查两边的值类型是否一致。
 - **多选 + 父子关联时，绑定值里只会出现叶子。** 勾「杭州市」写回的是它名下三个区，而不是 `'hangzhou'`。需要拿到父节点本身，请开 `check-strictly`。
 - **子树里有禁用且未勾选的叶子时，父节点永远停在半选。** 勾选联动只会写未禁用的叶子，这是实情而非 bug：那棵子树确实没被全选。
-- **懒加载必须自己标 `isLeaf`。** 组件看到「没有 children」时无从区分「到底了」与「还没请求」，未标 `isLeaf` 的节点一律按可展开处理；`done()` 不传子节点时组件会把该节点补标为叶子。
-- **懒加载回写依赖响应式。** `done(children)` 是把子节点写回你传进来的那个选项对象，所以 `options` 必须是响应式数据（`ref` / `reactive`），否则面板不会更新。
+- **懒加载必须自己标 `isLeaf`。** 组件看到「没有 children」时无从区分「到底了」与「还没请求」，未标 `isLeaf` 的节点一律按可展开处理；`done()` 不传子节点时组件会在内部缓存中把该节点视为叶子。
+- **懒加载保存在组件内部。** `done(children)` 只更新内部缓存，不改写 `options`，冻结对象与 `shallowRef` 数据也可使用；替换 `options` 数组、改变 `valueKey` 或 `fieldNames` 的取值、开关懒加载，才会清空缓存并让旧请求回调失效；`fieldNames` 按取值比较、`loadMore` 只看有无，模板里写成内联对象或内联箭头函数，父级重渲染也不会丢掉已加载的下级。
 - **`virtual-list-props` 要求每项等高。** 虚拟滚动按「下标 × 步长」算位置，改了 `ui.option` 的字号或内边距，必须同步改 `height`，否则滚动条与内容会错位。
 - **`popup-container` 指向的容器必须已经在文档里。** 它最终传给 `Teleport`，目标不存在时会直接报错；传选择器字符串时请确认该节点先于选择器挂载。
+
+- **Web 端显式绑定空值会清空，受控按严格受控处理。** `modelValue`、`inputValue`、`popupVisible` 按是否显式传入区分受控与默认值；绑定 `undefined` 或 `null` 不会恢复旧的内部选择。写了某个模型就只认父级传入的值：只传值不接更新事件或拒收时，交互只派发事件，选中值、输入值与浮层显隐都保持父值。`style`、`id`、`aria-*` 与 `data-*` 透传到触发器根节点。

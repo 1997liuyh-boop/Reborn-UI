@@ -32,6 +32,21 @@ it('多选全选跳过禁选行，并支持取消半选', async () => {
   t.stop();
 });
 
+it('初始空数据保留预选键，首次非空匹配后删除或清空继续裁剪', async () => {
+  const props = reactive<TableProps>({ data: [], rowKey: 'id', columns: [{ type: 'selection' }] });
+  const models: TableModels = { selectedKeys: ref([1, 9]), expandedRowKeys: ref([]), currentRowKey: ref(), currentPage: ref(1), pageSize: ref(10) };
+  const scope = effectScope();
+  scope.run(() => useTableState(props, computed(() => props.columns!), models, (() => {}) as TableNotify));
+  assert.deepEqual(models.selectedKeys.value, [1, 9]);
+  props.data = [{ id: 1 }, { id: 2 }];
+  await nextTick();
+  assert.deepEqual(models.selectedKeys.value, [1]);
+  props.data = [];
+  await nextTick();
+  assert.deepEqual(models.selectedKeys.value, []);
+  scope.stop();
+});
+
 it('选择保留按行键工作，更新同键对象时返回新记录', async () => {
   const t = createState({ columns: [{ type: 'selection', reserveSelection: true }] });
   t.state.toggleRowSelection(t.props.data![0]!, true);

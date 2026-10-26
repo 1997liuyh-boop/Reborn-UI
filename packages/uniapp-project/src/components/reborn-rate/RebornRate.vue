@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { rateColors, rateSizes } from './reborn-rate.config'
-import { computed, getCurrentInstance, ref, watch } from 'vue'
+import { computed, getCurrentInstance, onBeforeUnmount } from 'vue'
 
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
@@ -13,7 +13,6 @@ defineOptions({
 })
 
 const props = withDefaults(defineProps<RateProps>(), {
-  modelValue: 0,
   count: 5,
   allowHalf: false,
   showValue: false,
@@ -27,13 +26,11 @@ const props = withDefaults(defineProps<RateProps>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: number): void
   (e: 'change', value: number): void
 }>()
 
 export interface RateProps {
   /** 当前评分 */
-  modelValue?: number
   /** 星星总数 */
   count?: number
   /** 允许半星 */
@@ -109,8 +106,8 @@ function activeIcon(index: number) {
   return props.activeIcon
 }
 
-// 当前评分
-const currentValue = ref<number>(props.modelValue)
+// 当前评分：读取时按 0 ~ count 夹取（不回写模型），越界值不会进入渲染与比较，与 Web 端一致
+const currentValue = defineModel<number>({ default: 0, get: value => Math.max(0, Math.min(props.count, value)) })
 
 // 判断当前星星是否为半星状态
 function isHalf(index: number): boolean {
@@ -119,6 +116,12 @@ function isHalf(index: number): boolean {
 
 // 防止 touchstart 和 tap 重复触发
 let touchHandled = false
+let starRects: any[] = []
+let gestureVersion = 0
+/** 半星点按的代次：只被新的 touchstart 与卸载作废，touchend 不作废（快速点按时测量常晚于抬起） */
+let tapVersion = 0
+/** 本次手势是否已转为拖动；拖动的取值优先，迟到的半星点按结果不再覆盖 */
+let gestureDragged = false
 
 /** iOS H5：touchstart 上 preventDefault 会阻断 tap；横向滑动超过阈值后再 preventDefault */
 const DRAG_SLOP_PX = 12
@@ -172,8 +175,23 @@ function onStarTouchStart(e: TouchEvent, index: number) {
     touchStartY = t.clientY
   }
   dragActive = false
+  gestureDragged = false
   suppressNextTap = false
-  onTouchStart(e, index)
+  const version = ++gestureVersion
+  const tap = ++tapVersion
+  const touch = e.touches[0]
+  // 半星模式由触点决定取值：同步标记，抬起后的 tap 不再走「同星循环」逻辑，结果不取决于测量快慢
+  if (props.allowHalf && touch) touchHandled = true
+  getAllStarRects().then((rects) => {
+    if (!isInteractive.value) return
+    // 拖动缓存只交给仍在进行的手势
+    if (version === gestureVersion) starRects = rects
+    if (tap !== tapVersion || gestureDragged) return
+    if (props.allowHalf && touch && rects[index - 1]) {
+      const rect = rects[index - 1]
+      updateValue(touch.clientX < rect.left + rect.width / 2 ? index - 0.5 : index)
+    }
+  })
 }
 
 function onStarTouchMove(e: TouchEvent, index: number) {
@@ -192,6 +210,7 @@ function onStarTouchMove(e: TouchEvent, index: number) {
       return
     }
     dragActive = true
+    gestureDragged = true
   }
 
   e.stopPropagation()
@@ -204,24 +223,8 @@ function onStarTouchEnd() {
     suppressNextTap = true
   }
   dragActive = false
-}
-
-// 触摸开始 — 用于半星判断
-function onTouchStart(e: TouchEvent, index: number) {
-  if (!isInteractive.value || !props.allowHalf) { return }
-
-  touchHandled = true
-
-  const touch = e.touches[0]
-  if (!touch) { return }
-
-  // 获取当前星星的位置进行左/右判断
-  getStarRect(index - 1).then((rect) => {
-    if (!rect) { return }
-    const midX = rect.left + rect.width / 2
-    const newValue = touch.clientX < midX ? index - 0.5 : index
-    updateValue(newValue)
-  })
+  gestureVersion++
+  starRects = []
 }
 
 // 触摸移动 — 拖动评分
@@ -232,7 +235,7 @@ function onTouchMove(e: TouchEvent, index: number) {
   if (!touch) { return }
 
   // 通过触摸位置计算哪个星星
-  getAllStarRects().then((rects) => {
+  const rects = starRects
     if (!rects || rects.length === 0) { return }
 
     for (let i = rects.length - 1; i >= 0; i--) {
@@ -252,29 +255,14 @@ function onTouchMove(e: TouchEvent, index: number) {
 
     // 在所有星星左边
     updateValue(0)
-  })
 }
 
 // 更新值
 function updateValue(newValue: number) {
   if (currentValue.value !== newValue) {
     currentValue.value = newValue
-    emit('update:modelValue', newValue)
     emit('change', newValue)
   }
-}
-
-// 获取单个星星的矩形信息
-function getStarRect(index: number): Promise<any> {
-  return new Promise((resolve) => {
-    uni.createSelectorQuery()
-      .in(proxy)
-      .selectAll('.reborn-rate__star')
-      .boundingClientRect((nodes: any) => {
-        resolve(nodes?.[index] ?? null)
-      })
-      .exec()
-  })
 }
 
 // 获取所有星星的矩形信息
@@ -290,16 +278,7 @@ function getAllStarRects(): Promise<any[]> {
   })
 }
 
-// 同步外部值
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (val !== currentValue.value) {
-      currentValue.value = Math.max(0, Math.min(props.count, val))
-    }
-  },
-  { immediate: true },
-)
+onBeforeUnmount(() => { gestureVersion++; tapVersion++; starRects = [] })
 </script>
 
 <template>

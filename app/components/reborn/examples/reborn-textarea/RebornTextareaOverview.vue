@@ -6,10 +6,10 @@
  * 组件根节点默认写死 bg-white，描边在暗色下取 gray-1（近底色），暗色卡片里会是一块刺眼的白框；
  * 缩略图用 ui.root 换成随明暗切换的 bg-gray-1，并让暗色描边沿用 gray-4。
  */
-import { ref } from 'vue'
+import { shallowRef } from "vue";
 import RebornTextarea from '~/components/reborn/ui/reborn-textarea/RebornTextarea.vue'
 
-const feedback = ref('签到流程很顺畅，希望下次活动能多安排一些互动环节。')
+const feedback = shallowRef('签到流程很顺畅，希望下次活动能多安排一些互动环节。')
 
 const ui = { root: 'bg-gray-1 dark:ring-gray-4' }
 </script>

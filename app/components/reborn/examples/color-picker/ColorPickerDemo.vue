@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { ColorPickerValue } from "~/components/content/reborn/ui/color-picker";
+import type { ColorPickerValue } from "~/components/reborn/ui/color-picker";
 
 /** 当前色值：组件同时输出 hex / hsl / hsla / rgb / rgba 五种格式 */
-const color = ref<ColorPickerValue>({
+const color = shallowRef<ColorPickerValue>({
   hex: "#A35fFF",
   hsl: { h: 265.5, s: 100, l: 67, a: 1 },
   hsla: { h: 265.5, s: 100, l: 67, a: 1 },
@@ -44,7 +44,7 @@ const readableValue = computed(() => {
         align="center"
       >
         <ColorPicker
-          :value="color.hsl"
+          value="#A35fFF"
           type="hsla"
           :swatches="['#AEDEAE', '#FFD3B6', '#FFB6B9', '#FFC0CB', '#FFD1DC']"
           @value-change="setColor"

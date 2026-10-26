@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from '#components';
+
 /**
  * 总览卡片缩略：签名板上写好一笔签名，下方是笔色色板与撤销 / 清空 / 完成操作
  *

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AnchorItem } from "~/components/reborn/ui/reborn-anchor/reborn-anchor.config";
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef, useTemplateRef } from "vue";
 import {
   anchorColors,
   anchorDirections,
@@ -185,11 +185,11 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 演练场最近一次 change 的载荷，给预览区一个可见的回应 */
-const lastChange = ref("（尚未触发）");
+const lastChange = shallowRef("（尚未触发）");
 /** 演练场链接被点击的次数 */
-const clickCount = ref(0);
+const clickCount = shallowRef(0);
 /** 演练场的滚动容器，重置时一并滚回顶部 */
-const playgroundBox = ref<HTMLElement | null>(null);
+const playgroundBox = useTemplateRef<HTMLElement>("playgroundBox");
 
 function onPlaygroundChange(href: string | undefined) {
   lastChange.value = href ?? "（未选中）";
@@ -339,10 +339,10 @@ const anchorCode = computed(() => {
 // ─── 场景演示状态 ─────────────────────────────────────────
 
 /** 「指定滚动容器」里以元素引用形式传给 container 的那个容器 */
-const containerEl = ref<HTMLElement | null>(null);
+const containerEl = useTemplateRef<HTMLElement>("containerEl");
 
 /** 「手动滚动」里被实例方法驱动的锚点 */
-const manualAnchorRef = ref<InstanceType<typeof RebornAnchor> | null>(null);
+const manualAnchorRef = useTemplateRef<InstanceType<typeof RebornAnchor>>("manualAnchorRef");
 
 /** 调用实例暴露的 scrollTo，不点链接也能滚到指定区块 */
 function scrollToBlock(key: string) {
@@ -354,7 +354,7 @@ function scrollToBlock(key: string) {
   <div class="flex w-full flex-col">
     <Playground
       v-model="state" :controls="controls" :code="anchorCode" component-name="RebornAnchor" title="交互演练场"
-      description="调节左侧参数，再滚动右侧容器，观察选中项与标记怎么跟着变；链接由 items 递归渲染，最深四级"
+      description="调节上方参数，再滚动下方容器，观察选中项与标记怎么跟着变；链接由 items 递归渲染，最深四级"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -473,15 +473,16 @@ function scrollToBlock(key: string) {
         <code>dot</code> / <code>hollow</code> 会按 <code>bar</code> 渲染。
       </template>
 
+      <!-- stack 默认 items-start，子项会收缩到内容宽度：锚点与容器都要显式 w-full，横贯底部的轨道线才铺满整行 -->
       <DemoBlock layout="stack" tone="inset" class="gap-4">
-        <RebornAnchor direction="horizontal" container="#anchor-horizontal-box">
+        <RebornAnchor direction="horizontal" container="#anchor-horizontal-box" class="w-full">
           <RebornAnchorLink
             v-for="item in chapters" :key="item.key" :href="blockHref('anchor-horizontal', item.key)"
             :title="item.title"
           />
         </RebornAnchor>
 
-        <div id="anchor-horizontal-box" class="h-64 overflow-y-auto">
+        <div id="anchor-horizontal-box" class="h-64 w-full overflow-y-auto">
           <section
             v-for="item in chapters" :id="blockId('anchor-horizontal', item.key)" :key="item.key"
             class="flex min-h-[280px] flex-col gap-2 py-2"
@@ -505,7 +506,7 @@ function scrollToBlock(key: string) {
       </template>
 
       <DemoBlock layout="row" tone="inset" align="start" class="gap-6">
-        <DemoItem label="marker: bar" mono note="2×21 的竖条，压在轨道线上" class="w-28 shrink-0">
+        <DemoItem label="marker: bar" mono note="2×22 的竖条，压在轨道线上" class="w-28 shrink-0">
           <RebornAnchor marker="bar" container="#anchor-marker-box">
             <RebornAnchorLink
               v-for="item in chapters" :key="item.key" :href="blockHref('anchor-marker', item.key)"

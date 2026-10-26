@@ -18,29 +18,29 @@ onPageScroll((e) => {
 })
 ```
 
-Web 端组件内部通过 `useWindowScroll` 自动监听窗口滚动，无需传入 `scrollTop`。
+Web 端组件内部统一监听窗口滚动并采集几何快照，无需传入 `scrollTop`。
 ::
 
 
-::ComponentViewer{demoFile="RebornStickyDemo.vue" config="RebornStickyConfig" componentId="reborn-sticky" :componentFiles='["RebornSticky.vue", "reborn-sticky.config.ts"]' :uniappFiles='["RebornSticky.vue", "reborn-sticky.config.ts"]'}
+::ComponentViewer{demoFile="RebornStickyDemo.vue" config="RebornStickyConfig" componentId="reborn-sticky" :componentFiles='["RebornSticky.vue", "useStickyMetrics.ts", "useStickyTop.ts", "useStickyBottom.ts", "reborn-sticky.config.ts"]' :uniappFiles='["RebornSticky.vue", "reborn-sticky.config.ts"]'}
 ::
 
 ## 简介
 
-Sticky 的效果与 CSS `position: sticky` 一致：内容随页面正常排布，滚动到距顶部 `offsetTop` 的位置后固定；组件内部用「占位容器 + 定位内容」双层结构，吸附时自动保留原高度，页面不会跳动。`default` 插槽提供 `isSticky` 作用域参数，可根据吸附状态切换内容样式。
+Sticky 的效果与 CSS `position: sticky` 一致：内容随页面正常排布，滚动到距顶部 `offsetTop` 的位置后固定；组件内部用「占位容器 + 定位内容」双层结构，吸附时自动保留原高度，定位内容沿用吸附前的宽度与左边缘，页面不会跳动。`default` 插槽提供 `isSticky` 作用域参数，可根据吸附状态切换内容样式。
 
 两端能力有差异：Web 端额外支持吸底（`position="bottom"`）、目标容器边界（`target`）与吸底占位策略（`bottomPlaceholder`）；UniApp 端为纯吸顶实现，依赖 `scrollTop` 感知页面滚动。
 
-适用场景：
+### 何时使用
 
-- 列表分组标题、筛选栏等滚动到顶部后需保持可见。
-- 需要根据吸附状态调整内容样式（利用 `isSticky` 作用域参数）。
-- Web 端页面底部的操作条随滚动吸底，并限制在某个容器范围内。
+- 分组标题与筛选栏需要吸顶 —— 用 `offsetTop` 设置顶部距离。
+- 吸附后切换外观 —— 用 `default` 的 `isSticky` 作用域。
+- Web 底部操作条限制在区域内 —— 用 `position="bottom"` 配合 `target`。
 
-不适用场景：
+### 何时不使用
 
-- 固定位置且可拖拽的悬浮元素，改用 `reborn-affix`。
-- 滚动一定距离后出现的返回顶部按钮，改用 `reborn-back-top`。
+- 固定位置且可拖拽的悬浮元素，—— 改用 `reborn-affix`。
+- 滚动一定距离后出现的返回顶部按钮，—— 改用 `reborn-back-top`。
 
 ## 用法
 
@@ -178,7 +178,7 @@ onPageScroll((e) => {
 | `getRect`     | `() => void`                               | 仅 UniApp | 重新测量组件的位置与尺寸并更新内部 rect，内容高度变化后可手动调用。  |
 | `height`      | `ComputedRef<number>`                      | 仅 Web    | 组件当前高度。                                                       |
 | `position`    | `ComputedRef<'top' \| 'bottom'>`           | 仅 Web    | 固定位置方向。                                                       |
-| `rect`        | `{ height, width, left, top }`             | 仅 Web    | 位置和尺寸矩形对象。                                                 |
+| `rect`        | `Readonly<{ height, width, left, top }>`             | 仅 Web    | 只读位置和尺寸矩形对象，重新测量请用 `forceUpdate()`。                                                 |
 | `forceUpdate` | `() => Promise<void>`                      | 仅 Web    | 强制刷新尺寸信息，用于处理 `v-if` 切换等导致的 DOM 变化。            |
 
 ### 自定义样式（ui）
@@ -196,5 +196,9 @@ onPageScroll((e) => {
 - `isNeedNavbarHeight` 默认 `true`：UniApp H5 端会自动叠加 `navbarHeight`（默认 44px）作为吸顶偏移；Web 端 `navbarHeight` 默认 0，页面存在固定导航栏时需自行传入。
 - UniApp 端组件初始位置只在挂载时测量一次，若之后在组件上方动态插入内容改变了它的位置，吸顶判定会不准，可通过 ref 调用 `getRect` 重新测量。
 - Web 端吸底模式下 `bottomPlaceholder` 为 `keep` / `none` 时，内容恒定以 overlay（脱离文档流）方式渲染，`isSticky` 仅作为样式信号；`none` 完全不占纵向空间，`keep` 恒定保留原高度。
-- Web 端子内容含 `reborn-collapse` 展开/收起动画时，组件会临时冻结吸顶判定约 400ms，避免动画期间状态抖动；此为内部行为，无需干预。
 - `target` 指定后，滚动越过目标容器底部时元素会停靠在容器边缘（`absolute` 定位），不会跟随视口继续滚动。
+
+- **Web 暴露的 `rect` 只读**。通过 `forceUpdate()` 请求重新测量；修改外部读取到的矩形不会改变内部定位状态。
+- **Web 子级 Collapse 动画通过类型化登记协调**。动画中暂停吸顶切换，结束后合并测量；自定义动画可在尺寸稳定后调用 `forceUpdate()`。
+- **吸附期间占位容器保留吸附前的宽度（两端一致）**。内容切到 `fixed` 后不再参与排版，放在 `items-start` 的 flex 列、`inline-block` 这类按内容收缩宽度的父容器里时，占位容器会被压成 0 宽、吸附内容随之塌缩；组件因此在吸附期间给占位容器加 `min-width: min(吸附前宽度, 100%)`，父容器变窄时跟着收窄、不会撑破，块级父容器里仍随父容器伸缩。UniApp 端同理，吸顶后的宽度重测不会再量到 0。Web 吸底 `keep` / `none` 的 overlay 模式不在此列：内容从不进入文档流，没有可沿用的宽度，宽度只取占位容器自身。
+- **Web 吸附内容靠尺寸变化跟随占位容器的位置**。除窗口滚动与 resize 外，组件还观察占位容器各级祖先（不含 `body`）的尺寸，侧栏折叠这类让占位容器只平移、自身尺寸不变的布局变化也会重新测量；若祖先尺寸都没变（如靠 `transform` 或改定位偏移移动外层），吸附内容要等到下一次滚动才重新对齐，可手动调用 `forceUpdate()`。

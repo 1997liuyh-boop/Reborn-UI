@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SelectOption } from '@/components/reborn-picker-view/RebornPickerView.vue'
-import { reactive, ref } from 'vue'
+import { reactive, ref, shallowRef } from 'vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornInput from '@/components/reborn-input/RebornInput.vue'
@@ -9,13 +9,13 @@ import { selectColors, selectSizes } from '@/components/reborn-select/reborn-sel
 import RebornSelect from '@/components/reborn-select/RebornSelect.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 
-const isShowCancel = ref(true)
-const isButtonText = ref(false)
-const isDisabled = ref(false)
-const isShowClear = ref(true)
-const splitor = ref('-')
-const currentColor = ref<typeof selectColors[number]>(selectColors[0])
-const currentSize = ref<typeof selectSizes[number]>(selectSizes[1])
+const isShowCancel = shallowRef(true)
+const isButtonText = shallowRef(false)
+const isDisabled = shallowRef(false)
+const isShowClear = shallowRef(true)
+const splitor = shallowRef('-')
+const currentColor = shallowRef<typeof selectColors[number]>(selectColors[0])
+const currentSize = shallowRef<typeof selectSizes[number]>(selectSizes[1])
 
 interface Form {
   selected: number | null
@@ -30,17 +30,19 @@ const form = reactive<Form>({
 })
 
 const selectRef2 = ref<InstanceType<typeof RebornSelect> | null>(null)
+const customTriggerValue = shallowRef('#FF6600')
+const emptyValue = shallowRef<number | null>(null)
 
-const options = ref<SelectOption[]>([
+const options: SelectOption[] = [
   { label: 'HTML', value: 1 },
   { label: 'CSS', value: 2 },
   { label: 'JavaScript', value: 3 },
   { label: 'Node', value: 4 },
   { label: 'Vite', value: 5 },
   { label: 'Webpack', value: 6 },
-])
+]
 
-const options2 = ref<SelectOption[]>([
+const options2: SelectOption[] = [
   {
     value: '#E63415',
     label: 'red',
@@ -69,9 +71,9 @@ const options2 = ref<SelectOption[]>([
     value: '#6222C9',
     label: 'purple',
   },
-])
+]
 
-const options3 = ref<SelectOption[]>([
+const options3: SelectOption[] = [
   {
     label: '福建省',
     value: 1,
@@ -179,9 +181,9 @@ const options3 = ref<SelectOption[]>([
       },
     ],
   },
-])
+]
 
-const options4 = ref<SelectOption[]>([])
+const options4: SelectOption[] = []
 
 /** 字段别名：接口原样返回 id / name / cities，交给 fieldNames 映射，每一层都按同一套字段名读取 */
 const regionOptions = [
@@ -206,8 +208,8 @@ const regionOptions = [
 const regionValue = ref<string[]>(['zj', 'nb'])
 
 function openSelect2() {
-  selectRef2.value?.open((value: any) => {
-    const d = options2.value.find(item => item.value == value)
+  selectRef2.value?.open((value) => {
+    const d = options2.find(item => item.value === value)
     uni.showToast({ title: `你选择了 ${d?.label}`, icon: 'none' })
   })
 }
@@ -325,12 +327,12 @@ function openSelect2() {
       <RebornButton variant="outlined" color="primary" @tap="openSelect2">
         打开选择器
       </RebornButton>
-      <RebornSelect ref="selectRef2" v-model="form.selected2" :options="options2" :show-trigger="false" />
+      <RebornSelect ref="selectRef2" v-model="customTriggerValue" :options="options2" :show-trigger="false" />
     </RebornCard>
 
     <!-- 空数据 -->
     <RebornCard title="空数据" overflow-visible>
-      <RebornSelect v-model="form.selected" :options="options4" />
+      <RebornSelect v-model="emptyValue" :options="options4" />
     </RebornCard>
   </RebornPage>
 </template>

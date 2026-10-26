@@ -16,7 +16,7 @@ import type {
   UploadUserFile,
 } from './reborn-upload.config';
 import type { UploadChunkState } from './reborn-upload.utils';
-import { computed, onBeforeUnmount, ref, shallowRef, toRaw, watch } from 'vue';
+import { computed, isReadonly, onBeforeUnmount, ref, shallowRef, toRaw, useTemplateRef, watch } from 'vue';
 import { useFormInject } from '~/composables/useFieldGroup';
 import { tv } from '~/lib/tv';
 import RebornLoading from '../reborn-loading/RebornLoading.vue';
@@ -130,8 +130,8 @@ const useDragger = computed(() => props.drag && !isCard.value);
 // 拖拽区与照片墙入口没有现成的可聚焦元素，由外壳模拟按钮语义。
 const nativeTrigger = computed(() => !props.drag && !isCard.value);
 
-const inputRef = ref<HTMLInputElement>();
-const dragover = ref(false);
+const inputRef = useTemplateRef<HTMLInputElement>('inputRef');
+const dragover = shallowRef(false);
 
 /**
  * 组件内部的唯一数据源。
@@ -140,13 +140,24 @@ const dragover = ref(false);
 const uploadFiles = ref<UploadFile[]>([]);
 
 watch(fileList, (list) => {
-  // 外部传入的历史文件补齐 uid 与 status，原地修改以便和外部数组共享同一批对象。
-  for (const file of list) {
+  // 外部传入的历史文件补齐 uid 与 status：可写时原地修改，以便和外部数组共享同一批对象；
+  // 只读或冻结的条目写不进去，改用规范化副本，避免 status 缺失导致模板按状态取样式时报错。
+  let normalized: UploadFile[] | null = null;
+  list.forEach((file, index) => {
+    if (file.uid && file.status) return;
+    if (isReadonly(file) || Object.isFrozen(toRaw(file))) {
+      normalized ??= [...list] as UploadFile[];
+      normalized[index] = { ...file, uid: file.uid || genFileId(), status: file.status || 'success' } as UploadFile;
+      return;
+    }
     if (!file.uid) file.uid = genFileId();
     if (!file.status) file.status = 'success';
-  }
-  if (toRaw(list) !== toRaw(uploadFiles.value)) uploadFiles.value = list as UploadFile[];
-}, { immediate: true, deep: true });
+  });
+  const next = normalized ?? (list as UploadFile[]);
+  if (toRaw(next) !== toRaw(uploadFiles.value)) uploadFiles.value = next;
+  // 深度只到数组成员：只追踪成员的增减与替换。进度回调会原地改 percentage，
+  // 完全深度侦听会让每个进度事件都遍历整份列表（含可能很大的服务端 response）。
+}, { immediate: true, deep: 1 });
 
 function commit(next: UploadFile[]) {
   uploadFiles.value = next;
@@ -195,6 +206,8 @@ const chunkStates = new Map<number, UploadChunkState>();
 
 /** 把一个原生文件加入列表（状态 ready），不发起上传。 */
 function handleStart(rawFile: UploadRawFile) {
+  // 卸载后不再创建预览地址：此时 objectUrls 已清空，新建的 blob URL 永远不会被释放
+  if (disposed) return;
   if (!rawFile.uid) rawFile.uid = genFileId();
   const file: UploadFile = { name: rawFile.name, percentage: 0, status: 'ready', size: rawFile.size, uid: rawFile.uid, raw: rawFile };
   if (props.listType !== 'text' && (isImageFile(rawFile) || isVideoFile(rawFile))) {
@@ -537,6 +550,8 @@ async function onDrop(e: DragEvent) {
   if (props.directory) {
     const entries = items.map(item => item.webkitGetAsEntry()).filter((entry): entry is FileSystemEntry => !!entry?.isDirectory);
     files = await readEntries(entries);
+    // 递归读取文件夹期间组件可能已卸载（例如关闭了所在弹窗），不再继续处理
+    if (disposed) return;
   }
   else if (items.length) {
     // 非文件夹模式下忽略拖入的文件夹，它在 files 里只是一个空壳。
@@ -602,7 +617,8 @@ function onControl(file: UploadFile) {
 /** 加载失败的视频地址（如浏览器不支持的编码），改为显示文件图标。 */
 const brokenVideos = shallowRef(new Set<string>());
 
-function onVideoError(url: string) {
+function onVideoError(url?: string) {
+  if (!url) return;
   brokenVideos.value = new Set(brokenVideos.value).add(url);
 }
 
@@ -620,7 +636,8 @@ function thumbOf(file: UploadFile) {
 }
 
 /** 视频地址补上媒体片段 #t=0.1：部分浏览器停在第 0 秒时只有黑帧。 */
-function videoSrc(url: string) {
+function videoSrc(url?: string) {
+  if (!url) return undefined;
   return url.includes('#') ? url : `${url}#t=0.1`;
 }
 
@@ -671,9 +688,9 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
                 />
               </div>
               <video
-                v-else-if="thumbOf(file) === 'video'" :src="videoSrc(file.url!)" :aria-label="file.name"
+                v-else-if="thumbOf(file) === 'video'" :src="videoSrc(file.url)" :aria-label="file.name"
                 :crossorigin="props.crossorigin" muted playsinline preload="metadata"
-                :class="styles.cardImage({ class: props.ui?.cardImage })" @error="onVideoError(file.url!)"
+                :class="styles.cardImage({ class: props.ui?.cardImage })" @error="onVideoError(file.url)"
               />
               <img
                 v-else-if="thumbOf(file) === 'image'" :src="file.url" :alt="file.name" :crossorigin="props.crossorigin"
@@ -694,10 +711,10 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
                   <Icon name="lucide:eye" class="size-[16px]" />
                 </button>
                 <button
-                  v-if="!isDisabled && controlOf(file)" type="button" :aria-label="`${controlOf(file)!.label} ${file.name}`"
+                  v-if="!isDisabled && controlOf(file)" type="button" :aria-label="`${controlOf(file)?.label ?? ''} ${file.name}`"
                   :class="styles.cardAction({ class: props.ui?.cardAction })" @click="onControl(file)"
                 >
-                  <Icon :name="controlOf(file)!.icon" class="size-[16px]" />
+                  <Icon :name="controlOf(file)?.icon ?? ''" class="size-[16px]" />
                 </button>
                 <button
                   v-if="!isDisabled" type="button" :aria-label="removeLabel(file)"
@@ -763,9 +780,9 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
               <RebornLoading type="ring" color="currentColor" :size="16" />
             </span>
             <video
-              v-else-if="props.listType === 'picture' && thumbOf(file) === 'video'" :src="videoSrc(file.url!)" :aria-label="file.name"
+              v-else-if="props.listType === 'picture' && thumbOf(file) === 'video'" :src="videoSrc(file.url)" :aria-label="file.name"
               :crossorigin="props.crossorigin" muted playsinline preload="metadata"
-              :class="styles.itemThumb({ class: props.ui?.itemThumb })" @error="onVideoError(file.url!)"
+              :class="styles.itemThumb({ class: props.ui?.itemThumb })" @error="onVideoError(file.url)"
             />
             <img
               v-else-if="props.listType === 'picture' && thumbOf(file) === 'image'" :src="file.url" :alt="file.name"
@@ -794,10 +811,10 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
 
             <div v-if="!isDisabled" :class="styles.itemActions({ class: props.ui?.itemActions })">
               <button
-                v-if="controlOf(file)" type="button" :aria-label="`${controlOf(file)!.label} ${file.name}`"
+                v-if="controlOf(file)" type="button" :aria-label="`${controlOf(file)?.label ?? ''} ${file.name}`"
                 :class="statusStyles[file.status].itemControl({ class: props.ui?.itemControl })" @click="onControl(file)"
               >
-                <Icon :name="controlOf(file)!.icon" class="size-[16px]" />
+                <Icon :name="controlOf(file)?.icon ?? ''" class="size-[16px]" />
               </button>
               <button
                 type="button" :aria-label="removeLabel(file)"

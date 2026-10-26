@@ -1,7 +1,11 @@
 <script setup lang="ts">
+
 import type { BreadcrumbRoute } from "~/components/reborn/ui/reborn-breadcrumb/reborn-breadcrumb.config";
+import { DemoBlock, DemoItem, DemoNote, DemoSection, Icon, Playground } from "#components";
+import { computed, shallowRef } from "vue";
 import RebornBreadcrumb from "~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumb.vue";
 import RebornBreadcrumbItem from "~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumbItem.vue";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornDoption from "~/components/reborn/ui/reborn-dropdown/RebornDoption.vue";
 
 /** 演练场默认状态 */
@@ -12,7 +16,7 @@ const defaultState = {
 };
 
 /** 演练场状态 */
-const state = ref({ ...defaultState });
+const state = shallowRef({ ...defaultState });
 
 /** 重置演练场配置 */
 function resetState() {
@@ -59,7 +63,11 @@ const controls = [
  */
 const breadcrumbCode = computed(() => {
   const s = state.value;
-  const props = [`separator="${s.separator}"`, `separator-icon="${s.separatorIcon}"`, `:max-count="${Number(s.maxCount)}"`];
+  const props = [
+    `separator="${s.separator}"`,
+    `separator-icon="${s.separatorIcon}"`,
+    `:max-count="${Number(s.maxCount)}"`,
+  ];
   const items = [
     '  <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>',
     '  <RebornBreadcrumbItem to="/components">组件库</RebornBreadcrumbItem>',
@@ -104,13 +112,19 @@ const droplist = [
   { label: "活动数据", path: "/promotion/analysis" },
 ];
 
-const lastSelected = ref("");
+const lastSelected = shallowRef("");
 </script>
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" :code="breadcrumbCode" component-name="RebornBreadcrumb"
-      title="交互演练场" description="切换分隔符样式、填入 Iconify 图标名替代文本分隔符，或调整最多展示数量观察折叠效果。">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      :code="breadcrumbCode"
+      component-name="RebornBreadcrumb"
+      title="交互演练场"
+      description="切换分隔符样式、填入 Iconify 图标名替代文本分隔符，或调整最多展示数量观察折叠效果。"
+    >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
           <template #leading>
@@ -120,8 +134,11 @@ const lastSelected = ref("");
         </RebornButton>
       </template>
 
-      <RebornBreadcrumb :separator="state.separator" :separator-icon="state.separatorIcon"
-        :max-count="Number(state.maxCount)">
+      <RebornBreadcrumb
+        :separator="state.separator"
+        :separator-icon="state.separatorIcon"
+        :max-count="Number(state.maxCount)"
+      >
         <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>
         <RebornBreadcrumbItem to="/components">组件库</RebornBreadcrumbItem>
         <RebornBreadcrumbItem to="/components/navigation">导航组件</RebornBreadcrumbItem>
@@ -130,7 +147,10 @@ const lastSelected = ref("");
       </RebornBreadcrumb>
     </Playground>
 
-    <DemoSection title="基础用法" description="条目用 RebornBreadcrumbItem 包裹，末项自动识别为当前页，渲染为不可点击的文本。">
+    <DemoSection
+      title="基础用法"
+      description="条目用 RebornBreadcrumbItem 包裹，末项自动识别为当前页，渲染为不可点击的文本。"
+    >
       <DemoBlock layout="stack">
         <RebornBreadcrumb>
           <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>
@@ -140,11 +160,15 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="分隔符：文本、图标与插槽" description="separator 传文本、separator-icon 传图标；条目上的同名属性与 #separator 插槽优先级更高。">
+    <DemoSection
+      title="分隔符：文本、图标与插槽"
+      description="separator 传文本、separator-icon 传图标；条目上的同名属性与 #separator 插槽优先级更高。"
+    >
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem>
           <template #label>
-            容器文本 · <code>separator</code>
+            容器文本 ·
+            <code>separator</code>
           </template>
           <RebornBreadcrumb separator=">">
             <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>
@@ -155,7 +179,8 @@ const lastSelected = ref("");
 
         <DemoItem>
           <template #label>
-            容器图标 · <code>separator-icon</code>
+            容器图标 ·
+            <code>separator-icon</code>
           </template>
           <RebornBreadcrumb separator-icon="lucide:arrow-right">
             <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>
@@ -166,7 +191,8 @@ const lastSelected = ref("");
 
         <DemoItem>
           <template #label>
-            条目属性 · <code>separator</code>
+            条目属性 ·
+            <code>separator</code>
           </template>
           <RebornBreadcrumb separator="/">
             <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>
@@ -177,7 +203,8 @@ const lastSelected = ref("");
 
         <DemoItem>
           <template #label>
-            条目插槽 · <code>#separator</code>
+            条目插槽 ·
+            <code>#separator</code>
           </template>
           <RebornBreadcrumb>
             <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>
@@ -193,7 +220,10 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="自定义样式：ui 级联与覆盖" description="通过 ui 传入细粒度类名覆盖根节点与条目样式：父级 ui 会级联到所有子条目，条目级 ui 可给单项单独配色且优先级更高。">
+    <DemoSection
+      title="自定义样式：ui 级联与覆盖"
+      description="通过 ui 传入细粒度类名覆盖根节点与条目样式：父级 ui 会级联到所有子条目，条目级 ui 可给单项单独配色且优先级更高。"
+    >
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem label="缩小字号" mono>
           <RebornBreadcrumb :ui="{ root: 'text-xs', separator: 'text-2xs' }">
@@ -213,30 +243,47 @@ const lastSelected = ref("");
 
         <DemoItem label="逐项配色" mono>
           <template #note>
-            条目级 <code>ui.link</code> 只作用于当前项；覆盖颜色时要连 <code>hover:</code> 一起写，否则悬停仍会被默认的
-            <code>hover:text-primary</code> 抢走。项目色阶没有 yellow，黄色取 <code>orange</code>（即 warning 色）。
+            条目级
+            <code>ui.link</code>
+            只作用于当前项；覆盖颜色时要连
+            <code>hover:</code>
+            一起写，否则悬停仍会被默认的
+            <code>hover:text-primary</code>
+            抢走。项目色阶没有 yellow，黄色取
+            <code>orange</code>（即 warning 色）。
           </template>
           <RebornBreadcrumb>
             <RebornBreadcrumbItem to="/" :ui="{ link: 'text-red-6 hover:text-red-5' }">红色</RebornBreadcrumbItem>
-            <RebornBreadcrumbItem to="/components" :ui="{ link: 'text-green-6 hover:text-green-5' }">绿色</RebornBreadcrumbItem>
+            <RebornBreadcrumbItem to="/components" :ui="{ link: 'text-green-6 hover:text-green-5' }">
+              绿色
+            </RebornBreadcrumbItem>
             <RebornBreadcrumbItem :ui="{ link: 'text-orange-6' }">黄色</RebornBreadcrumbItem>
           </RebornBreadcrumb>
         </DemoItem>
 
         <DemoItem label="父级级联 + 条目覆盖" mono>
           <template #note>
-            容器 <code>ui.link</code> 把三项统一成绿色，中间一项用条目级 <code>ui</code> 改成红色——条目级优先。
+            容器
+            <code>ui.link</code>
+            把三项统一成绿色，中间一项用条目级
+            <code>ui</code>
+            改成红色——条目级优先。
           </template>
           <RebornBreadcrumb :ui="{ link: 'text-green-6 hover:text-green-5' }">
             <RebornBreadcrumbItem to="/">绿色</RebornBreadcrumbItem>
-            <RebornBreadcrumbItem to="/components" :ui="{ link: 'text-red-6 hover:text-red-5' }">红色（覆盖）</RebornBreadcrumbItem>
+            <RebornBreadcrumbItem to="/components" :ui="{ link: 'text-red-6 hover:text-red-5' }">
+              红色（覆盖）
+            </RebornBreadcrumbItem>
             <RebornBreadcrumbItem>绿色</RebornBreadcrumbItem>
           </RebornBreadcrumb>
         </DemoItem>
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="数据驱动：routes 与 item-render" description="传入 routes 后由组件渲染条目；item-render 插槽可接管单项内容，custom-url 可改写跳转地址。">
+    <DemoSection
+      title="数据驱动：routes 与 item-render"
+      description="传入 routes 后由组件渲染条目；item-render 插槽可接管单项内容，custom-url 可改写跳转地址。"
+    >
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem label="routes（默认渲染）" mono>
           <RebornBreadcrumb :routes="routes" />
@@ -244,10 +291,14 @@ const lastSelected = ref("");
 
         <DemoItem>
           <template #label>
-            <code>#item-render</code> 接管单项
+            <code>#item-render</code>
+            接管单项
           </template>
           <template #note>
-            作用域参数包含 <code>route</code>、<code>routes</code> 与 <code>paths</code>。
+            作用域参数包含
+            <code>route</code>、<code>routes</code>
+            与
+            <code>paths</code>。
           </template>
           <RebornBreadcrumb :routes="routes">
             <template #item-render="{ route, paths }">
@@ -262,22 +313,28 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="下拉菜单：droplist 与 children" description="routes 项的 children 或条目的 droplist 属性都会渲染成下拉菜单，也可用 #droplist 插槽完全自定义。">
+    <DemoSection
+      title="下拉菜单：droplist 与 children"
+      description="routes 项的 children 或条目的 droplist 属性都会渲染成下拉菜单，也可用 #droplist 插槽完全自定义。"
+    >
       <DemoBlock layout="stack" align="start">
         <DemoItem>
           <template #label>
-            routes 项的 <code>children</code>
+            routes 项的
+            <code>children</code>
           </template>
-          <RebornBreadcrumb :routes="routes" @select="item => (lastSelected = item.label)" />
+          <RebornBreadcrumb :routes="routes" @select="(item) => (lastSelected = item.label)" />
         </DemoItem>
 
         <DemoItem>
           <template #label>
-            条目的 <code>droplist</code> 属性
+            条目的
+            <code>droplist</code>
+            属性
           </template>
           <RebornBreadcrumb>
             <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>
-            <RebornBreadcrumbItem :droplist="droplist" @select="item => (lastSelected = item.label)">
+            <RebornBreadcrumbItem :droplist="droplist" @select="(item) => (lastSelected = item.label)">
               活动管理
             </RebornBreadcrumbItem>
             <RebornBreadcrumbItem>活动详情</RebornBreadcrumbItem>
@@ -286,7 +343,8 @@ const lastSelected = ref("");
 
         <DemoItem>
           <template #label>
-            <code>#droplist</code> 插槽完全自定义
+            <code>#droplist</code>
+            插槽完全自定义
           </template>
           <RebornBreadcrumb>
             <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>
@@ -306,7 +364,10 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="超出折叠：max-count" description="max-count 指定最多展示的条目数量，超出部分折叠为省略号，始终保留首项与末尾若干项。">
+    <DemoSection
+      title="超出折叠：max-count"
+      description="max-count 指定最多展示的条目数量，超出部分折叠为省略号，始终保留首项与末尾若干项。"
+    >
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem label="max-count = 3" mono note="原始 6 项，折叠后只留首项与末两项。">
           <RebornBreadcrumb :routes="longRoutes" :max-count="3" />
@@ -314,10 +375,13 @@ const lastSelected = ref("");
 
         <DemoItem>
           <template #label>
-            max-count = 4 · <code>#more-icon</code>
+            max-count = 4 ·
+            <code>#more-icon</code>
           </template>
           <template #note>
-            用 <code>#more-icon</code> 替换了默认的省略号图标。
+            用
+            <code>#more-icon</code>
+            替换了默认的省略号图标。
           </template>
           <RebornBreadcrumb :routes="longRoutes" :max-count="4">
             <template #more-icon>
@@ -328,7 +392,10 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="跳转方式：to 与 replace" description="每一项通过 to 指定跳转地址，replace 控制以 push / replace / blank 三种方式打开。">
+    <DemoSection
+      title="跳转方式：to 与 replace"
+      description="每一项通过 to 指定跳转地址，replace 控制以 push / replace / blank 三种方式打开。"
+    >
       <DemoBlock layout="stack">
         <RebornBreadcrumb separator="/">
           <RebornBreadcrumbItem to="/" class="text-red-5!">首页</RebornBreadcrumbItem>
@@ -336,7 +403,11 @@ const lastSelected = ref("");
           <RebornBreadcrumbItem to="https://github.com" replace="blank">GitHub（新窗口）</RebornBreadcrumbItem>
           <RebornBreadcrumbItem>项目详情</RebornBreadcrumbItem>
         </RebornBreadcrumb>
-        <DemoNote tone="dimmed">末项即使传了 <code>to</code> 也会渲染为纯文本，表示当前所在页，不可点击。</DemoNote>
+        <DemoNote tone="dimmed">
+          末项即使传了
+          <code>to</code>
+          也会渲染为纯文本，表示当前所在页，不可点击。
+        </DemoNote>
       </DemoBlock>
     </DemoSection>
   </div>

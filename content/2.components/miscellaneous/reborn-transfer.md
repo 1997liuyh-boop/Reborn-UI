@@ -1,45 +1,246 @@
 ---
 title: Transfer 穿梭框
-description: 用于在双列列表间移动条目的穿梭框组件，支持搜索过滤、全选、单向模式、撤回、分页、虚拟滚动，以及头部、条目、底部与操作按钮插槽。
+description: 双列穿梭选择器：支持搜索、分页、虚拟滚动、单向移动与撤回，可定制列表及操作按钮。
 category: 表单与输入
 platform: web
+tags: [vue, reborn-transfer]
 ---
-
-## 基础用法
 
 ::ComponentViewer{demoFile="RebornTransferDemo.vue" config="RebornTransferConfig" componentId="reborn-transfer" :componentFiles='["RebornTransfer.vue", "reborn-transfer.config.ts"]'}
 ::
 
-## API
+## 简介
 
+Transfer 是仅 Web 的双列表选择器，通过键集合在源列表与目标列表间移动条目。
+
+`dataSource` 提供全部记录，`modelValue` 保存右侧条目的键，`fieldNames` 映射业务字段；搜索、分页与虚拟滚动分别控制过滤、浏览和渲染范围。
+
+`oneWay` / `showUndo` 控制移动与撤回，`disabled` 控制交互，头部、条目、底部与操作按钮插槽承载定制内容，`ui` 覆盖内部样式。
+
+### 何时使用
+
+- 需要在候选集和已选集中移动条目——用 `dataSource` 与 `modelValue` 绑定数据及目标键。
+- 候选条目较多需按词过滤——开启 `showSearch`，必要时提供 `filterOption`。
+- 上千条等高记录需要控制渲染量——用 `virtualScroll` 配合 `virtualItemHeight`。
+
+### 何时不使用
+
+- 选项较少且无需展示候选与已选两列——改用 `reborn-select`。
+- 需要编辑记录的多个字段——改用 `reborn-table`。
+
+## 用法
+
+### 形态变体
+
+`variant` 在描边和无边框列表间切换。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `variant` | 无边框内容区 |
+
+```vue
+<template>
+  <RebornTransfer
+    :data-source="[{ key: 'a', label: '选项甲' }, { key: 'b', label: '选项乙' }]"
+    variant="borderless"
+    class="w-full"
+  />
+</template>
+```
+
+### 高度跟随父元素
+
+不传 `height` 时根节点跟随父容器高度；示例为组件指定高度。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `height` | 确定列表可滚动空间 |
+
+```vue
+<template>
+  <RebornTransfer
+    :data-source="[{ key: 'a', label: '选项甲' }, { key: 'b', label: '选项乙' }]"
+    :height="320"
+    class="w-full"
+  />
+</template>
+```
+
+### 列表分页
+
+`pagination` 控制列表分页，适合分批浏览候选项。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `pagination` | 按页浏览候选 |
+
+```vue
+<template>
+  <RebornTransfer
+    :data-source="[{ key: 'a', label: '选项甲' }, { key: 'b', label: '选项乙' }]"
+    :pagination="true"
+    class="w-full"
+  />
+</template>
+```
+
+### 虚拟滚动
+
+`virtualScroll` 控制可视区渲染，`virtualItemHeight` 要匹配实际行步长。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `virtualScroll` | 减少长列表节点 |
+
+```vue
+<template>
+  <RebornTransfer
+    :data-source="[{ key: 'a', label: '选项甲' }, { key: 'b', label: '选项乙' }]"
+    :virtual-scroll="true"
+    class="w-full"
+  />
+</template>
+```
+
+### 自定义搜索方法
+
+`showSearch` 显示输入框，`filterOption` 可接管过滤规则。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `showSearch` | 按关键词过滤 |
+
+```vue
+<template>
+  <RebornTransfer
+    :data-source="[{ key: 'a', label: '选项甲' }, { key: 'b', label: '选项乙' }]"
+    show-search
+    :filter-option="(keyword, item) => item.label.startsWith(keyword)"
+  />
+</template>
+```
+
+### 头部与底部插槽
+
+`titles` 定义两个面板标题，复杂内容可按 API 插槽表接管。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `titles` | 标识两列含义 |
+
+```vue
+<template>
+  <RebornTransfer
+    :data-source="[{ key: 'a', label: '选项甲' }, { key: 'b', label: '选项乙' }]"
+    :titles="['候选', '已选']"
+  >
+    <template #extra="{ title }"><strong>{{ title }}</strong></template>
+    <template #footer="{ checkedCount }">已勾选 {{ checkedCount }} 项</template>
+  </RebornTransfer>
+</template>
+```
+
+### 禁用条目
+
+`disabled` 禁用整个组件；单条禁用由数据记录的 disabled 字段控制。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| 记录的 `disabled` | 保留不可移动条目 |
+
+```vue
+<template>
+  <RebornTransfer
+    :data-source="[{ key: 'a', label: '固定条目', disabled: true }, { key: 'b', label: '可选条目' }]"
+    class="w-full"
+  />
+</template>
+```
+
+### 单向模式
+
+`oneWay` 只允许向右侧移动，适合只追加的选择流程。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `oneWay` | 限制移动方向 |
+
+```vue
+<template>
+  <RebornTransfer
+    :data-source="[{ key: 'a', label: '选项甲' }, { key: 'b', label: '选项乙' }]"
+    :one-way="true"
+    class="w-full"
+  />
+</template>
+```
+
+### 自定义操作按钮
+
+`operationButtons` 可配置中间操作按钮，完整结构见下方类型说明。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `operationButtons` | 修改移动按钮文案 |
+
+```vue
+<template>
+  <RebornTransfer
+    :data-source="[{ key: 'a', label: '选项甲' }, { key: 'b', label: '选项乙' }]"
+    :operation-buttons="{ toRight: { label: '加入' }, toLeft: { label: '移出' } }"
+  />
+</template>
+```
+
+### 自定义条目
+
+`default` 插槽接收原始条目与勾选状态，定制文案时保留组件提供的复选框。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `default` 插槽 | 按勾选状态突出条目 |
+
+```vue
+<template>
+  <RebornTransfer
+    :data-source="[{ key: 'a', label: '选项甲' }, { key: 'b', label: '选项乙' }]"
+  >
+    <template #default="{ item, checked }">
+      <span :class="{ 'font-semibold': checked }">{{ item.label }}</span>
+    </template>
+  </RebornTransfer>
+</template>
+```
+
+## API
 ### Props
 
 | 属性名                   | 类型                                                                                   | 默认值                   | 描述                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | :----------------------- | :------------------------------------------------------------------------------------- | :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `v-model` / `modelValue` | `string[]`                                                                             | `[]`                     | 当前位于**目标列表（右侧）**的条目 key 集合，与 `dataSource` 中条目的唯一标识对应                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `dataSource`             | `TransferDataRecord[]`                                                                 | `[]`                     | 数据源，包含所有可选条目；字段名可通过 `field-names` 映射                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `field-names`            | `TransferFieldNames`                                                                   | `{}`                     | 数据源字段别名，见下方 [字段映射](#字段映射)                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `default-target-keys`    | `string[]`                                                                             | `[]`                     | 默认已在目标列表的 key；**仅初始化一次**，且会过滤掉 `dataSource` 中不存在的 key。当未绑定 `v-model` 或目标列表为空时生效                                                                                                                                                                                                                                                                                                                                                                                     |
-| `titles`                 | `[string, string]`                                                                     | `['源列表', '目标列表']` | 两个面板的标题，索引 0 为源列表，1 为目标列表                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `operation-buttons`      | `TransferOperationButtons`                                                             | `-`                      | 中间三个操作按钮的图标、文案与无障碍配置，见下方 [操作按钮配置](#操作按钮配置)；要换掉整个按钮用 `operation` 插槽                                                                                                                                                                                                                                                                                                                                                                                             |
-| `disabled`               | `boolean`                                                                              | `false`                  | 是否禁用整体穿梭框（包括所有勾选与移动操作）                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `show-search`            | `boolean`                                                                              | `false`                  | 是否在列表上方显示搜索框（`RebornInput` 的 `sm` 档，后缀为搜索图标），搜索框与列表同属内容区，不单独画分隔线                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `header-select`          | `'none' \| 'checkbox' \| 'menu' \| 'both'`                                             | `'both'`                 | 面板头部选择控件：`checkbox` 显示全选复选框（只作用于当前页）；`menu` 显示无边框的 `RebornSelect` 多选下拉，计数文案改为显示在下拉触发器里，下拉逐行列出搜索结果内的全部条目（不受分页限制），点一行切换该条勾选，下拉保持打开，禁用条目置灰不可点；单向模式右侧的条目全部呈选中，只有开启单向模式后移入的可以取消（即退回左侧），开启前就在右侧的置灰；`both` 两者同时显示；`none` 只留计数文案。下拉只在整体禁用时禁用，面板没有条目时展开显示「暂无数据」。`variant="borderless"` 时不渲染头部，此项不生效 |
-| `search-placeholder`     | `string`                                                                               | `'请输入搜索内容'`       | 搜索框占位符文字                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `filter-option`          | `(inputValue: string, item: TransferDataRecord) => boolean`                            | `-`                      | 自定义搜索方法，返回 `true` 表示条目匹配搜索词（`item` 为原始数据对象，配置了 `fieldNames` 时按原始字段名取值）；不传时按 `label` 做包含匹配，英文不区分大小写                                                                                                                                                                                                                                                                                                                                                |
-| `variant`                | `'outlined' \| 'borderless'`                                                           | `'outlined'`             | 形态变体：`outlined` 为 8px 圆角描边面板并带头部；`borderless` 去掉面板边框与底部分隔线，且不渲染头部（全选、下拉菜单、标题、计数以及 `title` / `extra` 插槽一并隐藏）                                                                                                                                                                                                                                                                                                                                        |
-| `color`                  | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'`              | 语义色，决定复选框的勾选色、选中条目的底色（各色系的浅色阶，`neutral` 为 `gray-2`）、头部下拉中已选选项的颜色（透传给 `RebornSelect` 的 `color`）与中间操作按钮的颜色；操作按钮禁用时固定为 `neutral`，避免彩色底的禁用按钮被误认为可点                                                                                                                                                                                                                                                                       |
-| `check-shape`            | `'square' \| 'rounded' \| 'circle'`                                                    | `'rounded'`              | 选中框外观：`square` 方形、`rounded` 圆角、`circle` 圆形                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `one-way`                | `boolean`                                                                              | `false`                  | 单向模式：仅允许从左向右移动，右侧条目不可勾选。开启后移入右侧的条目在行尾显示「撤回」按钮，可逐条退回左侧；开启前就在右侧的条目（含 `v-model` / `default-target-keys` 给出的初始值）视为已定结果，没有撤回按钮。每次开启都会重新计算可撤回范围                                                                                                                                                                                                                                                               |
-| `show-undo`              | `boolean`                                                                              | `false`                  | 是否显示中间撤回按钮（撤销上一次穿梭操作）                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `pagination`             | `boolean \| TransferPaginationConfig`                                                  | `false`                  | 是否开启列表分页；传 `true` 默认每页 10 条；传对象时可配置 `pageSize`（`number`，默认 `10`）指定每页条数                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `virtual-scroll`         | `boolean`                                                                              | `false`                  | 是否开启虚拟滚动：列表只渲染可视区附近的条目，滚动时按位置替换，适合上千条又不想分页的数据；头部下拉同样按虚拟列表渲染。开启后每行高度固定为 `virtual-item-height` 减去 4px 行间距，面板需要确定的高度（传 `height` 或由父元素给出）；与 `pagination` 同时开启时只作用于当前页                                                                                                                                                                                                                                |
-| `virtual-item-height`    | `number`                                                                               | `32`                     | 虚拟滚动的行步长（px），即行高加 4px 行间距。默认值对应只有 label 的条目（行高 28）；带 description 的条目行高 50，应传 `54`；用插槽改了条目内容时须与实际高度一致，否则相邻行会重叠或留出空白                                                                                                                                                                                                                                                                                                                |
-| `virtual-buffer`         | `number`                                                                               | `4`                      | 虚拟滚动在可视区上下各多渲染的条数，快速滚动时减少空白                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `width`                  | `string \| number`                                                                     | `-`                      | 组件整体宽度，支持数字（px）或 CSS 长度，如 `640`、`'100%'`                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `height`                 | `string \| number`                                                                     | `-`                      | 组件整体高度。不传时根节点撑满父元素（`h-full`）：父元素给定高度，列表在面板内滚动，头部、搜索框与底部栏不随列表滚动；父元素高度为 auto，列表随条目增高                                                                                                                                                                                                                                                                                                                                                       |
-| `class`                  | `any`                                                                                  | `-`                      | 根节点自定义类名                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `ui`                     | `Record<string, string>`                                                               | `{}`                     | 为组件内部各区域追加自定义 class，见下方 [自定义样式](#自定义样式ui-属性)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `modelValue` | `string[]`                                                                             | `[]`                     | 当前位于**目标列表（右侧）**的条目 key 集合，与 `dataSource` 中条目的唯一标识对应                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `dataSource` | `TransferDataRecord[]`                                                                 | `[]`                     | 数据源，包含所有可选条目；字段名可通过 `field-names` 映射                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `fieldNames` | `TransferFieldNames`                                                                   | `{}`                     | 数据源字段别名，见下方 [字段映射](#字段映射)                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `defaultTargetKeys` | `string[]`                                                                             | `[]`                     | 默认已在目标列表的 key；**在首次拿到非空 `dataSource` 时初始化一次**（`dataSource` 异步加载也能生效），且会过滤掉 `dataSource` 中不存在的 key。当未绑定 `v-model` 或目标列表为空时生效                                                                                                                                                                                                                                                                                                                                                                                     |
+| `titles` | `[string, string]`                                                                     | `['源列表', '目标列表']` | 两个面板的标题，索引 0 为源列表，1 为目标列表                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `operationButtons` | `TransferOperationButtons`                                                             | `-`                      | 中间三个操作按钮的图标、文案与无障碍配置，见下方 [操作按钮配置](#操作按钮配置)；要换掉整个按钮用 `operation` 插槽                                                                                                                                                                                                                                                                                                                                                                                             |
+| `disabled` | `boolean`                                                                              | `false`                  | 是否禁用整体穿梭框（包括所有勾选与移动操作）                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `showSearch` | `boolean`                                                                              | `false`                  | 是否在列表上方显示搜索框（`RebornInput` 的 `sm` 档，后缀为搜索图标），搜索框与列表同属内容区，不单独画分隔线                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `headerSelect` | `'none' \| 'checkbox' \| 'menu' \| 'both'`                                             | `'both'`                 | 面板头部选择控件：`checkbox` 显示全选复选框（只作用于当前页）；`menu` 显示无边框的 `RebornSelect` 多选下拉，计数文案改为显示在下拉触发器里，下拉逐行列出搜索结果内的全部条目（不受分页限制），点一行切换该条勾选，下拉保持打开，禁用条目置灰不可点；单向模式右侧的条目全部呈选中，只有开启单向模式后移入的可以取消（即退回左侧），开启前就在右侧的置灰；`both` 两者同时显示；`none` 只留计数文案。下拉只在整体禁用时禁用，面板没有条目时展开显示「暂无数据」。`variant="borderless"` 时不渲染头部，此项不生效 |
+| `searchPlaceholder` | `string`                                                                               | `'请输入搜索内容'`       | 搜索框占位符文字                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `filterOption` | `(inputValue: string, item: TransferDataRecord) => boolean`                            | `-`                      | 自定义搜索方法，返回 `true` 表示条目匹配搜索词（`item` 为原始数据对象，配置了 `fieldNames` 时按原始字段名取值）；不传时按 `label` 做包含匹配，英文不区分大小写                                                                                                                                                                                                                                                                                                                                                |
+| `variant` | `'outlined' \| 'borderless'`                                                           | `'outlined'`             | 形态变体：`outlined` 为 8px 圆角描边面板并带头部；`borderless` 去掉面板边框与底部分隔线，且不渲染头部（全选、下拉菜单、标题、计数以及 `title` / `extra` 插槽一并隐藏）                                                                                                                                                                                                                                                                                                                                        |
+| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'`              | 语义色，决定复选框的勾选色、选中条目的底色（各色系的浅色阶，`neutral` 为 `gray-2`）、头部下拉中已选选项的颜色（透传给 `RebornSelect` 的 `color`）与中间操作按钮的颜色；操作按钮禁用时固定为 `neutral`，避免彩色底的禁用按钮被误认为可点                                                                                                                                                                                                                                                                       |
+| `checkShape` | `'square' \| 'rounded' \| 'circle'`                                                    | `'rounded'`              | 选中框外观：`square` 方形、`rounded` 圆角、`circle` 圆形                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `oneWay` | `boolean`                                                                              | `false`                  | 单向模式：仅允许从左向右移动，右侧条目不可勾选。开启后移入右侧的条目在行尾显示「撤回」按钮，可逐条退回左侧；开启前就在右侧的条目（含 `v-model` / `default-target-keys` 给出的初始值）视为已定结果，没有撤回按钮。每次开启都会重新计算可撤回范围                                                                                                                                                                                                                                                               |
+| `showUndo` | `boolean`                                                                              | `false`                  | 是否显示中间撤回按钮（撤销上一次穿梭操作）                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `pagination` | `boolean \| TransferPaginationConfig`                                                  | `false`                  | 是否开启列表分页；传 `true` 默认每页 10 条；传对象时可配置 `pageSize`（`number`，默认 `10`）指定每页条数                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `virtualScroll` | `boolean`                                                                              | `false`                  | 是否开启虚拟滚动：列表只渲染可视区附近的条目，滚动时按位置替换，适合上千条又不想分页的数据；头部下拉同样按虚拟列表渲染。开启后每行高度固定为 `virtual-item-height` 减去 4px 行间距，面板需要确定的高度（传 `height` 或由父元素给出）；与 `pagination` 同时开启时只作用于当前页                                                                                                                                                                                                                                |
+| `virtualItemHeight` | `number`                                                                               | `32`                     | 虚拟滚动的行步长（px），即行高加 4px 行间距。默认值对应只有 label 的条目（行高 28）；带 description 的条目行高 50，应传 `54`；用插槽改了条目内容时须与实际高度一致，否则相邻行会重叠或留出空白                                                                                                                                                                                                                                                                                                                |
+| `virtualBuffer` | `number`                                                                               | `4`                      | 虚拟滚动在可视区上下各多渲染的条数，快速滚动时减少空白                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `width` | `string \| number`                                                                     | `-`                      | 组件整体宽度，支持数字（px）或 CSS 长度，如 `640`、`'100%'`                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `height` | `string \| number`                                                                     | `-`                      | 组件整体高度。不传时根节点撑满父元素（`h-full`）：父元素给定高度，列表在面板内滚动，头部、搜索框与底部栏不随列表滚动；父元素高度为 auto，列表随条目增高                                                                                                                                                                                                                                                                                                                                                       |
+| `class` | `any`                                                                                  | `-`                      | 根节点自定义类名                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `ui` | `Record<string, string>`                                                               | `{}`                     | 为组件内部各区域追加自定义 class，见下方 [自定义样式](#自定义样式ui-属性)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 ### Emits
 
@@ -56,7 +257,7 @@ platform: web
 | :------------------- | :--------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `title`              | [`TransferTitleSlotProps`](#transfertitleslotprops-包含)                     | 头部左侧的勾选区，默认是全选复选框（文案为计数）；左右面板共用，用 `direction` 区分。下拉不在插槽内，仍按 `header-select` 显示；开启下拉时计数文案显示在下拉触发器里，默认复选框不再带文案 |
 | `extra`              | `{ direction: 'left' \| 'right', title: string }`                            | 头部右侧区域，默认是面板标题                                                                                                                                                               |
-| `default`            | [`TransferItemSlotProps`](#transferitemslotprops-包含)                       | 条目的文案区域；条目前的复选框、单向模式右侧的撤回按钮仍由组件渲染                                                                                                                         |
+| `default`            | [`TransferItemSlotProps`](#transferitemslotprops-包含)                       | 条目的文案区域；条目前的复选框、单向模式右侧的撤回按钮仍由组件渲染。未提供条目插槽时，勾选一条只重新渲染这一行；提供 `default` 或 `item` 插槽后，插槽可能读取组件外的状态，组件改为每次整列重新渲染，上千条数据时请配合 `virtual-scroll` 或 `pagination`                                                                                                                         |
 | `item`               | `{ item: TransferDataRecord }`                                               | 旧版条目插槽，保留兼容；与 `default` 同时提供时 `default` 优先                                                                                                                             |
 | `footer`             | `{ direction: 'left' \| 'right', total: number, checkedCount: number }`      | 面板底部区域，渲染在分页栏下方；提供后未开分页也会显示底部栏                                                                                                                               |
 | `operation`          | [`TransferOperationButtonSlotProps`](#transferoperationbuttonslotprops-包含) | 整个替换中间的操作按钮，每个可见按钮调用一次，用 `action` 区分                                                                                                                             |
@@ -74,7 +275,7 @@ platform: web
 | `selectable`    | `boolean`           | 当前面板条目是否可勾选，单向模式下右侧为 `false`          |
 | `checked`       | `boolean`           | 当前页可选条目是否已全部勾选                              |
 | `indeterminate` | `boolean`           | 当前页可选条目是否部分勾选                                |
-| `disabled`      | `boolean`           | 全选是否不可用（整体禁用或当前页没有可选条目）            |
+| `disabled` | `boolean`           | 全选是否不可用（整体禁用或当前页没有可选条目）            |
 | `countText`     | `string`            | 默认计数文案：未勾选时为「N 项」，有勾选时为「选中 N 项」 |
 | `checkedCount`  | `number`            | 搜索结果内已勾选的条目数                                  |
 | `total`         | `number`            | 搜索结果总条目数                                          |
@@ -87,7 +288,7 @@ platform: web
 | `item`      | `TransferDataRecord` | 原始数据对象，字段名未归一化             |
 | `direction` | `'left' \| 'right'`  | 条目所在面板方向                         |
 | `checked`   | `boolean`            | 条目是否已勾选，单向模式右侧恒为 `false` |
-| `disabled`  | `boolean`            | 条目是否禁用（整体禁用或条目自身禁用）   |
+| `disabled` | `boolean`            | 条目是否禁用（整体禁用或条目自身禁用）   |
 
 #### `TransferOperationButtonSlotProps` 包含：
 
@@ -102,7 +303,7 @@ platform: web
 
 | 字段       | 类型                                                 | 描述                                                            |
 | :--------- | :--------------------------------------------------- | :-------------------------------------------------------------- |
-| `ui`       | `Record<string, (opts?: { class?: any }) => string>` | 组件内部样式函数集合，可在插槽内复用                            |
+| `ui` | `Record<string, (opts?: { class?: any }) => string>` | 组件内部样式函数集合，可在插槽内复用                            |
 | `config`   | `ResolvedOperationButton`                            | 解析后的按钮配置（`title`、`label`、`icon`、`trailingIcon` 等） |
 | `disabled` | `boolean`                                            | 当前按钮是否处于禁用状态                                        |
 
@@ -130,7 +331,7 @@ platform: web
 | `key`         | `string`  | 唯一标识                             |
 | `label`       | `string`  | 显示文字                             |
 | `description` | `string`  | 可选，显示在 `label` 下方            |
-| `disabled`    | `boolean` | 是否禁用此条目，禁用后无法勾选和移动 |
+| `disabled` | `boolean` | 是否禁用此条目，禁用后无法勾选和移动 |
 
 ### 操作按钮配置
 
@@ -148,7 +349,7 @@ platform: web
 | `showIcon`                       | `boolean` | 是否显示前置图标，默认 `true`                                           |
 | `showTrailingIcon`               | `boolean` | 是否显示后置图标，默认在配置了 `trailingIcon` 时为 `true`               |
 
-### 自定义样式（`ui` 属性）
+### 自定义样式（ui）
 
 下面示例中：`panel` 只影响左右两个列表面板的外框；`panelTitle` 只影响面板标题文字；`searchInput` 只影响搜索框的输入外壳；`operationBtn` 只影响中间三个箭头/撤回按钮。
 
@@ -231,3 +432,9 @@ platform: web
   - 内嵌 `RebornInput`（搜索）、`RebornScrollbar`（列表滚动）、`RebornCheckbox`、`RebornButton`（操作按钮）、`RebornPagination` 与 `RebornSelect`（头部下拉，`borderless` 形态的多选，浮层挂到 body 下，不会被面板的 `overflow-hidden` 裁切）。
   - 不提供尺寸档位：文字统一用 `text-sm`，搜索框与按钮取各自的 `sm` 档，高度交给父元素或 `height`。
 - **UniApp 端**：暂未提供对应组件，后续对齐时将保持 `v-model`（目标 key 列表）与 `change` / `selectChange` 事件语义一致。
+
+## 注意事项
+
+- **目标模型保存的是键集合**。键需与 `dataSource` 及 `fieldNames.key` 一致，重复或缺失的键无法可靠定位条目。
+- **虚拟滚动要求行步长准确**。`virtualItemHeight` 包含行间距，自定义多行内容后需同步修改，否则滚动定位与可视范围会错位。
+- **默认目标键只负责初始化**。`defaultTargetKeys` 在首次取得非空数据源时使用，后续受控更新应写入 `modelValue`。

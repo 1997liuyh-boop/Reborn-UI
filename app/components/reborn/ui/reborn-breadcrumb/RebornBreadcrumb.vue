@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { BreadcrumbDroplistItem, BreadcrumbRoute, BreadcrumbUI } from './reborn-breadcrumb.config'
-import { computed, provide, reactive, ref } from 'vue'
+import type { Slots, VNode, VNodeArrayChildren } from 'vue'
+import type { BreadcrumbContext, BreadcrumbDroplistItem, BreadcrumbRoute, BreadcrumbUI } from './reborn-breadcrumb.config'
+import { cloneVNode, computed, Fragment, h, isVNode, provide } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme, { BREADCRUMB_INJECTION_KEY } from './reborn-breadcrumb.config'
@@ -34,46 +35,91 @@ const emit = defineEmits<{
     (e: 'select', item: BreadcrumbDroplistItem, index: number): void
 }>()
 
-// --- 条目注册表 ---
-/**
- * 根因：默认插槽的条目由使用者书写，父组件拿不到条目数量与顺序，
- * 无法判断首尾、也无法实现 max-count 折叠。
- * 方案：子条目在 setup 阶段登记自己，数组下标即渲染顺序。
- */
-const itemIds = ref<number[]>([])
-let idSeed = 0
-
-function registerItem() {
-    const id = ++idSeed
-    itemIds.value = [...itemIds.value, id]
-    return id
-}
-
-function unregisterItem(id: number) {
-    itemIds.value = itemIds.value.filter(item => item !== id)
-}
-
-function indexOfItem(id: number) {
-    return itemIds.value.indexOf(id)
-}
-
 // --- max-count 折叠 ---
-/** 条目总数：routes 模式取数据长度，插槽模式取注册数量 */
-const total = computed(() => (props.routes?.length ? props.routes.length : itemIds.value.length))
-
 /** 折叠区间 [start, end)，落在区间内的条目隐藏；保留首项与末尾 maxCount - 1 项 */
-const collapseRange = computed(() => {
+function collapseRangeOf(total: number) {
     const max = props.maxCount || 0
-    if (max <= 0 || total.value <= max) { return null }
-    return { start: 1, end: total.value - max + 1 }
-})
+    if (max <= 0 || total <= max) { return null }
+    return { start: 1, end: total - max + 1 }
+}
 
-const isCollapsing = computed(() => !!collapseRange.value)
+/** ShapeFlags.FUNCTIONAL_COMPONENT | ShapeFlags.STATEFUL_COMPONENT；vue 未公开导出该枚举，这里按位值书写 */
+const COMPONENT_SHAPE = 2 | 4
 
-function isItemCollapsed(index: number) {
-    const range = collapseRange.value
-    if (!range || index < 0) { return false }
-    return index >= range.start && index < range.end
+/**
+ * 条目节点：展开片段后，默认插槽里的每个组件节点都算一项；普通元素、文本与注释不计数，原位保留。
+ * 不按 node.type === RebornBreadcrumbItem 判断：全局注册的组件经运行时解析（站内 /playground 的模板编译、
+ * resolveComponent、<component is>）拿到的是 defineAsyncComponent 包装，按身份比较一律落空，折叠与排序随之失效。
+ * 序号与折叠结果以属性写进节点，异步包装会原样转交给内部组件，单根包装组件也会经透传属性落到内部条目上。
+ */
+function isItemNode(node: VNode) {
+    return (node.shapeFlag & COMPONENT_SHAPE) !== 0
+}
+
+/** 按插槽顺序统计条目数，片段（v-for / template / 转发的插槽）逐层展开 */
+function countItems(nodes: VNodeArrayChildren): number {
+    let count = 0
+    for (const node of nodes) {
+        if (!isVNode(node)) { continue }
+        if (node.type === Fragment && Array.isArray(node.children)) { count += countItems(node.children) }
+        else if (isItemNode(node)) { count++ }
+    }
+    return count
+}
+
+/**
+ * 根因：默认插槽的条目由使用者书写，若让条目在 setup 时向容器登记，下标是 setup 的先后顺序而不是插槽位置，
+ * v-if / v-for 中途插入的条目会排到末尾，折叠时隐藏错项；服务端渲染时容器先于条目渲染，首屏也拿不到总数。
+ * 方案：容器在渲染期展开插槽，按插槽顺序给条目编号、算出折叠结果，克隆节点把结果写进条目的内部 prop，
+ * 并把省略号直接插在首个条目之后。DOM 顺序即视觉顺序，服务端首屏就是折叠后的结果。
+ * 片段与注释占位（v-if 为假）原样保留，v-if 切换时同级节点的位置不会漂移。渲染期只读不写响应式状态。
+ */
+const BreadcrumbTrail = (_props: unknown, { slots: own }: { slots: Slots }) => {
+    let nodes = own.default?.() ?? []
+    // 完整显式序位时展开片段并排序；混传或无效值保持原插槽结构。
+    const flatten = (list: VNodeArrayChildren): VNode[] => list.flatMap(node => {
+        if (!isVNode(node)) return []
+        return node.type === Fragment && Array.isArray(node.children) ? flatten(node.children) : [node]
+    })
+    const flat = flatten(nodes)
+    const items = flat.filter(isItemNode)
+    if (items.length && items.every(node => typeof node.props?.order === 'number' && Number.isFinite(node.props.order))) {
+        const sorted = [...items].sort((a, b) => a.props!.order - b.props!.order)
+        let cursor = 0
+        nodes = flat.map(node => isItemNode(node) ? sorted[cursor++]! : node)
+    }
+    const range = collapseRangeOf(countItems(nodes))
+    let index = 0
+
+    const layout = (list: VNodeArrayChildren): VNodeArrayChildren => {
+        const out: VNodeArrayChildren = []
+        for (const node of list) {
+            if (!isVNode(node)) {
+                out.push(node)
+                continue
+            }
+            if (node.type === Fragment && Array.isArray(node.children)) {
+                out.push(h(Fragment, node.key == null ? null : { key: node.key }, layout(node.children)))
+                continue
+            }
+            if (!isItemNode(node)) {
+                out.push(node)
+                continue
+            }
+            const current = index++
+            out.push(cloneVNode(node, {
+                internalIndex: current,
+                internalCollapsed: !!range && current >= range.start && current < range.end
+            }))
+            // 省略号紧跟首项；用固定 key 与条目区分，出现 / 消失时不会让后面的条目错位复用
+            if (range && current === 0) {
+                out.push(h(Fragment, { key: '__reborn-breadcrumb-more__' }, own.more?.()))
+            }
+        }
+        return out
+    }
+
+    return layout(nodes)
 }
 
 // --- routes 模式的地址解析 ---
@@ -107,60 +153,58 @@ const ui = computed(() => {
     }
 })
 
-const context = reactive({
+/** 只提供只读的 computed：条目读取容器配置，但不能改写容器状态 */
+const context: BreadcrumbContext = {
     separator: computed(() => props.separator),
     separatorIcon: computed(() => props.separatorIcon),
-    collapsing: isCollapsing,
-    ui: computed(() => props.ui || {}),
-    registerItem,
-    unregisterItem,
-    indexOfItem,
-    isItemCollapsed
-})
+    ui: computed(() => props.ui || {})
+}
 
 provide(BREADCRUMB_INJECTION_KEY, context)
 </script>
 
 <template>
   <nav :class="ui.root()" aria-label="Breadcrumb">
-    <!--
-            根因：省略号必须落在首项之后，但默认插槽的条目由使用者书写，父组件无法插入到它们中间。
-            方案：省略号固定渲染在 DOM 最前，再用 flex order（省略号取 1、条目取 index * 2）纠正视觉顺序。
-        -->
-    <div v-if="isCollapsing" :class="ui.item()" :style="{ order: 1 }">
-      <span :class="ui.more()">
-        <slot name="more-icon">
-          <Icon name="lucide:ellipsis" :class="ui.moreIcon()" />
-        </slot>
-      </span>
-      <span :class="ui.separator()" aria-hidden="true">
-        <slot name="separator">
-          <component :is="props.separatorIcon" v-if="props.separatorIcon && typeof props.separatorIcon !== 'string'" />
-          <Icon v-else-if="props.separatorIcon" :name="props.separatorIcon" />
-          <template v-else>{{ props.separator }}</template>
-        </slot>
-      </span>
-    </div>
+    <BreadcrumbTrail>
+      <!-- routes 模式：条目由组件渲染，item-render 插槽可接管单项内容 -->
+      <template v-if="props.routes?.length">
+        <RebornBreadcrumbItem
+          v-for="(route, index) in props.routes"
+          :key="`${route.label}-${index}`"
+          :order="index"
+          :to="hrefOf(index)"
+          :droplist="route.children"
+          @select="item => emit('select', item, index)"
+        >
+          <slot name="item-render" :route="route" :routes="props.routes" :paths="pathsOf(index)">
+            {{ route.label }}
+          </slot>
+          <template v-if="$slots.separator" #separator>
+            <slot name="separator" />
+          </template>
+        </RebornBreadcrumbItem>
+      </template>
 
-    <!-- routes 模式：条目由组件渲染，item-render 插槽可接管单项内容 -->
-    <template v-if="props.routes?.length">
-      <RebornBreadcrumbItem
-        v-for="(route, index) in props.routes"
-        :key="`${route.label}-${index}`"
-        :to="hrefOf(index)"
-        :droplist="route.children"
-        @select="item => emit('select', item, index)"
-      >
-        <slot name="item-render" :route="route" :routes="props.routes" :paths="pathsOf(index)">
-          {{ route.label }}
-        </slot>
-        <template v-if="$slots.separator" #separator>
-          <slot name="separator" />
-        </template>
-      </RebornBreadcrumbItem>
-    </template>
+      <!-- 默认插槽模式：使用者自行书写 RebornBreadcrumbItem -->
+      <slot v-else />
 
-    <!-- 默认插槽模式：使用者自行书写 RebornBreadcrumbItem -->
-    <slot v-else />
+      <!-- 折叠省略号：由 BreadcrumbTrail 插到首个条目之后，仅 max-count 触发折叠时渲染 -->
+      <template #more>
+        <div :class="ui.item()">
+          <span :class="ui.more()">
+            <slot name="more-icon">
+              <Icon name="lucide:ellipsis" :class="ui.moreIcon()" />
+            </slot>
+          </span>
+          <span :class="ui.separator()" aria-hidden="true">
+            <slot name="separator">
+              <component :is="props.separatorIcon" v-if="props.separatorIcon && typeof props.separatorIcon !== 'string'" />
+              <Icon v-else-if="props.separatorIcon" :name="props.separatorIcon" />
+              <template v-else>{{ props.separator }}</template>
+            </slot>
+          </span>
+        </div>
+      </template>
+    </BreadcrumbTrail>
   </nav>
 </template>

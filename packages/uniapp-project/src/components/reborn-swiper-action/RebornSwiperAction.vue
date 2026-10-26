@@ -18,7 +18,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, getCurrentInstance, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue'
 import { onPageScroll } from '@dcloudio/uni-app'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -140,26 +140,23 @@ const ui = computed(() => {
   }
 })
 
-const startX = ref(0)
-const startY = ref(0)
-const startTranslateX = ref(0)
-const dragTargetX = ref(0)
-const translateX = ref(0)
-const rootWidth = ref(0)
-const rootLeft = ref(0)
-const isDragging = ref(false)
-const isHorizontalMoving = ref(false)
-const isTapClosing = ref(false)
-const isSmoothClosing = ref(false)
-const suppressNextTap = ref(false)
+const startX = shallowRef(0)
+const startY = shallowRef(0)
+const startTranslateX = shallowRef(0)
+const dragTargetX = shallowRef(0)
+const translateX = shallowRef(0)
+const rootWidth = shallowRef(0)
+const isDragging = shallowRef(false)
+const isHorizontalMoving = shallowRef(false)
+const isTapClosing = shallowRef(false)
+const isSmoothClosing = shallowRef(false)
+const suppressNextTap = shallowRef(false)
 /** 非小程序端：滑动结束后阻止紧随其后的 @tap 误触 */
-const blockContentTapByGesture = ref(false)
-const isScrollLocked = ref(false)
-const lockDirection = ref<'x' | 'y' | ''>('')
-const dragStartOpenedSide = ref<SwiperActionSide | ''>('')
+const blockContentTapByGesture = shallowRef(false)
+const isScrollLocked = shallowRef(false)
+const lockDirection = shallowRef<'x' | 'y' | ''>('')
 const ACTION_TOUCH_DEDUPLICATE_MS = 350
 let scrollLockTimer: ReturnType<typeof setTimeout> | undefined
-let dragStartSideResetTimer: ReturnType<typeof setTimeout> | undefined
 let touchMoveCount = 0
 let verticalLockMoveCount = 0
 let maxTouchDeltaX = 0
@@ -180,13 +177,12 @@ let h5TouchActive = false
 let h5GestureGuarding = false
 let h5TouchStartX = 0
 let h5TouchStartY = 0
-let h5ScrollPositionLocked = false
 
 const REMOVE_DURATION = 220
-const isRemoving = ref(false)
-const isRemoveCollapsed = ref(false)
-const removingMaxHeight = ref<number | null>(null)
-const isSnapping = ref(false)
+const isRemoving = shallowRef(false)
+const isRemoveCollapsed = shallowRef(false)
+const removingMaxHeight = shallowRef<number | null>(null)
+const isSnapping = shallowRef(false)
 
 const rightRawWidth = computed(() => getActionsWidth(props.rightActions))
 const maxRevealWidth = computed(() => {
@@ -341,12 +337,10 @@ function updateRootWidth() {
     .in(proxy)
     .select('.reborn-swiper-action')
     .boundingClientRect((data) => {
+      if (disposed) return
       const rect = data as UniApp.NodeInfo
       if (rect?.width) {
         rootWidth.value = rect.width
-      }
-      if (rect?.left !== undefined) {
-        rootLeft.value = rect.left
       }
     })
     .exec()
@@ -631,22 +625,6 @@ function stopGesturePropagation(event: any) {
   }
 }
 
-function holdH5ScrollPosition() {
-  if (!canUseH5TouchLock()) {
-    return
-  }
-
-  h5ScrollPositionLocked = true
-}
-
-function releaseH5ScrollPosition() {
-  if (!h5ScrollPositionLocked) {
-    return
-  }
-
-  h5ScrollPositionLocked = false
-}
-
 function preventH5Scroll(event: TouchEvent) {
   const touch = event.touches?.[0]
 
@@ -659,7 +637,6 @@ function preventH5Scroll(event: TouchEvent) {
         event.preventDefault()
       }
       stopGesturePropagation(event)
-      holdH5ScrollPosition()
       applyHorizontalMove(diffX)
       return
     }
@@ -673,14 +650,13 @@ function preventH5Scroll(event: TouchEvent) {
         event.preventDefault()
       }
       stopGesturePropagation(event)
-      holdH5ScrollPosition()
       applyHorizontalMove(diffX)
       return
     }
 
     if (shouldLockVertical(diffX, diffY)) {
       h5GestureGuarding = false
-      releaseH5ScrollPosition()
+
       return
     }
   }
@@ -690,7 +666,6 @@ function preventH5Scroll(event: TouchEvent) {
       event.preventDefault()
     }
     stopGesturePropagation(event)
-    holdH5ScrollPosition()
     return
   }
 
@@ -702,7 +677,6 @@ function preventH5Scroll(event: TouchEvent) {
     event.preventDefault()
   }
   stopGesturePropagation(event)
-  holdH5ScrollPosition()
 }
 
 function preventContentDefault(event: Event) {
@@ -751,7 +725,6 @@ function releasePageScroll(delay = 0) {
     isScrollLocked.value = false
     h5TouchActive = false
     h5GestureGuarding = false
-    releaseH5ScrollPosition()
     unregisterH5ScrollLock()
     return
   }
@@ -760,7 +733,6 @@ function releasePageScroll(delay = 0) {
     isScrollLocked.value = false
     h5TouchActive = false
     h5GestureGuarding = false
-    releaseH5ScrollPosition()
     unregisterH5ScrollLock()
     scrollLockTimer = undefined
   }, delay)
@@ -843,22 +815,6 @@ function stopPageScrollWatcher() {
   pageScrollWatcherPending = false
 }
 
-function clearDragStartOpenedSide(delay = 0) {
-  if (dragStartSideResetTimer) {
-    clearTimeout(dragStartSideResetTimer)
-    dragStartSideResetTimer = undefined
-  }
-
-  if (delay <= 0) {
-    dragStartOpenedSide.value = ''
-    return
-  }
-
-  dragStartSideResetTimer = setTimeout(() => {
-    dragStartOpenedSide.value = ''
-    dragStartSideResetTimer = undefined
-  }, delay)
-}
 
 /**
  * 获取互斥分组标识，传入 false 时关闭同组互斥能力。
@@ -919,7 +875,23 @@ function clearActiveInGroup() {
 /**
  * 根据打开方向同步内容位移。
  */
+let syncedSide: SwiperActionSide | '' | undefined
+let disposed = false
+const timers = new Map<string, ReturnType<typeof setTimeout>>()
+/** 同名回调重设前取消，旧动画不会提前结束新动画。 */
+function later(name: string, callback: () => void, delay: number) {
+  if (disposed) return
+  clearTimeout(timers.get(name))
+  const timer = setTimeout(() => {
+    timers.delete(name)
+    if (!disposed) callback()
+  }, delay)
+  timers.set(name, timer)
+  return timer
+}
+
 function syncTranslate(side: SwiperActionSide | '') {
+  syncedSide = side
   if (side === 'right' && hasRightActions.value) {
     translateX.value = -rightWidth.value
     return
@@ -940,7 +912,6 @@ function updateOpenedSide(side: SwiperActionSide | '') {
     closeOtherInGroup()
   }
 
-  isInternalUpdate = true
   openedSide.value = side
   syncTranslate(side)
 
@@ -975,9 +946,7 @@ function closeByContentTap() {
   isSmoothClosing.value = false
   updateOpenedSide('')
 
-  setTimeout(() => {
-    isTapClosing.value = false
-  }, props.closeDuration)
+  later('isTapClosing', () => { isTapClosing.value = false }, props.closeDuration)
 }
 
 /**
@@ -995,9 +964,7 @@ function closeByPageScroll() {
   isSmoothClosing.value = true
   updateOpenedSide('')
 
-  setTimeout(() => {
-    isSmoothClosing.value = false
-  }, props.closeDuration)
+  later('isSmoothClosing', () => { isSmoothClosing.value = false }, props.closeDuration)
 }
 
 /**
@@ -1011,9 +978,7 @@ function open(side: SwiperActionSide = 'right') {
   updateOpenedSide(side)
 
   isSmoothClosing.value = true
-  setTimeout(() => {
-    isSmoothClosing.value = false
-  }, props.closeDuration)
+  later('isSmoothClosing', () => { isSmoothClosing.value = false }, props.closeDuration)
 }
 
 /**
@@ -1022,9 +987,7 @@ function open(side: SwiperActionSide = 'right') {
 function snapClose() {
   isTapClosing.value = false
   isSmoothClosing.value = true
-  setTimeout(() => {
-    isSmoothClosing.value = false
-  }, props.closeDuration)
+  later('isSmoothClosing', () => { isSmoothClosing.value = false }, props.closeDuration)
   updateOpenedSide('')
 }
 
@@ -1035,9 +998,7 @@ function close() {
   if (openedSide.value) {
     isTapClosing.value = false
     isSmoothClosing.value = true
-    setTimeout(() => {
-      isSmoothClosing.value = false
-    }, props.closeDuration)
+    later('isSmoothClosing', () => { isSmoothClosing.value = false }, props.closeDuration)
   }
 
   updateOpenedSide('')
@@ -1132,14 +1093,10 @@ function onTouchStart(event: any) {
   h5GestureGuarding = canUseH5TouchLock() && (hasRightActions.value || !!openedSide.value)
   h5TouchStartX = touch.clientX
   h5TouchStartY = touch.clientY
-  if (h5GestureGuarding) {
-    holdH5ScrollPosition()
-  }
   startX.value = touch.clientX
   startY.value = touch.clientY
   startTranslateX.value = translateX.value
   dragTargetX.value = translateX.value
-  dragStartOpenedSide.value = openedSide.value
   isDragging.value = true
   isHorizontalMoving.value = false
   lockDirection.value = ''
@@ -1178,7 +1135,6 @@ function onTouchMove(event: any) {
         scrollLockTimer = undefined
       }
       isScrollLocked.value = false
-      releaseH5ScrollPosition()
       if (openedSide.value && props.closeOnPageScroll) {
         closeByPageScroll()
       } else {
@@ -1229,7 +1185,6 @@ function onTouchEnd(event: any) {
   if (!isDragging.value) {
     isHorizontalMoving.value = false
     releasePageScroll()
-    clearDragStartOpenedSide()
     return
   }
 
@@ -1243,7 +1198,6 @@ function onTouchEnd(event: any) {
 
     lockDirection.value = ''
     releasePageScroll()
-    clearDragStartOpenedSide()
     if (shouldCloseByTouchEnd) {
       consumeBlockedContentTap()
       closeByContentTap()
@@ -1257,7 +1211,6 @@ function onTouchEnd(event: any) {
 
   lockDirection.value = ''
   releasePageScroll(props.duration)
-  clearDragStartOpenedSide(props.duration)
 
   if (wasHorizontalMoving) {
     markGestureSwipe()
@@ -1281,7 +1234,7 @@ function onTouchEnd(event: any) {
     if (Math.abs(releaseX) >= threshold) {
       isSnapping.value = true
       updateOpenedSide('right')
-      setTimeout(() => { isSnapping.value = false }, 320)
+      later('isSnapping', () => { isSnapping.value = false }, 320)
     } else {
       snapClose()
     }
@@ -1312,10 +1265,7 @@ function onTouchCancel() {
   lockDirection.value = ''
   isSmoothClosing.value = true
   syncTranslate(openedSide.value)
-  setTimeout(() => {
-    isSmoothClosing.value = false
-  }, props.closeDuration)
-  clearDragStartOpenedSide()
+  later('isSmoothClosing', () => { isSmoothClosing.value = false }, props.closeDuration)
 }
 
 function consumeBlockedContentTap() {
@@ -1348,13 +1298,14 @@ function triggerRemoveAnimation(item: SwiperActionItem, actionIndex: number, sid
     .in(proxy)
     .select('.reborn-swiper-action')
     .boundingClientRect((data) => {
+      if (disposed) return
       const rect = data as UniApp.NodeInfo
       removingMaxHeight.value = rect?.height ?? 120
-      setTimeout(() => {
+      later('removeStart', () => {
         isRemoving.value = true
-        setTimeout(() => {
+        later('removeCollapse', () => {
           isRemoveCollapsed.value = true
-          setTimeout(() => {
+          later('removeEmit', () => {
             emit('remove', { item, index: actionIndex, side })
           }, 32)
         }, REMOVE_DURATION)
@@ -1373,7 +1324,7 @@ function triggerAction(item: SwiperActionItem, index: number, side: SwiperAction
 
   function remove() {
     close()
-    setTimeout(() => {
+    later('removeMeasure', () => {
       triggerRemoveAnimation(item, index, side)
     }, Math.round(props.closeDuration * 0.6))
   }
@@ -1522,14 +1473,6 @@ function getActionOverlayStyle(index: number): string {
   return `position: absolute; top: 0; bottom: 0; right: ${rightOffset}px; width: ${w}px; z-index: 30;`
 }
 
-/**
- * 区分外部 prop 变更与内部手势/API 触发的更新。
- * - isInternalUpdate：updateOpenedSide 调用时置 true，watch 消费后清除。
- *   内部更新已在 updateOpenedSide 内调用过 syncTranslate，watch 无需重复调用。
- * - watchInitialized：首次 immediate 触发时需同步初始位置，之后跳过内部更新。
- */
-let isInternalUpdate = false
-let watchInitialized = false
 
 watch(
   () => openedSide.value,
@@ -1541,21 +1484,12 @@ watch(
       clearActiveInGroup()
     }
 
-    if (!isDragging.value) {
-      if (!watchInitialized) {
-        watchInitialized = true
-        syncTranslate(side)
-      }
-      else if (isInternalUpdate) {
-        isInternalUpdate = false
-      }
-      else {
-        isSmoothClosing.value = true
-        syncTranslate(side)
-        setTimeout(() => {
-          isSmoothClosing.value = false
-        }, props.closeDuration)
-      }
+    if (isDragging.value || side === syncedSide) return
+    const initialized = syncedSide !== undefined
+    syncTranslate(side)
+    if (initialized) {
+      isSmoothClosing.value = true
+      later('isSmoothClosing', () => { isSmoothClosing.value = false }, props.closeDuration)
     }
   },
   { immediate: true },
@@ -1570,10 +1504,12 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  disposed = true
+  timers.forEach(clearTimeout)
+  timers.clear()
   releasePageScroll()
   unregisterH5ScrollLock()
   stopPageScrollWatcher()
-  clearDragStartOpenedSide()
   clearActiveInGroup()
 })
 
@@ -1863,7 +1799,7 @@ module.exports = {
     @touchcancel="swipeWxs.touchcancel">
     <view v-if="shouldShowRightActions && shouldExposeActions" :class="cn(ui.actions(), ui.rightActions())"
       :style="actionsContainerStyle">
-      <view v-for="(item, index) in rightActions" :key="item.key || index" :class="getActionClass(item)"
+      <view v-for="(item, index) in rightActions" :key="item.key ?? index" :class="getActionClass(item)"
         :style="getActionStyle(item, index)" @tap.stop="onActionTap(item, index, 'right')">
         <slot name="right-action" :item="item" :index="index" side="right" :ui="ui">
           <view v-if="item.icon" :class="cn(ui.icon(), item.icon)" />

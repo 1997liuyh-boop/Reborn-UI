@@ -8,7 +8,7 @@ import type {Component} from "vue";
  * - 代码通过 #code=<base64url> 哈希进出,支持分享链接与 AI 助手一键运行;
  * - 编译错误在挂载前拦截,运行时错误由错误边界捕获,均显示在预览区底部。
  */
-import {  defineComponent, onErrorCaptured } from "vue";
+import { defineComponent, onErrorCaptured, shallowRef } from "vue";
 
 definePageMeta({
     layout: false,
@@ -38,15 +38,16 @@ const DEFAULT_CODE = `<template>
 </template>
 
 <script setup>
-const count = ref(0)
+const count = shallowRef(0)
 <\/script>`;
 
-const code = ref(DEFAULT_CODE);
+const code = shallowRef(DEFAULT_CODE);
+const router = useRouter();
 const compiled = shallowRef<Component | null>(null);
-const error = ref<string | null>(null);
-const pending = ref(false);
-const renderKey = ref(0);
-const copied = ref(false);
+const error = shallowRef<string | null>(null);
+const pending = shallowRef(false);
+const renderKey = shallowRef(0);
+const copied = shallowRef(false);
 
 /** 运行时错误边界:捕获子组件抛错并上报,避免整页崩溃 */
 const PlaygroundErrorBoundary = defineComponent({
@@ -79,17 +80,30 @@ function onRuntimeError(err: unknown) {
 
 /** 输入防抖自动运行 */
 let timer: ReturnType<typeof setTimeout> | undefined;
+let copyTimer: ReturnType<typeof setTimeout> | undefined;
+let loadingCode = false;
 watch(code, () => {
+    if (loadingCode) return;
     pending.value = true;
     clearTimeout(timer);
     timer = setTimeout(() => {
         pending.value = false;
         run();
     }, 500);
-});
+}, { flush: 'sync' });
+
+/** 程序载入的代码立即编译一次，取消旧的输入防抖任务。 */
+function replaceCode(value: string) {
+    clearTimeout(timer);
+    pending.value = false;
+    loadingCode = true;
+    code.value = value;
+    loadingCode = false;
+    run();
+}
 
 /** 一键格式化:复用全局 $prettier(worker 加载 prettier standalone,vue parser) */
-const formatting = ref(false);
+const formatting = shallowRef(false);
 async function format() {
     if (formatting.value) return;
     formatting.value = true;
@@ -109,28 +123,25 @@ async function format() {
 /** 从哈希载入代码(初次进入 + 站内再次点击 AI 链接触发 hashchange) */
 function loadFromHash() {
     const fromHash = readPlaygroundCodeFromHash(window.location.hash);
-    if (fromHash) {
-        code.value = fromHash;
-    }
-    run();
+    replaceCode(fromHash || code.value);
 }
 
 /** 复制分享链接:把当前代码写回哈希 */
 async function share() {
     const url = `${window.location.origin}${buildPlaygroundUrl(code.value)}`;
-    window.history.replaceState(null, "", buildPlaygroundUrl(code.value));
+    await router.replace(buildPlaygroundUrl(code.value));
     await navigator.clipboard.writeText(url);
     copied.value = true;
-    setTimeout(() => {
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
         copied.value = false;
     }, 2000);
 }
 
 /** 重置为默认示例并清空哈希 */
-function reset() {
-    code.value = DEFAULT_CODE;
-    window.history.replaceState(null, "", "/playground");
-    run();
+async function reset() {
+    replaceCode(DEFAULT_CODE);
+    await router.replace('/playground');
 }
 
 function goBack() {
@@ -154,6 +165,7 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener("hashchange", loadFromHash);
     clearTimeout(timer);
+    clearTimeout(copyTimer);
 });
 </script>
 

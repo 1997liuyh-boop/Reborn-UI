@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { PlaygroundControlGroup } from '~/components/common/play-ground/Playground.vue';
+import type { StatisticProps } from '~/components/reborn/ui/reborn-statistic/RebornStatistic.vue';
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
 import dayjs from 'dayjs';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, shallowRef, useTemplateRef } from 'vue';
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue';
 import RebornCountdown from '~/components/reborn/ui/reborn-countdown/RebornCountdown.vue';
 import RebornStatistic from '~/components/reborn/ui/reborn-statistic/RebornStatistic.vue';
@@ -24,8 +25,10 @@ const defaultState = {
   emphasized: false,
 };
 const state = ref({ ...defaultState });
+/** 「强调数值」开关只影响数字区颜色，关闭时不传 valueStyle */
+const playgroundValueStyle = computed<StatisticProps['valueStyle']>(() => (state.value.emphasized ? { color: 'var(--color-primary-6)' } : undefined));
 /** 读取公开的格式化显示值。 */
-const statisticRef = ref<InstanceType<typeof RebornStatistic>>();
+const statisticRef = useTemplateRef<InstanceType<typeof RebornStatistic>>("statisticRef");
 /** 原生输入框默认有字符宽度，收为零后由 flex 分配空间，避免撑开演练场窄栏。 */
 const inputControlProps = { ui: { input: 'w-0' } };
 /** 自定义格式化示例：将数值换算成万，不再应用默认分隔符与精度。 */
@@ -66,15 +69,15 @@ const statisticCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 采用参考示例的交易量，挂载后从零连续增长，重播仅重建该实例。 */
-const transactionValue = ref(172000);
-const transactionKey = ref(0);
+const transactionValue = shallowRef(172000);
+const transactionKey = shallowRef(0);
 /** 目标在客户端初始化，避免服务端与浏览器使用不同时钟。 */
-const activityTarget = ref<number>();
-const vipTarget = ref<number>();
-const nextMonthTarget = ref<dayjs.Dayjs>();
-const shortTarget = ref<number>();
-const shortRemaining = ref(0);
-const shortFinished = ref(false);
+const activityTarget = shallowRef<number>();
+const vipTarget = shallowRef<number>();
+const nextMonthTarget = shallowRef<dayjs.Dayjs>();
+const shortTarget = shallowRef<number>();
+const shortRemaining = shallowRef(0);
+const shortFinished = shallowRef(false);
 /** 会员倒计时单独重置为两天，不影响其余示例。 */
 function resetVip() {
   vipTarget.value = Date.now() + 2 * 86400000;
@@ -90,6 +93,12 @@ onMounted(() => {
   resetVip();
   restartShortCountdown();
 });
+/** 比率格式化函数保持引用稳定。 */
+function formatPercent(value: number) { return `${(value * 100).toFixed(2)}%`; }
+/** 样式与组合布局：valueStyle 把整个数字区染成成功色 */
+const incomeValueStyle: StatisticProps['valueStyle'] = { color: 'var(--color-success-6)' };
+/** 样式与组合布局：ui 只放大数字、弱化后缀 */
+const largeContentUi: StatisticProps['ui'] = { content: 'text-3xl', suffix: 'text-base text-gray-8' };
 </script>
 
 <template>
@@ -110,7 +119,7 @@ onMounted(() => {
           :animated="state.animated" :duration="state.duration"
           :decimal-separator="state.decimalSeparator" :group-separator="state.groupSeparator" :prefix="state.prefix"
           :suffix="state.suffix" :formatter="state.customFormatter ? formatTenThousand : undefined"
-          :value-style="state.emphasized ? { color: 'var(--color-primary-6)' } : undefined"
+          :value-style="playgroundValueStyle"
         />
         <div class="flex flex-wrap gap-2">
           <RebornButton size="sm" variant="soft" @click="state.value += 100">增加 100</RebornButton>
@@ -158,7 +167,7 @@ onMounted(() => {
       <template #description><code>formatter</code> 接收原始数值，返回结果直接显示，精度和分隔符不会再次加工。</template>
       <DemoBlock layout="grid" :columns="2">
         <RebornStatistic title="以万为单位" :value="1234567.89" :formatter="formatTenThousand" />
-        <RebornStatistic title="转化率" :value="0.8675" :formatter="value => `${(value * 100).toFixed(2)}%`" />
+        <RebornStatistic title="转化率" :value="0.8675" :formatter="formatPercent" />
       </DemoBlock>
     </DemoSection>
 
@@ -177,8 +186,8 @@ onMounted(() => {
     <DemoSection title="样式与组合布局">
       <template #description><code>valueStyle</code> 覆盖整个数字区，<code>ui</code> 按内部节点覆盖 Tailwind 类名，指标之间的布局由父容器控制。</template>
       <DemoBlock layout="grid" :columns="2">
-        <RebornStatistic title="本月收入" :value="68235.5" :precision="2" prefix="¥" :value-style="{ color: 'var(--color-success-6)' }" />
-        <RebornStatistic title="目标完成率" :value="92" suffix="%" :ui="{ content: 'text-3xl', suffix: 'text-base text-gray-8' }" />
+        <RebornStatistic title="本月收入" :value="68235.5" :precision="2" prefix="¥" :value-style="incomeValueStyle" />
+        <RebornStatistic title="目标完成率" :value="92" suffix="%" :ui="largeContentUi" />
       </DemoBlock>
     </DemoSection>
 

@@ -55,8 +55,13 @@ function mountContainer() {
   }
 }
 
-/** 打开一条消息，返回关闭时兑现的 Promise */
+/**
+ * 打开一条消息，返回关闭时兑现的 Promise。
+ * 服务端调用是空操作并立即兑现：消息队列是跨请求共享的模块级单例，
+ * 服务端写入会串到其他请求，计时器也会在服务端空跑
+ */
 function open(options: MessageOptions): Promise<void> {
+  if (typeof document === 'undefined') return Promise.resolve()
   mountContainer()
   return addMessage(options)
 }

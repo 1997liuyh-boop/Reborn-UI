@@ -3,6 +3,7 @@ title: Pagination 分页
 description: 用于大数据量列表分页切换的分页组件，支持布局组合、简洁模式与页码折叠。
 category: 导航
 platform: both
+tags: [vue, reborn-pagination, uniapp]
 badge: New
 ---
 
@@ -11,22 +12,22 @@ badge: New
 
 ## 简介
 
-::tip
-**Props / Events / Slots 与 `ui` 键位两端对齐**：属性名、默认值、事件名、插槽名与作用域参数逐字一致（含 `class` 键名与 `v-model` / `v-model:page-size` 双向绑定），按通用描述书写。**`ui` 各键的默认类名未对齐**（px 令牌与 rpx 两套体系，Web 端另有换行、悬停与防压缩类名），「自定义样式（ui）」按 Web / UniApp 分开描述；其余差异见[视觉规格](#视觉规格)与[两端差异对照](#两端差异对照)。
-::
+Pagination 是 Web 与 UniApp 均可用的页码导航组件，通过 `total`、`pageSize` 与当前页组织数据分页。
 
-Pagination 通过 `layout` 组合展示区块：翻页按钮、页码列表、跳转输入、总数文本、每页条数选择器按 token 顺序排列。页码超出 `pager-count` 时自动折叠为省略号，点击省略号向对应方向连跳。`simple` 简洁模式忽略 `layout`，只保留「上一页 + 当前页/总页数 + 下一页」。
+`layout` 按顺序组合翻页按钮、页码、跳转输入、总数与每页条数选择器；超出 `pagerCount` 时折叠为省略号，点击省略号可向对应方向连跳。
 
-适用场景：
+`simple` 忽略 layout，仅保留上一页、当前页 / 总页数及下一页；两端主要 props、事件、插槽和 ui 键位对齐，默认样式、px / rpx 尺寸与类名入口的差异见下方对照。
 
-- 列表、表格数据量较大需要分页加载。
-- 需要让用户跳转到指定页或切换每页条数的后台管理页面。
-- 移动端底部的轻量翻页（`simple` 简洁模式）。
+### 何时使用
 
-不适用场景：
+- 服务端列表需要页码切换——用 `total` / `pageSize` 计算页数。
+- 列表工具栏需要组合分页区块——用 `layout` 指定顺序。
+- 移动窄屏只保留前后翻页——开启 `simple`。
 
-- 上拉加载更多、无限滚动的流式列表，分页器不适合此类交互。
-- 层级路径导航，改用 `reborn-breadcrumb`。
+### 何时不使用
+
+- 内容是章节导航而非数据分页——改用 `reborn-anchor`。
+- 页面之间是固定主导航——改用 `reborn-tabs`。
 
 ## 用法
 
@@ -114,7 +115,7 @@ function onCurrentChange(p: number) {
 | `pager`  | 页码列表（超出 `pager-count` 时折叠省略号）  |
 | `next`   | 下一页按钮（`next-text` 为空时显示箭头图标） |
 | `jumper` | 「前往 __ 页」跳转输入区                     |
-| `total`  | 「共 N 条」总数文本                          |
+| `total` | 「共 N 条」总数文本                          |
 | `sizes`  | 每页条数选择器，选项文案为「N 条/页」        |
 
 ### 页码折叠：pager-count
@@ -154,8 +155,8 @@ function onCurrentChange(p: number) {
       <button :disabled="disabled" @click="prev">上一页</button>
     </template>
 
-    <template #pager-item="{ page: p, active }">
-      <span :class="active ? 'text-primary font-medium' : 'text-gray-5'" @click="page = p">{{ p }}</span>
+    <template #pager-item="{ page: p, active, disabled, select }">
+      <button :disabled="disabled" :class="active ? 'text-primary font-medium' : 'text-gray-5'" @click="select">{{ p }}</button>
     </template>
 
     <template #total="{ total }"> 总计 {{ total }} 条记录 </template>
@@ -164,36 +165,36 @@ function onCurrentChange(p: number) {
 ```
 
 ::warning
-接管 `pager-item` 后点击行为也由插槽负责：默认页码按钮上的点击跳页随按钮一起被替换，需要在插槽里自行给 `v-model` 赋值。折叠出现的 `•••` 不是 `pager-item`，走独立的 `ui.ellipsis` 节点，不会进入该插槽。
+接管 `pager-item` 后，在自定义控件上调用 `select()` 选择该页，并绑定 `disabled` 保留禁用状态。`select()` 会检查禁用状态、同步模型并派发 `current-change`。折叠出现的 `•••` 不是 `pager-item`，走独立的 `ui.ellipsis` 节点，不会进入该插槽。
 ::
 
 ## API
-
 ::tip
-以下 Props / Events / Slots 两端通用。
+除自定义类名（Web 用 `class`、UniApp 用 `customClass`）外，以下 Props / Events / Slots 两端通用。
 ::
 
 ### Props
 
 | 参数                           | 说明                                                                 | 类型                        | 默认值                |
 | ------------------------------ | -------------------------------------------------------------------- | --------------------------- | --------------------- |
-| `modelValue / v-model`         | 当前页码，超出 `[1, 总页数]` 时会被钳制并回写                        | `number`                    | `1`                   |
-| `total`                        | 数据总数                                                             | `number`                    | `0`                   |
-| `pageSize / v-model:page-size` | 每页条数                                                             | `number`                    | `10`                  |
-| `pagerCount`                   | 页码按钮数量，不小于 3 的整数（奇偶均可），过小的值钳到 3            | `number`                    | `3`                   |
-| `layout`                       | 布局 token（逗号分隔）：prev/pager/next/jumper/total/sizes           | `string`                    | `"prev, pager, next"` |
-| `pageSizes`                    | 每页条数选项                                                         | `number[]`                  | `[10, 20, 50, 100]`   |
-| `size`                         | 尺寸规格                                                             | `'sm' \| 'md' \| 'lg'`      | `md`                  |
-| `background`                   | 页码按钮是否显示背景。true 时非激活 bg-gray-2，激活 bg-primary/50    | `boolean`                   | `false`               |
-| `disabled`                     | 是否禁用                                                             | `boolean`                   | `false`               |
-| `hideOnSinglePage`             | 总页数不超过 1 时整组件隐藏                                          | `boolean`                   | `false`               |
-| `simple`                       | 简洁模式，忽略 layout，只渲染上一页 + 当前页/总页数文本 + 下一页     | `boolean`                   | `false`               |
-| `prevText`                     | 上一页按钮文字（空则显示箭头图标）                                   | `string`                    | `''`                  |
-| `nextText`                     | 下一页按钮文字（空则显示箭头图标）                                   | `string`                    | `''`                  |
-| `ui`                           | 细粒度样式覆盖，键位见「自定义样式（ui）」。                         | `Partial<PaginationUI>`     | `{}`                  |
-| `class`                        | 自定义类名，并入根节点（两端键名一致，均为 `class`）                 | `string`                    | `-`                   |
+| `modelValue` | 当前页码，超出 `[1, 总页数]` 时会被钳制并回写                        | `number`                    | `1`                   |
+| `total` | 数据总数                                                             | `number`                    | `0`                   |
+| `pageSize` | 每页条数                                                             | `number`                    | `10`                  |
+| `pagerCount` | 页码按钮数量，不小于 3 的整数（奇偶均可），过小的值钳到 3            | `number`                    | `3`                   |
+| `layout` | 布局 token（逗号分隔）：prev/pager/next/jumper/total/sizes           | `string`                    | `"prev, pager, next"` |
+| `pageSizes` | 每页条数选项                                                         | `number[]`                  | `[10, 20, 50, 100]`   |
+| `size` | 尺寸规格                                                             | `'sm' \| 'md' \| 'lg'`      | `md`                  |
+| `background` | 页码按钮是否显示背景。true 时非激活 bg-gray-2，激活 bg-primary/50    | `boolean`                   | `false`               |
+| `disabled` | 是否禁用                                                             | `boolean`                   | `false`               |
+| `hideOnSinglePage` | 总页数不超过 1 时整组件隐藏                                          | `boolean`                   | `false`               |
+| `simple` | 简洁模式，忽略 layout，只渲染上一页 + 当前页/总页数文本 + 下一页     | `boolean`                   | `false`               |
+| `prevText` | 上一页按钮文字（空则显示箭头图标）                                   | `string`                    | `''`                  |
+| `nextText` | 下一页按钮文字（空则显示箭头图标）                                   | `string`                    | `''`                  |
+| `ui` | 细粒度样式覆盖，键位见「自定义样式（ui）」。                         | `Partial<PaginationUI>`     | `{}`                  |
+| `class` | **仅 Web**：自定义类名，并入根节点（UniApp 使用 `customClass`）         | `string`                    | `-`                   |
+| `customClass` | **仅 UniApp**：追加到根节点的类名（Web 使用 `class`） | `any` | `undefined` |
 
-### Events
+### Emits
 
 | 事件名              | 说明                                                                | 回调参数         |
 | ------------------- | ------------------------------------------------------------------- | ---------------- |
@@ -208,12 +209,12 @@ function onCurrentChange(p: number) {
 | ------------ | ------------------------------- | --------------------------------- |
 | `prev`       | 上一页按钮                      | `{ disabled, prev }`              |
 | `next`       | 下一页按钮                      | `{ disabled, next }`              |
-| `pager-item` | 页码项（省略号不是 pager-item） | `{ page, active, disabled }`      |
+| `pager-item` | 页码项（省略号不是 pager-item）；`select()` 选择该页 | `{ page, active, disabled, select: () => void }` |
 | `jumper`     | 跳转输入区                      | `{ current, totalPages, jump }`   |
-| `total`      | 总数文本                        | `{ total }`                       |
+| `total` | 总数文本                        | `{ total }`                       |
 | `sizes`      | 每页条数选择器                  | `{ pageSize, pageSizes, change }` |
 
-### Exposes
+### Expose
 
 | 方法名 | 说明                               | 参数 |
 | ------ | ---------------------------------- | ---- |
@@ -239,9 +240,9 @@ function onCurrentChange(p: number) {
 | `ellipsis`        | 省略号 `<span>`（`•••`）              | `reborn-pagination-ellipsis inline-flex items-center justify-center select-none text-gray-5`，外加与按钮相同的尺寸类；有背景时加 `bg-gray-2` | 仅页码折叠时渲染；禁用时追加 `opacity-50 cursor-not-allowed`                           |
 | `jumper`          | 跳转区 `<div>`                        | `reborn-pagination-jumper inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-gray-5`，外加 `text-sm`（`lg` 为 `text-base`） | 非简洁模式且 `layout` 含 `jumper` 时渲染；填充 `jumper` 插槽只替换内部内容，容器仍生效                     |
 | `input`           | 包裹 `RebornInputNumber` 的 `<div>`   | `shrink-0`，宽度按 `size` 追加 `w-18` / `w-24` / `w-30`                                                                        | 同 `jumper`；填充 `jumper` 插槽后输入框不再渲染，该键失效                                                  |
-| `total`           | 总数 `<span>`                         | `reborn-pagination-total shrink-0 whitespace-nowrap text-gray-5`，外加 `text-sm`（`lg` 为 `text-base`）                          | 非简洁模式且 `layout` 含 `total` 时渲染；填充 `total` 插槽只替换文案，容器仍生效                           |
+| `total` | 总数 `<span>`                         | `reborn-pagination-total shrink-0 whitespace-nowrap text-gray-5`，外加 `text-sm`（`lg` 为 `text-base`）                          | 非简洁模式且 `layout` 含 `total` 时渲染；填充 `total` 插槽只替换文案，容器仍生效                           |
 | `sizes`           | 条数选择器外层 `<div>`                | `reborn-pagination-sizes shrink-0`                                                                                               | 非简洁模式且 `layout` 含 `sizes` 时渲染；内部 `RebornSelect` 固定 `w-[110px]`，改宽度需填充 `sizes` 插槽   |
-| `simple`          | 「当前页 / 总页数」`<span>`           | `reborn-pagination-simple inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-gray-5`，外加 `text-sm`（`lg` 为 `text-base`） | 仅 `simple` 为真时渲染                                                                                     |
+| `simple` | 「当前页 / 总页数」`<span>`           | `reborn-pagination-simple inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-gray-5`，外加 `text-sm`（`lg` 为 `text-base`） | 仅 `simple` 为真时渲染                                                                                     |
 
 :::
 
@@ -249,7 +250,7 @@ function onCurrentChange(p: number) {
 
 | 键名              | 节点                                  | 默认类名                                                                                                                         | 渲染 / 失效条件                                                                                            |
 | ----------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `root`            | 根 `<view>`                           | `reborn-pagination inline-flex items-center gap-[16rpx]`（不换行）                                                               | 始终渲染；`class` prop 也并到该节点。区块间距改这里                                                        |
+| `root`            | 根 `<view>`                           | `reborn-pagination inline-flex items-center gap-[16rpx]`（不换行）                                                               | 始终渲染；`customClass` 也并到该节点。区块间距改这里                                                        |
 | `prev`            | 上一页 `<view>`                       | `button` 槽：`reborn-pagination-button px-[8rpx] inline-flex items-center justify-center rounded-md`，外加尺寸类（`sm` `h-[48rpx] min-w-[48rpx] text-[24rpx]`、`md` `h-[56rpx] min-w-[56rpx] text-[24rpx]`、`lg` `h-[64rpx] min-w-[64rpx] text-[28rpx]`） | 简洁模式或 `layout` 含 `prev` 时渲染；填充 `prev` 插槽后失效。首页或禁用时追加 `opacity-50 pointer-events-none` |
 | `next`            | 下一页 `<view>`                       | 同 `prev`                                                                                                                        | 简洁模式或 `layout` 含 `next` 时渲染；填充 `next` 插槽后失效。末页或禁用时追加禁用类名                     |
 | `pager`           | 页码列表 `<view>`                     | `reborn-pagination-pager inline-flex items-center gap-[16rpx]`                                                                   | 非简洁模式且 `layout` 含 `pager` 时渲染                                                                    |
@@ -258,9 +259,9 @@ function onCurrentChange(p: number) {
 | `ellipsis`        | 省略号 `<view>`（`•••`）              | `reborn-pagination-ellipsis inline-flex items-center justify-center text-gray-5`，外加与按钮相同的尺寸类；有背景时加 `bg-gray-2` | 仅页码折叠时渲染；禁用时追加 `opacity-50 pointer-events-none`                                              |
 | `jumper`          | 跳转区 `<view>`                       | `reborn-pagination-jumper inline-flex items-center gap-[16rpx] text-gray-5`，外加 `text-[24rpx]`（`lg` 为 `text-[28rpx]`）       | 非简洁模式且 `layout` 含 `jumper` 时渲染；填充 `jumper` 插槽只替换内部内容，容器仍生效                     |
 | `input`           | `RebornInput` 的 `custom-class`       | `shrink-0`（无按尺寸的宽度类）                                                                                                   | 同 `jumper`；填充 `jumper` 插槽后输入框不再渲染，该键失效                                                  |
-| `total`           | 总数 `<view>`                         | `reborn-pagination-total text-gray-5`，外加 `text-[24rpx]`（`lg` 为 `text-[28rpx]`）                                             | 非简洁模式且 `layout` 含 `total` 时渲染；填充 `total` 插槽只替换文案，容器仍生效                           |
+| `total` | 总数 `<view>`                         | `reborn-pagination-total text-gray-5`，外加 `text-[24rpx]`（`lg` 为 `text-[28rpx]`）                                             | 非简洁模式且 `layout` 含 `total` 时渲染；填充 `total` 插槽只替换文案，容器仍生效                           |
 | `sizes`           | 条数选择器外层 `<view>`               | `reborn-pagination-sizes`                                                                                                        | 非简洁模式且 `layout` 含 `sizes` 时渲染；内部 `RebornSelect` 不限宽，改宽度需填充 `sizes` 插槽             |
-| `simple`          | 「当前页 / 总页数」`<text>`           | `reborn-pagination-simple inline-flex items-center gap-[16rpx] text-gray-5`，外加 `text-[24rpx]`（`lg` 为 `text-[28rpx]`）       | 仅 `simple` 为真时渲染                                                                                     |
+| `simple` | 「当前页 / 总页数」`<text>`           | `reborn-pagination-simple inline-flex items-center gap-[16rpx] text-gray-5`，外加 `text-[24rpx]`（`lg` 为 `text-[28rpx]`）       | 仅 `simple` 为真时渲染                                                                                     |
 
 :::
 
@@ -308,8 +309,13 @@ function onCurrentChange(p: number) {
 
 ## 两端差异对照
 
+::tip
+**主要 Props / Emits / Slots 与 `ui` 键位两端对齐**：属性名、默认值、事件名、插槽名与作用域参数逐字一致（自定义类名 Web 用 `class`、UniApp 用 `customClass`，并支持 `v-model` / `v-model:page-size` 双向绑定），按通用描述书写。**`ui` 各键的默认类名未对齐**（px 令牌与 rpx 两套体系，Web 端另有换行、悬停与防压缩类名），「自定义样式（ui）」按 Web / UniApp 分开描述；其余差异见[视觉规格](#视觉规格)与[两端差异对照](#两端差异对照)。
+::
+
 | 维度              | Web                                                                                                                  | UniApp                                                                                 |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 自定义根类名 | `class` | `customClass` |
 | 根节点标签        | `<nav aria-label="分页导航">`，按钮为原生 `<button>`                                                                 | `<view>`，按钮为 `<view>`                                                              |
 | 换行行为          | `flex-wrap`，窄容器自动折行                                                                                          | 不换行                                                                                 |
 | 跳转输入内部控件  | `RebornInputNumber`（`hide-button`、`change-on-wheel`、`align="center"`、`variant="outlined"`，按 `min=1` / `max=总页数` 钳制），`@change` 提交，空值不跳转 | `RebornInput`（`type="number"`），`@confirm` 与 `@blur` 提交；非数字或小于 1 时清空不跳转，大于总页数时跳到末页 |
@@ -322,9 +328,10 @@ function onCurrentChange(p: number) {
 
 ## 注意事项
 
-- `total` 为 `0` 时按 1 页显示且翻页按钮禁用，配合 `hideOnSinglePage` 可整组件隐藏。
-- `pagerCount` 为不小于 3 的整数，奇偶均可，过小的值钳到 3；3 时只显示首页、当前页、末页，其余以省略号折叠，偶数时当前页在中间窗口里偏左一格。
-- `layout` 使用逗号分隔的 token，未知 token 会被忽略；`simple` 开启后 `layout` 不生效。
-- `current-change` 仅在页码实际变化时触发；外部把 `v-model` 设为越界值、或 `page-size` 变化导致当前页越界时，组件会钳制并回写，同时触发 `current-change`；只改 `total` 不会回写 `v-model`，界面按钳制后的页码显示。
-- 跳转输入提交后会清空输入框，目标页始终落在 `[1, 总页数]` 内；两端对非法输入的处理见[两端差异对照](#两端差异对照)。
-- 页码高亮刻意不做颜色过渡：折叠窗口切换时页码节点会瞬间重排，若高亮还在淡入淡出，旧激活项会在新位置上残留半程高亮，看起来像来回跳动。
+- **空数据默认仍显示一页**。`total` 为 `0` 时按 1 页显示且翻页按钮禁用，配合 `hideOnSinglePage` 可整组件隐藏。
+- **页码数量有最小限制**。`pagerCount` 为不小于 3 的整数，奇偶均可，过小的值钳到 3；3 时只显示首页、当前页、末页，其余以省略号折叠，偶数时当前页在中间窗口里偏左一格。
+- **简洁模式会忽略布局配置**。`layout` 使用逗号分隔的 token，未知 token 会被忽略；`simple` 开启后 `layout` 不生效。
+- **越界回写可能触发页码事件**。`current-change` 仅在页码实际变化时触发；外部把 `v-model` 设为越界值、`page-size` 变化或 `total` 变小导致当前页越界时，组件会钳制并回写，同时触发 `current-change`。`total` 变为 `0` 时不钳制（多半处在加载期），界面按第 1 页显示，`v-model` 保持原值。
+- **Web 端未声明的属性透传到根 `<nav>`**。`id`、`style`、`data-*` 与原生事件监听器（如 `@click`）都落在根节点上；`class` 是声明的 prop，同样并到根节点。
+- **跳转值会被限制在有效页内**。跳转输入提交后会清空输入框，目标页始终落在 `[1, 总页数]` 内；两端对非法输入的处理见[两端差异对照](#两端差异对照)。
+- **高亮不使用颜色过渡**。页码高亮刻意不做颜色过渡：折叠窗口切换时页码节点会瞬间重排，若高亮还在淡入淡出，旧激活项会在新位置上残留半程高亮，看起来像来回跳动。

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { DatePickerShortcut } from '@/components/reborn-date-picker/types'
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import { datePickerColors, datePickerSizes } from '@/components/reborn-date-picker/reborn-date-picker.config'
@@ -11,16 +11,15 @@ import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 
 // 1. 基础用法
-const date1 = ref('')
 
 // 2. 固定开始、结束日期
-const date2 = ref('')
+const date2 = shallowRef('')
 
 // 3. 自定义触发器
-const date3 = ref('')
+const date3 = shallowRef('')
 const datePickerRef3 = ref<InstanceType<typeof RebornDatePicker> | null>(null)
-const currentSize = ref<typeof datePickerSizes[number]>(datePickerSizes[0])
-const currentColor = ref<typeof datePickerColors[number]>(datePickerColors[0])
+const currentSize = shallowRef<typeof datePickerSizes[number]>(datePickerSizes[0])
+const currentColor = shallowRef<typeof datePickerColors[number]>(datePickerColors[0])
 
 function openDatePicker3() {
     datePickerRef3.value?.open((value: any) => {
@@ -42,8 +41,8 @@ const customShortcuts: DatePickerShortcut[] = [
 ]
 
 // 6. 自定义日期格式
-const dateFormat = ref('')
-const currentType = ref<'year' | 'month' | 'date' | 'hour' | 'minute' | 'second'>('date')
+const dateFormat = shallowRef('')
+const currentType = shallowRef<'year' | 'month' | 'date' | 'hour' | 'minute' | 'second'>('date')
 const typeOptions = [
     { label: 'YYYY', value: 'year' },
     { label: 'YYYY-MM', value: 'month' },

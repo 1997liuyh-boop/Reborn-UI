@@ -1,11 +1,10 @@
 <script setup lang="ts">
+
 import type { DescriptionsItem } from "~/components/reborn/ui/reborn-descriptions/RebornDescriptions.vue";
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
+import { computed, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
-import {
-  descriptionsAligns,
-  descriptionsLayouts,
-  descriptionsSizes,
-} from "~/components/reborn/ui/reborn-descriptions/reborn-descriptions.config";
+import { descriptionsAligns, descriptionsLayouts, descriptionsSizes } from "~/components/reborn/ui/reborn-descriptions/reborn-descriptions.config";
 import RebornDescriptions from "~/components/reborn/ui/reborn-descriptions/RebornDescriptions.vue";
 import RebornDescriptionsItem from "~/components/reborn/ui/reborn-descriptions/RebornDescriptionsItem.vue";
 
@@ -23,10 +22,10 @@ const alignLabels: Record<string, string> = {
   right: "右对齐 Right",
 };
 
-const layoutOptions = descriptionsLayouts.map(v => ({ label: layoutLabels[v]!, value: v }));
-const sizeOptions = descriptionsSizes.map(s => ({ label: `${s.toUpperCase()}（${sizeHeights[s]}px）`, value: s }));
-const alignOptions = descriptionsAligns.map(a => ({ label: alignLabels[a]!, value: a }));
-const columnOptions = [1, 2, 3, 4].map(n => ({ label: `${n} 列`, value: n }));
+const layoutOptions = descriptionsLayouts.map((v) => ({ label: layoutLabels[v]!, value: v }));
+const sizeOptions = descriptionsSizes.map((s) => ({ label: `${s.toUpperCase()}（${sizeHeights[s]}px）`, value: s }));
+const alignOptions = descriptionsAligns.map((a) => ({ label: alignLabels[a]!, value: a }));
+const columnOptions = [1, 2, 3, 4].map((n) => ({ label: `${n} 列`, value: n }));
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -51,7 +50,7 @@ const defaultState: Record<string, any> = {
   labelWidth: "",
 };
 
-const state = ref<Record<string, any>>({ ...defaultState });
+const state = shallowRef<Record<string, any>>({ ...defaultState });
 
 /** 重置演练场配置 */
 function resetState() {
@@ -64,18 +63,54 @@ const controls: any = [
     title: "基础属性",
     children: [
       { label: "展示边框", key: "bordered", component: "checkbox" as const, defaultValue: false },
-      { label: "描述布局", key: "layout", component: "select" as const, defaultValue: "horizontal", props: { options: layoutOptions } },
-      { label: "尺寸规格", key: "size", component: "select" as const, defaultValue: "md", props: { options: sizeOptions } },
-      { label: "一行列数", key: "column", component: "select" as const, defaultValue: 3, props: { options: columnOptions } },
+      {
+        label: "描述布局",
+        key: "layout",
+        component: "select" as const,
+        defaultValue: "horizontal",
+        props: { options: layoutOptions },
+      },
+      {
+        label: "尺寸规格",
+        key: "size",
+        component: "select" as const,
+        defaultValue: "md",
+        props: { options: sizeOptions },
+      },
+      {
+        label: "一行列数",
+        key: "column",
+        component: "select" as const,
+        defaultValue: 3,
+        props: { options: columnOptions },
+      },
     ],
   },
   {
     title: "标签与对齐",
     children: [
       { label: "显示冒号（仅无边框 + 水平生效）", key: "colon", component: "checkbox" as const, defaultValue: true },
-      { label: "标签对齐", key: "labelAlign", component: "select" as const, defaultValue: "left", props: { options: alignOptions } },
-      { label: "内容对齐", key: "contentAlign", component: "select" as const, defaultValue: "left", props: { options: alignOptions } },
-      { label: "标签最小宽度", key: "labelWidth", component: "input" as const, defaultValue: "", props: { placeholder: "如 120px" } },
+      {
+        label: "标签对齐",
+        key: "labelAlign",
+        component: "select" as const,
+        defaultValue: "left",
+        props: { options: alignOptions },
+      },
+      {
+        label: "内容对齐",
+        key: "contentAlign",
+        component: "select" as const,
+        defaultValue: "left",
+        props: { options: alignOptions },
+      },
+      {
+        label: "标签最小宽度",
+        key: "labelWidth",
+        component: "input" as const,
+        defaultValue: "",
+        props: { placeholder: "如 120px" },
+      },
     ],
   },
 ];
@@ -138,8 +173,12 @@ const spanItems: DescriptionsItem[] = [
 <template>
   <div class="flex w-full flex-col">
     <Playground
-      v-model="state" :controls="controls" :code="descriptionsCode" component-name="RebornDescriptions"
-      title="交互演练场" description="调节左侧参数，观察列数、边框与行高的变化。"
+      v-model="state"
+      :controls="controls"
+      :code="descriptionsCode"
+      component-name="RebornDescriptions"
+      title="交互演练场"
+      description="调节上方参数，观察列数、边框与行高的变化。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -152,20 +191,27 @@ const spanItems: DescriptionsItem[] = [
 
       <div class="flex w-full flex-col items-center gap-8">
         <RebornDescriptions
-          class="w-full" title="用户信息" :bordered="state.bordered" :layout="state.layout"
-          :size="state.size" :column="state.column" :colon="state.colon" :label-align="state.labelAlign"
-          :content-align="state.contentAlign" :label-width="state.labelWidth || undefined" :items="profileItems"
+          class="w-full"
+          title="用户信息"
+          :bordered="state.bordered"
+          :layout="state.layout"
+          :size="state.size"
+          :column="state.column"
+          :colon="state.colon"
+          :label-align="state.labelAlign"
+          :content-align="state.contentAlign"
+          :label-width="state.labelWidth || undefined"
+          :items="profileItems"
         >
           <template #extra>
-            <RebornButton size="sm" variant="outlined" color="neutral">
-              编辑
-            </RebornButton>
+            <RebornButton size="sm" variant="outlined" color="neutral">编辑</RebornButton>
           </template>
         </RebornDescriptions>
 
         <DemoNote tone="dimmed" class="font-mono text-xs">
-          Props: { bordered: {{ state.bordered }}, layout: '{{ state.layout }}', column: {{ state.column }}, size:
-          '{{ state.size }}' } → 行高 {{ sizeHeights[state.size] }}px
+          Props: { bordered: {{ state.bordered }}, layout: '{{ state.layout }}', column: {{ state.column }}, size: '{{
+            state.size
+          }}' } → 行高 {{ sizeHeights[state.size] }}px
         </DemoNote>
       </div>
     </Playground>
@@ -178,9 +224,7 @@ const spanItems: DescriptionsItem[] = [
         <RebornDescriptions bordered title="items 数组" :column="2" :items="orderItems" />
 
         <RebornDescriptions bordered title="RebornDescriptionsItem 子组件" :column="2">
-          <RebornDescriptionsItem label="订单编号">
-            RB-2024-0917-0031
-          </RebornDescriptionsItem>
+          <RebornDescriptionsItem label="订单编号">RB-2024-0917-0031</RebornDescriptionsItem>
           <RebornDescriptionsItem label="支付状态">
             <span class="text-success inline-flex items-center gap-[4px]">
               <Icon name="lucide:circle-check" size="14" />
@@ -202,7 +246,9 @@ const spanItems: DescriptionsItem[] = [
         </RebornDescriptions>
       </DemoBlock>
 
-      <DemoNote text="item 上写 slot: 'status'，内容就交给名为 content-status 的插槽渲染；标签同理，用 labelSlot 指向 label-{name}。" />
+      <DemoNote
+        text="item 上写 slot: 'status'，内容就交给名为 content-status 的插槽渲染；标签同理，用 labelSlot 指向 label-{name}。"
+      />
     </DemoSection>
 
     <DemoSection
@@ -214,7 +260,9 @@ const spanItems: DescriptionsItem[] = [
         <RebornDescriptions bordered title="有边框" :column="2" :items="orderItems" />
       </DemoBlock>
 
-      <DemoNote text="冒号只在「无边框 + 水平」下渲染：带边框时标签已有底色单元格作边界，垂直布局时标签独占一行，再加冒号是重复表达。" />
+      <DemoNote
+        text="冒号只在「无边框 + 水平」下渲染：带边框时标签已有底色单元格作边界，垂直布局时标签独占一行，再加冒号是重复表达。"
+      />
     </DemoSection>
 
     <DemoSection
@@ -227,16 +275,19 @@ const spanItems: DescriptionsItem[] = [
         <div class="flex w-full flex-col gap-4">
           <div class="w-[360px] max-w-full">
             <RebornDescriptions
-              bordered title="容器 360px" :column="{ xs: 1, sm: 2, lg: 3 }" :items="responsiveItems"
+              bordered
+              title="容器 360px"
+              :column="{ xs: 1, sm: 2, lg: 3 }"
+              :items="responsiveItems"
             />
           </div>
-          <RebornDescriptions
-            bordered title="容器撑满" :column="{ xs: 1, sm: 2, lg: 3 }" :items="responsiveItems"
-          />
+          <RebornDescriptions bordered title="容器撑满" :column="{ xs: 1, sm: 2, lg: 3 }" :items="responsiveItems" />
         </div>
       </DemoBlock>
 
-      <DemoNote text="断点比对的是组件容器宽度而非视口宽度：上面两个列表参数完全相同，只因外层容器一个 360px、一个撑满，列数才不一样。" />
+      <DemoNote
+        text="断点比对的是组件容器宽度而非视口宽度：上面两个列表参数完全相同，只因外层容器一个 360px、一个撑满，列数才不一样。"
+      />
     </DemoSection>
 
     <DemoSection
@@ -247,7 +298,9 @@ const spanItems: DescriptionsItem[] = [
         <RebornDescriptions bordered :column="3" :items="spanItems" />
       </DemoBlock>
 
-      <DemoNote text="每行末项会自动延伸补齐剩余列，否则带边框时会缺格、边线断在半路。所以 'filled' 的真正用途是把它写在非末项上，强行让后续项换到下一行。" />
+      <DemoNote
+        text="每行末项会自动延伸补齐剩余列，否则带边框时会缺格、边线断在半路。所以 'filled' 的真正用途是把它写在非末项上，强行让后续项换到下一行。"
+      />
     </DemoSection>
 
     <DemoSection
@@ -263,12 +316,8 @@ const spanItems: DescriptionsItem[] = [
             </span>
           </template>
           <template #extra>
-            <RebornButton size="sm" variant="outlined" color="neutral">
-              导出
-            </RebornButton>
-            <RebornButton size="sm" color="primary">
-              再次购买
-            </RebornButton>
+            <RebornButton size="sm" variant="outlined" color="neutral">导出</RebornButton>
+            <RebornButton size="sm" color="primary">再次购买</RebornButton>
           </template>
         </RebornDescriptions>
       </DemoBlock>

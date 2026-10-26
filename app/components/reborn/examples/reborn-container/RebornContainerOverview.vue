@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import RebornContainer from "~/components/reborn/ui/reborn-container/RebornContainer.vue";
+
 /**
  * 总览卡片缩略：浏览器视口里一列限宽居中的内容，上方标尺标出最大宽度
  *

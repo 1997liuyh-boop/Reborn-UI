@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornInputNumber from '@/components/reborn-input-number/RebornInputNumber.vue'
@@ -7,14 +7,14 @@ import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornRate from '@/components/reborn-rate/RebornRate.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 
-const val1 = ref(3)
-const currentSize = ref<any>('md')
-const currentColor = ref<any>('warning')
-const maxCount = ref(5)
-const isAllowHalf = ref(false)
-const isShowValue = ref(true)
-const isDisabled = ref(false)
-const isReadonly = ref(false)
+const val1 = shallowRef(3)
+const currentSize = shallowRef<typeof sizes[number]>('md')
+const currentColor = shallowRef<typeof colors[number]>('warning')
+const maxCount = shallowRef(5)
+const isAllowHalf = shallowRef(false)
+const isShowValue = shallowRef(true)
+const isDisabled = shallowRef(false)
+const isReadonly = shallowRef(false)
 
 const sizes = ['sm', 'md', 'lg'] as const
 const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', 'neutral'] as const

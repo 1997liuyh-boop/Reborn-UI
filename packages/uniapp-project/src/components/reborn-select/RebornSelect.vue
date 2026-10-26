@@ -7,7 +7,7 @@ import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 
 import { isEmpty, isNull } from 'lodash-es'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 
 import RebornButton from '../reborn-button/RebornButton.vue'
@@ -146,8 +146,6 @@ export interface SelectProps {
 const { disabled, validate } = useFormInject(props)
 const isDisabled = computed(() => disabled.value || props.disabled)
 
-// 弹出层引用
-const popupRef = ref<any>(null)
 
 // 是否为空选项
 const noOptions = computed(() => {
@@ -173,13 +171,13 @@ const ui = computed(() => {
 })
 
 // 当前选中的值
-const value = ref<any[]>([])
+const value = shallowRef<any[]>([])
 
 // 当前选中项的索引
-const indexes = ref<number[]>([])
+const indexes = shallowRef<number[]>([])
 
-const selectItem = ref<any[]>([])
-const renderKey = ref(0)
+const selectItem = shallowRef<any[]>([])
+const renderKey = shallowRef(0)
 
 
 // 按 fieldNames 把每一层选项统一成 label / value / children，原有字段随展开保留，供 option 插槽与 change 事件读取
@@ -198,13 +196,13 @@ const normalizedOptions = computed<SelectOption[]>(() => {
 })
 
 // 计算选择器列表数据
-const columns = computed<SelectOption[][]>(() => {
+function buildColumns(values: any[]): SelectOption[][] {
   let options = normalizedOptions.value
   const cols: SelectOption[][] = []
 
   for (let i = 0; i < props.columnCount; i++) {
     const column = [...options]
-    const val = i >= value.value.length ? null : value.value[i]
+    const val = i >= values.length ? null : values[i]
 
     let item = options?.find(item => item.value == val)
     if (item == null && !isEmpty(options)) {
@@ -219,30 +217,17 @@ const columns = computed<SelectOption[][]>(() => {
   }
 
   return cols
-})
-
-// 显示文本
-const text = ref('')
-
-function updateText() {
-  const val = model.value
-  if (val == null || val == undefined) {
-    text.value = ''
-  }
-  else {
-    let arr: any[]
-    if (props.columnCount == 1) {
-      arr = [val]
-    }
-    else {
-      arr = val as any[]
-    }
-
-    text.value = arr
-      .map((e, i) => columns.value[i]?.find(a => a.value == e)?.label ?? '')
-      .join(props.splitor)
-  }
 }
+const columns = computed(() => buildColumns(value.value))
+
+// 已提交值决定显示文本，编辑中的列不会提前影响触发器。
+const text = computed(() => {
+  const val = model.value
+  if (val == null) return ''
+  const values = Array.isArray(val) ? val : [val]
+  const selectedColumns = buildColumns(values)
+  return values.map((item, index) => selectedColumns[index]?.find(option => option.value == item)?.label ?? '').join(props.splitor)
+})
 
 function getValue() {
   return props.columnCount == 1 ? value.value[0] : value.value
@@ -255,45 +240,45 @@ function getSelectItem(a: number[]): any[] {
 }
 
 function setValue(val: SelectValue) {
-  let _value: any[]
+  let nextValues: any[]
 
   if (val == null) {
-    _value = []
+    nextValues = []
   }
   else if (Array.isArray(val)) {
-    _value = [...val]
+    nextValues = [...val]
   }
   else {
-    _value = [val]
+    nextValues = [val]
   }
 
-  const _indexes: number[] = []
+  const nextIndexes: number[] = []
+  const nextColumns = buildColumns(nextValues)
 
   for (let i = 0; i < props.columnCount; i++) {
-    const column = columns.value[i]
+    const column = nextColumns[i]
 
-    if (i >= _value.length) {
-      _indexes.push(0)
+    if (i >= nextValues.length) {
+      nextIndexes.push(0)
       if (!isNull(column) && column.length > 0 && !isNull(column[0])) {
-        _value.push(column[0].value)
+        nextValues.push(column[0].value)
       }
     }
     else {
-      let index = column.findIndex(e => e.value == _value[i])
+      let index = column.findIndex(e => e.value == nextValues[i])
       if (index < 0) { index = 0 }
-      _indexes.push(index)
+      nextIndexes.push(index)
     }
   }
 
-  value.value = _value
-  indexes.value = _indexes
+  value.value = nextValues
+  indexes.value = nextIndexes
 
   if (val == null || (Array.isArray(val) && val.length === 0)) {
     selectItem.value = []
   } else {
     selectItem.value = getSelectItem(indexes.value)
   }
-  updateText()
 }
 
 function onChange(a: number[]) {
@@ -315,7 +300,7 @@ function onChange(a: number[]) {
   emit('changing', getValue())
 }
 
-const visible = ref(false)
+const visible = shallowRef(false)
 let callback: ((value: SelectValue) => void) | null = null
 
 function open(cb: ((value: SelectValue) => void) | null = null) {
@@ -330,7 +315,6 @@ function close() {
 }
 
 function clear() {
-  text.value = ''
   if (props.columnCount == 1) {
     model.value = null
     emit('change', null, null)
@@ -357,22 +341,11 @@ function confirm() {
   close()
 }
 
-onMounted(() => {
-  watch(
-    () => model.value,
-    (val) => {
-      setValue(val)
-    },
-    { immediate: true },
-  )
-
-  watch(
-    normalizedOptions,
-    () => {
-      updateText()
-    },
-  )
-})
+// 已提交值或列数变化：按模型重建滚轮位置
+watch([model, () => props.columnCount], () => setValue(model.value), { immediate: true })
+// 只有选项变化时：弹层打开期间保留用户已滚到、尚未确认的草稿，只按新选项校正下标（找不到时回到首项）；
+// 关闭时仍按已提交值同步。父级在 @changing 里改状态并传内联 / 新建的 options 数组时，草稿不会被拉回
+watch(normalizedOptions, () => setValue(visible.value ? value.value : model.value))
 
 defineExpose({
   /** 打开底部选择弹出层；可传入回调，在点击确认时接收选中值 */
@@ -383,7 +356,7 @@ defineExpose({
 </script>
 
 <template>
-  <RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="popupRef?.isOpen"
+  <RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="visible"
     :text="text" :clearable="clearable" :color="color" :size="size" :ui="triggerUi" @open="open()" @clear="clear">
 
     <template #default="{ showText, text, placeholder, ui }">
@@ -397,7 +370,7 @@ defineExpose({
       <!-- #endif -->
     </template>
   </RebornSelectTrigger>
-  <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi"
+  <RebornPopup v-model="visible" :title="title" :ui="popupUi"
     :swipe-close-threshold="noOptions ? 90 : undefined">
     <view @touchmove.stop.prevent @wheel.stop.prevent>
       <slot name="prepend" />

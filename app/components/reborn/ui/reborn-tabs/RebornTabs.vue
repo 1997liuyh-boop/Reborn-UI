@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import type { VNode } from "vue";
 import type {
   TabKey,
   TabPaneMeta,
+  TabPaneRegistration,
   TabsColor,
   TabsDirection,
   TabsOverflow,
@@ -13,7 +15,7 @@ import type {
 } from "./reborn-tabs.config";
 import { onClickOutside, useResizeObserver } from "@vueuse/core";
 import { animate } from "motion-v";
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, shallowRef, watch } from "vue";
+import { cloneVNode, computed, Fragment, isVNode, nextTick, onBeforeUnmount, onBeforeUpdate, onMounted, onUpdated, provide, shallowRef, useSlots, useTemplateRef, watch } from "vue";
 import { motionPresets, prefersReducedMotion } from "@/lib/motion";
 import { useLiquidSlider } from "~/composables/useLiquidSlider";
 import { cn } from "~/lib/utils";
@@ -21,6 +23,7 @@ import theme, { TABS_INJECTION_KEY } from "./reborn-tabs.config";
 
 defineOptions({
   name: "RebornTabs",
+  inheritAttrs: false,
 });
 
 const props = withDefaults(defineProps<RebornTabsProps>(), {
@@ -104,12 +107,95 @@ export interface RebornTabsProps {
 /** 当前选中的标签 key；未绑定 v-model 时由组件自身维护 */
 const activeKey = defineModel<TabKey | undefined>("activeKey", { default: undefined });
 
-const wrapperRef = shallowRef<HTMLElement>();
-const listRef = shallowRef<HTMLElement>();
+const wrapperRef = useTemplateRef<HTMLElement>('wrapperRef');
+const listRef = useTemplateRef<HTMLElement>('listRef');
 /** 内容区内侧的无内边距容器，高度过渡锁在这一层 */
-const stageRef = shallowRef<HTMLElement>();
+const stageRef = useTemplateRef<HTMLElement>('stageRef');
+const indicatorRef = useTemplateRef<HTMLElement>('indicatorRef');
+const sliderRef = useTemplateRef<HTMLElement>('sliderRef');
+const slots = useSlots();
 /** 标签页登记表，顺序即头部渲染顺序 */
 const panes = shallowRef<TabPaneMeta[]>([]);
+const userSorted = shallowRef(false);
+
+/** 只有标签页节点参与头部登记与默认 paneKey 注入，普通元素原样渲染、不会多出 panekey 属性 */
+function isPaneNode(node: VNode) {
+  const type = node.type;
+  return typeof type === "object" && type !== null
+    && (("name" in type && type.name === "RebornTabPane") || ("__name" in type && type.__name === "RebornTabPane"));
+}
+
+/** 模板里写 pane-key 时 VNode 的原始 props 保留连字符键，两种写法都要认 */
+function readPaneKey(node: VNode): TabKey | undefined {
+  return node.props?.paneKey ?? node.props?.["pane-key"];
+}
+
+/**
+ * 按插槽原有结构给缺省 paneKey 的标签页补默认值，同时按书写顺序收集标签页节点供头部读取。
+ * - 不改动任何节点的 Vue key，v-if 留下的注释占位与 v-for 的 Fragment 原样保留：渲染器按原结构逐位对比，
+ *   前面的面板被 v-if 隐藏、或前面的 v-for 列表增删时，后面面板的组件实例与内部状态都不受影响；
+ * - 默认 paneKey 取节点在插槽里的书写位置（注释占位也占一位），同样不随前面兄弟的显隐变化；
+ *   顶层节点是数字下标，嵌套在 Fragment（v-for、带 v-if 的 template）里的节点是「外层位置-内层位置」字符串。
+ * 没有任何节点需要补值时原样返回同一个数组，避免无谓地复制。
+ */
+function collectPanes(nodes: VNode[], path: string, collected: VNode[]): VNode[] {
+  let changed = false;
+  const mapped = nodes.map((node, index) => {
+    if (!isVNode(node)) return node;
+    const position: TabKey = path ? `${path}-${index}` : index;
+    if (node.type === Fragment && Array.isArray(node.children)) {
+      const children = node.children as VNode[];
+      const next = collectPanes(children, String(position), collected);
+      if (next === children) return node;
+      changed = true;
+      const fragment = cloneVNode(node);
+      fragment.children = next;
+      return fragment;
+    }
+    if (!isPaneNode(node)) return node;
+    if (readPaneKey(node) !== undefined) {
+      collected.push(node);
+      return node;
+    }
+    changed = true;
+    const pane = cloneVNode(node, { paneKey: position });
+    collected.push(pane);
+    return pane;
+  });
+  return changed ? mapped : nodes;
+}
+
+function getView() {
+  const collected: VNode[] = [];
+  const nodes = collectPanes(slots.default?.() ?? [], "", collected);
+  let headers = collected.map(node => {
+    const paneSlots = node.children && typeof node.children === 'object' && !Array.isArray(node.children) ? node.children : {};
+    return { key: readPaneKey(node) as TabKey, order: node.props?.order, title: node.props?.title, disabled: node.props?.disabled === '' || !!node.props?.disabled,
+      closable: node.props?.closable !== false, destroyOnHidden: !!node.props?.destroyOnHidden,
+      titleSlot: 'title' in paneSlots ? paneSlots.title : undefined } as TabPaneMeta;
+  });
+  if (!userSorted.value && headers.every(pane => typeof pane.order === "number" && Number.isFinite(pane.order))) headers.sort((a, b) => a.order! - b.order!);
+  if (userSorted.value) {
+    const order = new Map(panes.value.map((pane, index) => [pane.key, index]));
+    headers = [...headers].sort((a, b) => (order.get(a.key) ?? Infinity) - (order.get(b.key) ?? Infinity));
+  }
+  return { nodes, panes: headers, key: activeKey.value ?? props.defaultActiveKey ?? headers[0]?.key };
+}
+
+/**
+ * 父级替换插槽函数（动态插槽、渲染函数写法）时会强制本组件更新，更新前让视图缓存失效；
+ * 插槽内容里读到的响应式状态由 computed 自己追踪，变化时同样会重算
+ */
+const slotVersion = shallowRef(0);
+onBeforeUpdate(() => { slotVersion.value++; });
+/** 本次渲染的面板节点与头部元信息，渲染期从 VNode 读取，SSR 首帧即可输出标题，无需等子级 setup 登记 */
+const view = computed(() => {
+  void slotVersion.value;
+  return getView();
+});
+
+/** VNode 显式传入渲染器，父级替换插槽函数时不会保留旧闭包。 */
+function PaneNodes(input: { nodes: VNode[] }) { return input.nodes; }
 
 /** position 为左右时强制纵向；direction 为 vertical 时把上下位置折算成左侧 */
 const isVertical = computed(
@@ -228,7 +314,7 @@ const dropdownPanes = computed(() => {
 
 /** 下拉选标的展开状态；点面板外任意处收起 */
 const dropdownOpen = shallowRef(false);
-const dropdownRef = shallowRef<HTMLElement>();
+const dropdownRef = useTemplateRef<HTMLElement>('dropdownRef');
 onClickOutside(dropdownRef, () => {
   dropdownOpen.value = false;
 });
@@ -240,7 +326,11 @@ function handleDropdownPick(pane: TabPaneMeta) {
   switchTo(pane.key);
 }
 
-const uiOverrides = computed<TabsUI>(() => props.ui || {});
+const uiOverrides = computed(() => {
+  const classes: Partial<Record<keyof TabsUI, string>> = {};
+  for (const key of Object.keys(props.ui ?? {}) as (keyof TabsUI)[]) classes[key] = cn(props.ui?.[key]);
+  return classes;
+});
 
 const baseVariants = computed(() => ({
   position: resolvedPosition.value,
@@ -297,25 +387,24 @@ let stagePlayback: ReturnType<typeof animate> | undefined;
 let stageRun = 0;
 
 const ui = computed(() => ({
-  root: (opts?: { class?: any }) => styles.value.root({ class: cn(opts?.class, uiOverrides.value.root) }),
-  nav: () => styles.value.nav({ class: uiOverrides.value.nav }),
-  navWrapper: () => styles.value.navWrapper({ class: uiOverrides.value.navWrapper }),
-  scrollBody: () => styles.value.scrollBody({ class: uiOverrides.value.scrollBody }),
-  list: () => styles.value.list({ class: uiOverrides.value.list }),
-  tabTitle: () => styles.value.tabTitle({ class: uiOverrides.value.tabTitle }),
-  tabClose: () => styles.value.tabClose({ class: uiOverrides.value.tabClose }),
-  indicator: () => styles.value.indicator({ class: uiOverrides.value.indicator }),
-  tabSlider: () => sliderClass.value,
-  addButton: () => addButtonClass.value,
-  navButton: () => styles.value.navButton({ class: uiOverrides.value.navButton }),
-  dropdown: () => styles.value.dropdown({ class: uiOverrides.value.dropdown }),
-  dropdownPanel: () => styles.value.dropdownPanel({ class: uiOverrides.value.dropdownPanel }),
-  leftExtra: () => styles.value.leftExtra({ class: uiOverrides.value.leftExtra }),
-  rightExtra: () => styles.value.rightExtra({ class: uiOverrides.value.rightExtra }),
-  content: () => styles.value.content({ class: uiOverrides.value.content }),
+  root: styles.value.root({ class: cn(props.class, uiOverrides.value.root) }),
+  nav: styles.value.nav({ class: uiOverrides.value.nav }),
+  navWrapper: styles.value.navWrapper({ class: uiOverrides.value.navWrapper }),
+  scrollBody: styles.value.scrollBody({ class: uiOverrides.value.scrollBody }),
+  list: styles.value.list({ class: uiOverrides.value.list }),
+  tabTitle: styles.value.tabTitle({ class: uiOverrides.value.tabTitle }),
+  tabClose: styles.value.tabClose({ class: uiOverrides.value.tabClose }),
+  indicator: styles.value.indicator({ class: uiOverrides.value.indicator }),
+  tabSlider: sliderClass.value,
+  addButton: addButtonClass.value,
+  navButton: styles.value.navButton({ class: uiOverrides.value.navButton }),
+  dropdown: styles.value.dropdown({ class: uiOverrides.value.dropdown }),
+  dropdownPanel: styles.value.dropdownPanel({ class: uiOverrides.value.dropdownPanel }),
+  leftExtra: styles.value.leftExtra({ class: uiOverrides.value.leftExtra }),
+  rightExtra: styles.value.rightExtra({ class: uiOverrides.value.rightExtra }),
+  content: styles.value.content({ class: uiOverrides.value.content }),
   // 只在高度锁定期间裁剪：过渡中新内容高出目标高度的那一截必须藏住，静息态再裁会切掉面板内的浮层
-  stage: () =>
-    styles.value.stage({
+  stage: styles.value.stage({
       class: cn(stageLocked.value && "overflow-hidden", uiOverrides.value.stage),
     }),
 }));
@@ -327,31 +416,43 @@ const paneClass = computed(() => styles.value.pane({ class: uiOverrides.value.pa
  * 首末位置（tabPlace）也在这里按下标推导：card 的首末圆角不能靠 first:/last: 伪类——
  * 滑动底板恒为标签列的末位兄弟，:last-child 永远落不到最后一个标签上
  */
-function tabClass(pane: TabPaneMeta, index: number) {
-  const total = panes.value.length;
-  return theme({
+const tabClassCache = computed(() => ({ variants: baseVariants.value, overrides: uiOverrides.value, tabs: new Map<string, string>(), dropdown: new Map<string, string>() }));
+function tabClass(pane: TabPaneMeta, index: number, total: number, selectedKey: TabKey | undefined) {
+  const cache = tabClassCache.value;
+  const place = total === 1 ? 'both' : index === 0 ? 'first' : index === total - 1 ? 'last' : 'middle';
+  const key = `${pane.key === selectedKey}:${pane.disabled}:${place}`;
+  if (cache.tabs.has(key)) return cache.tabs.get(key);
+  const value = theme({
     ...baseVariants.value,
-    active: pane.key === currentKey.value,
+    active: pane.key === selectedKey,
     disabled: pane.disabled,
-    tabPlace: total === 1 ? "both" : index === 0 ? "first" : index === total - 1 ? "last" : "middle",
+    tabPlace: place,
   }).tab({ class: uiOverrides.value.tab });
+  cache.tabs.set(key, value);
+  return value;
 }
 
 /** 下拉选标的单项样式逐个计算：选中与禁用态复用标签的 active / disabled 变体 */
 function dropdownItemClass(pane: TabPaneMeta) {
-  return theme({
+  const cache = tabClassCache.value;
+  const key = `${pane.key === currentKey.value}:${pane.disabled}`;
+  if (cache.dropdown.has(key)) return cache.dropdown.get(key);
+  const value = theme({
     ...baseVariants.value,
     active: pane.key === currentKey.value,
     disabled: pane.disabled,
   }).dropdownItem({ class: uiOverrides.value.dropdownItem });
+  cache.dropdown.set(key, value);
+  return value;
 }
 
-/** 未写 key 的标签页按登记顺序补序号，计数器随组件实例独立 */
+/** 未写 paneKey 的标签页按登记顺序补序号，计数器随组件实例独立 */
 let autoKey = 0;
 
-function addPane(meta: TabPaneMeta) {
-  if (meta.key === undefined || meta.key === null) meta.key = autoKey++;
-  panes.value = [...panes.value, meta];
+function addPane(meta: TabPaneRegistration): TabPaneMeta {
+  const pane = Object.assign(meta, { key: meta.key ?? autoKey++ });
+  panes.value = [...panes.value, pane];
+  return pane;
 }
 
 function removePane(meta: TabPaneMeta) {
@@ -364,14 +465,19 @@ function removePane(meta: TabPaneMeta) {
 let dragFromIndex: number | null = null;
 /** 本次拖拽是否发生过换位，松手时据此决定要不要对外通报 */
 let dragMoved = false;
-/** 用户拖拽排序过一次后置真，此后 sortPanes 的 DOM 顺序重排永久让位 */
-let userSorted = false;
+/** 父级改写 order 后接管顺序；仅本地拖拽重排不改变按 key 归一后的签名。 */
+watch(() => JSON.stringify(panes.value.map(pane => [typeof pane.key, pane.key, pane.order]).sort((a, b) => JSON.stringify(a.slice(0, 2)).localeCompare(JSON.stringify(b.slice(0, 2))))), () => {
+  if (panes.value.every(pane => typeof pane.order === "number" && Number.isFinite(pane.order))) userSorted.value = false;
+  sortPanes();
+});
 
 /** setup 顺序在标签被插入到中间时会失真，挂载后按内容节点的 DOM 先后重排 */
 function sortPanes() {
   // 用户拖拽排序过后不再按 DOM 顺序接管：内容节点仍按书写顺序排列，重排会把拖出来的顺序打回去
-  if (userSorted) return;
+  if (userSorted.value) return;
+  const explicit = panes.value.every(pane => typeof pane.order === "number" && Number.isFinite(pane.order));
   const next = [...panes.value].sort((a, b) => {
+    if (explicit) return a.order! - b.order!;
     if (!a.el || !b.el) return 0;
     return a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
   });
@@ -404,7 +510,7 @@ function handleDragOver(index: number, event: DragEvent) {
   panes.value = next;
   dragFromIndex = index;
   dragMoved = true;
-  userSorted = true;
+  userSorted.value = true;
 }
 
 /** dragend 在源元素上必然触发（包括拖出窗口取消），收尾统一放这里 */
@@ -424,11 +530,19 @@ let indicatorRun = 0;
 let indicatorPending = false;
 let motionMedia: MediaQueryList | undefined;
 
-function applyIndicator(next: NonNullable<typeof indicatorCurrent>) {
+function applyIndicator(next: NonNullable<typeof indicatorCurrent>, settled = true) {
   indicatorCurrent = next;
-  indicatorStyle.value = next.vertical
+  const style: Record<string, string> = next.vertical
     ? { opacity: "1", top: `${next.start}px`, height: `${next.size}px`, transitionDuration: "0ms" }
     : { opacity: "1", left: `${next.start}px`, width: `${next.size}px`, transitionDuration: "0ms" };
+  if (indicatorRef.value) {
+    indicatorRef.value.style.left = '';
+    indicatorRef.value.style.top = '';
+    indicatorRef.value.style.width = '';
+    indicatorRef.value.style.height = '';
+    Object.assign(indicatorRef.value.style, style);
+  }
+  if (settled) indicatorStyle.value = style;
 }
 
 function updateIndicator() {
@@ -481,7 +595,7 @@ function updateIndicator() {
         ...target,
         start: from.start + (target.start - from.start) * progress,
         size: from.size + (target.size - from.size) * progress,
-      });
+      }, false);
     },
     onComplete: () => {
       if (run !== indicatorRun) return;
@@ -495,7 +609,7 @@ function updateIndicator() {
  * 底板的落位与液体形变交给 useLiquidSlider，与 RebornRadioGroup 的分段按钮滑块共用一套节奏。
  * 底板要整块盖住选中标签，两个轴向都得写，不像指示条只需要主轴
  */
-const { style: sliderStyle, move: moveSlider, hide: hideSlider } = useLiquidSlider();
+const { style: sliderStyle, move: moveSlider, hide: hideSlider } = useLiquidSlider(sliderRef);
 /** 只有真正换标签才跑形变；resize 与 refresh 引发的重量走直接落位 */
 let liquidPending = false;
 
@@ -566,13 +680,19 @@ function scrollActiveIntoView() {
  * 只给没观察过的标签补观察：每次 observe 都会立刻回调一次，
  * 重复 observe 会在液体动画途中插进一次测量、把动画打断
  */
-const observedTabs = new WeakSet<Element>();
+const observedTabs = new Set<Element>();
 let tabObserver: ResizeObserver | undefined;
 function observeTabs() {
   const list = listRef.value;
   if (!list || typeof ResizeObserver === "undefined") return;
   tabObserver ??= new ResizeObserver(updateOverlays);
-  for (const tab of list.querySelectorAll<HTMLElement>("[data-tab-active]")) {
+  const targets = new Set(list.querySelectorAll<HTMLElement>("[data-tab-active]"));
+  for (const tab of observedTabs) {
+    if (targets.has(tab as HTMLElement)) continue;
+    tabObserver.unobserve(tab);
+    observedTabs.delete(tab);
+  }
+  for (const tab of targets) {
     if (observedTabs.has(tab)) continue;
     observedTabs.add(tab);
     tabObserver.observe(tab);
@@ -625,6 +745,7 @@ function releaseStage() {
   stagePlayback = undefined;
   stageRun += 1;
   stageHeight.value = undefined;
+  if (stageRef.value) stageRef.value.style.height = '';
   stageLocked.value = false;
 }
 
@@ -645,7 +766,7 @@ async function lockStageHeight() {
   // 先让出行内高度量出新内容的自然高度，再写回起点。这几步都是微任务，浏览器不绘制，不会闪
   await nextTick();
   if (run !== stageRun) return;
-  stageHeight.value = undefined;
+  stage.style.height = '';
   await nextTick();
   if (run !== stageRun) return;
   const to = stage.offsetHeight;
@@ -653,10 +774,10 @@ async function lockStageHeight() {
     releaseStage();
     return;
   }
-  stageHeight.value = `${from}px`;
+  stage.style.height = `${from}px`;
   stagePlayback = animate(from, to, {
     ...motionPresets.slow,
-    onUpdate: value => { if (run === stageRun) stageHeight.value = `${value}px`; },
+    onUpdate: value => { if (run === stageRun) stage.style.height = `${value}px`; },
     onComplete: () => { if (run === stageRun) releaseStage(); },
   });
 }
@@ -708,12 +829,18 @@ onMounted(() => {
   motionMedia = window.matchMedia?.("(prefers-reduced-motion: reduce)");
   motionMedia?.addEventListener("change", syncMotionPreference);
 });
+onUpdated(() => {
+  observeTabs();
+  // Vue 更新动态样式时会重写最后落定的位置，随后恢复 Motion 当前帧，避免反向切换跳回旧终点。
+  if (indicatorCurrent) applyIndicator(indicatorCurrent, false);
+});
 onBeforeUnmount(() => {
   releaseStage();
   indicatorRun++;
   indicatorPlayback?.stop();
   motionMedia?.removeEventListener("change", syncMotionPreference);
   tabObserver?.disconnect();
+  observedTabs.clear();
 });
 
 provide(TABS_INJECTION_KEY, {
@@ -734,16 +861,16 @@ defineExpose({
 </script>
 
 <template>
-  <div :class="ui.root({ class: props.class })" :data-position="resolvedPosition">
-    <div :class="ui.nav()">
+  <div v-bind="$attrs" :class="ui.root" :data-position="resolvedPosition">
+    <div :class="ui.nav">
       <!-- 头部起始侧的额外内容：水平方向靠左、垂直方向靠顶，排在箭头与标签列之前 -->
-      <div v-if="$slots['left-extra']" :class="ui.leftExtra()">
+      <div v-if="$slots['left-extra']" :class="ui.leftExtra">
         <slot name="left-extra" />
       </div>
 
       <!-- 向前箭头。只在 overflow="arrows" 且标签真正溢出时渲染，滚到起点后置灰 -->
       <button
-        v-if="showArrows" type="button" :class="ui.navButton()" :disabled="!canScrollPrev"
+        v-if="showArrows" type="button" :class="ui.navButton" :disabled="!canScrollPrev"
         aria-label="向前滚动标签" @click="scrollByStep(-1)"
       >
         <Icon :name="isVertical ? 'lucide:chevron-up' : 'lucide:chevron-left'" class="size-[1.2em]" />
@@ -751,29 +878,29 @@ defineExpose({
 
       <!-- 溢出导航模式下 mask 让两端的标签渐隐成透明，滚过哪端哪端才开孔（见 scrollMaskClass） -->
       <div
-        ref="wrapperRef" :class="[ui.navWrapper(), scrollMaskClass]"
+        ref="wrapperRef" :class="[ui.navWrapper, scrollMaskClass]"
         @scroll.passive="updateOverflowState"
       >
         <!--
           scrollBody 把标签列与新增按钮包进同一份滚动内容：按钮紧贴末尾标签而不是被推到头部最右端，
           代价是标签溢出时按钮跟着滚动（与 uniapp 端一致）
         -->
-        <div :class="ui.scrollBody()">
-          <div ref="listRef" role="tablist" :class="ui.list()" :aria-orientation="isVertical ? 'vertical' : 'horizontal'">
+        <div :class="ui.scrollBody">
+          <div ref="listRef" role="tablist" :class="ui.list" :aria-orientation="isVertical ? 'vertical' : 'horizontal'">
             <button
-              v-for="(pane, index) in panes" :key="pane.key" type="button" role="tab" :class="tabClass(pane, index)"
-              :disabled="pane.disabled" :aria-selected="pane.key === currentKey"
-              :data-tab-active="pane.key === currentKey"
+              v-for="(pane, index) in view.panes" :key="pane.key" type="button" role="tab" :class="tabClass(pane, index, view.panes.length, view.key)"
+              :disabled="pane.disabled" :aria-selected="pane.key === view.key"
+              :data-tab-active="pane.key === view.key"
               :draggable="props.draggable && !pane.disabled ? true : undefined" @click="handleTabClick(pane)"
               @mouseenter="handleTabHover(pane)" @dragstart="handleDragStart(index, $event)"
               @dragover="handleDragOver(index, $event)" @dragend="handleDragEnd" @drop.prevent
             >
-              <span data-tab-title :class="ui.tabTitle()">
+              <span data-tab-title :class="ui.tabTitle">
                 <component :is="pane.titleSlot" v-if="pane.titleSlot" />
                 <template v-else>{{ pane.title }}</template>
               </span>
               <span
-                v-if="props.editable && pane.closable" :class="ui.tabClose()" role="button"
+                v-if="props.editable && pane.closable" :class="ui.tabClose" role="button"
                 :aria-label="`关闭 ${pane.title ?? pane.key}`" @click.stop="handleDelete(pane)"
               >
                 <Icon name="lucide:x" class="size-full" />
@@ -781,17 +908,17 @@ defineExpose({
             </button>
 
             <!-- 指示器跟随选中标题滑动，位置由测量写入行内样式 -->
-            <span v-if="showIndicator" aria-hidden="true" :class="ui.indicator()" :style="indicatorStyle" />
+            <span v-if="showIndicator" ref="indicatorRef" aria-hidden="true" :class="ui.indicator" :style="indicatorStyle" />
 
             <!--
               选中底板。放在标签之后是为了不让 card 的 [&>*+*]:-ml-px 落到首个标签上，
               层叠顺序与这里的先后无关：底板有 z-index 而标签不定位，底板天然画在所有标签的背景之上，
               标题与关闭图标又提了 z-[1] 压在底板之上，于是底板滑过沿途标签时不会盖住它们的文字
             -->
-            <span v-if="showSlider" aria-hidden="true" :class="ui.tabSlider()" :style="sliderStyle" />
+            <span v-if="showSlider" ref="sliderRef" aria-hidden="true" :class="ui.tabSlider" :style="sliderStyle" />
           </div>
 
-          <button v-if="showAdd" type="button" :class="ui.addButton()" aria-label="新增标签" @click="emit('add')">
+          <button v-if="showAdd" type="button" :class="ui.addButton" aria-label="新增标签" @click="emit('add')">
             <Icon name="lucide:plus" class="size-[1.2em]" />
           </button>
         </div>
@@ -799,16 +926,16 @@ defineExpose({
 
       <!-- 向后箭头。贴在滚动容器之后，滚到终点后置灰 -->
       <button
-        v-if="showArrows" type="button" :class="ui.navButton()" :disabled="!canScrollNext"
+        v-if="showArrows" type="button" :class="ui.navButton" :disabled="!canScrollNext"
         aria-label="向后滚动标签" @click="scrollByStep(1)"
       >
         <Icon :name="isVertical ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="size-[1.2em]" />
       </button>
 
       <!-- 下拉选标。开关与面板包在同一个定位锚点里，点面板外任意处收起 -->
-      <div v-if="showDropdown" ref="dropdownRef" :class="ui.dropdown()">
+      <div v-if="showDropdown" ref="dropdownRef" :class="ui.dropdown">
         <button
-          type="button" :class="ui.navButton()" aria-label="展开标签列表" aria-haspopup="listbox"
+          type="button" :class="ui.navButton" aria-label="展开标签列表" aria-haspopup="listbox"
           :aria-expanded="dropdownOpen" @click="dropdownOpen = !dropdownOpen"
         >
           <Icon
@@ -817,7 +944,7 @@ defineExpose({
             :class="dropdownOpen && 'rotate-180'"
           />
         </button>
-        <div v-if="dropdownOpen" role="listbox" :class="ui.dropdownPanel()">
+        <div v-if="dropdownOpen" role="listbox" :class="ui.dropdownPanel">
           <button
             v-for="pane in dropdownPanes" :key="pane.key" type="button" role="option"
             :aria-selected="pane.key === currentKey" :disabled="pane.disabled" :class="dropdownItemClass(pane)"
@@ -830,15 +957,15 @@ defineExpose({
       </div>
 
       <!-- 头部末尾侧的额外内容：水平方向靠右、垂直方向靠底 -->
-      <div v-if="$slots['right-extra']" :class="ui.rightExtra()">
+      <div v-if="$slots['right-extra']" :class="ui.rightExtra">
         <slot name="right-extra" />
       </div>
     </div>
 
-    <div v-show="!props.hideContent" :class="ui.content()">
+    <div v-show="!props.hideContent" :class="ui.content">
       <!-- 无内边距的中间层：高度过渡锁在这里，量到的进场面板净高就是要写的高度 -->
-      <div ref="stageRef" :class="ui.stage()" :style="stageStyle">
-        <slot />
+      <div ref="stageRef" :class="ui.stage" :style="stageStyle">
+        <PaneNodes :nodes="view.nodes" />
       </div>
     </div>
   </div>

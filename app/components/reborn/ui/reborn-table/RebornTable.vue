@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { VNodeChild } from 'vue';
 import type { TableCellScope, TableColumn, TableEmits, TableExpose, TableKey, TableModels, TableOrder, TableProps, TableRow, TableScrollToOptions, TableTooltipScope } from './table.types';
-import { h, ref, useAttrs, useSlots } from 'vue';
+import { onBeforeUpdate, shallowRef, useSlots, useTemplateRef } from 'vue';
 import { collectColumns } from './table.columns';
 import TableView from './TableView';
 
@@ -16,6 +16,8 @@ const props = withDefaults(defineProps<TableProps>(), {
 });
 const emit = defineEmits<TableEmits>();
 defineSlots<{
+  /** 列可以用 slotName 指定任意名称，作用域与默认单元格相同。 */
+  [name: string]: ((scope: any) => VNodeChild) | undefined;
   /** 声明式列，仅在未传 columns 时生效。 */
   default?: () => VNodeChild;
   /** 所有列的默认表头。 */
@@ -45,16 +47,30 @@ const currentRowKey = defineModel<TableKey>('currentRowKey');
 const currentPage = defineModel<number>('currentPage', { default: 1 });
 /** 每页根节点条数。 */
 const pageSize = defineModel<number>('pageSize', { default: 10 });
-const slots = useSlots();
-const attrs = useAttrs();
-const view = ref<TableExpose>();
+const view = useTemplateRef<TableExpose>('view');
 const models: TableModels = { selectedKeys, expandedRowKeys, currentRowKey, currentPage, pageSize };
 
-/** 在真正的渲染上下文求值列插槽，保证条件列与 SSR 首屏都可用。 */
-const RenderTable = () => h(TableView, {
-  ...attrs, ref: view, table: props, models, notify: emit,
-  columns: props.columns ?? collectColumns(slots.default?.(), props.data[0]),
-}, Object.fromEntries(Object.entries(slots).filter(([name]) => name !== 'default')));
+const slots = useSlots();
+/** 默认插槽只用来声明列，不转发给表格主体，不参与比较 */
+function forwardedSlots() {
+  return Object.entries(slots).filter(([name]) => name !== 'default');
+}
+/**
+ * 转发给表格主体的插槽版本号，变化时各行才整体重绘单元格。
+ * 模板里的动态插槽转发每次渲染都会生成新的函数，所以不能在 TableView 那一层按函数身份判断，
+ * 否则受控的 selectedKeys 一变、本组件随之重渲染，就会让所有行重建。
+ * 这里比较的是使用方传入的原始插槽：编译期稳定的插槽在父级更新时仍是同一个函数，
+ * 它读到的响应式状态由各行渲染自行追踪，不需要整表重绘；只有插槽名增删，
+ * 或插槽函数被整体替换（v-if / v-for 生成的动态插槽、渲染函数写法）时才递增。
+ */
+const slotRevision = shallowRef(0);
+let previousSlots = new Map(forwardedSlots());
+onBeforeUpdate(() => {
+  const entries = forwardedSlots();
+  if (entries.length === previousSlots.size && entries.every(([name, slot]) => previousSlots.get(name) === slot)) return;
+  previousSlots = new Map(entries);
+  slotRevision.value++;
+});
 
 function clearSelection() { view.value?.clearSelection(); }
 function getSelectionRows() { return view.value?.getSelectionRows() ?? []; }
@@ -73,5 +89,17 @@ defineExpose({ clearSelection, getSelectionRows, toggleRowSelection, toggleAllSe
 </script>
 
 <template>
-  <RenderTable />
+  <TableView
+    ref="view"
+    v-bind="$attrs"
+    :table="props"
+    :models="models"
+    :notify="emit"
+    :slot-revision="slotRevision"
+    :columns="props.columns ?? collectColumns($slots.default?.(), props.data[0])"
+  >
+    <template v-for="name in Object.keys($slots).filter(name => name !== 'default')" #[name]="scope">
+      <slot :name="name" v-bind="scope ?? {}" />
+    </template>
+  </TableView>
 </template>

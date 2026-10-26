@@ -1,29 +1,18 @@
 <script setup lang="ts">
 import type { SearchBoxColor, SearchBoxSize } from './reborn-search-box.config'
-import { computed, onMounted, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, shallowRef, watch } from 'vue'
+import { useRawProp } from '@/composables/useRawProp'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
-import RebornImage from '../reborn-image/RebornImage.vue'
 import RebornInput from '../reborn-input/RebornInput.vue'
-import RebornPopup from '../reborn-popup/RebornPopup.vue'
 import theme, { searchBoxInputUi } from './reborn-search-box.config'
 
-export interface SkuAttribute {
-  label: string
-  value: any
-  [key: string]: any
-}
-
 export interface SearchBoxProps {
-  modelValue?: string
+  /** 未绑定历史记录时使用的本地存储键。 */
+  historyKey?: string
   placeholder?: string
   size?: SearchBoxSize
   color?: SearchBoxColor
-  mode?: 'associate' | 'sku'
-  showDropdown?: boolean
-  skuAttributes?: SkuAttribute[]
-  saveHistory?: (history: string[]) => void
-  removeHistory?: () => void
   /** 追加到根节点的自定义类名 */
   customClass?: any
   /** 透传给内部输入框的占位符样式类 */
@@ -39,13 +28,10 @@ export interface SearchBoxProps {
 }
 
 const props = withDefaults(defineProps<SearchBoxProps>(), {
-  modelValue: '',
+  historyKey: 'reborn-search-history',
   placeholder: '请输入搜索内容',
   size: 'sm',
   color: 'primary',
-  mode: 'associate',
-  showDropdown: true,
-  skuAttributes: () => [],
   placeholderClass: 'text-gray-5',
   disabled: false,
   rounded: true,
@@ -53,20 +39,25 @@ const props = withDefaults(defineProps<SearchBoxProps>(), {
   border: false,
 })
 
-const emit = defineEmits([
-  'update:modelValue', // 输入内容变化时触发，参数为最新文本
-  'search', // 点击键盘搜索/确认键时触发，参数为当前输入值；非空关键字会写入历史记录
-  'clickCamera', // 点击右侧相机区域时触发（uniapp 端驼峰命名，对应 web 端的 click-camera）
-  'selectSku', // SKU 模式选中属性时触发（uniapp 端驼峰命名，对应 web 端的 select-sku；当前 uniapp 实现声明保留，模板尚未触发）
-  'focus', // 输入框聚焦时触发
-  'blur', // 输入框失焦时触发
-])
+const emit = defineEmits<{
+  search: [value: string]
+  clickCamera: []
+  focus: [event: any]
+  blur: [event: any]
+}>()
+defineSlots<{
+  prefix: () => any
+  extra: () => any
+  default: () => any
+}>()
+const model = defineModel<string>({ default: '' })
+const historyModel = defineModel<string[]>('history', { default: () => [] })
 
-const isTranslated = ref(false)
-const localHistory = ref<string[]>([])
-const showSiteSelect = ref(false)
-
-const STORAGE_KEY = 'reborn-search-history'
+const isTranslated = shallowRef(false)
+const instance = getCurrentInstance()
+// 是否绑定了 v-model:history：小程序端 vnode.props 不随父级更新，统一用 useRawProp 读取调用方原始属性
+const { present: historyBound, refresh: refreshHistoryBound } = useRawProp('history')
+const history = computed<string[]>(() => historyBound.value ? (instance?.props.history as string[] ?? []) : historyModel.value)
 
 const b = tv(theme)
 const ui = computed(() => {
@@ -97,34 +88,24 @@ const inputUi = computed(() => {
   }
 })
 
-const loadHistory = () => {
+function loadHistory() {
+  refreshHistoryBound()
+  if (historyBound.value) return
   try {
-    const saved = uni.getStorageSync(STORAGE_KEY)
-    localHistory.value = saved ? JSON.parse(saved) : []
-  } catch {
-    localHistory.value = []
+    const saved = uni.getStorageSync(props.historyKey)
+    const parsed: unknown = typeof saved === 'string' ? JSON.parse(saved || '[]') : saved
+    historyModel.value = Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string').slice(0, 10) : []
+  } catch { historyModel.value = [] }
+}
+function addToHistory(keyword: string) {
+  const next = [keyword, ...history.value.filter(item => item !== keyword)].slice(0, 10)
+  historyModel.value = next
+  refreshHistoryBound()
+  if (!historyBound.value) {
+    try { uni.setStorageSync(props.historyKey, JSON.stringify(next)) } catch { /* 存储失败时保留当前实例历史。 */ }
   }
 }
-
-const addToHistory = (keyword: string) => {
-  if (!keyword.trim()) {
-    return
-  }
-
-  const nextHistory = [keyword, ...localHistory.value.filter(item => item !== keyword)].slice(0, 10)
-
-  if (props.saveHistory) {
-    props.saveHistory(nextHistory)
-  } else {
-    uni.setStorageSync(STORAGE_KEY, JSON.stringify(nextHistory))
-  }
-
-  localHistory.value = nextHistory
-}
-
-function onInput(value: any) {
-  emit('update:modelValue', value)
-}
+watch(() => props.historyKey, loadHistory)
 
 function onFocus(event: any) {
   emit('focus', event)
@@ -135,13 +116,13 @@ function onBlur(event: any) {
 }
 
 function handleSearch() {
-  const keyword = `${props.modelValue ?? ''}`.trim()
+  const keyword = `${model.value ?? ''}`.trim()
 
   if (keyword) {
     addToHistory(keyword)
   }
 
-  emit('search', props.modelValue)
+  emit('search', model.value)
   uni.hideKeyboard()
 }
 
@@ -161,13 +142,12 @@ onMounted(() => {
 <template>
   <view :class="ui.wrapper()">
     <!-- RebornInput 已改用 variant / shape 形态体系：SearchBox 自身的 rounded / border 旧属性在此做等价映射 -->
-    <RebornInput :model-value="modelValue" :size="props.size" :color="props.color" :disabled="disabled"
+    <RebornInput v-model="model" :size="props.size" :color="props.color" :disabled="disabled"
       :shape="rounded ? 'circle' : 'square'" :clearable="clearable" :variant="border ? 'outlined' : 'filled'"
       :placeholder="placeholder" :placeholder-class="placeholderClass" :ui="inputUi" :separator="false"
-      @update:model-value="onInput" @focus="onFocus" @blur="onBlur" @confirm="handleSearch">
+      @focus="onFocus" @blur="onBlur" @confirm="handleSearch">
       <template #prefix>
-        <RebornImage src="https://mall.leyifan.cn/static/h5/new_images/index_search_small.png?v=1" width="38"
-          height="38" mode="widthFix" />
+        <slot name="prefix"><view class="i-lucide-search size-[38rpx]" /></slot>
       </template>
 
       <template #suffix>
@@ -202,20 +182,6 @@ onMounted(() => {
       </template>
     </RebornInput>
 
-    <view :class="ui.siteSelector()" @tap="showSiteSelect = true">
-      <RebornImage
-        src="https://image2.leyifan.cn/reborn-mall-cdn/crmebimage/public/config/2025/02/11/7df4f7565d4145ecb24420683be2a059fj8kuhp23i.png"
-        width="30px" height="30px" mode="heightFix" />
-      <RebornImage src="https://mall.leyifan.cn/static/h5/new_images/site-expand.png" width="14px" height="14px"
-        mode="heightFix" />
-    </view>
-
-    <!-- 站点选择弹出层 -->
-    <RebornPopup v-model="showSiteSelect" position="right" title="选择站点" direction="right" custom-style="width: 80%;"
-      :round="false">
-      <view class="p-4">
-        <text class="text-sm text-gray-500">站点选择列表占位...</text>
-      </view>
-    </RebornPopup>
+    <view v-if="$slots.extra" :class="ui.siteSelector()"><slot name="extra" /></view>
   </view>
 </template>

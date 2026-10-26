@@ -1,14 +1,10 @@
 <script setup lang="ts">
-import { computed, reactive, watch, onMounted } from "vue";
-import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
-import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
-import RebornInputNumber from "~/components/reborn/ui/reborn-input-number/RebornInputNumber.vue";
-import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
-import RebornPopover from "~/components/reborn/ui/reborn-popover/RebornPopover.vue";
-import RebornSlider from "~/components/reborn/ui/reborn-slider/RebornSlider.vue";
-import RebornColorPicker from "~/components/reborn/ui/reborn-color-picker/RebornColorPicker.vue";
 import { tv } from "tailwind-variants";
+import { computed, onScopeDispose, reactive, shallowRef, watch } from "vue";
+import RebornCollapse from "~/components/reborn/ui/reborn-collapse/RebornCollapse.vue";
+import RebornPopover from "~/components/reborn/ui/reborn-popover/RebornPopover.vue";
 import config from "./play-ground.config";
+import PlaygroundField from "./PlaygroundField.vue";
 
 /** 单个控件配置 */
 export interface PlaygroundControlItem {
@@ -39,8 +35,6 @@ export interface PlaygroundControlGroup {
 }
 
 export interface PlaygroundProps {
-    /** 双向绑定的状态对象 */
-    modelValue: Record<string, any>;
     /** 控制面板配置 */
     controls: PlaygroundControlGroup[];
     /** 选填：手动指定的代码字符串。若不传则根据 controls 和 modelValue 自动生成 */
@@ -53,8 +47,6 @@ export interface PlaygroundProps {
     title?: string;
     /** 描述 */
     description?: string;
-    /** 方向 */
-    direction?: 'horizontal' | 'vertical';
     /**
      * 是否自成一张卡片（补回描边与内边距，与 DemoSection 同形态：只描边、不填充）。
      * 默认 true：演练场与相邻的分组卡片同级，需要一条边把自己圈出来。
@@ -65,19 +57,16 @@ export interface PlaygroundProps {
 
 const props = withDefaults(defineProps<PlaygroundProps>(), {
     title: "交互体验",
-    description: "通过左侧面板实时调节组件属性，在右侧查看视觉反馈",
+    description: "通过上方面板实时调节组件属性，在下方查看视觉反馈",
     componentName: "Component",
-    direction: 'horizontal',
     surface: true
 });
 
-const emit = defineEmits<{
-    (e: "update:modelValue", value: Record<string, any>): void;
-}>();
+const model = defineModel<Record<string, any>>({ required: true });
 
 /** 更新状态对象中某个 key 的值 */
 function updateField(key: string, value: any) {
-    emit("update:modelValue", { ...props.modelValue, [key]: value });
+    model.value = { ...model.value, [key]: value };
 }
 
 /**
@@ -96,22 +85,25 @@ function normalizeSelectProps(raw?: Record<string, any>) {
 
 /** 从状态对象中获取某个 key 的值 */
 function getField(key: string) {
-    return props.modelValue[key];
+    return model.value[key];
 }
 
 /** 显回状态管理 */
 const visibilityMap = reactive<Record<string, boolean>>({});
+let visibilityVersion = 0;
+onScopeDispose(() => { visibilityVersion++; });
 
 async function updateVisibility() {
+    const version = ++visibilityVersion;
     const promises: Promise<void>[] = [];
 
     props.controls.forEach(group => {
         group.children.forEach(item => {
             if (item.hide) {
-                const res = item.hide(props.modelValue[item.key], props.modelValue);
+                const res = item.hide(model.value[item.key], model.value);
                 if (res instanceof Promise) {
                     promises.push(res.then(hidden => {
-                        visibilityMap[item.key] = !!hidden;
+                        if (version === visibilityVersion) visibilityMap[item.key] = !!hidden;
                     }));
                 } else {
                     visibilityMap[item.key] = !!res;
@@ -128,12 +120,47 @@ async function updateVisibility() {
 }
 
 // 深度监听 modelValue 或 controls 的变化
-watch(() => props.modelValue, () => updateVisibility(), { deep: true, immediate: true });
-watch(() => props.controls, () => updateVisibility(), { deep: true });
+watch([model, () => props.controls], updateVisibility, { deep: true, immediate: true });
 
-onMounted(() => {
-    updateVisibility();
+/** select 的兼容字段只在配置变化时归一化。 */
+const controlGroups = computed(() => props.controls.map(group => ({
+    ...group,
+    children: group.children.map(item => ({
+        ...item,
+        normalizedProps: item.component === 'select' ? normalizeSelectProps(item.props) : item.props,
+    })),
+})));
+
+/** 控制区每行放几个控件（lg 及以上），与 controlGrid 的列数一致 */
+const COLUMNS = 4;
+/** 默认展开的控件行数，其余收进「展开全部参数」 */
+const VISIBLE_ROWS = 2;
+
+type ControlGroupView = (typeof controlGroups.value)[number] & { continued: boolean };
+
+/**
+ * 控件按分组逐行排布：分组标题独占一行，组内每行 COLUMNS 个控件。
+ * 只数控件行、不数标题行，数满 VISIBLE_ROWS 行后剩下的控件进入折叠区；
+ * 一个分组被拆开时，折叠区里的后半段不再重复标题（continued），展开后视觉上接着上半段。
+ * 被 hide 隐藏的控件不占位置，所以显隐变化后会重新分行。
+ */
+const controlLayout = computed(() => {
+    const head: ControlGroupView[] = [];
+    const tail: ControlGroupView[] = [];
+    let rowsLeft = VISIBLE_ROWS;
+    for (const group of controlGroups.value) {
+        const items = group.children.filter(item => !visibilityMap[item.key]);
+        if (!items.length) continue;
+        const headCount = Math.min(items.length, Math.max(0, rowsLeft) * COLUMNS);
+        if (headCount > 0) head.push({ ...group, children: items.slice(0, headCount), continued: false });
+        if (headCount < items.length) tail.push({ ...group, children: items.slice(headCount), continued: headCount > 0 });
+        rowsLeft -= Math.ceil(headCount / COLUMNS);
+    }
+    return { head, tail, hiddenCount: tail.reduce((sum, group) => sum + group.children.length, 0) };
 });
+
+/** 折叠区是否展开；默认收起 */
+const expanded = shallowRef(false);
 
 /** camelCase 的状态 key 转为模板里的 kebab-case 属性名（如 showPassword → show-password） */
 function toKebabCase(key: string) {
@@ -144,7 +171,7 @@ function toKebabCase(key: string) {
 const activeCode = computed(() => {
     if (props.code) return props.code;
 
-    const s = props.modelValue;
+    const s = model.value;
     const parts = [`<${props.componentName}`];
 
     // 假设都有 v-model
@@ -179,108 +206,103 @@ const activeCode = computed(() => {
     return parts.join("\n");
 });
 
-/** 分组标识条：统一主色，避免彩虹式多色干扰视觉焦点 */
-function getAccentColor(_index: number) {
-    return "bg-primary/80";
-}
-
-const ui = computed(() => tv(config)({ direction: props.direction, surface: props.surface }));
+const ui = computed(() => tv(config)({ surface: props.surface }));
 </script>
 
 <template>
-    <section :class="ui.wrapper()">
-        <!-- 标题栏 -->
-        <div :class="ui.header()">
-            <div :class="ui.headerTitleWrapper()">
-                <h2 :id="title" :class="ui.headerTitle()">
-                    {{ title }}
-                </h2>
-                <p :class="ui.headerDesc()">{{ description }}</p>
+  <section :class="ui.wrapper()">
+    <!-- 标题栏 -->
+    <div :class="ui.header()">
+      <div :class="ui.headerTitleWrapper()">
+        <h2 :id="title" :class="ui.headerTitle()">
+          {{ title }}
+        </h2>
+        <p :class="ui.headerDesc()">{{ description }}</p>
+      </div>
+      <slot name="tag">
+        <span :class="ui.headerTag()">
+          演练场
+        </span>
+      </slot>
+    </div>
+
+    <!-- 主体容器：上方控制区、下方预览区 -->
+    <div :class="ui.container()">
+      <!-- ========== 上方控制区 ========== -->
+      <div :class="ui.controlPanel()">
+        <template v-for="(group, gi) in controlLayout.head" :key="`head-${gi}`">
+          <div :class="ui.group()">
+            <!-- 分组标题独占一行 -->
+            <div :class="ui.groupTitleWrapper()">
+              <span :class="ui.groupTitleText()">{{ group.title }}</span>
+              <span :class="ui.groupTitleLine()" aria-hidden="true" />
             </div>
-            <slot name="tag">
-                <span :class="ui.headerTag()">
-                    演练场
-                </span>
-            </slot>
+            <div :class="ui.controlGrid()">
+              <div v-for="item in group.children" :key="item.key" :class="ui.fieldWrapper()">
+                <PlaygroundField :item="item" :value="getField(item.key)" @update:value="updateField(item.key, $event)" />
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- 超出默认行数的控件收进折叠区，点击下方按钮展开 -->
+        <RebornCollapse
+          v-if="controlLayout.hiddenCount > 0"
+          v-model="expanded"
+          position="top"
+          :ui="{ content: ui.collapseContent() }"
+        >
+          <template #content>
+            <div :class="ui.collapseInner()">
+              <template v-for="(group, gi) in controlLayout.tail" :key="`tail-${gi}`">
+                <div :class="ui.group()">
+                  <div v-if="!group.continued" :class="ui.groupTitleWrapper()">
+                    <span :class="ui.groupTitleText()">{{ group.title }}</span>
+                    <span :class="ui.groupTitleLine()" aria-hidden="true" />
+                  </div>
+                  <div :class="ui.controlGrid()">
+                    <div v-for="item in group.children" :key="item.key" :class="ui.fieldWrapper()">
+                      <PlaygroundField :item="item" :value="getField(item.key)" @update:value="updateField(item.key, $event)" />
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+          <button type="button" :class="ui.collapseToggle()" :aria-expanded="expanded">
+            <span>{{ expanded ? '收起参数' : '展开全部参数' }}</span>
+            <span v-if="!expanded" :class="ui.collapseCount()">+{{ controlLayout.hiddenCount }}</span>
+            <Icon name="lucide:chevron-down" :class="ui.collapseIcon({ class: expanded ? 'rotate-180' : '' })" />
+          </button>
+        </RebornCollapse>
+
+        <!-- 演练场的补充内容（如事件回执），排在控件下方 -->
+        <slot name="extra" />
+      </div>
+
+      <!-- ========== 下方预览区 ========== -->
+      <div :class="ui.previewPanel()">
+        <!-- 右上角：传参明细 Popover -->
+        <div v-if="activeCode" :class="ui.popoverWrapper()">
+          <RebornPopover placement="bottom-start">
+            <button type="button" :class="ui.popoverBtn()">
+              <Icon name="lucide:code-xml" :class="ui.popoverIcon()" />
+              <span>传参明细</span>
+            </button>
+
+            <template #content>
+              <div :class="ui.popoverContent()">
+                <pre :class="ui.popoverPre()"><code>{{ activeCode }}</code></pre>
+              </div>
+            </template>
+          </RebornPopover>
         </div>
 
-        <!-- 主体容器 -->
-        <div :class="ui.container()">
-
-            <!-- ========== 左侧控制面板 ========== -->
-            <div :class="ui.controlPanel()">
-                <div v-for="(group, gi) in controls" :key="gi" class="space-y-4">
-                    <!-- 分组标题 -->
-                    <div :class="ui.groupTitleWrapper()">
-                        <div :class="[ui.groupTitleAccent(), getAccentColor(gi)]" />
-                        <span :class="ui.groupTitleText()">
-                            {{ group.title }}
-                        </span>
-                    </div>
-
-                    <!-- 控件列表 -->
-                    <div :class="ui.controlList()">
-                        <template v-for="item in group.children" :key="item.key">
-                            <template v-if="!visibilityMap[item.key]">
-                                <!-- Select / Input：统一外包 label -->
-                                <div :class="ui.fieldWrapper()">
-                                    <label :class="ui.fieldLabel()">
-                                        {{ item.label }}
-                                        <span v-if="item.component === 'slider'" :class="ui.fieldValue()">
-                                            {{ getField(item.key) }}
-                                        </span>
-                                    </label>
-                                    <RebornCheckbox v-if="item.component === 'checkbox'"
-                                        :model-value="getField(item.key)" :label="item.label" v-bind="item.props"
-                                        size="md" @update:model-value="updateField(item.key, $event)" />
-                                    <!-- 兼容历史 demo 误传 items：RebornSelect 正式字段是 options -->
-                                    <RebornSelect v-if="item.component === 'select'" :model-value="getField(item.key)"
-                                        v-bind="normalizeSelectProps(item.props)" class="w-full" size="lg"
-                                        @update:model-value="updateField(item.key, $event)" />
-                                    <RebornInput v-else-if="item.component === 'input'"
-                                        :model-value="getField(item.key)" v-bind="item.props" size="lg"
-                                        @update:model-value="updateField(item.key, $event)" />
-                                    <RebornSlider v-else-if="item.component === 'slider'"
-                                        :model-value="getField(item.key)" v-bind="item.props" size="lg"
-                                        @update:model-value="updateField(item.key, $event)" />
-                                    <RebornColorPicker v-else-if="item.component === 'color-picker'"
-                                        :model-value="getField(item.key)" v-bind="item.props" size="lg"
-                                        @update:model-value="updateField(item.key, $event)" />
-                                    <RebornInputNumber v-else-if="item.component === 'input-number'"
-                                        :model-value="getField(item.key)" v-bind="item.props" size="lg"
-                                        @update:model-value="updateField(item.key, $event)" />
-                                </div>
-                            </template>
-                        </template>
-                    </div>
-                </div>
-                <slot name="left"></slot>
-            </div>
-
-            <!-- ========== 右侧预览区 ========== -->
-            <div :class="ui.previewPanel()">
-
-                <!-- 左上角：传参明细 Popover -->
-                <div v-if="activeCode" :class="ui.popoverWrapper()">
-                    <RebornPopover placement="bottom-start">
-                        <button type="button" :class="ui.popoverBtn()">
-                            <Icon name="lucide:code-xml" :class="ui.popoverIcon()" />
-                            <span>传参明细</span>
-                        </button>
-
-                        <template #content>
-                            <div :class="ui.popoverContent()">
-                                <pre :class="ui.popoverPre()"><code>{{ activeCode }}</code></pre>
-                            </div>
-                        </template>
-                    </RebornPopover>
-                </div>
-
-                <!-- 预览插槽 -->
-                <div :class="ui.previewContent()">
-                    <slot />
-                </div>
-            </div>
+        <!-- 预览插槽 -->
+        <div :class="ui.previewContent()">
+          <slot />
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 </template>

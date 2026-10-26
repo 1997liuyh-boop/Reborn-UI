@@ -263,7 +263,7 @@ message.success({
 | 导入路径          | `~/components/reborn/ui/reborn-toast`                         | `@/components/reborn-toast`                                                  |
 | `MessageNode`     | `string \| VNode \| (() => VNode)`                            | 仅 `string`                                                                  |
 | `icon` 取值       | 图标名字符串或 VNode                                          | Tailwind 图标类名（如 `i-lucide-star`）                                      |
-| 容器挂载          | 首次调用时自动 `createVNode` + `render` 挂到 `getContainer()` | H5 同 Web（页面已有 `<RebornToast />` 时不再重复挂）；小程序必须写在页面里   |
+| 容器挂载          | 首次调用时自动 `createVNode` + `render` 挂到 `getContainer()` | H5 同 Web，但当前页面已有 `<RebornToast />` 时由页面里的实例渲染、容器让位；小程序必须写在页面里 |
 | `getContainer`    | 生效                                                          | 仅 H5 生效，小程序端忽略                                                     |
 | `top` 默认值      | `8`（px）                                                     | `'16rpx'`；传数字按 rpx 处理                                                 |
 | `pauseOnHover`    | 鼠标悬停暂停                                                  | 按住暂停（H5 为悬停）                                                        |
@@ -281,6 +281,8 @@ UniApp 端 `closing` 只影响节点何时从队列移出：`onClose` 与 Promis
 
 - `duration` 单位是**秒**（不是毫秒）；`loading` 类型同样默认 3 秒自动关闭，需要常驻时传 `duration: 0` 并配合 `key` + `message.destroy(key)` 或同 key 更新收尾。
 - Web / H5 端消息容器在首次调用时自动挂载到 `getContainer()`（默认 `body`），无需在模板中放置组件；**小程序端必须页面里有 `<RebornToast />`**（`RebornPage` 已内置）。
+- **UniApp 端每个页面里的 `<RebornToast />` 各自渲染同一份消息队列**：tabBar 页面切换、跳转后下层页面都不卸载，隐藏页里那份不可见，切回任意页面都能看到消息。H5 的自动容器只在当前页面（页面栈栈顶）没有 `<RebornToast />` 时渲染，切回有实例的页面会自动让位，所以同一屏不会出现两份。
+- Web 端在服务端（SSR）调用 `message.*` 是空操作，返回的 Promise 立即兑现、`onClose` 不会触发。消息队列是全局单例，服务端写入会被其他请求共享，计时器也会在服务端空跑；需要在数据请求失败时提示，请在客户端（如 `onMounted` 之后或事件回调里）调用。
 - `message.config` 是全局配置，改动会影响后续所有消息；`getContainer` 变更时已挂载的容器节点会被移动到新父级。
 - `maxCount` 超限时关闭的是**最早**的那条，被关闭的消息照常触发 `onClose` 与 Promise。
 - `content` 默认单行 `truncate`，长文本会被截断；需要多行请用 `classNames: { content: 'whitespace-normal' }` 放开。

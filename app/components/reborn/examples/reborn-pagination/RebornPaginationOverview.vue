@@ -5,10 +5,10 @@
  * 卡片宽度只有 210px，总数压到 3 页（前后箭头 + 3 个页码共 5 格），
  * 否则背景模式会换行。
  */
-import { ref } from 'vue'
+import { shallowRef } from 'vue';
 import RebornPagination from '~/components/reborn/ui/reborn-pagination/RebornPagination.vue'
 
-const page = ref(2)
+const page = shallowRef(2)
 </script>
 
 <template>

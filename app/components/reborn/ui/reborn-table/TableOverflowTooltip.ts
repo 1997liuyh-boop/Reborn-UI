@@ -1,9 +1,10 @@
 import type { ClassValue } from 'tailwind-variants';
 import type { PropType } from 'vue';
 import type { TableCellScope, TableTooltipFormatter, TableTooltipOptions, TableTooltipScope } from './table.types';
-import { computed, defineComponent, h, nextTick, onBeforeUnmount, onMounted, onUpdated, ref } from 'vue';
+import { computed, defineComponent, h, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, shallowRef } from 'vue';
 import { cn } from '~/lib/utils';
 import RebornTooltip from '../reborn-tooltip/RebornTooltip.vue';
+import { TABLE_OVERFLOW_KEY } from './table.overflow';
 
 /** 只为溢出的普通单元格提供提示，文本取自实际渲染结果而非原始字段。 */
 export default defineComponent({
@@ -17,17 +18,18 @@ export default defineComponent({
     disabled: Boolean,
   },
   setup(props, { slots }) {
-    const anchor = ref<HTMLElement>();
-    const element = ref<HTMLElement>();
-    const tooltip = ref<InstanceType<typeof RebornTooltip>>();
-    const activated = ref(false);
-    const overflow = ref(false);
-    const content = ref('');
-    const describedBy = ref<string>();
+    const anchor = shallowRef<HTMLElement>();
+    const element = shallowRef<HTMLElement>();
+    const tooltip = shallowRef<InstanceType<typeof RebornTooltip>>();
+    const activated = shallowRef(false);
+    const overflow = shallowRef(false);
+    const content = shallowRef('');
+    const describedBy = shallowRef<string>();
     const disabled = computed(() => props.disabled || props.options.disabled || !overflow.value);
     const scope = computed<TableTooltipScope>(() => ({ ...props.scope, cellValue: props.cellValue, content: content.value }));
     let observer: ResizeObserver | undefined;
-    let contentObserver: MutationObserver | undefined;
+    const registry = inject(TABLE_OVERFLOW_KEY, null);
+    let unregister: (() => void) | undefined;
     let hovered = false;
     let focused = false;
     let disposed = false;
@@ -48,18 +50,15 @@ export default defineComponent({
     }
     onMounted(() => {
       measure();
-      if (typeof ResizeObserver !== 'undefined' && element.value) {
+      if (registry && element.value) unregister = registry.observe(element.value, measure);
+      else if (typeof ResizeObserver !== 'undefined' && element.value) {
         observer = new ResizeObserver(measure);
         observer.observe(element.value);
       }
-      // 插槽子组件能独立更新而不触发本层 updated，且截断容器尺寸可能完全不变。
-      if (typeof MutationObserver !== 'undefined' && element.value) {
-        contentObserver = new MutationObserver(measure);
-        contentObserver.observe(element.value, { childList: true, characterData: true, subtree: true });
-      }
     });
-    onUpdated(measure);
-    onBeforeUnmount(() => { disposed = true; observer?.disconnect(); contentObserver?.disconnect(); });
+    // 首次交互会重新测量；仅已创建提示的单元格跟随内容更新，避免整表反复读布局。
+    onUpdated(() => { if (activated.value) measure(); });
+    onBeforeUnmount(() => { disposed = true; observer?.disconnect(); unregister?.(); });
 
     return () => h('span', {
       ref: anchor, class: cn('block min-w-0 w-full', props.options.ui?.wrapper),

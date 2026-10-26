@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
@@ -8,29 +8,29 @@ import RebornPagination from '@/components/reborn-pagination/RebornPagination.vu
 import { paginationSizes } from '@/components/reborn-pagination/reborn-pagination.config'
 
 // Playground 状态
-const playPage = ref(1)
-const playPageSize = ref(10)
-const playTotal = ref(200)
-const playSize = ref<any>('md')
-const playBackground = ref(false)
-const playDisabled = ref(false)
-const playSimple = ref(false)
-const playHideOnSinglePage = ref(false)
+const playPage = shallowRef(1)
+const playPageSize = shallowRef(10)
+const playTotal = shallowRef(200)
+const playSize = shallowRef<typeof paginationSizes[number]>('md')
+const playBackground = shallowRef(false)
+const playDisabled = shallowRef(false)
+const playSimple = shallowRef(false)
+const playHideOnSinglePage = shallowRef(false)
 // 初值与组件默认值保持一致（双端默认均为 3）
-const playPagerCount = ref<any>(3)
-const playLayout = ref<any>('prev, pager, next')
-const playPageSizes = ref<number[]>([10, 20, 50, 100])
+const playPagerCount = shallowRef(3)
+const playLayout = shallowRef('prev, pager, next')
 
 // 事件日志（最多展示 6 条）
-const eventLog = ref<string[]>([])
+let eventId = 0
+const eventLog = ref<{ id: number, text: string }[]>([])
 
 function handlePlayCurrentChange(page: number) {
-  eventLog.value.push(`current-change: ${page}`)
+  eventLog.value.push({ id: ++eventId, text: `current-change: ${page}` })
   if (eventLog.value.length > 6) eventLog.value.shift()
 }
 
 function handlePlaySizeChange(size: number) {
-  eventLog.value.push(`size-change: ${size}`)
+  eventLog.value.push({ id: ++eventId, text: `size-change: ${size}` })
   if (eventLog.value.length > 6) eventLog.value.shift()
 }
 
@@ -50,7 +50,7 @@ const layoutOptions = [
 ]
 
 // 每页条数预设
-const pageSizePresetIdx = ref<any>(0)
+const pageSizePresetIdx = shallowRef(0)
 const pageSizePresets = [
   { label: '10/20/50/100', value: 0 },
   { label: '5/10/15/20', value: 1 },
@@ -62,29 +62,27 @@ const pageSizeLists = [
   [2, 4, 6, 8],
 ]
 
-watch(pageSizePresetIdx, (idx) => {
-  playPageSizes.value = pageSizeLists[idx] ?? [10, 20, 50, 100]
-})
+const playPageSizes = computed(() => pageSizeLists[pageSizePresetIdx.value] ?? pageSizeLists[0]!)
 
 // 独立示例状态
-const defaultPage = ref(1)
-const backgroundPage = ref(1)
-const simplePage = ref(1)
-const layoutPage = ref(1)
-const layoutPageSize = ref(20)
-const foldPage = ref(1)
-const hidePage = ref(1)
-const hideTotal = ref(10)
-const slotPage = ref(1)
-const slotPageSize = ref(10)
+const defaultPage = shallowRef(1)
+const backgroundPage = shallowRef(1)
+const simplePage = shallowRef(1)
+const layoutPage = shallowRef(1)
+const layoutPageSize = shallowRef(20)
+const foldPage = shallowRef(1)
+const hidePage = shallowRef(1)
+const hideTotal = shallowRef(10)
+const slotPage = shallowRef(1)
+const slotPageSize = shallowRef(10)
 
 function handleLayoutCurrentChange(page: number) {
-  eventLog.value.push(`layout current-change: ${page}`)
+  eventLog.value.push({ id: ++eventId, text: `layout current-change: ${page}` })
   if (eventLog.value.length > 6) eventLog.value.shift()
 }
 
 function handleLayoutSizeChange(size: number) {
-  eventLog.value.push(`layout size-change: ${size}`)
+  eventLog.value.push({ id: ++eventId, text: `layout size-change: ${size}` })
   if (eventLog.value.length > 6) eventLog.value.shift()
 }
 </script>
@@ -167,7 +165,7 @@ function handleLayoutSizeChange(size: number) {
 
       <view v-if="eventLog.length" class="flex flex-col gap-1">
         <text class="text-24 text-gray-5">事件日志</text>
-        <text v-for="(line, i) in eventLog" :key="i" class="text-24 text-gray-6">{{ line }}</text>
+        <text v-for="line in eventLog" :key="line.id" class="text-24 text-gray-6">{{ line.text }}</text>
       </view>
     </RebornCard>
 
@@ -232,11 +230,11 @@ function handleLayoutSizeChange(size: number) {
           </view>
         </template>
 
-        <template #pager-item="{ page, active }">
+        <template #pager-item="{ page, active, select }">
           <view
             class="px-3 h-[56rpx] inline-flex items-center justify-center rounded-full border"
             :class="active ? 'bg-primary text-white border-primary' : 'bg-white text-gray-6 border-gray-3'"
-            @tap="slotPage = page"
+            @tap="select"
           >
             <text class="text-24 font-medium">{{ page }}</text>
           </view>

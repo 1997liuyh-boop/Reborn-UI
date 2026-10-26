@@ -1,4 +1,4 @@
-import { getCurrentInstance, ref } from 'vue'
+import { getCurrentInstance, shallowRef } from 'vue'
 
 export function getRect(selector: string, all: boolean = false, context?: any) {
     return new Promise<any>((resolve) => {
@@ -22,23 +22,17 @@ export function getRect(selector: string, all: boolean = false, context?: any) {
 
 export function usePopover() {
     const { proxy } = getCurrentInstance() as any
-    const popStyle = ref<string>('')
-    const arrowStyle = ref<string>('')
-    const showStyle = ref<string>('')
+    const popStyle = shallowRef<string>('')
+    const arrowStyle = shallowRef<string>('')
 
-    const arrowSide = ref<'top' | 'bottom' | 'left' | 'right' | 'none'>('none')
+    const arrowSide = shallowRef<'top' | 'bottom' | 'left' | 'right' | 'none'>('none')
 
-    const popWidth = ref<number>(0)
-    const popHeight = ref<number>(0)
-    const left = ref<number>(0)
-    const bottom = ref<number>(0)
-    const width = ref<number>(0)
-    const height = ref<number>(0)
-    const top = ref<number>(0)
+    const width = shallowRef<number>(0)
+    const height = shallowRef<number>(0)
 
     function noop() { }
 
-    function init(
+    async function init(
         side: 'top' | 'right' | 'bottom' | 'left',
         align: 'start' | 'center' | 'end',
         visibleArrow: boolean,
@@ -52,20 +46,10 @@ export function usePopover() {
             arrowSide.value = 'none'
         }
 
-        getRect('#target', false, proxy).then((rect) => {
-            if (!rect) return
-            left.value = rect.left as number
-            bottom.value = rect.bottom as number
-            width.value = rect.width as number
-            height.value = rect.height as number
-            top.value = rect.top as number
-        })
-
-        getRect('#pos', false, proxy).then((rect) => {
-            if (!rect) return
-            popWidth.value = rect.width as number
-            popHeight.value = rect.height as number
-        })
+        const rect = await getRect('#target', false, proxy)
+        if (!rect) return
+        width.value = rect.width
+        height.value = rect.height
     }
 
     function control(
@@ -109,5 +93,5 @@ export function usePopover() {
         arrowStyle.value = placements.get(placement)?.[1] || placements.get('bottom')![1]
     }
 
-    return { popStyle, arrowStyle, showStyle, arrowSide, init, control, noop }
+    return { popStyle, arrowStyle, arrowSide, init, control, noop }
 }

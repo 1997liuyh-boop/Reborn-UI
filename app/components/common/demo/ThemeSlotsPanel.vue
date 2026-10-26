@@ -24,6 +24,7 @@
  * 按那种判定会被误算成弹层，让每张卡片都凭空多出几个命中。
  */
 import type { ComponentThemeGroup } from '~/utils/getComponentTheme'
+import { computed, getCurrentInstance, onBeforeUpdate, shallowRef } from 'vue'
 import { DEMO_SCOPE_ATTR } from './types'
 
 interface Props {
@@ -38,7 +39,26 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 /** 面板是否展开（开关由 DemoSection 的动作组持有，这里只提供收起入口） */
-const open = defineModel<boolean>('open', { default: false })
+const emit = defineEmits<{
+  'update:open': [value: boolean];
+}>();
+
+const openModel = defineModel<boolean>('open', { default: undefined });
+const instance = getCurrentInstance()!;
+const modelProps = shallowRef(instance.vnode.props ?? {});
+onBeforeUpdate(() => { modelProps.value = { ...instance.vnode.props }; });
+// 显式空模型按关闭读取，缺省状态独立保留本地交互。
+const localOpen = shallowRef(false);
+const open = computed({
+  get: () => Object.hasOwn(modelProps.value, 'open') ? !!instance.props.open : localOpen.value,
+  set: (value: boolean) => {
+    if (Object.hasOwn(modelProps.value, 'open')) emit('update:open', value);
+    else {
+      localOpen.value = value;
+      openModel.value = value;
+    }
+  },
+});
 
 /** 高亮时挂到目标节点上的类名（样式见文件底部的非 scoped 样式块） */
 const HIGHLIGHT_CLASS = 'reborn-theme-slot-highlight'
@@ -63,7 +83,7 @@ interface SlotHit {
 /** 选择器 -> 命中情况，用来把当前示例中不存在的 slot 置灰、并标出弹层节点 */
 const hits = ref<Record<string, SlotHit>>({})
 /** 当前高亮的选择器，用于给面板行加选中态 */
-const activeSelector = ref('')
+const activeSelector = shallowRef('')
 
 /** 已加上高亮类的节点，离开时逐个还原（不依赖再次查询，避免 DOM 变动后漏摘） */
 let highlighted: Element[] = []

@@ -13,6 +13,7 @@
     "web 与 uniapp 双端均可用。",
     "maxlength 默认 100，长内容需显式调大；showWordLimit 默认 true 但需设置 maxlength 才有意义。",
     "confirmType、cursorSpacing、adjustPosition、holdKeyboard、showConfirmBar 等属性对应 uniapp 原生 textarea 能力，主要在小程序 / App 端生效。",
-    "高度由 height（默认 140）与 rows（默认 4）共同影响，开启 autoHeight 后自动增高。"
+    "高度由 height（默认 140）与 rows（默认 4）共同影响，开启 autoHeight 后自动增高。",
+    "父级将modelValue置为null或undefined会清空文本和字数；UniApp expose的isFocus为只读状态。"
   ]
 }

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from '#components';
+
 /**
  * 总览卡片缩略：底部弹出的选择面板，含拖拽条、标题、单列滚轮与取消 / 确定按钮
  *

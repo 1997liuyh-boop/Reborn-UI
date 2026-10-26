@@ -17,6 +17,8 @@
     "total 为 0 时按 1 页显示且翻页按钮禁用，配合 hideOnSinglePage 可整组件隐藏。",
     "layout 使用逗号分隔的 token（prev/pager/next/jumper/total/sizes），未知 token 会被忽略。",
     "current-change 仅在页码实际变化时触发；size-change 触发后会先钳制当前页再判断是否补发 current-change。",
-    "pager 中省略号不是 pager-item，点击省略号会向对应方向跳 pagerCount - 2 页。"
+    "pager 中省略号不是 pager-item，点击省略号会向对应方向跳 pagerCount - 2 页。",
+    "自定义 pager-item 调用作用域中的 select() 选择该页，并绑定 disabled；select 会检查禁用、同步模型并触发 current-change。",
+    "UniApp 自定义根类名为 customClass；pager-item 插槽 select() 与默认页码共用禁用检查、模型同步和 current-change。"
   ]
 }

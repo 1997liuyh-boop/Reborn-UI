@@ -1,5 +1,7 @@
 <script lang="ts" setup>
-import { computed, getCurrentInstance, nextTick, onMounted, provide, reactive, ref, watch } from 'vue'
+import type { CSSProperties } from 'vue'
+import { computed, getCurrentInstance, nextTick, onMounted, reactive, shallowRef, watch } from 'vue'
+import { useBooleanModel } from '@/composables/useBooleanModel'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import { getSafeAreaBottomInset, getSystemInfo, isH5 } from '@/lib/device'
@@ -24,8 +26,6 @@ interface UiMap {
 }
 
 interface Props {
-    /** 绑定值，控制展开状态 */
-    modelValue?: boolean
     /** 是否默认展开 */
     active?: boolean
     /** 预设位置 */
@@ -66,7 +66,6 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    modelValue: false,
     active: false,
     position: 'right-bottom',
     direction: 'top',
@@ -89,28 +88,24 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-    'update:modelValue': [boolean]
     click: []
     /** 点击某条 items 动作 */
     action: [payload: { name: string; index: number }]
 }>()
 
-const { proxy } = getCurrentInstance() as any
-const isActive = defineModel<boolean>({ default: false })
+const instance = getCurrentInstance()
+if (!instance) throw new Error('[RebornFab] 必须在组件初始化期间调用')
+const { proxy } = instance
+defineModel<boolean>({ default: undefined })
+// active 只提供非受控初值，初始化不写模型也不派发事件。
+const isActive = useBooleanModel('modelValue', props.active)
 
-// 监听 active 属性初始化状态
-watch(() => props.active, (val) => {
-    isActive.value = val
-}, { immediate: true })
-
-provide('reborn-fab-active', isActive)
-
-const inited = ref(false)
-const top = ref(0)
-const left = ref(0)
+const inited = shallowRef(false)
+const top = shallowRef(0)
+const left = shallowRef(0)
 const fabSize = reactive({ width: 56, height: 56 })
 const screen = reactive({ width: 0, height: 0 })
-const attractTransition = ref(false)
+const attractTransition = shallowRef(false)
 
 // 边界限制
 const bounding = reactive({
@@ -212,7 +207,7 @@ function initPosition() {
 const touchOffset = reactive({ x: 0, y: 0 })
 const touchStart = reactive({ x: 0, y: 0 })
 /** 移动超过阈值才算拖拽，否则保持为点按（利于小程序端正常出 tap） */
-const touchDidDrag = ref(false)
+const touchDidDrag = shallowRef(false)
 const DRAG_THRESHOLD_PX = 8
 
 function handleTouchStart(e: TouchEvent) {
@@ -256,7 +251,7 @@ function handleTouchMove(e: TouchEvent) {
 }
 
 // 内部映射方向以便拖拽调整
-const fabDirection = ref(props.direction)
+const fabDirection = shallowRef(props.direction)
 
 // 监听方向变化，自动关闭菜单
 watch(() => props.direction, (val) => {
@@ -340,7 +335,7 @@ const triggerTouchStyle = computed(() => {
 
 /** 根层为 pointer-events-none，触发区需显式可命中；合并 H5 拖拽用 touch-action */
 const triggerWrapperStyle = computed(() => ({
-    ...(triggerTouchStyle.value as Record<string, unknown>),
+    ...triggerTouchStyle.value,
     pointerEvents: 'auto' as const
 }))
 
@@ -401,8 +396,8 @@ const actionsShellStyle = computed(() => {
 })
 
 // 内层：纯 flex 布局；使用 kebab-case 键，提升各端小程序样式序列化兼容性
-const actionsFlexStyle = computed(() => {
-    const flexDirection: Record<FabDirection, string> = {
+const actionsFlexStyle = computed<CSSProperties>(() => {
+    const flexDirection: Record<FabDirection, CSSProperties['flex-direction']> = {
         top: 'column-reverse',
         bottom: 'column',
         left: 'row-reverse',
@@ -429,18 +424,18 @@ defineExpose({
 </script>
 
 <template>
-    <view :class="uiClasses.root()" :style="[rootStyle as any, customStyle]" @mouseenter="handleMouseEnter"
+    <view :class="uiClasses.root()" :style="[rootStyle, customStyle]" @mouseenter="handleMouseEnter"
         @mouseleave="handleMouseLeave">
         <!-- 动作按钮组 -->
-        <view v-show="expandable" :class="uiClasses.actions()" :style="[actionsShellStyle as any]">
+        <view v-show="expandable" :class="uiClasses.actions()" :style="[actionsShellStyle]">
             <view class="reborn-fab-actions-inner" :class="`reborn-fab-actions-inner--${fabDirection}`"
-                :style="actionsFlexStyle as any">
+                :style="actionsFlexStyle">
                 <template v-if="hasItems">
                     <view v-for="(item, index) in items" :key="`${item.name}-${index}`" :class="cn(
                         uiClasses.action(),
                         item.disabled ? 'opacity-40 pointer-events-none' : '',
                         `bg-${item.color ?? 'primary'}`
-                    )" @tap.stop="onActionItemTap(item, index)" @click.stop="onActionItemTap(item, index)">
+                    )" @tap.stop="onActionItemTap(item, index)">
                         <view :class="['pointer-events-none', 'text-32', item.icon]" />
                     </view>
                 </template>
@@ -449,9 +444,9 @@ defineExpose({
         </view>
 
         <!-- 主触发按钮：勿在根节点绑定 touch + .prevent（易编译为 catch，阻断子级 tap）。uni-app 不支持 v-on="对象"，此处显式绑定。 -->
-        <view id="trigger" :style="triggerWrapperStyle as any" @touchstart="handleTouchStart"
+        <view id="trigger" :style="triggerWrapperStyle" @touchstart="handleTouchStart"
             @touchmove="handleTouchMove" @touchend="handleTouchEnd" @touchcancel="handleTouchEnd"
-            @tap.stop="activateTrigger" @click.stop="activateTrigger">
+            @tap.stop="activateTrigger">
             <slot name="trigger">
                 <view :class="uiClasses.trigger()">
                     <view class="pointer-events-none"

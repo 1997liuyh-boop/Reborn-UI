@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 const route = useRoute();
-const isRoot = isRootPage();
+const isRoot = useIsRootPage();
 
 /**
  * 后台管理式全宽外壳：非 root 文档页在 body 上挂 layout-admin-shell，
@@ -51,8 +51,9 @@ const pageStyle = computed(() =>
  * 用 padding 而非 margin：正文包装器是 UContainer 的第一个子元素，
  * 会命中带 `&:first-child { margin-inline-end: 0 }` 的工具类（伪类特异性更高），
  * margin-right 会被清零。
- * demo 注册在 SSR 期即由 ComponentPlayground 完成（useState 随 payload 下发），
- * 平台档位首屏固定为 web，水合后才恢复用户选择，服务端与客户端首帧一致。
+ * demo 由配置组件（reborn/configs/**）里的 ComponentPlayground 注册，这批组件是客户端模式，
+ * 水合之后才在客户端渲染，服务端渲染时还没有任何注册；平台档位也是水合后才恢复用户选择，
+ * 所以首帧一定不显示面板，服务端与客户端首帧一致。
  */
 const { isPanelVisible } = useUniDemoPanel();
 
@@ -72,8 +73,7 @@ const isComposablesDoc = computed(() => /^\/composables(?:\/|$)/.test(route.path
     <!-- 分类导航已并入主顶栏右侧（对齐 Arco header），不再渲染二级 AppHeaderNav -->
     <UContainer>
       <div class="min-w-0 transition-[padding] duration-200" :class="isPanelVisible ? '2xl:pr-[420px]' : undefined">
-        <!-- <UPage :key="route.fullPath"> -->
-        <UPage :key="route.path" :ui="isRoot ? undefined : threeColUi" :style="isRoot ? undefined : pageStyle">
+        <UPage :ui="isRoot ? undefined : threeColUi" :style="isRoot ? undefined : pageStyle">
           <template v-if="!isRoot" #left>
             <!--
               #left 槽只能有一个根节点（UPage 用 Slot 把栅格类合并到它身上），所以按钮与 UPageAside 一起包在这层里。
@@ -116,7 +116,7 @@ const isComposablesDoc = computed(() => /^\/composables(?:\/|$)/.test(route.path
         </UPage>
       </div>
 
-      <!-- 右侧移动端 demo 面板：fixed 常驻右缘，置于 :key 之外，路由切换时 iframe 复用；仅 UniApp 档展示 -->
+      <!-- 右侧移动端 demo 面板：fixed 常驻右缘，路由切换时 iframe 复用；仅 UniApp 档展示 -->
       <DocsMobilePanel />
     </UContainer>
   </UMain>

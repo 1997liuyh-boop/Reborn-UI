@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { useColorMode } from "@vueuse/core";
+import { useColorMode } from "#imports";
+import { computed } from "vue";
+import Sparkles from "~/components/reborn/ui/sparkles/Sparkles.vue";
 
-// 须在 setup 顶层调用：放进 computed 里会在 setup 之外注册生命周期钩子，触发 Vue 警告
+/** 在 setup 顶层读取站点主题，避免再创建主题写入器。 */
 const colorMode = useColorMode();
 /** 粒子颜色跟随亮暗模式 */
 const particlesColor = computed(() => (colorMode.value === "dark" ? "#FFFFFF" : "#000000"));

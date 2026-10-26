@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { useColorMode } from "@vueuse/core";
+import { useColorMode } from "#imports";
 import { computed } from "vue";
 
-// 须在 setup 顶层调用：放进 computed 里会在 setup 之外注册生命周期钩子，触发 Vue 警告
+// 读取站点现有主题，避免创建会改写全站 class 的独立主题状态
 const colorMode = useColorMode();
-const isDark = computed(() => colorMode.value == "dark");
+const isDark = computed(() => colorMode.value === "dark");
 const bgColor = computed(() => (isDark.value ? "#000" : "#fff"));
 </script>
 

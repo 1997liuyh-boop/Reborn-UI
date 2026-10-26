@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount } from "vue";
+import { onBeforeUnmount, onMounted, readonly, shallowRef, watch } from "vue";
 
 export interface RebornTypewriterProps {
   /** 要显示的文本内容 */
@@ -16,7 +16,7 @@ export interface RebornTypewriterProps {
   showCursor?: boolean;
   /** 光标闪烁速度（毫秒） */
   cursorBlinkSpeed?: number;
-  /** 是否在文本变化时重置 */
+  /** 文本变化时是否重新播放（先删旧文本再打新文本）；不影响挂载后的首次播放 */
   resetOnChange?: boolean;
   /** 自定义类名 */
   class?: any;
@@ -45,12 +45,12 @@ const emit = defineEmits<{
   "start-deleting": [];
 }>();
 
-const displayText = ref("");
-const isTyping = ref(false);
-const isDeleting = ref(false);
-const cursorVisible = ref(true);
+const displayText = shallowRef("");
+const isTyping = shallowRef(false);
+const isDeleting = shallowRef(false);
+const cursorVisible = shallowRef(true);
 
-// ─── Timer Management ───
+// ─── 定时器管理 ───
 
 type Timer = ReturnType<typeof setTimeout>;
 
@@ -72,7 +72,7 @@ function clearAllTimers() {
   (Object.keys(timers) as Array<keyof typeof timers>).forEach(clearTimer);
 }
 
-// ─── Cursor ───
+// ─── 光标 ───
 
 function startCursorBlink() {
   if (!props.showCursor) return;
@@ -89,7 +89,7 @@ function stopCursorBlink() {
   cursorVisible.value = true;
 }
 
-// ─── Animation Core ───
+// ─── 打字与删除 ───
 
 function typeText(target: string, index = 0) {
   if (index >= target.length) {
@@ -117,13 +117,26 @@ function deleteText(onComplete?: () => void) {
   timers.delete = setTimeout(() => deleteText(onComplete), props.deleteSpeed);
 }
 
+/**
+ * 中断在途的打字 / 删除 / 停顿。
+ * 通过 ref 手动调用时可能正有一条定时器链在跑，不先清掉会并行出现两条链，
+ * 句柄只记得最后一个，另一条卸载后仍会跑完并留下永不清除的光标 interval
+ */
+function interrupt() {
+  clearAllTimers();
+  isTyping.value = false;
+  isDeleting.value = false;
+}
+
 function startTyping(text: string) {
+  interrupt();
   emit("start-typing");
   stopCursorBlink();
   typeText(text);
 }
 
 function startDeleting(nextText?: string) {
+  interrupt();
   emit("start-deleting");
   stopCursorBlink();
   deleteText(() => {
@@ -133,7 +146,7 @@ function startDeleting(nextText?: string) {
   });
 }
 
-// ─── Text Change Handler ───
+// ─── 文本变化 ───
 
 function handleTextChange(newText: string) {
   clearAllTimers();
@@ -147,25 +160,31 @@ function handleTextChange(newText: string) {
   }
 }
 
+// 首次播放放在挂载后：SSR 不执行 onMounted，服务端不会启动定时器；
+// immediate watch 会在服务端 setup 里同步跑完打字并留下一个永不清理的光标 interval
+onMounted(() => handleTextChange(props.text));
+
 watch(
   () => props.text,
   (newText) => {
     if (props.resetOnChange) handleTextChange(newText);
   },
-  { immediate: true },
 );
 
 onBeforeUnmount(clearAllTimers);
 
-// ─── Expose ───
+// ─── 对外暴露 ───
 
 defineExpose({
   startTyping,
   startDeleting,
   clear: clearAllTimers,
-  displayText,
-  isTyping,
-  isDeleting,
+  /** 当前已显示的文本，只读：状态只能经 startTyping / startDeleting 改变，外部写入会打乱定时器链 */
+  displayText: readonly(displayText),
+  /** 是否正在打字，只读 */
+  isTyping: readonly(isTyping),
+  /** 是否正在删除，只读 */
+  isDeleting: readonly(isDeleting),
 });
 </script>
 

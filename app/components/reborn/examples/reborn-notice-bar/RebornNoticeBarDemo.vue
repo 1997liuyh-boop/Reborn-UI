@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { computed, shallowRef, useTemplateRef } from 'vue';
 import RebornNoticeBar from "~/components/reborn/ui/reborn-notice-bar/RebornNoticeBar.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
+const state = shallowRef<Record<string, any>>({
   text: "在代码的宇宙里，每一行都是一颗星星，照亮前行的路。愿你的代码如诗般优雅，如画般美丽，Bug 永远追不上你的脚步。",
   speed: 60,
   scrollable: true,
@@ -65,12 +66,19 @@ const noticeBarCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 可关闭示例的显隐状态 */
-const visible = ref(true);
-const noticeBarRef = ref<any>(null);
+const visible = shallowRef(true);
+const noticeBarRef = useTemplateRef<InstanceType<typeof RebornNoticeBar>>("noticeBarRef");
 
-/** 重新播放滚动动画 */
+/** 组件完成重播后派发 replay 事件，计数用来确认 replay() 已生效 */
+const replayCount = shallowRef(0);
+
+/** 通过模板 ref 调用暴露的 replay()，让滚动从头开始 */
 function handleReplay() {
   noticeBarRef.value?.replay();
+}
+
+function onReplay() {
+  replayCount.value++;
 }
 
 function handleClose() {
@@ -202,21 +210,30 @@ function handleClose() {
 
     <DemoSection
       title="事件与方法"
-      description="监听 close 事件实现关闭；通过模板 ref 调用 replay() 可重新播放滚动动画。"
+      description="通过模板 ref 调用 replay() 让滚动从头开始，重播完成后派发 replay 事件；点击右侧图标派发 close 事件，由业务决定是否隐藏。"
     >
       <DemoBlock layout="stack">
         <RebornNoticeBar
           ref="noticeBarRef"
-          text="点击右侧图标可重新播放滚动动画。"
-          right-icon="lucide:refresh-cw"
-          @click="handleReplay"
+          text="系统将于今晚 23:00 至次日 01:00 进行例行维护，期间订单导出、报表下载与发票申请暂不可用；维护结束后服务自动恢复，已提交的任务不受影响，请提前安排相关操作。"
+          @replay="onReplay"
         />
+        <div class="flex items-center gap-3">
+          <RebornButton
+            variant="soft"
+            size="sm"
+            label="重新播放"
+            @click="handleReplay"
+          />
+          <DemoNote tone="dimmed">
+            已重播 {{ replayCount }} 次
+          </DemoNote>
+        </div>
         <RebornNoticeBar
           v-if="visible"
           text="点击右侧图标即可关闭此通知栏。"
           right-icon="lucide:x"
           @close="handleClose"
-          @click="handleClose"
         />
         <RebornButton
           v-else

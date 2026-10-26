@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
@@ -11,14 +11,14 @@ const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', '
 // ─── 演练场状态 ─────────────────────────────────────────────────
 
 /** 演练场开关绑定值 */
-const playValue = ref(true)
-const currentSize = ref<typeof sizes[number]>('md')
-const currentColor = ref<typeof colors[number]>('primary')
-const isDisabled = ref(false)
-const isLoading = ref(false)
+const playValue = shallowRef(true)
+const currentSize = shallowRef<typeof sizes[number]>('md')
+const currentColor = shallowRef<typeof colors[number]>('primary')
+const isDisabled = shallowRef(false)
+const isLoading = shallowRef(false)
 
 /** change 触发次数，让交互「有回应」 */
-const changeCount = ref(0)
+const changeCount = shallowRef(0)
 function onPlayChange() {
   changeCount.value++
 }
@@ -26,24 +26,24 @@ function onPlayChange() {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 颜色矩阵演示 */
-const colorValue = ref(true)
+const colorValue = shallowRef(true)
 /** 形态演示 */
-const typeValue = ref(true)
+const typeValue = shallowRef(true)
 /** 自定义颜色演示 */
-const customColorValue = ref(true)
+const customColorValue = shallowRef(true)
 /** 点内文本演示 */
-const inlineValue = ref(true)
+const inlineValue = shallowRef(true)
 /** 尺寸演示 */
-const sizeValue = ref(true)
+const sizeValue = shallowRef(true)
 /** 自定义取值演示：绑定 'yes' / 'no' 而非布尔 */
-const customValue = ref('yes')
+const customValue = shallowRef('yes')
 /** 拦截切换演示 */
-const beforeChangeValue = ref(false)
+const beforeChangeValue = shallowRef(false)
 /** 加载与插槽演示 */
-const loadingValue = ref(true)
-const iconValue = ref(true)
+const loadingValue = shallowRef(true)
+const iconValue = shallowRef(true)
 /** 样式定制演示 */
-const styledValue = ref(true)
+const styledValue = shallowRef(true)
 
 /** 二次确认：uni.showModal 取消时回滚本次切换 */
 function handleBeforeChange() {

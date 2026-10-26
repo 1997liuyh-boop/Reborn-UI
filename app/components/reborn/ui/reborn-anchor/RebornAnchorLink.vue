@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AnchorContext, AnchorLinkMeta } from "./reborn-anchor.config";
-import { computed, inject, onBeforeUnmount, onMounted, shallowReactive, shallowRef, watchEffect } from "vue";
+import type { AnchorLinkMeta } from "./reborn-anchor.config";
+import { computed, inject, onBeforeUnmount, onMounted, shallowReactive, useTemplateRef, watchEffect } from "vue";
 import { ANCHOR_INJECTION_KEY } from "./reborn-anchor.config";
 
 defineOptions({
@@ -22,10 +22,10 @@ export interface RebornAnchorLinkProps {
   offset?: number;
 }
 
-const ctx = inject<AnchorContext | null>(ANCHOR_INJECTION_KEY, null);
+const ctx = inject(ANCHOR_INJECTION_KEY, null);
 if (!ctx) throw new Error("[RebornAnchorLink] 必须作为 RebornAnchor 的子组件使用");
 
-const el = shallowRef<HTMLElement>();
+const el = useTemplateRef<HTMLElement>("el");
 
 /** 登记到父级的元信息，父级据此判定选中项、测量标记位置，并在点击时读取跳转相关配置 */
 const meta = shallowReactive<AnchorLinkMeta>({ href: props.href });
@@ -46,7 +46,7 @@ const sublistClass = computed(() => ctx.sublistClass.value);
 const linkClass = computed(() => ctx.linkClass(isActive.value));
 
 onMounted(() => {
-  meta.el = el.value;
+  meta.el = el.value ?? undefined;
   // setup 顺序在链接被插入到中间时会失真，挂载后由父级按 DOM 先后重排
   ctx.sortLinks();
 });

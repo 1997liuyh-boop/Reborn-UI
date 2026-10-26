@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, shallowRef } from "vue";
+import { useControlledModel } from "~/composables/useControlledModel";
 
 interface Props {
   initialValue?: number;
@@ -26,8 +27,14 @@ const props = withDefaults(defineProps<Props>(), {
   borderRadius: 8,
 });
 
-const value = ref(props.initialValue);
-const active = ref(0);
+// 双向绑定当前比例（0-100）；未绑定 v-model 时以 initialValue 为初值、由组件内部保存
+defineModel<number | null>();
+const value = useControlledModel<number>("modelValue", {
+  initial: props.initialValue,
+  // 数值滑块的显式空值复位到初始比例，不沿用交互副本。
+  resolve: next => (next as number | null | undefined) ?? props.initialValue,
+});
+const active = shallowRef(0);
 
 const shift = computed(() =>
   value.value > props.minShiftLimit && value.value < props.maxShiftLimit ? 1 : 0,
@@ -54,7 +61,7 @@ const sliderTrackStyles = computed(() => ({
 }));
 
 const leftColorHsl = computed(() => {
-  const [h, s, l] = hexToHsl(props.leftColor);
+  const [h, s] = hexToHsl(props.leftColor);
   const alpha = 0.4;
   const lightness = 24 + (30 * (100 - value.value)) / 100;
   return `hsl(${h} ${s}% ${lightness}% / ${alpha})`;
@@ -67,30 +74,31 @@ const rightColorHsl = computed(() => {
 });
 
 const indicatorColorHsl = computed(() => {
-  const [h, s, l] = hexToHsl(props.indicatorColor); // Base color as hex, here white (#ffffff)
-  const activeAlpha = active.value * 0.5 + 0.5; // Calculate alpha based on active state
+  // 指示器基色（默认白色），透明度随激活状态变化
+  const [h, s, l] = hexToHsl(props.indicatorColor);
+  const activeAlpha = active.value * 0.5 + 0.5;
   return `hsl(${h} ${s}% ${l}% / ${activeAlpha})`;
 });
 
 const borderRadiusInPx = computed(() => `${props.borderRadius}px`);
 
 function hexToHsl(hex: string): [number, number, number] {
-  // Remove "#" if present
+  // 去掉开头的 "#"
   hex = hex.replace(/^#/, "");
 
-  // Parse r, g, b values
+  // 解析 r、g、b 分量
   const r = Number.parseInt(hex.substring(0, 2), 16) / 255;
   const g = Number.parseInt(hex.substring(2, 4), 16) / 255;
   const b = Number.parseInt(hex.substring(4, 6), 16) / 255;
 
-  // Find min and max values of r, g, b
+  // 求 r、g、b 的最大值与最小值
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   let h = 0;
   let s = 0;
   const l = (max + min) / 2;
 
-  if (max != min) {
+  if (max !== min) {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
     switch (max) {
@@ -122,9 +130,9 @@ function hexToHsl(hex: string): [number, number, number] {
     @touchstart="active = 1"
     @touchend="active = 0"
   >
+    <!-- range 输入写回的是字符串，用 .number 转成数字；不写死 id，避免多实例时重复 -->
     <input
-      id="track"
-      v-model="value"
+      v-model.number="value"
       type="range"
       min="0"
       max="100"
@@ -238,7 +246,7 @@ function hexToHsl(hex: string): [number, number, number] {
   transition: left var(--update);
 }
 
-/* Range input styles */
+/* range 输入的样式 */
 [type="range"]::-webkit-slider-thumb {
   appearance: none;
   height: 120px;

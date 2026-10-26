@@ -22,11 +22,11 @@ async function buildFixture() {
       contents: `
         import SelectTrigger from '~/components/reborn/ui/reborn-select-trigger/RebornSelectTrigger.vue';
         import {createApp,h,nextTick,reactive} from 'vue';
-        const state=reactive({open:false,side:'top',align:'start',portal:true,autoAdjustOverflow:false});
+        const state=reactive({open:false,side:'top',align:'start',portal:true,autoAdjustOverflow:false,arrow:false,offset:undefined});
         window.directionFixture={state,flush:nextTick};
         createApp({render:()=>h('main',{class:'h-[2000px]'},[
           h(SelectTrigger,{isOpen:state.open,side:state.side,align:state.align,portal:state.portal,
-            autoAdjustOverflow:state.autoAdjustOverflow,closeOn:'click',
+            autoAdjustOverflow:state.autoAdjustOverflow,closeOn:'click',arrow:state.arrow,offset:state.offset,
             class:'absolute left-80 top-[600px] w-60',ui:{dropdown:'fixture-dropdown'},
             onClose:()=>state.open=false
           },{trigger:()=>h('button',{id:'trigger',class:'h-10 w-full'},'选择内容'),
@@ -150,5 +150,20 @@ it('向下展开保持顶部固定，向上展开期间滚动后仍贴住触发�
     const scrolledTrigger = (await page.locator('#trigger').boundingBox())!;
     const scrolled = await sampleAt(page, 120);
     assert.ok(Math.abs(scrolled.bottom - scrolledTrigger.y + 4) <= 1, `滚动后的底边仍紧贴触发器：${JSON.stringify(scrolled)}`);
+  });
+});
+
+it('未传 offset 时按是否带箭头取默认间距：无箭头 4px、带箭头 12px，显式 offset 优先', { skip: !existsSync(executablePath) }, async () => {
+  await withTrigger(async (page) => {
+    const trigger = (await page.locator('#trigger').boundingBox())!;
+    for (const [value, expected] of [[{ arrow: false }, 4], [{ arrow: true }, 12], [{ arrow: true, offset: 6 }, 6]] as const) {
+      await configure(page, { side: 'bottom', offset: undefined, ...value, open: true });
+      await finishEnter(page);
+      const panel = (await page.locator('.fixture-dropdown').boundingBox())!;
+      const gap = panel.y - trigger.y - trigger.height;
+      assert.ok(Math.abs(gap - expected) <= 1, `${JSON.stringify(value)} 的间距应为 ${expected}px，实际 ${gap}`);
+      await configure(page, { open: false });
+      await page.waitForFunction(() => !document.querySelector('.fixture-dropdown'));
+    }
   });
 });

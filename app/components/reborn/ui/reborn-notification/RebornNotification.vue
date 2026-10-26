@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { CSSProperties } from 'vue';
+import type { CSSProperties, FunctionalComponent, VNode } from 'vue';
 import type {
   NotificationInstance,
   NotificationNode,
   NotificationPlacement,
   NotificationProgressOptions,
 } from './reborn-notification.config';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, shallowRef } from 'vue';
 import { useMotionList } from '@/composables/useMotionList';
 import { cn } from '~/lib/utils';
 import {
@@ -22,31 +22,68 @@ import {
 
 defineOptions({ name: 'RebornNotification' });
 
-/** 按位置分组：四个角各自维护一条堆叠队列 */
-const stacks = computed(() =>
-  notificationPlacements.map(placement => ({
-    placement,
-    items: notificationState.list.filter(item => item.placement === placement),
-  })),
-);
-
 /** 飘带位置：未开启为 none，true 视作贴左 */
 function ribbonSide(item: NotificationInstance): 'none' | 'left' | 'right' {
   if (!item.ribbon) return 'none';
   return item.ribbon === true ? 'left' : item.ribbon;
 }
 
-/** 取单条通知的样式构建器 */
-function themeOf(item: NotificationInstance) {
-  return notificationTheme({
+/** 进度条选项：仅在开启 progress 且会自动关闭时才有意义 */
+function progressOf(item: NotificationInstance): NotificationProgressOptions | null {
+  if (!item.progress || item.duration <= 0) return null;
+  return typeof item.progress === 'object' ? item.progress : {};
+}
+
+/**
+ * 单条通知的派生数据：槽位类名在这里一次算好。
+ * 原先模板里每个节点各调一次 themeOf，一条通知一次渲染要做十余次 tailwind-variants 合成与 twMerge
+ */
+function buildEntry(item: NotificationInstance) {
+  const progress = progressOf(item);
+  const ribbon = ribbonSide(item);
+  const t = notificationTheme({
     placement: item.placement,
     type: item.type,
-    ribbon: ribbonSide(item),
+    ribbon,
     clickable: Boolean(item.onClick),
-    withProgress: Boolean(progressOf(item)),
-    stripedFlow: Boolean(progressOf(item)?.striped && progressOf(item)?.stripedFlow),
+    withProgress: Boolean(progress),
+    stripedFlow: Boolean(progress?.striped && progress.stripedFlow),
   });
+  const o = item.ui ?? {};
+  return {
+    item,
+    progress,
+    ribbon,
+    ui: {
+      root: cn(t.root(), item.customClass, o.root),
+      header: cn(t.header(), o.header),
+      iconWrapper: cn(t.iconWrapper(), o.iconWrapper),
+      icon: cn(t.icon(), o.icon),
+      headerContent: cn(t.headerContent(), o.headerContent),
+      title: cn(t.title(), o.title),
+      message: cn(t.message(), o.message),
+      close: cn(t.close(), o.close),
+      body: cn(t.body(), o.body),
+      footer: cn(t.footer(), o.footer),
+      progressTrack: cn(t.progressTrack(), o.progressTrack),
+      progressFill: cn(t.progressFill(), progress?.class, o.progressFill),
+      progressStripes: cn(t.progressStripes(), o.progressStripes),
+      ribbon: cn(t.ribbon(), o.ribbon),
+    },
+  };
 }
+
+/** 按位置分组：四个角各自维护一条堆叠队列；悬停暂停只改 paused，不会让这里重算 */
+const stacks = computed(() =>
+  notificationPlacements.map((placement) => {
+    const items = notificationState.list.filter(item => item.placement === placement);
+    return {
+      placement,
+      wrapperClass: cn(notificationTheme({ placement }).wrapper(), items[0]?.ui?.wrapper),
+      entries: items.map(buildEntry),
+    };
+  }),
+);
 
 /**
  * 视口滚动条占位（px）。position: fixed 的包含块不含经典滚动条，
@@ -54,14 +91,15 @@ function themeOf(item: NotificationInstance) {
  * 这里实测滚动条宽 / 高并从贴边值里扣掉，让四个方向的视觉留白一致；
  * 覆盖式滚动条（移动端 / macOS）或页面不滚动时测得 0，不产生任何影响。
  */
-const gutter = ref({ x: 0, y: 0 });
+const gutter = shallowRef({ x: 0, y: 0 });
 
 function measureGutter() {
   const doc = document.documentElement;
-  gutter.value = {
-    x: Math.max(0, window.innerWidth - doc.clientWidth),
-    y: Math.max(0, window.innerHeight - doc.clientHeight),
-  };
+  const x = Math.max(0, window.innerWidth - doc.clientWidth);
+  const y = Math.max(0, window.innerHeight - doc.clientHeight);
+  // 页面高度一变 ResizeObserver 就会回调，数值不变时不赋值，避免容器跟着重渲染
+  if (x === gutter.value.x && y === gutter.value.y) return;
+  gutter.value = { x, y };
 }
 
 let gutterObserver: ResizeObserver | null = null;
@@ -116,10 +154,20 @@ const listMotion = useMotionList({
 });
 const vMotionList = listMotion.directive;
 
-/** VNode（或返回 VNode 的函数）走 component :is 渲染 */
-function asComponent(node?: NotificationNode) {
+type RenderableNode = VNode | (() => VNode);
+
+/**
+ * 渲染通知里的自定义节点（VNode 或返回 VNode 的函数）。
+ * 组件类型固定为同一个函数式组件，容器重渲染时按同类型 patch，节点里的组件状态、焦点不会被卸载重挂
+ */
+const RenderNode: FunctionalComponent<{ node: RenderableNode | null }> = props =>
+  (typeof props.node === 'function' ? props.node() : props.node);
+RenderNode.props = ['node'];
+
+/** 取可渲染的自定义节点：字符串或未传时返回 null，交给模板走文本 / 图标名分支 */
+function nodeOf(node?: NotificationNode): RenderableNode | null {
   if (!node || typeof node === 'string') return null;
-  return typeof node === 'function' ? node : () => node;
+  return node;
 }
 
 /** 图标名：设置了 type 时按 type 取默认图标（type 覆盖 icon），否则用字符串形式的 icon */
@@ -133,9 +181,9 @@ function hasIcon(item: NotificationInstance) {
   return Boolean(item.type || item.icon);
 }
 
-/** 自定义图标为 VNode 且未被 type 覆盖时，走组件渲染 */
-function iconComponent(item: NotificationInstance) {
-  return item.type ? null : asComponent(item.icon);
+/** 自定义图标为 VNode 且未被 type 覆盖时，走节点渲染 */
+function iconNode(item: NotificationInstance) {
+  return item.type ? null : nodeOf(item.icon);
 }
 
 /** 关闭图标：缺省 lucide:x */
@@ -153,15 +201,9 @@ function headerVisible(item: NotificationInstance) {
   return Boolean(item.title || inlineMessage(item) || hasIcon(item) || item.showClose);
 }
 
-/** 进度条选项：仅在开启 progress 且会自动关闭时才有意义 */
-function progressOf(item: NotificationInstance): NotificationProgressOptions | null {
-  if (!item.progress || item.duration <= 0) return null;
-  return typeof item.progress === 'object' ? item.progress : {};
-}
-
 /** 轨道高度：数字视为 px，缺省 3px */
-function progressTrackStyle(item: NotificationInstance): CSSProperties {
-  const size = progressOf(item)?.size;
+function progressTrackStyle(progress: NotificationProgressOptions): CSSProperties {
+  const size = progress.size;
   return { height: typeof size === 'number' ? `${size}px` : (size ?? '3px') };
 }
 
@@ -169,15 +211,14 @@ function progressTrackStyle(item: NotificationInstance): CSSProperties {
  * 填充层动画：scaleX 从 1 线性收到 0，时长即 duration（毫秒）；
  * 悬停暂停时冻结在当前进度（与计时器的剩余时长保持一致）
  */
-function progressFillStyle(item: NotificationInstance): CSSProperties {
-  const options = progressOf(item);
+function progressFillStyle(item: NotificationInstance, progress: NotificationProgressOptions): CSSProperties {
   return {
     animationName: 'reborn-notification-progress',
     animationDuration: `${item.duration}ms`,
     animationTimingFunction: 'linear',
     animationFillMode: 'forwards',
     animationPlayState: item.paused ? 'paused' : 'running',
-    ...(options?.strokeColor ? { backgroundColor: options.strokeColor } : {}),
+    ...(progress.strokeColor ? { backgroundColor: progress.strokeColor } : {}),
   };
 }
 
@@ -193,37 +234,37 @@ function handleMouseLeave(item: NotificationInstance) {
   <TransitionGroup
     v-for="stack in stacks" :key="stack.placement"
     v-motion-list tag="div" :css="false"
-    :class="cn(notificationTheme({ placement: stack.placement }).wrapper(), stack.items[0]?.ui?.wrapper)" :style="wrapperStyle(stack.placement)"
+    :class="stack.wrapperClass" :style="wrapperStyle(stack.placement)"
     @enter="listMotion.enter" @leave="listMotion.leave"
     @enter-cancelled="listMotion.cancel"
     @leave-cancelled="listMotion.cancel"
   >
     <div
-      v-for="item in stack.items" :key="item.id"
+      v-for="{ item, ui, progress, ribbon } in stack.entries" :key="item.id"
       :data-placement="stack.placement"
-      :class="cn(themeOf(item).root(), item.customClass, item.ui?.root)"
+      :class="ui.root"
       :style="item.style"
       role="alert" aria-live="polite"
       @click="item.onClick?.($event)"
       @mouseenter="handleMouseEnter(item)"
       @mouseleave="handleMouseLeave(item)"
     >
-      <div v-if="headerVisible(item)" :class="cn(themeOf(item).header(), item.ui?.header)">
-        <span v-if="hasIcon(item)" :class="cn(themeOf(item).iconWrapper(), item.ui?.iconWrapper)">
-          <component :is="iconComponent(item)" v-if="iconComponent(item)" />
-          <Icon v-else :name="iconName(item)" :class="cn(themeOf(item).icon(), item.ui?.icon)" />
+      <div v-if="headerVisible(item)" :class="ui.header">
+        <span v-if="hasIcon(item)" :class="ui.iconWrapper">
+          <RenderNode v-if="iconNode(item)" :node="iconNode(item)" />
+          <Icon v-else :name="iconName(item)" :class="ui.icon" />
         </span>
 
-        <div :class="cn(themeOf(item).headerContent(), item.ui?.headerContent)">
-          <span v-if="item.title" :class="cn(themeOf(item).title(), item.ui?.title)">{{ item.title }}</span>
+        <div :class="ui.headerContent">
+          <span v-if="item.title" :class="ui.title">{{ item.title }}</span>
           <!-- eslint-disable-next-line vue/no-v-html -->
           <p
             v-if="inlineMessage(item) && item.dangerouslyUseHTMLString"
-            :class="cn(themeOf(item).message(), item.ui?.message)" v-html="inlineMessage(item)"
+            :class="ui.message" v-html="inlineMessage(item)"
           />
           <p
             v-else-if="inlineMessage(item)"
-            :class="cn(themeOf(item).message(), item.ui?.message)"
+            :class="ui.message"
           >
             {{ inlineMessage(item) }}
           </p>
@@ -231,45 +272,47 @@ function handleMouseLeave(item: NotificationInstance) {
 
         <span
           v-if="item.showClose"
-          :class="cn(themeOf(item).close(), item.ui?.close)"
+          :class="ui.close"
           role="button" aria-label="关闭"
           @click.stop="closeNotification(item.id)"
         >
-          <component :is="asComponent(item.closeIcon)" v-if="asComponent(item.closeIcon)" />
+          <RenderNode v-if="nodeOf(item.closeIcon)" :node="nodeOf(item.closeIcon)" />
           <Icon v-else :name="closeIconName(item)" class="size-full" />
         </span>
       </div>
 
       <!-- VNode / 函数形式的正文独立成段，与头部间隔 20px -->
-      <div v-if="asComponent(item.message)" :class="cn(themeOf(item).body(), item.ui?.body)">
-        <component :is="asComponent(item.message)" />
+      <div v-if="nodeOf(item.message)" :class="ui.body">
+        <RenderNode :node="nodeOf(item.message)" />
       </div>
 
-      <div v-if="item.footer" :class="cn(themeOf(item).footer(), item.ui?.footer)">
-        <component :is="asComponent(item.footer)" v-if="asComponent(item.footer)" />
+      <div v-if="item.footer" :class="ui.footer">
+        <RenderNode v-if="nodeOf(item.footer)" :node="nodeOf(item.footer)" />
         <template v-else>{{ item.footer }}</template>
       </div>
 
       <div
-        v-if="progressOf(item)"
-        :class="cn(themeOf(item).progressTrack(), item.ui?.progressTrack)"
-        :style="progressTrackStyle(item)"
+        v-if="progress"
+        :class="ui.progressTrack"
+        :style="progressTrackStyle(progress)"
       >
+        <!-- key 带版本号：同 key 更新后重建填充层，进度动画与重置后的计时一起从头开始 -->
         <div
-          :class="cn(themeOf(item).progressFill(), progressOf(item)?.class, item.ui?.progressFill)"
-          :style="progressFillStyle(item)"
+          :key="`${item.id}-${item.version}`"
+          :class="ui.progressFill"
+          :style="progressFillStyle(item, progress)"
         >
           <div
-            v-if="progressOf(item)?.striped"
-            :class="cn(themeOf(item).progressStripes(), item.ui?.progressStripes)"
+            v-if="progress.striped"
+            :class="ui.progressStripes"
           />
         </div>
       </div>
 
       <!-- 飘带放在最后渲染，保证 3px 竖条压在进度条轨道之上通栏贯穿 -->
       <div
-        v-if="ribbonSide(item) !== 'none'"
-        :class="cn(themeOf(item).ribbon(), item.ui?.ribbon)"
+        v-if="ribbon !== 'none'"
+        :class="ui.ribbon"
         aria-hidden="true"
       />
     </div>

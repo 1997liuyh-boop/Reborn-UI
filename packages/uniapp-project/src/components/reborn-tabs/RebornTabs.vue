@@ -2,6 +2,7 @@
 import type {
   TabKey,
   TabPaneMeta,
+  TabPaneRegistration,
   TabsColor,
   TabsDirection,
   TabsPosition,
@@ -13,13 +14,15 @@ import type {
 import {
   computed,
   getCurrentInstance,
+  nextTick,
   onBeforeUnmount,
   onMounted,
+  onUpdated,
   provide,
-  ref,
   shallowRef,
   watch,
 } from 'vue'
+import { flattenVNodes } from '@/composables/useChildren'
 import { cn } from '@/lib/utils'
 import theme, { TABS_INJECTION_KEY } from './reborn-tabs.config'
 
@@ -106,6 +109,7 @@ const activeKey = defineModel<TabKey | undefined>('activeKey', { default: undefi
 const instance = getCurrentInstance()
 /** 标签页登记表，顺序即头部渲染顺序 */
 const panes = shallowRef<TabPaneMeta[]>([])
+const paneInstances = new Map<TabPaneMeta, NonNullable<ReturnType<typeof getCurrentInstance>>>()
 
 /** position 为左右时强制纵向；direction 为 vertical 时把上下位置折算成左侧 */
 const isVertical = computed(
@@ -186,9 +190,9 @@ const sliderClass = computed(() =>
 const STAGE_TRANSITION_DURATION = 280
 
 /** 锁定期间写进 stage 的行内高度，为空表示已释放回 auto */
-const stageHeight = ref('')
+const stageHeight = shallowRef('')
 /** 锁定标志单独存一个：写入新高度的那一刻 stageHeight 会短暂相等，不能靠它反推是否在锁定中 */
-const stageLocked = ref(false)
+const stageLocked = shallowRef(false)
 let stageTimer: ReturnType<typeof setTimeout> | undefined
 
 const stageStyle = computed<Record<string, string>>(() =>
@@ -239,16 +243,55 @@ function tabClass(pane: TabPaneMeta, index: number) {
   }).tab({ class: uiOverrides.value.tab })
 }
 
-/** 未写 key 的标签页按登记顺序补序号，计数器随组件实例独立 */
+const tabClasses = computed(() => panes.value.map(tabClass))
+let disposed = false
+let refreshTimer: ReturnType<typeof setTimeout> | undefined
+let sortPending = false
+let measureVersion = 0
+
+/** 显式 order 优先；H5 可回退到 VNode，MP 静态项保留登记顺序。 */
+function sortPanes() {
+  if (disposed || sortPending) return
+  sortPending = true
+  nextTick(() => {
+    sortPending = false
+    if (disposed) return
+    if (panes.value.every(pane => typeof pane.order === 'number' && Number.isFinite(pane.order))) {
+      const sorted = [...panes.value].sort((a, b) => a.order! - b.order!)
+      if (sorted.some((pane, index) => pane !== panes.value[index])) panes.value = sorted
+      return
+    }
+    if (!instance?.subTree) return
+    const positions = new Map(flattenVNodes(instance.subTree).flatMap((vnode, index) =>
+      vnode.component ? [[vnode.component.uid, index] as const] : [],
+    ))
+    const sorted = [...panes.value].sort((a, b) => {
+      const first = positions.get(paneInstances.get(a)?.uid ?? -1)
+      const second = positions.get(paneInstances.get(b)?.uid ?? -1)
+      return first === undefined || second === undefined ? 0 : first - second
+    })
+    if (sorted.some((pane, index) => pane !== panes.value[index])) panes.value = sorted
+  })
+}
+
+watch(() => panes.value.map(pane => pane.order), sortPanes)
+
+/** 未写 paneKey 的静态面板自动编号；动态列表须显式传业务标识与 order。 */
 let autoKey = 0
 
-function addPane(meta: TabPaneMeta) {
-  if (meta.key === undefined || meta.key === null) meta.key = autoKey++
-  panes.value = [...panes.value, meta]
+function addPane(meta: TabPaneRegistration): TabPaneMeta {
+  const pane = Object.assign(meta, { key: meta.key ?? autoKey++ })
+  const child = getCurrentInstance()
+  if (child) paneInstances.set(pane, child)
+  panes.value = [...panes.value, pane]
+  sortPanes()
+  return pane
 }
 
 function removePane(meta: TabPaneMeta) {
+  paneInstances.delete(meta)
   panes.value = panes.value.filter(item => item !== meta)
+  sortPanes()
 }
 
 /** 主轴上的起点与长度，起点已归一到滚动容器的内容坐标 */
@@ -260,19 +303,19 @@ interface AxisRect {
 const itemRects = shallowRef<AxisRect[]>([])
 const titleRects = shallowRef<AxisRect[]>([])
 /** 滚动容器可视区在主轴上的长度 */
-const viewSize = ref(0)
+const viewSize = shallowRef(0)
 /** 滚动容器当前的滚动量，auto 模式据此判断标签是否已在可视区域内 */
-const currentScroll = ref(0)
+const currentScroll = shallowRef(0)
 /** 写回 scroll-view 的滚动量，仅在数值变化时才会触发滚动 */
-const scrollOffset = ref(0)
+const scrollOffset = shallowRef(0)
 
-const indicatorOffset = ref(0)
-const indicatorSize = ref(0)
-const indicatorVisible = ref(false)
+const indicatorOffset = shallowRef(0)
+const indicatorSize = shallowRef(0)
+const indicatorVisible = shallowRef(false)
 
-const sliderOffset = ref(0)
-const sliderSize = ref(0)
-const sliderVisible = ref(false)
+const sliderOffset = shallowRef(0)
+const sliderSize = shallowRef(0)
+const sliderVisible = shallowRef(false)
 
 /** 指示器位置由测量标题得到，写成行内样式避免为每个位置生成一套类名 */
 const indicatorStyle = computed<Record<string, string>>(() => {
@@ -291,10 +334,10 @@ const indicatorStyle = computed<Record<string, string>>(() => {
 })
 
 /** 交叉轴的压扁量，0 表示不压；只有液体类型会写非零值 */
-const sliderSquash = ref(0)
+const sliderSquash = shallowRef(0)
 /** 分段写入的行内过渡时长与缓动，为空表示沿用类名上的默认过渡 */
-const sliderDuration = ref('')
-const sliderEasing = ref('')
+const sliderDuration = shallowRef('')
+const sliderEasing = shallowRef('')
 
 /**
  * 选中底板的位置。交叉轴已由 position 变体钉满，这里只写主轴位移与长度。
@@ -472,6 +515,8 @@ function lockStage() {
 
 /** 量取头部各节点的位置，小程序端只能通过 createSelectorQuery 异步取得 */
 function measure() {
+  if (disposed) return
+  const version = ++measureVersion
   const vertical = isVertical.value
   const query = uni.createSelectorQuery().in(instance?.proxy)
   query.select('.reborn-tabs__scroll').boundingClientRect()
@@ -481,6 +526,7 @@ function measure() {
   // 用 active 专属类单点查询而非按下标取：v-show 隐藏的兄弟节点量出 0，小程序对它们的返回还不一致
   query.select('.reborn-tabs__pane--active').boundingClientRect()
   query.exec((nodes: any[]) => {
+    if (disposed || version !== measureVersion) return
     const wrapper = nodes?.[0]
     if (!wrapper) {
       indicatorVisible.value = false
@@ -514,7 +560,8 @@ function measure() {
 
 /** 重新测量；用 setTimeout 而非 nextTick，确保视图层已完成渲染再取布局 */
 function refresh() {
-  setTimeout(measure, 50)
+  clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(measure, 50)
 }
 
 function switchTo(key: TabKey) {
@@ -566,9 +613,13 @@ watch(
   },
 )
 
-onMounted(refresh)
+onMounted(() => { sortPanes(); refresh() })
+onUpdated(sortPanes)
 
 onBeforeUnmount(() => {
+  disposed = true
+  measureVersion++
+  clearTimeout(refreshTimer)
   if (liquidTimer !== undefined) clearTimeout(liquidTimer)
   if (stageTimer !== undefined) clearTimeout(stageTimer)
 })
@@ -580,6 +631,7 @@ provide(TABS_INJECTION_KEY, {
   animation: computed(() => props.animation),
   paneClass,
   addPane,
+  sortPanes,
   removePane,
 })
 
@@ -616,7 +668,7 @@ defineExpose({
               v-for="(pane, index) in panes"
               :key="pane.key"
               class="reborn-tabs__item"
-              :class="tabClass(pane, index)"
+              :class="tabClasses[index]"
               @tap="handleTabClick(pane)"
               @mouseenter="handleTabHover(pane)"
             >

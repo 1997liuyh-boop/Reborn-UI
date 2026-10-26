@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornCheckbox from '@/components/reborn-checkbox/RebornCheckbox.vue'
 import RebornCheckboxGroup from '@/components/reborn-checkbox/RebornCheckboxGroup.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 
-const checked1 = ref(true)
-const checked2 = ref(false)
+const checked1 = shallowRef(true)
+const checked2 = shallowRef(false)
+const customRound = shallowRef(true)
+const customIcon = shallowRef(true)
+const colorChecked = ref<Record<string, boolean>>({})
+const sizeChecked = ref<Record<string, boolean>>({})
 const groupValues = ref(['Option A'])
 const sizes = ['sm', 'md', 'lg'] as const
 const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', 'neutral'] as const
@@ -53,8 +57,8 @@ const variantMatrix = [
     note: '选中不填充背景，只把边框与图标染成配色；半选时边框保持灰色，中间是同色实心小方块。',
   },
 ]
-const variantUnchecked = ref(false)
-const variantChecked = ref(true)
+const variantUnchecked = ref({ filled: false, outlined: false })
+const variantChecked = ref({ filled: true, outlined: true })
 
 /** outlined 变体的配色对照 */
 const variantColors = ['primary', 'success', 'warning', 'error'] as const
@@ -165,8 +169,8 @@ const variantColors = ['primary', 'success', 'warning', 'error'] as const
           variant="{{ item.variant }}"
         </text>
         <view class="flex flex-wrap items-center gap-[32rpx]">
-          <RebornCheckbox v-model="variantUnchecked" :variant="item.variant" label="未选" />
-          <RebornCheckbox v-model="variantChecked" :variant="item.variant" label="选中" />
+          <RebornCheckbox v-model="variantUnchecked[item.variant]" :variant="item.variant" label="未选" />
+          <RebornCheckbox v-model="variantChecked[item.variant]" :variant="item.variant" label="选中" />
           <RebornCheckbox :model-value="false" :variant="item.variant" indeterminate label="半选" />
         </view>
         <text class="text-xs text-slate-400">{{ item.note }}</text>
@@ -248,13 +252,13 @@ const variantColors = ['primary', 'success', 'warning', 'error'] as const
           md:grid-cols-2
         ">
         <!-- Custom UI -->
-        <RebornCheckbox v-model="checked1" color="error" label="完全圆角 (Custom UI)" :ui="{
+        <RebornCheckbox v-model="customRound" color="error" label="完全圆角 (Custom UI)" :ui="{
           control: 'rounded-full size-6',
           icon: 'size-4',
         }" />
 
         <!-- Custom Slot -->
-        <RebornCheckbox v-model="checked1" color="error" label="自定义图标、大小 (Slot)" :ui="{
+        <RebornCheckbox v-model="customIcon" color="error" label="自定义图标、大小 (Slot)" :ui="{
           control: 'size-8 rounded-lg group-[.is-checked]:bg-orange-5 group-[.is-checked]:border-green-5',
         }">
           <template #icon="{ checked }">
@@ -281,12 +285,12 @@ const variantColors = ['primary', 'success', 'warning', 'error'] as const
 
     <!-- Colors -->
     <RebornCard title="颜色 (Colors)" custom-class="flex flex-wrap gap-2">
-      <RebornCheckbox v-for="color in colors" :key="color" v-model="checked1" :color="color" :label="color" />
+      <RebornCheckbox v-for="color in colors" :key="color" v-model="colorChecked[color]" :color="color" :label="color" />
     </RebornCard>
 
     <!-- Sizes -->
     <RebornCard title="尺寸 (Sizes)" custom-class="flex flex-wrap gap-2">
-      <RebornCheckbox v-for="size in sizes" :key="size" v-model="checked1" :size="size" :label="`Size ${size}`" />
+      <RebornCheckbox v-for="size in sizes" :key="size" v-model="sizeChecked[size]" :size="size" :label="`Size ${size}`" />
     </RebornCard>
   </RebornPage>
 </template>

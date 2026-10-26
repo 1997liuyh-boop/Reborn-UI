@@ -210,7 +210,7 @@ await delayedDialog.open();
 | `modal`                   | `boolean`                                  | `true`       | 是否需要遮罩层；`false` 时遮罩变为透明，仍拦截点击。                                                                                         |
 | `modal-penetrable`        | `boolean`                                  | `false`      | 是否允许穿透遮罩层与背后页面交互；`modal` 必须为 `false` 才生效。                                                                            |
 | `append-to-body`          | `boolean`                                  | `false`      | 是否插入至 body（本实现默认已挂载 body，该属性用于强制指回 body）。                                                                          |
-| `append-to`               | `string \| HTMLElement`                    | `'body'`     | 挂载到哪个 DOM 元素；`append-to-body` 为真时以它为准。                                                                                       |
+| `append-to`               | `string \| HTMLElement`                    | `'body'`     | 挂载到哪个 DOM 元素，打开时解析，找不到目标或选择器非法时回退 body；`append-to-body` 为真时以后者为准。                                      |
 | `lock-scroll`             | `boolean`                                  | `true`       | 出现时是否锁定 body 滚动；多个 Dialog 共享引用计数，最后一个关闭 200ms 后才解锁。                                                            |
 | `open-delay`              | `number`                                   | `0`          | 打开延时，单位毫秒。                                                                                                                         |
 | `close-delay`             | `number`                                   | `0`          | 关闭延时，单位毫秒。                                                                                                                         |
@@ -226,10 +226,10 @@ await delayedDialog.open();
 | `close-icon`              | `string`                                   | `'lucide:x'` | 自定义关闭按钮图标名。                                                                                                                       |
 | `header-aria-level`       | `string`                                   | `'2'`        | 标题的 `aria-level` 属性。                                                                                                                   |
 | `transition`              | `DialogTransition`                         | `'scale'`    | 面板过渡动画：`scale` 缩放 / `slide` 滑动 / `fade` 淡入淡出 / `bounce` 弹跳；也接受任意 RebornTransition 过渡名或属性对象（`name` / `duration` 等）。 |
-| `scrollable`              | `boolean`                                  | `false`      | 正文区域是否独立滚动（页头页脚固定，扩展属性），滚动条为浮层式、悬停或滚动时显示；关闭时根节点会拦截滚轮事件。                               |
+| `scrollable`              | `boolean`                                  | `false`      | 正文区域是否独立滚动（页头页脚固定，扩展属性），滚动条为浮层式、悬停或滚动时显示；关闭时根节点拦截滚轮事件，但放行面板里还能继续滚动的元素。 |
 | `cancelBtn`               | `string \| false \| ButtonProps`           | `'取消'`     | 取消按钮配置，传 `false` 时隐藏（扩展属性）；默认 `neutral` + `outlined`。                                                                   |
 | `confirmBtn`              | `string \| false \| ButtonProps`           | `'确认'`     | 确认按钮配置，传 `false` 时隐藏（扩展属性）；默认 `filled`。                                                                                 |
-| `z-index`                 | `number`                                   | `2400`       | Dialog 根层级；嵌套时不会自动递增。                                                                                                          |
+| `z-index`                 | `number`                                   | `2400`       | 基础层级，打开时生效；嵌套弹窗或与 Drawer 叠放时自动递增，保证后打开的在上层。                                                               |
 | `class`                   | `any`                                      | `-`          | 自定义弹窗面板类名（作用于 `panel` 节点，不是根节点）。                                                                                      |
 | `ui`                      | `RebornDialogUi`                           | `{}`         | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                                                                                 |
 
@@ -333,9 +333,11 @@ await delayedDialog.open();
 - **确认按钮不会自动关闭**。点击确认只触发 `confirm`，需要自己把 `v-model` 置为 `false`；点击取消会先触发 `cancel`，再执行关闭流程。
 - **直接改 `v-model` 不经过 `before-close`**。拦截只作用于关闭按钮、取消按钮、遮罩、`Esc` 和 expose 的 `close()` / `handleClose()`。
 - **没有标题区就没有关闭按钮**。关闭图标放在头部条里，既没传 `title` / `describe` 也没填 `header` 插槽时，`show-close` 为真也不会显示，此时应保证按钮区或遮罩能关闭。
-- **嵌套时按一次 `Esc` 会同时关闭所有打开的层**。每个 Dialog 打开期间各自在 `document` 上监听 `keydown`，不区分最上层；需要逐层关闭时给外层设 `close-on-press-escape="false"`，或用 `before-close` 拦截。
-- **嵌套弹窗不会自动递增 `z-index`**。各层都是 2400，靠挂载先后决定上下；挂到不同容器时需要手动给内层更大的 `zIndex`。
-- **长内容必须开 `scrollable`**。未开启时根节点会 `preventDefault` 滚轮事件（`modalPenetrable` 生效时除外），面板本身 `overflow-hidden`，超长内容既滚不动也看不全。
+- **嵌套时 `Esc` 只关闭最上层**。Dialog 与 Drawer 共用一个弹层栈，按一次 `Esc` 只有最后打开的那一层响应；最上层设了 `close-on-press-escape="false"` 时，这次 `Esc` 不会落到下面一层。
+- **`z-index` 是基础层级，嵌套时自动递增**。打开时从弹层栈分配实际层级：不低于 `z-index`，且比栈里已打开的弹层高 2，所以内层 Dialog、Dialog 里打开的 Drawer 都会盖在外层之上；打开期间修改 `z-index` 要到下次打开才生效。
+- **长内容必须开 `scrollable`**。未开启时根节点会 `preventDefault` 滚轮事件（`modalPenetrable` 生效时除外），面板本身 `overflow-hidden`，超长内容既滚不动也看不全。面板里自带滚动的元素（带最大高度的表格、内容超出的 textarea、关闭 portal 的下拉列表）不受影响，能正常滚动；滚到尽头后滚轮仍被拦截，不会带动背后页面。
+- **`append-to` 在打开时解析**。目标节点可以晚于 Dialog 渲染（写在模板后面或在 `v-if` 分支里），只要打开时已存在即可；仍找不到或选择器非法时回退到 body。
+- **未声明的属性透传到面板**。Dialog 关闭了自动继承，`id`、`style`、`data-*`、`aria-*` 与未声明的事件监听都落在 `panel` 节点上（与 `class` 一致），不是 Teleport 根节点。
 - `destroy-on-close=false`（默认）时首开后内容 DOM 常驻，重开即复用；开启后每次关闭都会销毁内容。
 - **关闭时一并收起内部浮层**。面板里展开着的下拉类组件（Select、Cascader、DatePicker、TimePicker、TreeSelect、Dropdown）、Popover / Popconfirm / ColorPicker 与 Tooltip 会在弹窗开始关闭的同时收起；内容常驻时它们不会再留在页面上，重开弹窗也是收起状态。
 - 打开时焦点移入面板，关闭后归还给打开前的焦点元素（例如 trigger 按钮）。

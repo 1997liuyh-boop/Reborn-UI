@@ -1,7 +1,18 @@
 import type { ClassValue } from "clsx";
+import type { ComputedRef, InjectionKey } from "vue";
 
 /** 父子组件通信用的 provide/inject 键 */
-export const BREADCRUMB_INJECTION_KEY = "reborn-breadcrumb";
+export interface BreadcrumbContext {
+  separator: Readonly<ComputedRef<string | number>>;
+  separatorIcon: Readonly<ComputedRef<any>>;
+  collapsing: Readonly<ComputedRef<boolean>>;
+  ui: Readonly<ComputedRef<BreadcrumbUI>>;
+  indexOfItemUid: (uid: number) => number;
+  isItemCollapsed: (index: number) => boolean;
+  isItemFirst: (index: number) => boolean;
+  isItemLast: (index: number) => boolean;
+}
+export const BREADCRUMB_INJECTION_KEY: InjectionKey<BreadcrumbContext> = Symbol('reborn-breadcrumb');
 
 /** 面包屑下拉菜单项：label 为展示文案，path 为点击后的跳转地址 */
 export interface BreadcrumbDroplistItem {

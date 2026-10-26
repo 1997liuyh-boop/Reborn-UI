@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CSSProperties } from "vue";
-import { computed, reactive, ref } from "vue";
+import { computed, onUnmounted, reactive, shallowRef, useTemplateRef } from "vue";
 
 interface BaseProps {
   class?: string;
@@ -9,22 +9,20 @@ interface BaseProps {
   height?: number;
 }
 
-// Props for static image mode
 interface StaticImageProps extends BaseProps {
   isStatic?: true;
   imageSrc?: string;
-  url?: string; // optional in static mode
+  url?: string; // 静态模式可省略
 }
 
-// Props for URL preview mode
 interface URLPreviewProps extends BaseProps {
-  isStatic?: false; // optional but must be false if specified
-  imageSrc?: string; // optional in URL mode
+  isStatic?: false; // 网址模式为 false
+  imageSrc?: string; // 网址模式可省略
   url?: string;
 }
 
-// Combined type that enforces the requirements
 type Props = StaticImageProps | URLPreviewProps;
+
 const props = withDefaults(defineProps<Props>(), {
   isStatic: false,
   imageSrc: "",
@@ -33,12 +31,12 @@ const props = withDefaults(defineProps<Props>(), {
   height: 125,
 });
 
-const isVisible = ref(false);
-const isLoading = ref(true);
-const preview = ref<HTMLElement | null>(null);
-const hasPopped = ref(false);
+const isVisible = shallowRef(false);
+const preview = useTemplateRef<HTMLElement>("preview");
+let popTimer: ReturnType<typeof setTimeout> | undefined;
+const hasPopped = shallowRef(false);
 
-// Generate preview URL
+// 生成预览地址
 const previewSrc = computed(() => {
   if (props.isStatic) return props.imageSrc;
 
@@ -57,13 +55,13 @@ const previewSrc = computed(() => {
   return `https://api.microlink.io/?${params.toString()}`;
 });
 
-// Position tracking
+// 记录指针位置
 const mousePosition = reactive({
   x: 0,
   y: 0,
 });
 
-// Calculate preview position
+// 计算预览位置
 const previewStyle = computed<CSSProperties>(() => {
   if (!preview.value) return {};
 
@@ -87,13 +85,13 @@ const previewStyle = computed<CSSProperties>(() => {
   };
 });
 
-// Image specific styling
+// 图片尺寸
 const imageStyle = computed<CSSProperties>(() => ({
   width: `${props.width}px`,
   height: `${props.height}px`,
 }));
 
-// Pop animation class
+// 弹出动画
 const popClass = computed(() => {
   if (!hasPopped.value) return "";
   return "animate-pop";
@@ -106,27 +104,24 @@ function handleMouseMove(event: MouseEvent) {
 
 function showPreview() {
   isVisible.value = true;
-  setTimeout(() => {
+  clearTimeout(popTimer);
+  popTimer = setTimeout(() => {
     hasPopped.value = true;
   }, 50);
 }
 
 function hidePreview() {
+  clearTimeout(popTimer);
   isVisible.value = false;
   hasPopped.value = false;
 }
 
-function handleImageLoad() {
-  isLoading.value = false;
-}
+onUnmounted(() => clearTimeout(popTimer));
 </script>
 
 <template>
-  <div
-    class="relative inline-block"
-    :class="[props.class]"
-  >
-    <!-- Trigger -->
+  <div class="relative inline-block" :class="[props.class]">
+    <!-- 触发链接 -->
     <NuxtLink
       :to="url"
       class="text-black dark:text-white"
@@ -138,20 +133,13 @@ function handleImageLoad() {
       <slot />
     </NuxtLink>
 
-    <!-- Preview -->
-    <div
-      v-if="isVisible"
-      ref="preview"
-      class="pointer-events-none absolute z-50"
-      :style="previewStyle"
-    >
+    <!-- 预览 -->
+    <div v-if="isVisible" ref="preview" class="pointer-events-none absolute z-50" :style="previewStyle">
       <div
         class="overflow-hidden rounded-xl shadow-xl"
         :class="[popClass, { 'transform-gpu': !props.isStatic }]"
       >
-        <div
-          class="block rounded-xl border-2 border-transparent bg-white p-1 shadow-lg dark:bg-gray-900"
-        >
+        <div class="block rounded-xl border-2 border-transparent bg-white p-1 shadow-lg dark:bg-gray-900">
           <img
             :src="previewSrc"
             :width="width"
@@ -159,13 +147,13 @@ function handleImageLoad() {
             class="size-full rounded-lg object-cover"
             :style="imageStyle"
             alt="preview"
-            @load="handleImageLoad"
-          />
+          >
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .transform-gpu {

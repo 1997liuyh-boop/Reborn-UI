@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornTabbar from '@/components/reborn-tabbar/RebornTabbar.vue'
 import RebornTabbarTrigger from '@/components/reborn-tabbar/RebornTabbarTrigger.vue'
 import { tabbarAnimations, tabbarShapes, tabbarColors } from '@/components/reborn-tabbar/reborn-tabbar.config'
@@ -11,55 +11,33 @@ import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornText from '@/components/reborn-text/RebornText.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 
-const tabbar = ref('home')
-const tabbar1 = ref(1)
-const tabbar2 = ref(3)
-const tabbar3 = ref(1)
-const animation = ref<typeof tabbarAnimations[number] | null>(null)
-const shape = ref<typeof tabbarShapes[number]>('normal')
-const fixed = ref(false)
-const demoColor = ref<typeof tabbarColors[number]>(tabbarColors[0])
-const onlyIcon = ref(false)
+const tabbar = shallowRef('home')
+const tabbar1 = shallowRef(1)
+const tabbar2 = shallowRef(3)
+const fixedTabbar = shallowRef('home')
+const animation = shallowRef<typeof tabbarAnimations[number] | null>(null)
+const shape = shallowRef<typeof tabbarShapes[number]>('normal')
+const fixed = shallowRef(false)
+const demoColor = shallowRef<typeof tabbarColors[number]>(tabbarColors[0])
+const onlyIcon = shallowRef(false)
 
-const tabbarList = computed(() => {
-    const obj = {
-        home: '首页',
-        site: '分类',
-        shopping: '购物车',
-        my: '我的',
-    }
-    return Object.entries(obj).map(([key, value]) => {
-        return {
-            name: key,
-            title: value,
-            icon: `https://mall.leyifan.cn/static/h5/new_images/${key}_active.png`,
-            inactive: `https://mall.leyifan.cn/static/h5/new_images/${key}.png`,
-        }
-    })
+const tabbarTitles = { home: '首页', site: '分类', shopping: '购物车', my: '我的' }
+const tabbarList = Object.entries(tabbarTitles).map(([name, title]) => ({
+    name,
+    title,
+    icon: `https://mall.leyifan.cn/static/h5/new_images/${name}_active.png`,
+    inactive: `https://mall.leyifan.cn/static/h5/new_images/${name}.png`,
+}))
 
-})
-
-function handleChange(event: any) {
-    console.log(event)
+function handleChange({ value }: { value: string | number }) {
+    uni.showToast({ title: `选中标签: ${value}`, icon: 'none' })
 }
 
 
-function handleChange1({ value }: { value: string }) {
+function handleChange1({ value }: { value: string | number }) {
     uni.showToast({ title: '选中标签: ' + value, icon: 'none' })
 }
 
-function beforeChangeHook({ name }: { name: string | number }, done: (shouldProceed?: boolean) => void) {
-    uni.showLoading({ title: '校验中' })
-    setTimeout(() => {
-        uni.hideLoading()
-        if (name === 2) {
-            uni.showToast({ title: '请登录', icon: 'error' })
-            done(false)
-            return
-        }
-        done()
-    }, 500)
-}
 </script>
 
 <template>
@@ -67,7 +45,7 @@ function beforeChangeHook({ name }: { name: string | number }, done: (shouldProc
 
         <RebornTabbar bordered :animation="animation" :shape="shape" v-model="tabbar" :fixed="fixed" :color="demoColor"
             :pure-icon="onlyIcon" @change="handleChange" :ball-shift-y="-10">
-            <RebornTabbarTrigger v-for="item in tabbarList" :key="item.name" :name="item.name" :title="item.title"
+            <RebornTabbarTrigger v-for="(item, index) in tabbarList" :key="item.name" :order="index" :name="item.name" :title="item.title"
                 :image-size="52" :icon="item.icon" :inactive="item.inactive" />
         </RebornTabbar>
 
@@ -139,11 +117,12 @@ function beforeChangeHook({ name }: { name: string | number }, done: (shouldProc
         <!-- 监听切换事件 -->
         <view class="text-26 font-bold mt-4 mb-2">监听切换事件+固定底部</view>
         <view class="relative w-full bg-gray-2 rounded-md ">
-            <RebornTabbar bordered :animation="animation" :shape="shape" v-model="tabbar" :fixed="true"
+            <RebornTabbar v-if="!fixed" bordered :animation="animation" :shape="shape" v-model="fixedTabbar" :fixed="true"
                 :color="demoColor" :pure-icon="onlyIcon" @change="handleChange1" :ball-shift-y="-10">
-                <RebornTabbarTrigger v-for="item in tabbarList" :key="item.name" :name="item.name" :title="item.title"
+                <RebornTabbarTrigger v-for="(item, index) in tabbarList" :key="item.name" :order="index" :name="item.name" :title="item.title"
                     :image-size="52" :icon="item.icon" :inactive="item.inactive" />
             </RebornTabbar>
+      <text v-else class="text-[24rpx] text-gray-500">当前由顶部配置示例占用固定底栏。</text>
         </view>
 
     </RebornPage>

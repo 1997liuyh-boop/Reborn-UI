@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import { badgeColors, badgeSizes, badgeVariants } from '@/components/reborn-badge/reborn-badge.config'
 import RebornBadge from '@/components/reborn-badge/RebornBadge.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
@@ -10,14 +10,13 @@ import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 
 // 演练场状态
-const color = ref<(typeof badgeColors)[number]>('primary')
-const variant = ref<(typeof badgeVariants)[number]>('filled')
-const size = ref<(typeof badgeSizes)[number]>('md')
-const label = ref('乐一番')
-const closable = ref(false)
-const square = ref(false)
-const round = ref(false)
-const showBadge = ref(true)
+const color = shallowRef<(typeof badgeColors)[number]>('primary')
+const variant = shallowRef<(typeof badgeVariants)[number]>('filled')
+const size = shallowRef<(typeof badgeSizes)[number]>('md')
+const label = shallowRef('乐一番')
+const closable = shallowRef(false)
+const round = shallowRef(false)
+const showBadge = shallowRef(true)
 
 /** 可选中标签演示数据：四种视觉风格各一个 */
 const checkTags = ref(
@@ -47,7 +46,7 @@ function handleCheckChange(label: string, checked: boolean) {
       <view class="flex-1 p-10 flex items-center justify-center min-h-[300rpx] bg-blue-1">
         <RebornBadge
           v-model:show="showBadge" :color="color" :variant="variant" :size="size" :label="label"
-          :closable="closable" :square="square" :round="round" @close="handleClose"
+          :closable="closable" :round="round" @close="handleClose"
         />
       </view>
       <!-- 控制项 -->

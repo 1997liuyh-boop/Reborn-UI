@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { dropdownSelectColors, dropdownSelectSizes } from './reborn-dropdown-select.config'
-import { computed, getCurrentInstance, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, shallowRef, watch } from 'vue'
 import RebornSelectTrigger from '@/components/reborn-select-trigger/RebornSelectTrigger.vue'
 import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
 import { useFormInject } from '@/composables/useFieldGroup'
@@ -66,7 +66,7 @@ const resolvedSize = computed(() => fieldGroupSize.value || props.size)
 /** 最终生效的禁用态：表单禁用或组件自身禁用 */
 const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled)
 
-const isOpen = ref(false)
+const isOpen = shallowRef(false)
 
 const selectedLabel = computed(() => {
   const option = props.options.find(opt => opt.value === model.value)
@@ -82,13 +82,17 @@ const ui = computed(() => {
     disabled: isDisabled.value,
   })
 
+  const itemClasses = [false, true].map(selected => ({
+    item: styles.item({ selected, class: props.ui?.item }),
+    text: styles.itemText({ selected, class: props.ui?.itemText }),
+  }))
   return {
     wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class, props.ui?.wrapper) }),
     trigger: (opts?: { class?: any }) => styles.trigger({ class: cn(opts?.class, props.ui?.trigger) }),
     panel: (opts?: { class?: any }) => styles.panel({ class: cn(opts?.class, props.ui?.panel) }),
     content: (opts?: { class?: any }) => styles.content({ class: cn(opts?.class, props.ui?.content) }),
-    item: (opts?: { class?: any, selected?: boolean }) => styles.item({ selected: opts?.selected, class: cn(opts?.class, props.ui?.item) }),
-    itemText: (opts?: { class?: any, selected?: boolean }) => styles.itemText({ selected: opts?.selected, class: cn(opts?.class, props.ui?.itemText) }),
+    item: (opts?: { class?: any, selected?: boolean }) => cn(itemClasses[opts?.selected ? 1 : 0].item, opts?.class),
+    itemText: (opts?: { class?: any, selected?: boolean }) => cn(itemClasses[opts?.selected ? 1 : 0].text, opts?.class),
     itemIcon: (opts?: { class?: any }) => styles.itemIcon({ class: cn(opts?.class, props.ui?.itemIcon) }),
     empty: (opts?: { class?: any }) => styles.empty({ class: cn(opts?.class, props.ui?.empty) }),
     mask: (opts?: { class?: any }) => styles.mask({ class: cn(opts?.class, props.ui?.mask) }),
@@ -104,10 +108,10 @@ const ui = computed(() => {
  */
 const proxy = getCurrentInstance()?.proxy
 /** 面板是否挂在 DOM 上：收起动画结束后才真正移除 */
-const panelRendered = ref(false)
+const panelRendered = shallowRef(false)
 /** 外壳内联高度：数值为动画中的像素值，null 表示 auto */
-const panelHeight = ref<number | null>(0)
-const panelOpacity = ref(0)
+const panelHeight = shallowRef<number | null>(0)
+const panelOpacity = shallowRef(0)
 /** 动画时长，需与 panel 槽位的 duration-200 一致 */
 const PANEL_DURATION = 200
 /** 每次开合递增，用于丢弃上一轮尚未执行完的定时回调 */

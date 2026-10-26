@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+import { useTimeoutFn } from "@vueuse/core";
+import { computed, shallowRef } from "vue";
+
 interface Cards {
   logo: string;
 }
@@ -22,56 +25,94 @@ const {
   ...props
 } = defineProps<Props>();
 
-const card = ref<HTMLElement[]>();
+// 实际列数：不足 4 张时按张数排成一行，否则固定 4 列
+const columns = computed(() => Math.min(Math.max(props.cards.length, 1), 4));
 
-function adjacentCardItems(i: number): HTMLElement[] {
-  return [i - 1, i + 1, i - 4, i + 4]
-    .filter((index) => {
-      if (index < 0 || index > 15) return false;
-      if (i % 4 === 0 && index === i - 1) return false;
-      if (i % 4 === 3 && index === i + 1) return false;
-      return true;
-    })
-    ?.map((index) => card.value?.[index]) as HTMLElement[];
+// 悬停状态由响应式数据驱动类名，不再直接改 DOM 的 classList；
+// 指针离开后该卡片保留 200ms 再回落（lingeringIndex），重新进入时立即取消回落
+const hoveredIndex = shallowRef<number | null>(null);
+const lingeringIndex = shallowRef<number | null>(null);
+const { start: startLinger, stop: stopLinger } = useTimeoutFn(
+  () => {
+    lingeringIndex.value = null;
+  },
+  200,
+  { immediate: false },
+);
+
+function handleEnter(index: number) {
+  hoveredIndex.value = index;
+  if (lingeringIndex.value === index) {
+    stopLinger();
+    lingeringIndex.value = null;
+  }
 }
 
-function removeCardClasses(el: HTMLElement, adjacentCards: HTMLElement[]) {
-  el.classList.remove("card-raised-big");
-  adjacentCards.forEach((adjacentCard) => {
-    adjacentCard?.classList.remove("card-raised-small");
-  });
+function handleLeave(index: number) {
+  if (hoveredIndex.value === index) hoveredIndex.value = null;
+  lingeringIndex.value = index;
+  startLinger();
 }
 
-onMounted(() => {
-  card.value?.forEach((el, i) => {
-    const { isOutside } = useMouseInElement(el);
-    const adjacentCards = adjacentCardItems(i);
-    // add class when mouse is inside the element
-    const removeClasses = useDebounceFn(() => removeCardClasses(el, adjacentCards), 200);
-    watch(isOutside, (isOutside) => {
-      if (!isOutside) {
-        el.classList.add("card-raised-big");
-        adjacentCards.forEach((adjacentCard) => {
-          adjacentCard?.classList.add("card-raised-small");
-        });
-      } else {
-        removeClasses();
-      }
-    });
-  });
+/** 按实际列数计算上下左右相邻卡片的下标 */
+function adjacentOf(index: number): number[] {
+  const cols = columns.value;
+  const total = props.cards.length;
+  const result: number[] = [];
+  if (index % cols !== 0) result.push(index - 1);
+  if (index % cols !== cols - 1 && index + 1 < total) result.push(index + 1);
+  if (index - cols >= 0) result.push(index - cols);
+  if (index + cols < total) result.push(index + cols);
+  return result;
+}
+
+const raisedBig = computed(() => {
+  const set = new Set<number>();
+  if (hoveredIndex.value !== null) set.add(hoveredIndex.value);
+  if (lingeringIndex.value !== null) set.add(lingeringIndex.value);
+  return set;
+});
+
+const raisedSmall = computed(() => {
+  const set = new Set<number>();
+  for (const index of raisedBig.value) {
+    for (const adjacent of adjacentOf(index)) {
+      if (!raisedBig.value.has(adjacent)) set.add(adjacent);
+    }
+  }
+  return set;
 });
 </script>
 
 <template>
-  <div class="relative block" :class="[props.class]">
-    <div class="relative grid w-full max-w-full items-center justify-center"
-      :class="[props.cards.length < 4 ? `grid-cols-${props.cards.length}` : 'grid-cols-4']" :style="{
+  <div
+    class="relative block"
+    :class="[props.class]"
+  >
+    <div
+      class="relative grid w-full max-w-full items-center justify-center"
+      :class="[props.cards.length < 4 ? `grid-cols-${props.cards.length}` : 'grid-cols-4']"
+      :style="{
         transform: `perspective(${perspective}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-      }">
-      <div v-for="(item, index) in props.cards" :key="index" ref="card"
+      }"
+    >
+      <div
+        v-for="(item, index) in props.cards"
+        :key="index"
         class="card block rounded border border-transparent px-3 py-5 transition-all duration-200"
-        :style="{ zIndex: index + 1 }">
-        <slot name="logo" :logo="item.logo" :index="index" />
+        :class="{
+          'card-raised-big': raisedBig.has(index),
+          'card-raised-small': raisedSmall.has(index),
+        }"
+        :style="{ zIndex: index + 1 }"
+        @mouseenter="handleEnter(index)"
+        @mouseleave="handleLeave(index)"
+      >
+        <slot
+          name="logo"
+          :logo="item.logo"
+          :index="index"
+        />
       </div>
     </div>
   </div>

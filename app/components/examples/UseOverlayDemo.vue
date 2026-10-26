@@ -65,7 +65,8 @@ function closeAll() {
 function checkStatus() {
   console.log('Dialog 状态:', overlay.isOpen(dialog.id));
   console.log('抽屉状态:', overlay.isOpen(popup.id));
-  console.log('所有 overlays:', overlay.overlays);
+  // overlays 是计算属性，增删与开关都会反映，读取当前值要取 .value
+  console.log('所有 overlays:', overlay.overlays.value);
 }
 </script>
 

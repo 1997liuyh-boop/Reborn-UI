@@ -13,6 +13,7 @@
     "web 与 uniapp 双端均可用。",
     "uniapp 页面滚动场景须把 onPageScroll 的滚动距离传给 scrollTop prop，否则无法正确判断吸附。",
     "isNeedNavbarHeight 默认 true，H5 端会自动叠加 navbarHeight（默认 44px）作为吸顶偏移。",
-    "position 支持 top / bottom，底部吸附还受 bottomBoundary 与 bottomPlaceholder 影响。"
+    "position 支持 top / bottom，底部吸附还受 bottomBoundary 与 bottomPlaceholder 影响。",
+    "Web 暴露的 rect 为只读；通过 forceUpdate() 重新采集同帧几何快照。Sticky 通过类型化登记协调后代 Collapse 动画，动画期间暂停吸顶切换，结束后统一测量。"
   ]
 }

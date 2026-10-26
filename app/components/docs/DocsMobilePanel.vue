@@ -3,7 +3,7 @@
  * DocsMobilePanel —— 文档页右侧常驻的移动端 demo 面板（三栏布局的右栏）
  *
  * 设计要点：
- * - 挂在布局层（docs.vue）且位于 UPage :key 之外，文档路由切换时组件实例持久，
+ * - 挂在布局层（docs.vue），文档路由切换时组件实例持久，
  *   iframe 里的 uniapp H5 运行时得以复用；切换 demo 走 same-document 的 hash 导航
  *   （location.replace），不整页重载、不污染父页 history；
  * - fixed 右栏：贴视口右缘、占满主顶栏以下整个高度（管理台式固定侧栏），
@@ -17,21 +17,10 @@
  * z-index 约定：header z-50 > 本面板（fixed）z-30 > 吸顶 Tab z-20 > 右栏目录 z-10
  */
 import { useMediaQuery, useWindowSize } from "@vueuse/core"
+import { demoDevices } from '~/utils/demoDevices'
 
 /** 机型定义（与 DeviceFrame 保持一致，剔除超出栏宽的 iPad） */
-interface Device {
-    label: string
-    width: number
-    height: number
-}
-
-const devices: Device[] = [
-    { label: "iPhone SE", width: 320, height: 568 },
-    { label: "iPhone 12/13/14", width: 375, height: 812 },
-    { label: "iPhone 14 Pro Max", width: 430, height: 932 },
-    { label: "HUAWEI MATE 80", width: 366, height: 809 },
-    { label: "HUAWEI MATE 70", width: 374, height: 827 },
-]
+const devices = demoDevices.filter(device => device.label !== 'iPad')
 
 const { entries, activeEntry, activeUrl, isPanelVisible, setActive, clear } = useUniDemoPanel()
 
@@ -45,7 +34,7 @@ watch(
 
 // ---- 机型与等比缩放 ----
 
-const selectedDeviceName = ref(devices[1]!.label)
+const selectedDeviceName = shallowRef(devices[1]!.label)
 const selectedDevice = computed(() => devices.find((d) => d.label === selectedDeviceName.value) || devices[1]!)
 
 /** 机身外框尺寸（设备逻辑尺寸 + 两侧 8px 边框） */
@@ -92,14 +81,14 @@ const isWide = useMediaQuery("(min-width: 1536px)")
 /** iframe 是否应挂载：面板可见（UniApp 档 + 有 demo）且视口够宽 */
 const shouldMountFrame = computed(() => isPanelVisible.value && isWide.value)
 
-const frameRef = ref<HTMLIFrameElement>()
-const isLoading = ref(true)
+const frameRef = useTemplateRef<HTMLIFrameElement>('frameRef')
+const isLoading = shallowRef(true)
 /** iframe 的初始 src（只在首次赋值 / 手动刷新时变更，后续切 demo 走 hash 导航） */
-const initialUrl = ref<string | null>(null)
+const initialUrl = shallowRef<string | null>(null)
 /** iframe 当前实际展示的地址（hash 导航后与 initialUrl 会不同步） */
-const shownUrl = ref<string | null>(null)
+const shownUrl = shallowRef<string | null>(null)
 /** 手动刷新时递增，强制重建 iframe */
-const reloadKey = ref(0)
+const reloadKey = shallowRef(0)
 
 // 面板首次需要挂载 iframe 时再探测产物：Web 档下不发起任何与 H5 相关的请求；
 // 从 Web 档切回时 iframe 会重新挂载，先恢复加载占位
@@ -114,15 +103,17 @@ watch(
 )
 
 // activeUrl 变化：首次赋值挂载 iframe；后续通过 hash 导航切换页面（不重载运行时）
-watch(activeUrl, (url) => {
-    if (!url || url === shownUrl.value) return
-    if (!initialUrl.value) {
+watch([activeUrl, shouldMountFrame], ([url, mount]) => {
+    if (!url) return
+    const frameWindow = mount ? frameRef.value?.contentWindow : undefined
+    // 未挂载或即将卸载时同步 src，下一次挂载直接进入当前页面。
+    if (!frameWindow) {
         initialUrl.value = url
         shownUrl.value = url
+        isLoading.value = true
         return
     }
-
-    const frameWindow = frameRef.value?.contentWindow
+    if (url === shownUrl.value) return
     if (frameWindow) {
         try {
             // 同源 hash 导航：uniapp 内部路由接管，避免整页 reload 与父页 history 污染
@@ -138,7 +129,7 @@ watch(activeUrl, (url) => {
     shownUrl.value = url
     reloadKey.value++
     isLoading.value = true
-})
+}, { immediate: true })
 
 /** 手动刷新：重建 iframe 并回到当前激活 demo */
 function reload() {
@@ -151,23 +142,12 @@ function reload() {
 
 // ---- 主题同步（协议与 DeviceFrame 一致） ----
 
-const colorMode = useColorMode()
-
-/** 向 uniapp H5 发送当前主题；load 后延迟补发一次，规避监听器注册晚于 load 的竞态 */
-function syncTheme() {
-    frameRef.value?.contentWindow?.postMessage({ type: "theme-change", theme: colorMode.value }, "*")
-}
+const { onFrameLoad } = useDemoFrameTheme(frameRef)
 
 function onIframeLoad() {
     isLoading.value = false
-    syncTheme()
-    setTimeout(syncTheme, 600)
+    onFrameLoad()
 }
-
-watch(
-    () => colorMode.value,
-    () => syncTheme(),
-)
 </script>
 
 <template>

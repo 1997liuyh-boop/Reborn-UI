@@ -15,6 +15,7 @@
     "是无触发器的纯面板：自身没有输入框，需要弹层时须自行包在 Popover/Modal 中。",
     "valueFormat 控制输出值格式；start 默认 1970-01-01、end 默认 2099-12-31。",
     "showToday 底部今天栏：范围类型写入 [今天, 今天]（datetimerange 起止时间为 00:00:00 与 23:59:59），多选类型只追加不取消，今天被 start/end/disabledMethod 排除或面板 disabled 时置灰不可点。",
-    "defaultValue 只定位未选值时的视图，不写入绑定值；数组时第一项定位左面板，仅 unlinkPanels 下第二项定位右面板。"
+    "defaultValue 只定位未选值时的视图，不写入绑定值；数组时第一项定位左面板，仅 unlinkPanels 下第二项定位右面板。",
+    "服务端渲染首帧不读取今天：未传绑定值与 defaultValue 时内部停在固定基准月（1970 年 1 月），首帧主内容区为 visibility: hidden（只占位），挂载后切到本地当前月再显示；首屏要直接显示业务月份须传 defaultValue 或绑定值。"
   ]
 }

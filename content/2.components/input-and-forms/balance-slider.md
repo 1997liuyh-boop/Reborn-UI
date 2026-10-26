@@ -7,28 +7,26 @@ tags: [css, tailwind, input]
 ---
 
 ::ComponentViewer{demoFile="BalanceSliderDemo.vue" config="BalanceSliderConfig" componentId="balance-slider" :componentFiles='["BalanceSlider.vue"]'}
-
-#credits
-
-- 灵感与移植来自 [Jhey 的 CSS 版 Balance Slider](https://x.com/jh3yy/status/1748809599598399792?s=46)。
-- 原始概念由 [Malay Vasa](https://x.com/MalayVasa/status/1748726374079381930) 提出。
-
 ::
 
 ## 简介
 
-平衡滑块是一个偏展示型的对比交互区块：左右两条色带按当前值（0-100）分配宽度，拖动中央把手时两侧提示文案实时显示各自占比，并在进入 `minShiftLimit` 与 `maxShiftLimit` 之间的区间时触发上移展开动画。它没有事件、插槽和 `v-model`，只能通过 `initialValue` 设定初始位置，适合落地页等强视觉场景而非表单取值。仅 web 端可用。
+BalanceSlider 是仅 Web 的双边比例展示控件，用两条色带和拖动把手表达 0–100 的分配。
 
-适用场景：
+`modelValue` 负责双向绑定，未绑定时使用 `initialValue`；`leftColor` / `rightColor` 和两侧文案分别控制视觉与含义。
 
-- 展示两个选项之间的比例倾向（如示例中的 COFFEE / MILK）。
-- 落地页需要可拖动的双边对比交互区块。
-- 需要自定义左右背景色与提示文案的比例展示。
+`minShiftLimit` / `maxShiftLimit` 决定提示展开区间，`borderRadius` 控制圆角；组件没有插槽、不参与表单校验，需要步长或刻度时使用业务滑块。
 
-不适用场景：
+### 何时使用
 
-- 表单中需要取值提交的数值滑块，改用 `reborn-slider`。
-- 需要监听滑动值变化的场景：该组件未定义任何事件，取不到当前值。
+- 展示两种配料的分配比例——用 `modelValue` 绑定 0–100 的比例。
+- 展示无需外部同步的初始倾向——用 `initialValue` 设置起点。
+- 需要区分两个选项——用 `leftContent` / `rightContent` 配文案，`leftColor` / `rightColor` 配色。
+
+### 何时不使用
+
+- 数值需要步长、刻度和表单校验——改用 `reborn-slider`。
+- 两侧是图片或内容的前后对照——改用 `compare`。
 
 ## 用法
 
@@ -45,6 +43,23 @@ tags: [css, tailwind, input]
       :initial-value="60"
     />
   </div>
+</template>
+```
+
+### 双向绑定
+
+`v-model` 绑定 0-100 的数字，拖动时写回；不绑定时组件内部保存当前值。
+
+```vue
+<script lang="ts" setup>
+import { shallowRef } from "vue";
+
+const ratio = shallowRef(60);
+</script>
+
+<template>
+  <BalanceSlider v-model="ratio" left-content="COFFEE" right-content="MILK" />
+  <p>咖啡占比：{{ ratio }}%</p>
 </template>
 ```
 
@@ -72,25 +87,36 @@ const rightColor = computed(() => (isDark.value ? "#FFFFFF" : "#000000"));
 ```
 
 ## API
-
 ### Props
 
 | 属性名           | 类型     | 默认值      | 描述                                     |
 | ---------------- | -------- | ----------- | ---------------------------------------- |
-| `initialValue`   | `number` | `50`        | 滑块的初始位置（0-100），仅初始化时生效。 |
-| `leftColor`      | `string` | `"#e68a00"` | 滑块左侧的背景色（六位十六进制）。       |
-| `rightColor`     | `string` | `"#ffffff"` | 滑块右侧的背景色（六位十六进制）。       |
-| `minShiftLimit`  | `number` | `40`        | 启动位移动画的最小阈值。                 |
-| `maxShiftLimit`  | `number` | `68`        | 关闭位移动画的最大阈值。                 |
-| `leftContent`    | `string` | `"LEFT"`    | 左侧提示中显示的文本。                   |
-| `rightContent`   | `string` | `"RIGHT"`   | 右侧提示中显示的文本。                   |
+| `modelValue` | `number \| null` | - | 当前比例（0-100），配合 `v-model` 双向绑定；显式空值复位到 `initialValue`，未绑定时组件内部保存。 |
+| `initialValue` | `number` | `50`        | 未绑定 `v-model` 时的初始位置（0-100），仅初始化时生效。 |
+| `leftColor` | `string` | `"#e68a00"` | 滑块左侧的背景色（六位十六进制）。       |
+| `rightColor` | `string` | `"#ffffff"` | 滑块右侧的背景色（六位十六进制）。       |
+| `minShiftLimit` | `number` | `40`        | 启动位移动画的最小阈值。                 |
+| `maxShiftLimit` | `number` | `68`        | 关闭位移动画的最大阈值。                 |
+| `leftContent` | `string` | `"LEFT"`    | 左侧提示中显示的文本。                   |
+| `rightContent` | `string` | `"RIGHT"`   | 右侧提示中显示的文本。                   |
 | `indicatorColor` | `string` | `"#FFFFFF"` | 滑块中央指示器的颜色。                   |
-| `borderRadius`   | `number` | `8`         | 左右两块色带的圆角半径，单位 px。        |
+| `borderRadius` | `number` | `8`         | 左右两块色带的圆角半径，单位 px。        |
+
+### Emits
+
+| 事件名              | 回调参数          | 描述                                   |
+| ------------------- | ----------------- | -------------------------------------- |
+| `update:modelValue` | `(value: number)` | 拖动滑块时触发，参数为 0-100 的数字。 |
+
+### 来源
+
+- 灵感与移植来自 [Jhey 的 CSS 版 Balance Slider](https://x.com/jh3yy/status/1748809599598399792?s=46)。
+- 原始概念由 [Malay Vasa](https://x.com/MalayVasa/status/1748726374079381930) 提出。
 
 ## 注意事项
 
-- 仅 web 端可用。
-- 无事件、无插槽、无 `v-model`，仅能通过 `initialValue`（0-100）设置初始位置，无法向外读取用户拖动后的值。
-- `minShiftLimit` / `maxShiftLimit`（默认 40 / 68）控制位移展开动画的启停阈值，而非取值范围。
-- 颜色属性内部按 `#RRGGBB` 六位十六进制解析后转 HSL，不支持 `#FFF` 三位简写或 CSS 颜色名。
-- 组件宽度撑满父容器，需要自行用外层元素控制展示宽度。
+- **只能用于 Web 页面**。当前只有 Web 组件实现，UniApp 页面无法直接复用。
+- **用 `v-model` 读取拖动结果**。绑定后以 `modelValue` 为准，显式 `undefined` / `null` 将显示比例复位到 `initialValue`，不会回显旧交互值，也不主动回写父模型；未绑定时以 `initialValue` 为初值自行保存。写回的值已转成数字，不是 range 输入原生的字符串。
+- **位移阈值不是数值范围**。`minShiftLimit` / `maxShiftLimit`（默认 40 / 68）控制位移展开动画的启停阈值，而非取值范围。
+- **颜色必须使用六位十六进制**。颜色属性内部按 `#RRGGBB` 六位十六进制解析后转 HSL，不支持 `#FFF` 三位简写或 CSS 颜色名。
+- **宽度由父容器约束**。组件宽度撑满父容器，需要自行用外层元素控制展示宽度。

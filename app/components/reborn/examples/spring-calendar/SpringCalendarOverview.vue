@@ -27,7 +27,7 @@ const activeIndex = 2;
 <template>
   <div class="bg-muted/50 border-default flex w-50 flex-col gap-1.5 overflow-hidden rounded-2xl border p-2.5">
     <span class="text-highlighted text-base leading-none font-bold">
-      {{ days[activeIndex]!.day }}
+      {{ days[activeIndex]?.day ?? '' }}
     </span>
 
     <div class="border-default rounded-lg border px-2 py-1 leading-tight">

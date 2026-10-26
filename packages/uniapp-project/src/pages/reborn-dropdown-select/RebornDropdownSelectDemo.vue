@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornDropdownSelect from '@/components/reborn-dropdown-select/RebornDropdownSelect.vue'
 import { dropdownSelectColors, dropdownSelectSizes } from '@/components/reborn-dropdown-select/reborn-dropdown-select.config'
 
-const demoColor = ref<typeof dropdownSelectColors[number]>('primary')
-const demoSize = ref<typeof dropdownSelectSizes[number]>('md')
-const value1 = ref('')
-const value2 = ref('2')
-const value3 = ref('')
-const value4 = ref('')
+const demoColor = shallowRef<typeof dropdownSelectColors[number]>('primary')
+const demoSize = shallowRef<typeof dropdownSelectSizes[number]>('md')
+const value1 = shallowRef('')
+const value2 = shallowRef('2')
+const value3 = shallowRef('')
+const value4 = shallowRef('')
 
 const options = [
   { label: '选项一', value: '1' },
@@ -43,7 +43,7 @@ const options = [
       </view>
       <view>
         <RebornButton v-for="s in dropdownSelectSizes" :key="s" variant="outlined" gap
-          :color="demoSize === s ? 'primary' : 'neutral'" size="sm" :square="false" custom-class="rounded-full"
+          :color="demoSize === s ? 'primary' : 'neutral'" size="sm" custom-class="rounded-full"
           @click="demoSize = s">
           {{ s }}
         </RebornButton>

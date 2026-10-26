@@ -12,7 +12,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   delay: 0,
   duration: 2000,
-  endColor: "inherit",
+  textEndColor: "inherit",
 });
 
 const delayMs = computed(() => `${props.delay}ms`);
@@ -21,7 +21,7 @@ const durationMs = computed(() => `${props.duration}ms`);
 
 <template>
   <span
-    class="inline-block px-1 pb-1"
+    class="text-highlight inline-block px-1 pb-1"
     :class="[props.class]"
   >
     <slot />
@@ -47,7 +47,7 @@ const durationMs = computed(() => `${props.duration}ms`);
   }
 }
 
-span {
+.text-highlight {
   background-size: 0% 100%;
   background-repeat: no-repeat;
   background-position: left center;

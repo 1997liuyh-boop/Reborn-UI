@@ -1,34 +1,10 @@
 <script setup lang="ts">
 import type { AlertColor, AlertDirection, AlertType, AlertUI, AlertVariant } from './reborn-alert.config';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useSlots, useTemplateRef, watch } from 'vue';
+import { useBooleanModel } from '~/composables/useControlledModel';
 import { cn } from '~/lib/utils';
 import RebornTransition from '../reborn-transition/RebornTransition.vue';
 import { ALERT_TYPE_COLOR, ALERT_TYPE_ICON, alertTheme } from './reborn-alert.config';
-
-defineOptions({ name: 'RebornAlert' });
-
-const props = withDefaults(defineProps<AlertProps>(), {
-  type: 'info',
-  variant: 'soft',
-  showIcon: true,
-  closable: false,
-  banner: false,
-  center: false,
-  closeIcon: 'lucide:x',
-  interval: 3000,
-  direction: 'vertical',
-  speed: 60,
-  rows: 1,
-});
-
-const emit = defineEmits<{
-  /** 点击关闭按钮时触发 */
-  close: [ev: MouseEvent];
-  /** 关闭动画结束后触发（模板中以 @after-close 监听） */
-  afterClose: [];
-  /** 轮播消息切换时触发 */
-  change: [index: number];
-}>();
 
 export interface AlertProps {
   /**
@@ -96,10 +72,35 @@ export interface AlertProps {
   ui?: AlertUI;
 }
 
-const slots = useSlots();
+defineOptions({ name: 'RebornAlert' });
 
-/** 关闭状态支持 v-model:show 受控 */
-const show = defineModel<boolean>('show', { default: true });
+const props = withDefaults(defineProps<AlertProps>(), {
+  type: 'info',
+  variant: 'soft',
+  showIcon: true,
+  closable: false,
+  banner: false,
+  center: false,
+  closeIcon: 'lucide:x',
+  interval: 3000,
+  direction: 'vertical',
+  speed: 60,
+  rows: 1,
+});
+
+const emit = defineEmits<{
+  /** 点击关闭按钮时触发 */
+  close: [ev: MouseEvent];
+  /** 关闭动画结束后触发（模板中以 @after-close 监听） */
+  afterClose: [];
+  /** 轮播消息切换时触发 */
+  change: [index: number];
+}>();
+
+/** 关闭状态支持 v-model:show 受控；未绑定时内部默认可见，显式空值按隐藏处理 */
+defineModel<boolean>('show', { default: undefined });
+const show = useBooleanModel('show', true);
+const slots = useSlots();
 
 /** 配色：显式 color 优先，否则由 type 映射 */
 const resolvedColor = computed(() => props.color ?? ALERT_TYPE_COLOR[props.type]);
@@ -144,8 +145,13 @@ const isHorizontal = computed(() => isCarousel.value && props.direction === 'hor
 const rowCount = computed(() => Math.max(1, Math.floor(props.rows)));
 /** 多行垂直滚动：rows > 1 时多条消息同时可见并逐行上移 */
 const isList = computed(() => isCarousel.value && !isHorizontal.value && rowCount.value > 1);
-const activeIndex = ref(0);
-const isPaused = ref(false);
+const activeIndex = shallowRef(0);
+const isPaused = shallowRef(false);
+let mounted = false;
+let rewindFrame: number | undefined;
+let resumeFrame: number | undefined;
+let resizeObserver: ResizeObserver | undefined;
+const currentMessage = computed(() => props.messages?.[activeIndex.value] ?? "");
 let carouselTimer: ReturnType<typeof setInterval> | null = null;
 let rewindTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -158,7 +164,7 @@ const listItems = computed(() => {
   return msgs.length > rowCount.value ? [...msgs, ...msgs.slice(0, rowCount.value)] : msgs;
 });
 /** 回卷到真实第 0 条时临时关闭过渡，避免出现反向滚动 */
-const listNoTransition = ref(false);
+const listNoTransition = shallowRef(false);
 const listWrapperStyle = computed(() => ({ height: `${rowCount.value * 1.5}em` }));
 const listTrackStyle = computed(() => ({
   transform: `translateY(-${activeIndex.value * 1.5}em)`,
@@ -169,7 +175,7 @@ const listTrackStyle = computed(() => ({
 const needsTimer = computed(() => isCarousel.value && !isHorizontal.value && messageCount.value > rowCount.value);
 
 function tickCarousel() {
-  if (isPaused.value) return;
+  if (!show.value || isPaused.value || !messageCount.value) return;
   if (isList.value) {
     activeIndex.value += 1;
     emit('change', activeIndex.value % messageCount.value);
@@ -178,9 +184,9 @@ function tickCarousel() {
       rewindTimer = setTimeout(() => {
         listNoTransition.value = true;
         activeIndex.value = 0;
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          listNoTransition.value = false;
-        }));
+        rewindFrame = requestAnimationFrame(() => {
+          resumeFrame = requestAnimationFrame(() => { listNoTransition.value = false; });
+        });
       }, LIST_TRANSITION_MS);
     }
     return;
@@ -191,11 +197,15 @@ function tickCarousel() {
 
 function startCarousel() {
   stopCarousel();
-  if (!needsTimer.value) return;
+  if (!mounted || !show.value || !needsTimer.value) return;
   carouselTimer = setInterval(tickCarousel, props.interval);
 }
 
 function stopCarousel() {
+  if (rewindFrame !== undefined) cancelAnimationFrame(rewindFrame);
+  if (resumeFrame !== undefined) cancelAnimationFrame(resumeFrame);
+  rewindFrame = resumeFrame = undefined;
+  listNoTransition.value = false;
   if (carouselTimer) {
     clearInterval(carouselTimer);
     carouselTimer = null;
@@ -208,14 +218,14 @@ function stopCarousel() {
 
 // ─── 水平跑马灯 ─────────────────────────────────────────────────
 
-const marqueeWrapperRef = ref<HTMLElement | null>(null);
-const marqueeTextRef = ref<HTMLElement | null>(null);
+const marqueeWrapperRef = useTemplateRef<HTMLElement>("marqueeWrapperRef");
+const marqueeTextRef = useTemplateRef<HTMLElement>("marqueeTextRef");
 /** 起点为容器宽度（从右缘滚入），一轮时长按 speed 折算以保持匀速 */
-const marqueeFrom = ref(0);
-const marqueeDuration = ref(0);
+const marqueeFrom = shallowRef(0);
+const marqueeDuration = shallowRef(0);
 
 function measureMarquee() {
-  if (!isHorizontal.value) return;
+  if (!mounted || !show.value || !isHorizontal.value) return;
   nextTick(() => {
     const wrapper = marqueeWrapperRef.value;
     const text = marqueeTextRef.value;
@@ -228,10 +238,10 @@ function measureMarquee() {
 const marqueeStyle = computed(() => ({
   '--reborn-alert-marquee-from': `${marqueeFrom.value}px`,
   animationDuration: `${marqueeDuration.value}s`,
-  animationPlayState: isPaused.value ? 'paused' : 'running',
+  animationPlayState: !show.value || isPaused.value ? 'paused' : 'running',
 }));
 
-watch(() => [props.messages, props.direction, props.rows, props.interval, props.speed], () => {
+watch(() => [messageCount.value, props.direction, props.rows, props.interval, props.speed], () => {
   activeIndex.value = 0;
   startCarousel();
   measureMarquee();
@@ -239,16 +249,32 @@ watch(() => [props.messages, props.direction, props.rows, props.interval, props.
 
 /** 重新显示后容器才有宽度，需再测一次 */
 watch(show, (visible) => {
-  if (visible) measureMarquee();
+  if (visible) { startCarousel(); measureMarquee(); }
+  else stopCarousel();
 });
 
 onMounted(() => {
+  mounted = true;
   startCarousel();
   measureMarquee();
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(measureMarquee);
+    if (marqueeWrapperRef.value) resizeObserver.observe(marqueeWrapperRef.value);
+    if (marqueeTextRef.value) resizeObserver.observe(marqueeTextRef.value);
+  }
   window.addEventListener('resize', measureMarquee);
 });
 
+watch([marqueeWrapperRef, marqueeTextRef], () => {
+  resizeObserver?.disconnect();
+  if (marqueeWrapperRef.value) resizeObserver?.observe(marqueeWrapperRef.value);
+  if (marqueeTextRef.value) resizeObserver?.observe(marqueeTextRef.value);
+  measureMarquee();
+}, { flush: "post" });
+
 onBeforeUnmount(() => {
+  mounted = false;
+  resizeObserver?.disconnect();
   stopCarousel();
   window.removeEventListener('resize', measureMarquee);
 });
@@ -263,13 +289,13 @@ function handleClose(e: MouseEvent) {
 
 <template>
   <RebornTransition
-    :show="show" name="fade" :duration="200" custom-class="w-full"
+    :show="show"
+    name="fade"
+    :duration="200"
+    custom-class="w-full"
     @after-leave="emit('afterClose')"
   >
-    <div
-      :class="ui.root()" role="alert"
-      @mouseenter="isPaused = true" @mouseleave="isPaused = false"
-    >
+    <div :class="ui.root()" role="alert" @mouseenter="isPaused = true" @mouseleave="isPaused = false">
       <span v-if="showIcon" :class="ui.icon()">
         <slot name="icon">
           <Icon :name="iconName" class="size-4" />
@@ -285,7 +311,8 @@ function handleClose(e: MouseEvent) {
         <!-- 水平跑马灯：全部消息拼成一行，从右向左匀速滚动 -->
         <div v-if="isHorizontal" ref="marqueeWrapperRef" :class="ui.marqueeWrapper()">
           <div
-            ref="marqueeTextRef" :class="[ui.marquee(), marqueeDuration > 0 && 'reborn-alert-marquee']"
+            ref="marqueeTextRef"
+            :class="[ui.marquee(), marqueeDuration > 0 && 'reborn-alert-marquee']"
             :style="marqueeStyle"
           >
             <span v-for="(item, index) in messages" :key="index" :class="ui.marqueeItem()">
@@ -293,7 +320,11 @@ function handleClose(e: MouseEvent) {
             </span>
           </div>
         </div>
-        <div v-else-if="isCarousel" :class="ui.carouselWrapper()" :style="isList ? listWrapperStyle : undefined">
+        <div
+          v-else-if="isCarousel"
+          :class="ui.carouselWrapper()"
+          :style="isList ? listWrapperStyle : undefined"
+        >
           <!-- 多行垂直滚动：rows 条同时可见，逐行向上滚动 -->
           <div v-if="isList" :class="ui.carouselList()" :style="listTrackStyle">
             <div v-for="(item, index) in listItems" :key="index" :class="ui.carouselItem()">
@@ -303,8 +334,8 @@ function handleClose(e: MouseEvent) {
           <!-- 单行逐条轮播：一次一条，垂直进出场切换 -->
           <Transition v-else name="reborn-alert-carousel" mode="out-in">
             <div :key="activeIndex" :class="ui.carouselItem()">
-              <slot name="message" :item="messages![activeIndex]" :index="activeIndex">
-                {{ messages![activeIndex] }}
+              <slot name="message" :item="currentMessage" :index="activeIndex">
+                {{ currentMessage }}
               </slot>
             </div>
           </Transition>
@@ -326,6 +357,7 @@ function handleClose(e: MouseEvent) {
     </div>
   </RebornTransition>
 </template>
+
 
 <style scoped>
 /* 轮播消息的垂直进出场 */

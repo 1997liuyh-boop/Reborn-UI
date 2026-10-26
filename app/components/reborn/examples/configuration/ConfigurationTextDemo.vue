@@ -14,7 +14,7 @@ const scale = [
     <ComponentPlayground>
         <template #component>
             <div class="grid grid-cols-[110px_130px_180px_1fr] gap-y-4 items-center w-full">
-                <!-- Header -->
+                <!-- 表头 -->
                 <div class="font-medium text-muted-foreground text-sm">类名</div>
                 <div class="font-medium text-muted-foreground text-sm">字号 / 行高</div>
                 <div class="font-medium text-muted-foreground text-sm">应用规则</div>

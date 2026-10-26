@@ -3,7 +3,7 @@ import type { Dayjs } from 'dayjs';
 import type { ClassValue } from 'tailwind-variants';
 import type { CSSProperties } from 'vue';
 import type { StatisticUI } from '../reborn-statistic/reborn-statistic.config';
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue';
 import { cn } from '~/lib/utils';
 import RebornStatistic from '../reborn-statistic/RebornStatistic.vue';
 import { formatCountdown } from './reborn-countdown.utils';
@@ -40,7 +40,7 @@ const emit = defineEmits<{
 }>();
 
 // 服务端与客户端首帧都从零开始，挂载后再读时钟，避免跨秒造成水合不一致。
-const remaining = ref(0);
+const remaining = shallowRef(0);
 /** 当前格式化后的倒计时文本，不含标题和前后缀。 */
 const displayValue = computed(() => formatCountdown(remaining.value, props.format));
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -87,7 +87,8 @@ function formatValue() {
   return displayValue.value;
 }
 
-watch(() => props.value, restart);
+// 按时间戳监听：父组件内联构造 Dayjs 时每次渲染都是新对象，时刻没变就不能重启，否则会重复派发 change / finish
+watch(() => props.value?.valueOf(), restart);
 watch(() => props.format, tick);
 onMounted(() => {
   mounted = true;

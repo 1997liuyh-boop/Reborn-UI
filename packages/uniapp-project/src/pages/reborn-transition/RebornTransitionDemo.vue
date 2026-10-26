@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
-import RebornPage from '@/components/reborn-page/RebornPage.vue'
-import RebornCard from '@/components/reborn-card/RebornCard.vue'
-import RebornButton from '@/components/reborn-button/RebornButton.vue'
-import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
 import type { TransitionName } from '@/components/reborn-transition/RebornTransition.vue'
+import { onUnload } from '@dcloudio/uni-app'
+import { shallowRef } from 'vue'
 
-const show = ref(false)
-const customShow = ref(false)
-const name = ref<TransitionName>('fade-up')
+import RebornButton from '@/components/reborn-button/RebornButton.vue'
+import RebornCard from '@/components/reborn-card/RebornCard.vue'
+import RebornPage from '@/components/reborn-page/RebornPage.vue'
+import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
+
+const show = shallowRef(false)
+const customShow = shallowRef(false)
+const name = shallowRef<TransitionName>('fade-up')
+let hideTimer: ReturnType<typeof setTimeout> | undefined
+let customTimer: ReturnType<typeof setTimeout> | undefined
+onUnload(() => {
+    clearTimeout(hideTimer)
+    clearTimeout(customTimer)
+})
 
 function fade() {
     transition('fade')
@@ -45,17 +52,19 @@ function zoomOut() {
     transition('zoom-out')
 }
 function custom() {
+    clearTimeout(customTimer)
     customShow.value = true
-    setTimeout(() => {
+    customTimer = setTimeout(() => {
         customShow.value = false
     }, 1200)
 }
 function transition(n: TransitionName) {
+    clearTimeout(hideTimer)
     name.value = n
     show.value = true
-    setTimeout(() => {
+    hideTimer = setTimeout(() => {
         show.value = false
-    }, 500)
+    }, 1200)
 }
 </script>
 <template>

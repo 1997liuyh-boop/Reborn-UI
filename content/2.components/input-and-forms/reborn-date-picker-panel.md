@@ -11,7 +11,7 @@ badge: New
 仅 Web 端提供。UniApp 端改用 `reborn-date-picker`（底部弹出滚轮）。
 ::
 
-::ComponentViewer{demoFile="RebornDatePickerPanelDemo.vue" config="RebornDatePickerPanelConfig" componentId="reborn-date-picker-panel" dependencies="dayjs" :componentFiles='["RebornDatePickerPanel.vue", "reborn-date-picker-panel.config.ts"]'}
+::ComponentViewer{demoFile="RebornDatePickerPanelDemo.vue" config="RebornDatePickerPanelConfig" componentId="reborn-date-picker-panel" dependencies="dayjs" :componentFiles='["RebornDatePickerPanel.vue", "reborn-date-picker-panel.config.ts", "reborn-date-picker.utils.ts", "useDatePickerNavigation.ts", "useDatePickerRange.ts", "DatePickerHeader.vue", "DatePickerDateGrid.vue", "DatePickerUnitGrid.vue"]'}
 ::
 
 ## 简介
@@ -515,3 +515,6 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 - **单面板点击补位格会翻页**。点中上下月的日期后，面板翻到该日期所在月份，以便看到选中结果；双面板下点击补位格不翻页，选中结果在日期真正归属的那一侧面板显示。
 - **多选类型的「今天」只追加不取消**。今天已在选中集合里时再点「今天」不做处理，取消请直接点对应的格子。
 - **`clear()` 不受 `disabled` 限制**。禁用只拦截用户操作，程序化清空照常生效，并依次抛出 `update:modelValue`、`change`（原本有值时）与 `clear`。
+
+- **Web SSR 首帧不读取运行环境的今天。** 服务端与客户端的时钟、时区可能不同，首帧按今天定位会导致水合不一致。未传模型和 `defaultValue` 时，面板内部停在固定基准月（1970 年 1 月），首帧把主内容区（头部与网格）设为 `visibility: hidden`，只占位不显示，挂载后切到本地当前月再显示；快捷选项与底部「今天」栏不受影响。需要首屏就显示业务月份，请提供 `defaultValue` 或绑定值。挂载后按零点与页面重新可见刷新今天。
+- **未绑定模型也能连续多选。** `dates`、`months`、`quarters`、`years` 由面板维护本地模型；外部清空范围或只保留起点会清掉旧终点与预览高亮。

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, getCurrentInstance, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { tv } from '@/lib/tv'
 import { isHarmony } from '@/lib/device'
 import theme from './reborn-sticky.config'
@@ -56,11 +56,11 @@ const rect = reactive<Rect>({
   top: 0,
 })
 
-// 记录初始位置是否已获取
-const isInitialized = ref(false)
-
 // 当前页面滚动的距离
-const scrollTop = ref(0)
+const scrollTop = computed(() => props.scrollTop)
+let disposed = false
+let measureVersion = 0
+let measureTimer: ReturnType<typeof setTimeout> | undefined
 
 // 计算属性，判断当前是否处于吸顶状态
 const isSticky = computed(() => {
@@ -101,37 +101,21 @@ const stickyTop = computed(() => {
 })
 
 
-// 获取安全区域高度
-function getSafeAreaTop(): number {
-  const windowInfo = uni.getWindowInfo()
-  return windowInfo?.safeAreaInsets?.top || 0
-}
-
-function isEmpty(value: any): boolean {
-  if (Array.isArray(value)) {
-    return (value as any[]).length == 0
-  }
-
-  if (typeof value === 'string') {
-    return value == ''
-  }
-
-  if (typeof value === 'object' && value !== null) {
-    return Object.keys(value).length == 0
-  }
-
-  return false
-}
-
-// 获取sticky元素的位置信息，并更新rect
-function getRect() {
+// 测量 sticky 元素并更新 rect；updatePosition 为 false 时只刷新宽高、不动吸顶触发点
+let positionPending = false
+function measure(updatePosition: boolean) {
+  const version = ++measureVersion
+  // 被后一次测量作废的「重算位置」请求要并入本次，避免外部 getRect 的位置更新被内部重测吞掉
+  positionPending = positionPending || updatePosition
+  clearTimeout(measureTimer)
   const next = () => {
+    if (disposed || version !== measureVersion) return
     uni.createSelectorQuery()
       .in(proxy)
       .select('.reborn-sticky-wrapper')
       .boundingClientRect()
       .exec((nodes) => {
-        if (isEmpty(nodes)) {
+        if (disposed || version !== measureVersion || !nodes?.[0]) {
           return
         }
 
@@ -140,18 +124,19 @@ function getRect() {
         rect.height = node.height ?? 0
         rect.width = node.width ?? 0
 
-        // 只在初始化时记录位置
-        if (!isInitialized.value) {
+        if (positionPending) {
+          positionPending = false
+          // 外层占位容器始终保留在文档流中，每次测量都能恢复最新绝对位置。
+          // node.top 取自渲染层查询时刻，scrollTop 是回到逻辑层时的 prop，滚动中两者差一次跨线程往返，
+          // 所以只在首次与外部主动重测时重算；吸顶切换后的内部重测不改触发点，避免临界点来回跳
           rect.left = node.left ?? 0
-          // 记录元素距离页面顶部的绝对位置（不减去offsetTop）
           rect.top = (node.top ?? 0) + scrollTop.value
-          isInitialized.value = true
         }
       })
   }
 
   if (isHarmony()) {
-    setTimeout(() => {
+    measureTimer = setTimeout(() => {
       next()
     }, 300)
   }
@@ -160,30 +145,32 @@ function getRect() {
   }
 }
 
+// 获取sticky元素的位置信息，并更新rect（对外暴露，内容或布局变化后手动调用）
+function getRect() {
+  measure(true)
+}
+
 onMounted(() => {
   // 获取元素位置信息
   getRect()
 
-  // 监听参数变化
-  watch(
-    () => props.scrollTop,
-    (top: number) => {
-      scrollTop.value = top
-    },
-    {
-      immediate: true,
-    },
-  )
+})
 
-  // 吸顶状态切换后布局会变（如 fixed），下一帧重测宽高，避免占位与小程序端错位
-  watch(
-    () => isSticky.value,
-    () => {
-      nextTick(() => {
-        getRect()
-      })
-    },
-  )
+/**
+ * 吸顶前在文档流里的宽度。父容器按内容收缩包裹时（如 flex 列 align-items: flex-start），
+ * 内容 fixed 后不再撑开占位容器，它会被压成 0 宽，重测出的内容宽度也随之归零；
+ * 吸顶期间靠它把占位容器撑回原宽度。切换的这一刻 rect 仍是吸顶前的测量值
+ */
+const flowWidth = ref(0)
+// 吸顶状态切换后布局会变，下一帧只重测宽高；占位容器仍在文档流里，触发点不变。
+watch(isSticky, (value) => {
+  if (value) flowWidth.value = rect.width
+  nextTick(() => { if (!disposed) measure(false) })
+})
+onBeforeUnmount(() => {
+  disposed = true
+  measureVersion++
+  clearTimeout(measureTimer)
 })
 
 defineExpose({
@@ -197,6 +184,8 @@ defineExpose({
 <template>
   <view class="reborn-sticky-wrapper" :class="ui.wrapper()" :style="{
     height: rect.height > 0 ? `${rect.height}px` : 'auto',
+    // 只设下限不写死宽度：块级父容器里占位仍随父容器伸缩；100% 保证父容器变窄时不撑破
+    minWidth: isSticky && flowWidth > 0 ? `min(${flowWidth}px, 100%)` : undefined,
     zIndex,
   }">
     <view :class="ui.content()" :style="{

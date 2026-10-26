@@ -9,9 +9,8 @@ import type {
 } from "./reborn-time-panel.config";
 import type { TimeState } from "./time-picker.utils";
 import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
 
-import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useId, watch } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornButton from "../reborn-button/RebornButton.vue";
@@ -25,6 +24,7 @@ import {
   getTimeUnits,
   parseTimeValue,
 } from "./time-picker.utils";
+import TimePanelOptions from "./TimePanelOptions.vue";
 
 const props = withDefaults(defineProps<TimePanelProps>(), {
   modelValue: "",
@@ -50,8 +50,7 @@ const emit = defineEmits<{
   (e: "confirm", value: string | string[]): void;
 }>();
 
-dayjs.extend(customParseFormat);
-
+// customParseFormat 插件已在 time-picker.utils 模块级注册，组件内不再重复 extend
 const b = tv(theme);
 
 type DisabledHours = (role?: TimeRangeRole, comparingValue?: string | null) => number[];
@@ -130,8 +129,9 @@ const unitMax: Record<TimeUnit, number> = {
   millisecond: 999,
 };
 
-const startState = ref<TimeState>({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-const endState = ref<TimeState>({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+/** 起止状态只整体替换（修改前先 cloneState），用 shallowRef */
+const startState = shallowRef<TimeState>({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+const endState = shallowRef<TimeState>({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
 type ScrollbarInstance = InstanceType<typeof RebornScrollbar>;
 const panelId = useId();
@@ -141,18 +141,7 @@ const scrollTargets = new Map<string, number>();
 const uiOverrides = computed(() => props.ui || {});
 const activeUnits = computed(() => getTimeUnits(props.format));
 const roles = computed<TimeRangeRole[]>(() => (props.isRange ? ["start", "end"] : ["start"]));
-const options = computed(
-  () =>
-    Object.fromEntries(
-      activeUnits.value.map((unit) => [
-        unit,
-        Array.from({ length: (unitMax[unit] + 1) * 3 }, (_, index) => ({
-          index,
-          value: index % (unitMax[unit] + 1),
-        })),
-      ]),
-    ) as Record<TimeUnit, { index: number; value: number }[]>,
-);
+const availableCache = new Map<string, Set<number>>();
 // 每次状态变更只计算一次可选集合，避免毫秒列重复构建千项数组。
 const availableValues = computed(
   () =>
@@ -162,12 +151,21 @@ const availableValues = computed(
         Object.fromEntries(
           activeUnits.value.map((unit) => [
             unit,
-            new Set(getAvailableValues(role, unit, getState(role))),
+            stableAvailableValues(role, unit),
           ]),
         ),
       ]),
     ) as Record<TimeRangeRole, Partial<Record<TimeUnit, Set<number>>>>,
 );
+/** 未变化的禁用集合复用身份，使其他列不因一次选择重绘。 */
+function stableAvailableValues(role: TimeRangeRole, unit: TimeUnit) {
+  const key = `${role}-${unit}`;
+  const values = new Set(getAvailableValues(role, unit, getState(role)));
+  const previous = availableCache.get(key);
+  if (previous && values.size === previous.size && [...values].every(value => previous.has(value))) return previous;
+  availableCache.set(key, values);
+  return values;
+}
 const canConfirm = computed(
   () =>
     !props.disabled &&
@@ -222,6 +220,16 @@ const ui = computed(() => {
   };
 });
 
+/**
+ * 选项三种状态的完整类名：渲染时按状态直接取字符串，不再逐项调用 tv 槽位与 cn。
+ * 毫秒格式单列就有 3000 个选项，逐项合并类名是面板重渲染的主要开销
+ */
+const itemClasses = computed(() => ({
+  disabled: ui.value.item({ class: ui.value.itemDisabled() }),
+  active: ui.value.item({ class: ui.value.itemActive() }),
+  idle: ui.value.item({ class: ui.value.itemIdle() }),
+}));
+
 function columnKey(role: TimeRangeRole, unit: TimeUnit) {
   return `${role}-${unit}`;
 }
@@ -234,10 +242,6 @@ function setColumnRef(
   const key = columnKey(role, unit);
   if (el && "wrapRef" in el) columnRefs.set(key, el as ScrollbarInstance);
   else columnRefs.delete(key);
-}
-
-function pad(value: number, length = 2) {
-  return String(value).padStart(length, "0");
 }
 
 function toMilliseconds(state: TimeState) {
@@ -527,8 +531,22 @@ function getCurrentTimeState(): TimeState {
   };
 }
 
+/**
+ * 空值时的初始选择：挂载前（含 SSR 与水合首帧）用确定的 00:00:00.000，
+ * 两端渲染出的选中项一致；挂载后再切到「此刻」。禁用规则由 sanitizeState 统一校正
+ */
+let isMounted = false;
+function getEmptyDefaultState(): TimeState {
+  return isMounted ? getCurrentTimeState() : { hour: 0, minute: 0, second: 0, millisecond: 0 };
+}
+
+function isEmptyModel() {
+  const value = props.modelValue;
+  return Array.isArray(value) ? !value[0] : !value;
+}
+
 function initFromModel() {
-  const defaultState = getCurrentTimeState();
+  const defaultState = getEmptyDefaultState();
 
   if (props.isRange && Array.isArray(props.modelValue)) {
     const start = sanitizeState("start", parseTime(props.modelValue[0]) ?? defaultState);
@@ -546,21 +564,39 @@ function initFromModel() {
   syncColumns();
 }
 
+// 绑定值、格式或模式变化时按绑定值重新初始化
+watch(
+  [() => props.modelValue, () => props.format, () => props.isRange],
+  initFromModel,
+  { immediate: true, deep: true },
+);
+
+/**
+ * 禁用回调与禁用态变化时只按新规则校正当前选择，不回退到绑定值或「此刻」。
+ * 父级写内联箭头函数时每次渲染都是新函数，这里会频繁触发，但校正结果不变，选中项不会跳动
+ */
 watch(
   [
-    () => props.modelValue,
-    () => props.format,
-    () => props.isRange,
     () => props.disabled,
     () => props.disabledHours,
     () => props.disabledMinutes,
     () => props.disabledSeconds,
     () => props.disabledMilliseconds,
   ],
-  initFromModel,
-  { immediate: true, deep: true },
+  () => {
+    for (const role of roles.value) syncState(role, sanitizeState(role, getState(role)));
+    normalizeRangeOrder();
+    syncColumns();
+  },
 );
-watch([startState, endState, () => props.arrowControl], syncColumns, { deep: true });
+
+watch([startState, endState, () => props.arrowControl], syncColumns);
+
+onMounted(() => {
+  isMounted = true;
+  // 空值时首帧是 00:00:00，挂载后切到「此刻」（只改局部选择，不写绑定值）
+  if (isEmptyModel()) initFromModel();
+});
 onBeforeUnmount(cancelScrollTimers);
 defineExpose({ syncColumns, clear, confirm });
 </script>
@@ -615,28 +651,12 @@ defineExpose({ syncColumns, clear, confirm });
                   :scroll-duration="0"
                   @scroll="handleScroll(role, unit)"
                 >
-                  <div
-                    v-for="option in options[unit]"
-                    :id="`${panelId}-${role}-${unit}-${option.index}`"
-                    :key="option.index"
-                    role="option"
-                    :data-value="option.value"
-                    :aria-hidden="option.index < unitMax[unit] + 1 || option.index >= (unitMax[unit] + 1) * 2"
-                    :aria-selected="getState(role)[unit] === option.value"
-                    :aria-disabled="disabled || isDisabledValue(role, unit, option.value)"
-                    :class="
-                      ui.item({
-                        class: isDisabledValue(role, unit, option.value)
-                          ? ui.itemDisabled()
-                          : getState(role)[unit] === option.value
-                            ? ui.itemActive()
-                            : ui.itemIdle(),
-                      })
-                    "
-                    @click="setValue(role, unit, option.value)"
-                  >
-                    {{ pad(option.value, unit === "millisecond" ? 3 : 2) }}
-                  </div>
+                  <TimePanelOptions
+                    :panel-id="panelId" :role="role" :unit="unit" :max="unitMax[unit]"
+                    :value="getState(role)[unit]" :available="availableValues[role][unit] ?? new Set()"
+                    :disabled="disabled" :classes="itemClasses"
+                    @select="value => setValue(role, unit, value)"
+                  />
                 </RebornScrollbar>
                 <div :class="ui.mask()" />
               </div>

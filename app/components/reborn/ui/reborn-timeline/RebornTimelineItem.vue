@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { TimelineLabelPosition, TimelinePlacement, TimelinePresetColor, TimelineUI } from './reborn-timeline.config'
-import { computed, inject, onBeforeUnmount, useSlots, watchEffect } from 'vue'
+import { computed, inject, onBeforeUpdate, shallowRef, useSlots } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme, { TIMELINE_INJECTION_KEY, TIMELINE_PRESET_COLORS } from './reborn-timeline.config'
@@ -11,8 +11,10 @@ export interface RebornTimelineItemProps {
     timestamp?: string
     /** 节点颜色：primary / secondary / success / info / warning / error / neutral，或任意 CSS 色值 */
     color?: TimelinePresetColor | (string & {})
-    /** 节点内容，按 HTML 渲染；默认插槽或 content 插槽存在时忽略 */
+    /** 节点内容，默认作为文本渲染；默认插槽或 content 插槽存在时忽略 */
     content?: string
+    /** 显式启用 HTML；仅传入已经清理过的可信内容 */
+    dangerouslyUseHTMLString?: boolean
     /** 自定义节点图标：Iconify 名称或组件 */
     icon?: string | Component
     /** 是否为加载中节点，节点底圆内显示旋转的加载图标 */
@@ -30,18 +32,19 @@ const props = withDefaults(defineProps<RebornTimelineItemProps>(), {
     loading: false,
     labelPosition: 'right',
     placement: 'bottom',
+    dangerouslyUseHTMLString: false,
     ui: () => ({})
 })
 
 const slots = useSlots()
-const context = inject<any>(TIMELINE_INJECTION_KEY, null)
+const context = inject(TIMELINE_INJECTION_KEY, null)
+// 插槽对象不响应式；更新前同步存在性，避免条件插槽增删后保留旧布局。
+const slotState = shallowRef({ timestamp: !!slots.timestamp, icon: !!slots.icon, content: !!slots.default || !!slots.content })
+onBeforeUpdate(() => {
+    slotState.value = { timestamp: !!slots.timestamp, icon: !!slots.icon, content: !!slots.default || !!slots.content }
+})
 
-// --- 登记：向父组件上报内容侧，父组件据此决定竖向网格的列轨道 ---
-const itemId = context ? context.registerItem() : -1
-watchEffect(() => context?.reportSide(itemId, props.labelPosition))
-onBeforeUnmount(() => context?.unregisterItem(itemId))
-
-const direction = computed(() => context?.direction ?? 'vertical')
+const direction = computed(() => context?.direction.value ?? 'vertical')
 const isVertical = computed(() => direction.value === 'vertical')
 
 // --- 时间戳落位 ---
@@ -50,7 +53,7 @@ const isVertical = computed(() => direction.value === 'vertical')
  * 与内容同侧时和内容并排、贴在远离轴线的一端，与内容异侧时越过轴线放进对侧格。
  * 横向：top 越过轴线放到上方，bottom 堆叠在内容下方，left / right 与内容同行并排。
  */
-const hasTimestamp = computed(() => !!slots.timestamp || !!props.timestamp)
+const hasTimestamp = computed(() => slotState.value.timestamp || !!props.timestamp)
 
 const timestampSlot = computed<'opposite' | 'before' | 'after'>(() => {
     const placement = props.placement
@@ -81,8 +84,8 @@ const presetColor = computed(() =>
 /** 非预设色走内联样式，作为实心圆的填充色 */
 const customColorStyle = computed(() => (presetColor.value ? undefined : { backgroundColor: props.color }))
 
-const hasIcon = computed(() => !!slots.icon || !!props.icon || props.loading)
-const hasContent = computed(() => !!slots.default || !!slots.content || !!props.content)
+const hasIcon = computed(() => slotState.value.icon || !!props.icon || props.loading)
+const hasContent = computed(() => slotState.value.content || !!props.content)
 
 // --- 样式计算：类名优先级为 config 基础类 < 父组件 ui < 本节点 ui ---
 const b = tv(theme)
@@ -90,10 +93,9 @@ const ui = computed(() => {
     const styles = b({
         direction: direction.value,
         side: isVertical.value ? props.labelPosition : undefined,
-        iconed: hasIcon.value,
         flow: flow.value
     })
-    const inherited: TimelineUI = context?.ui || {}
+    const inherited: TimelineUI = context?.ui.value || {}
     const own = props.ui || {}
     const slot = (key: keyof TimelineUI) => (opts?: { class?: any }) =>
         (styles as any)[key]({ class: cn(opts?.class, inherited[key], own[key]) }) as string
@@ -148,7 +150,8 @@ const ui = computed(() => {
         <slot name="content">
           <slot>
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <span v-html="props.content" />
+            <span v-if="props.dangerouslyUseHTMLString" v-html="props.content" />
+            <span v-else>{{ props.content }}</span>
           </slot>
         </slot>
       </div>

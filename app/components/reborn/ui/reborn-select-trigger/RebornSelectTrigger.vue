@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import type { SelectTriggerAlign, SelectTriggerSide, selectTriggerSizes, SelectTriggerUI } from "./reborn-select-trigger.config";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from "vue";
+import { useFloatingDismiss } from "~/composables/useFloatingDismiss";
 import { useFloatingHost } from "~/composables/useFloatingHost";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
-import theme from "./reborn-select-trigger.config";
+import theme, { ARROW_TRIGGER_OFFSET, TRIGGER_OFFSET } from "./reborn-select-trigger.config";
 
-defineOptions({ inheritAttrs: false });
+/**
+ * 透传契约：未声明为 prop / emit 的属性与监听（id、name、aria-*、data-*、style、@focusin / @focusout 等）
+ * 按 Vue 默认规则落到根节点——也就是带 tabindex 的外层 wrapper。
+ * 基于本组件的下拉类组件可以直接在 <RebornSelectTrigger> 上写 @focusin 之类的监听，无需拿 DOM 自行挂载。
+ */
 
 const props = withDefaults(defineProps<SelectTriggerProps>(), {
   isOpen: false,
@@ -18,7 +23,7 @@ const props = withDefaults(defineProps<SelectTriggerProps>(), {
   container: "body",
   side: "auto",
   align: "start",
-  offset: 4,
+  offset: undefined,
   arrow: false,
   autoAdjustOverflow: true,
 });
@@ -29,6 +34,13 @@ const emit = defineEmits<{
   (e: "afterEnter"): void;
   /** 在触发器外发生了 closeOn 指定的鼠标事件，请求父组件收起下拉；附带原始事件供父组件二次判定 */
   (e: "close", event?: Event): void;
+}>();
+
+defineSlots<{
+  /** 触发器内容，结构与样式由调用方决定；isOpen 为浮层当前是否展开 */
+  trigger?: (props: { isOpen: boolean }) => any;
+  /** 浮层内容 */
+  content?: () => any;
 }>();
 
 export interface SelectTriggerProps {
@@ -76,7 +88,7 @@ export interface SelectTriggerProps {
   side?: SelectTriggerSide;
   /** 浮层在交叉轴上的对齐：start 与触发器起点对齐（默认）、center 居中、end 与终点对齐；仅传送模式生效 */
   align?: SelectTriggerAlign;
-  /** 浮层与触发器的间距（px） */
+  /** 浮层与触发器的间距（px）；不传时无箭头取 4、带箭头取 12，留够箭头伸出面板的长度 */
   offset?: number;
   /** 是否显示指向触发器的小箭头 */
   arrow?: boolean;
@@ -87,17 +99,19 @@ export interface SelectTriggerProps {
   autoAdjustOverflow?: boolean;
 }
 
-const isOpening = ref(false);
-const transitionRef = ref<any>(null);
-const transitionElRef = ref<HTMLElement | null>(null);
-const dropdownInnerRef = ref<HTMLElement | null>(null);
-const wrapperRef = ref<HTMLElement | null>(null);
+const transitionRef = useTemplateRef<InstanceType<typeof RebornTransition>>("transitionRef");
+/** 浮层过渡元素：before-enter 时写入、after-leave 时清空，非空即表示浮层正在展示（含收起动画） */
+const transitionElRef = shallowRef<HTMLElement | null>(null);
+const dropdownInnerRef = useTemplateRef<HTMLElement>("dropdownInnerRef");
+const wrapperRef = useTemplateRef<HTMLElement>("wrapperRef");
 
 /** 实际展开方向：auto 在展开瞬间解析为 top / bottom，显式方向空间不足时翻转到对侧 */
 type ResolvedSide = Exclude<SelectTriggerSide, "auto">;
-const resolvedSide = ref<ResolvedSide>("bottom");
-/** 箭头中心点坐标（传送模式为文档坐标，行内模式相对 wrapper），与浮层坐标一样在 syncFloating 中写入 */
-const arrowPoint = ref({ x: 0, y: 0 });
+const resolvedSide = shallowRef<ResolvedSide>("bottom");
+/** 箭头中心点坐标（传送模式为文档坐标，行内模式相对 wrapper），与浮层坐标一样在 syncFloating 中写入，每次整体替换 */
+/** 实际间距：显式 offset 优先，否则按是否带箭头取默认值 */
+const gapSize = computed(() => props.offset ?? (props.arrow ? ARROW_TRIGGER_OFFSET : TRIGGER_OFFSET));
+const arrowPoint = shallowRef({ x: 0, y: 0 });
 
 /** 传送模式下浮层与视口边缘保留的边距，避免内容撑宽后溢出屏幕 */
 const VIEWPORT_MARGIN = 8;
@@ -106,10 +120,9 @@ const UPWARD_THRESHOLD = 280;
 /** 左右展开：目标侧剩余空间低于此值且对侧更宽裕时翻转 */
 const SIDEWAYS_THRESHOLD = 200;
 
-/** 浮层实际的过渡元素，传送后它已不是 wrapper 的 DOM 后代 */
+/** 浮层实际的过渡元素，传送后它已不是 wrapper 的 DOM 后代；组件实例上的 expose 已自动解包，不必再取 .value */
 function floatingEl(): HTMLElement | null {
-  const exposed = transitionRef.value?.el;
-  return transitionElRef.value ?? exposed?.value ?? exposed ?? null;
+  return transitionElRef.value ?? transitionRef.value?.el ?? null;
 }
 
 /** 依据触发器在视口中的余量解析实际展开方向；关闭自动调整时严格按 side 展开 */
@@ -174,7 +187,7 @@ function syncFloating() {
   const style = el.style;
   const side = resolvedSide.value;
   const align = props.align;
-  const gap = props.offset;
+  const gap = gapSize.value;
   const viewportWidth = window.innerWidth;
 
   let left = rect.left;
@@ -259,7 +272,7 @@ function arrowCrossOffset(extent: number, vertical: boolean): number {
  * 不需要测量浮层。传送模式换算成文档坐标（与浮层同一坐标系），行内模式相对 wrapper。
  */
 function syncArrow(rect: DOMRect, scrollX: number, scrollY: number) {
-  const gap = props.offset;
+  const gap = gapSize.value;
   const side = resolvedSide.value;
   const vertical = side === "top" || side === "bottom";
   // 交叉轴按对齐端取落点，主轴坐标在下面按方向贴到浮层朝向触发器的那条边外侧
@@ -322,104 +335,51 @@ function cancelSync() {
   syncFrame = 0;
 }
 
-/** 当前绑定在 document 上的外部关闭事件名，用于 closeOn 变化时正确解绑 */
-let boundCloseEvent: "click" | "mousedown" | null = null;
-
-/**
- * mousedown 时机下额外计入的外部动静：
- * - wheel：页面本身不可滚动时滚轮不会产生 scroll，需单独监听滚轮动作
- * - touchstart：触屏按下即收，不必等到抬起后模拟出的 mousedown
- */
-const MOUSEDOWN_EXTRA_EVENTS = ["wheel", "touchstart"] as const;
-
-/** 已登记的嵌套子浮层判定，登记方式见下方 provide */
-const nestedContains = new Set<(node: Node | null) => boolean>();
-
-/**
- * 判断节点是否属于本组件的交互范围。
- * 传送模式下浮层已不是 wrapper 的后代，只判 wrapper 会把「点击选项」误判成外部点击，
- * 单选看不出来（本来就要收起），多选则表现为选一项就立刻收起。
- */
-function containsNode(node: Node | null) {
-  if (!node) return false;
-  if (wrapperRef.value?.contains(node) || floatingEl()?.contains(node)) return true;
-  for (const childContains of nestedContains) {
-    if (childContains(node)) return true;
-  }
-  return false;
-}
-
-/**
- * 嵌套浮层登记。
- * 浮层里再套一个触发器时（如日期面板里的时间选择器），子浮层同样传送到 body，
- * 不是本浮层的 DOM 后代：不登记的话，在子浮层里点一下会被本组件判成外部点击而整个收起。
- * 子级挂载时把自己的 containsNode 登记到最近的父级，卸载时注销；登记是逐级的，多层嵌套同样成立。
- */
-type NestedOverlayRegistry = (contains: (node: Node | null) => boolean) => () => void;
-const NESTED_OVERLAY_KEY = "reborn-select-trigger-nested";
-provide<NestedOverlayRegistry>(NESTED_OVERLAY_KEY, (contains) => {
-  nestedContains.add(contains);
-  return () => nestedContains.delete(contains);
+/** 外部关闭与嵌套浮层登记共用同一个组合函数。 */
+const { contains: containsNode } = useFloatingDismiss({
+  open: () => props.isOpen || transitionElRef.value !== null,
+  dismissEnabled: () => props.isOpen,
+  onViewportScroll,
+  elements: () => [wrapperRef.value, floatingEl()],
+  anchor: () => wrapperRef.value,
+  closeOnClickOutside: true,
+  closeOn: () => props.closeOn,
+  closeOnScroll: () => props.closeOn === "mousedown",
+  closeOnScrollIntent: true,
+  onDismiss: (_reason, event) => emit("close", event),
 });
-const unregisterFromParent = inject<NestedOverlayRegistry | null>(NESTED_OVERLAY_KEY, null)?.(containsNode);
 
-// 所在弹窗或抽屉关闭时，与点击外部一样请求父组件收起（不带原始事件）
+// 所在弹窗或抽屉关闭时，请求父组件同步收起。
 useFloatingHost({ open: () => props.isOpen, onHidden: () => emit("close") });
 
-/** 触发器（含下拉面板）外发生 closeOn 指定的鼠标事件时，请求父组件收起 */
-function onOutsideEvent(event: Event) {
-  if (!props.isOpen) return;
-  if (!containsNode(event.target as Node)) {
-    emit("close", event);
-  }
-}
-
 /**
- * 外部关闭监听挂在捕获阶段：
- * 1. 外部元素上的 `@click.stop` 之类阻止冒泡不会让判定失效；
- * 2. 判定先于任何点击处理执行，点中的节点此时一定还在 DOM 中，
- *    不会因处理函数触发重渲染、节点被移除而误判成外部点击。
+ * 全局监听（视口 scroll / resize 与外部关闭事件）只在浮层展示期间挂载：
+ * 以它为底座的下拉组件在列表、表格里常常成百出现，从挂载起就常驻监听会让每次滚动、按下都把所有实例跑一遍。
+ * 挂载时机：展开时由 isOpen 的 watch 挂上（pre 刷新，此时触发展开的那次按下已派发完，不会被当成外部点击）；
+ * 摘除时机：收起动画结束（after-leave）后，保证 leave 期间浮层仍跟随触发器滚动。
  */
-function bindOutsideListener() {
-  unbindOutsideListener();
-  boundCloseEvent = props.closeOn === "mousedown" ? "mousedown" : "click";
-  document.addEventListener(boundCloseEvent, onOutsideEvent, true);
-  if (boundCloseEvent === "mousedown") {
-    for (const name of MOUSEDOWN_EXTRA_EVENTS) {
-      document.addEventListener(name, onOutsideEvent, { capture: true, passive: true });
-    }
-  }
-}
+let globalBound = false;
 
-function unbindOutsideListener() {
-  if (boundCloseEvent === "mousedown") {
-    for (const name of MOUSEDOWN_EXTRA_EVENTS) {
-      document.removeEventListener(name, onOutsideEvent, true);
-    }
-  }
-  if (boundCloseEvent) {
-    document.removeEventListener(boundCloseEvent, onOutsideEvent, true);
-    boundCloseEvent = null;
-  }
-}
-
-watch(
-  () => props.closeOn,
-  () => bindOutsideListener(),
-);
-
-onMounted(() => {
-  window.addEventListener("scroll", onViewportScroll, { capture: true, passive: true });
+function bindGlobal() {
+  if (globalBound || typeof window === "undefined") return;
+  globalBound = true;
   window.addEventListener("resize", onViewportResize, { passive: true });
-  bindOutsideListener();
+}
+
+function unbindGlobal() {
+  if (!globalBound) return;
+  globalBound = false;
+  window.removeEventListener("resize", onViewportResize);
+  cancelSync();
+}
+
+// 以展开态挂载时（如初始 isOpen 为 true）直接挂监听；服务端不执行 onMounted
+onMounted(() => {
+  if (props.isOpen) bindGlobal();
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("scroll", onViewportScroll, true);
-  window.removeEventListener("resize", onViewportResize);
-  unbindOutsideListener();
-  cancelSync();
-  unregisterFromParent?.();
+  unbindGlobal();
 });
 
 /**
@@ -429,32 +389,10 @@ onBeforeUnmount(() => {
  * 捕获阶段监听是为了同时覆盖祖先滚动容器：页面级滚动本身由文档坐标兜住，
  * 但触发器被放进 overflow 容器（或 fixed 祖先）时文档坐标会变，需要补位。
  */
-function onViewportScroll(event: Event) {
+function onViewportScroll() {
   if (!floatingEl()) return;
 
-  // mousedown 时机的语义是「外部只要有动静就立刻收起」，页面滚动同样计入。
-  // 但下拉面板内部的列表滚动属于组件自身的交互，必须排除，
-  // 否则用滚轮翻选项会当场把面板关掉；嵌套子浮层（如日期面板的时间列）已登记进 containsNode，同样放行。
-  // 原生事件一并上报：子浮层未经触发器登记（自行传送到 body）时，
-  // 父组件仍可靠 event.target 认出「这是子浮层自己的滚动」而放行。
-  if (props.closeOn === "mousedown" && props.isOpen && !containsNode(event.target as Node) && movesAnchor(event.target)) {
-    emit("close", event);
-    return;
-  }
-
   scheduleSync();
-}
-
-/**
- * 滚动是否会带动触发器位移。
- * scroll 只代表「某个容器滚动了」，未必是用户在浮层外的操作：
- * 其他组件程序化滚动自身容器（如轮播图自动播放）同样会派发 scroll，不能据此收起。
- * 页面级滚动的 target 是 document（非 Element），一律视为会带动。
- */
-function movesAnchor(target: EventTarget | null) {
-  const anchor = wrapperRef.value;
-  if (!anchor || !(target instanceof Element)) return true;
-  return target.contains(anchor);
 }
 
 /** 视口尺寸变化会改变上下余量，此时才允许重新决策展开方向 */
@@ -468,10 +406,13 @@ watch(
   () => props.isOpen,
   (v) => {
     if (v) {
-      isOpening.value = true;
       // 浮层此刻还未插入 DOM，先把展开方向定下来，保证首帧类名正确；
       // 坐标写入交给 before-enter，那时元素已存在。
       lockPlacement();
+      bindGlobal();
+    } else if (!transitionElRef.value) {
+      // 浮层从未进入展示（没有收起动画可等），直接摘监听；否则等 after-leave
+      unbindGlobal();
     }
   },
 );
@@ -519,9 +460,16 @@ function onBeforeEnter(el?: Element) {
 }
 
 /**
- * enter：外层高度已展开，内层列表可测量，在此同步定位已选项（首帧即正确）
+ * enter：外层高度已展开，内层列表可测量，在此同步定位已选项（首帧即正确）。
+ *
+ * 坐标在这里再写一次：before-enter 发生在父组件打补丁的途中，同一次渲染若还要在触发器周围插入节点
+ * （例如在 popup-visible-change 里显示一行回显，居中布局把触发器挤开），那时读到的是挤动前的位置，
+ * 浮层与箭头会停在旧位置直到入场动画结束（300ms）才归位，向上展开时整块压在触发器上。
+ * Vue 在整轮更新完成后才调用入场钩子，此刻的布局已是最终状态；RebornTransition 也是先发出 enter
+ * 再读取动画起止帧，补写的坐标赶在首帧绘制之前。
  */
 function onEnter() {
+  syncFloating();
   emit("enter");
   nextTick(() => {
     alignActive();
@@ -531,20 +479,19 @@ function onEnter() {
 
 function onAfterEnter() {
   syncFloating();
-  isOpening.value = false;
   emit("afterEnter");
 }
 
 function onAfterLeave() {
   transitionElRef.value = null;
-  isOpening.value = false;
+  // 收起动画结束才摘全局监听；动画途中又被重新展开时 isOpen 已为 true，保留监听
+  if (!props.isOpen) unbindGlobal();
 }
 
 defineExpose({
   dropdownRef: computed(() => dropdownInnerRef.value),
   /** 浮层的滚动容器；传送后它是 body 的子节点，不能再从组件根节点里找 */
   dropdownScrollRef: computed(() => transitionElRef.value),
-  isOpening,
   /** 供外部做「点击是否落在触发器或浮层内」的判定，传送后不能只判组件根节点 */
   contains: containsNode,
 });

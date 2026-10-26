@@ -24,8 +24,8 @@ const radiusList = [
                         :style="{
                             top: `${index * 30 + 20}px`,
                             left: `${index * 30 + 20}px`,
-                            width: '100%',  // Extend to right
-                            height: 'calc(100% - 20px)', // Extend down
+                            width: '100%', // 向右延伸到容器边缘
+                            height: 'calc(100% - 20px)', // 向下延伸，保留底部间距
                         }">
                         <div class="text-muted p-2 text-xs font-medium">
                             {{ radius.value }}

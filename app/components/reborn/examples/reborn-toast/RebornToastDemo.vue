@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, onBeforeUnmount, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { message } from "~/components/reborn/ui/reborn-toast/index";
 import {
@@ -11,7 +12,7 @@ const variantOptions = messageVariants.map((v) => ({ label: v, value: v }));
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
+const state = shallowRef<Record<string, any>>({
   content: "这是一条消息提示",
   type: "success",
   variant: "base",
@@ -81,9 +82,22 @@ function fireFromPlayground() {
 
 // ─── 场景演示 ───────────────────────────────────────────────────
 
+/** 延迟回调由本演示持有，离开页面即取消。 */
+let disposed = false;
+let keyTimer: ReturnType<typeof setTimeout> | undefined;
+let configTimer: ReturnType<typeof setTimeout> | undefined;
+onBeforeUnmount(() => {
+  disposed = true;
+  clearTimeout(keyTimer);
+  clearTimeout(configTimer);
+  if (configTimer !== undefined) message.config({ maxCount: 0 });
+  if (keyTimer !== undefined) message.destroy("updatable");
+});
+
 /** Promise 接口：loading 关闭后接续提示 */
 function firePromiseDemo() {
   message.loading("正在提交…", 1.5).then(() => {
+    if (disposed) return;
     message.success("提交成功，感谢反馈！");
   });
 }
@@ -91,7 +105,8 @@ function firePromiseDemo() {
 /** 同 key 更新：先 loading 再原位变成功 */
 function fireKeyDemo() {
   message.loading({ content: "加载中…", key: "updatable", duration: 0 });
-  setTimeout(() => {
+  clearTimeout(keyTimer);
+  keyTimer = setTimeout(() => {
     message.success({ content: "加载完成！", key: "updatable", duration: 2 });
   }, 1200);
 }
@@ -103,7 +118,11 @@ function fireMaxCountDemo() {
     message.info(`第 ${i} 条消息（最多同时 3 条）`, 2 + i * 0.4);
   }
   // 演示完还原，避免影响其他示例
-  setTimeout(() => message.config({ maxCount: 0 }), 100);
+  clearTimeout(configTimer);
+  configTimer = setTimeout(() => {
+    configTimer = undefined;
+    message.config({ maxCount: 0 });
+  }, 100);
 }
 </script>
 

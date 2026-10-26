@@ -24,11 +24,11 @@ class TestResizeObserver {
   disconnect() { observers.delete(this); }
 }
 globalThis.ResizeObserver = dom.window.ResizeObserver = TestResizeObserver;
-const { createApp, h, Fragment, shallowRef, nextTick } = await import(pathToFileURL(require.resolve('vue')).href);
+const { createApp, defineComponent, h, Fragment, shallowRef, nextTick } = await import(pathToFileURL(require.resolve('vue')).href);
 
 async function compileComponent(filename) {
   const result = await build({
-    entryPoints: [path.resolve('app/components/reborn/ui/reborn-descriptions', filename)], bundle: true, write: false,
+    stdin: { contents: `export { default } from './${filename}'; export { default as Item } from './RebornDescriptionsItem.vue';`, resolveDir: path.resolve('app/components/reborn/ui/reborn-descriptions'), loader: 'js' }, bundle: true, write: false,
     platform: 'node', format: 'cjs', packages: 'external',
     plugins: [{ name: '测试编译Vue', setup(builder) {
       builder.onResolve({ filter: /^~\// }, args => ({ path: path.resolve('app', `${args.path.slice(2)}.ts`) }));
@@ -41,10 +41,10 @@ async function compileComponent(filename) {
   });
   const module = { exports: {} };
   runInThisContext(`(function(module, exports, require) { ${result.outputFiles[0].text}\n})`)(module, module.exports, require);
-  return module.exports.default;
+  return Object.assign(module.exports.default, { Item: module.exports.Item });
 }
 const Descriptions = await compileComponent('RebornDescriptions.vue');
-const Item = await compileComponent('RebornDescriptionsItem.vue');
+const Item = Descriptions.Item;
 const mounted = [];
 function mount(initial = {}, slots) {
   const props = shallowRef(initial);
@@ -201,4 +201,20 @@ it('直接或响应式 column 的非有限值回退为 3，非有限 span 回退
     assert.equal(cell(p, 'A').colSpan, 1);
     assert.equal(cell(p, 'B').colSpan, 1);
   }
+});
+
+it('声明式子项的裸 colon 与字符串 span/rowspan 按 Vue 属性语义归一',async()=>{
+ const p=mount({column:2},{default:()=>[h(Item,{label:'A',colon:'',span:'2',rowspan:'2',contentClass:'cell-A'},()=> 'A')]});await tick();
+ assert.ok(p.container.textContent.includes('：'));assert.equal(cell(p,'A').rowSpan,2);assert.equal(cell(p,'A').colSpan,2);
+});
+it('内容内有状态的组件在样式更新后保留实例',async()=>{
+ const Editor=defineComponent({setup(){ const value=shallowRef('初值');return ()=>h('input',{value:value.value,onInput:event=>value.value=event.target.value}); }});
+ const p=mount({items:[field('A',{slot:'editor'})]},{'content-editor':()=>h(Editor)});await tick();const input=p.container.querySelector('input');input.value='用户输入';input.dispatchEvent(new window.Event('input'));await tick();
+ p.props.value={...p.props.value,size:'lg'};await tick();assert.equal(p.container.querySelector('input'),input);assert.equal(input.value,'用户输入');
+});
+
+it('父级替换默认和头部插槽时立即重排内容',async()=>{
+ const alternate=shallowRef(false);const container=document.createElement('div');document.body.append(container);
+ const app=createApp({setup:()=>()=>h(Descriptions,{},alternate.value?{default:()=>h(Item,{label:'B'},()=> '内容B'),title:()=> '动态标题',extra:()=> '动态操作'}:{default:()=>h(Item,{label:'A'},()=> '内容A')})});app.mount(container);mounted.push(()=>{app.unmount();container.remove()});await tick();
+ assert.ok(container.textContent.includes('内容A'));alternate.value=true;await tick();assert.ok(container.textContent.includes('内容B'));assert.ok(container.textContent.includes('动态标题'));assert.ok(container.textContent.includes('动态操作'));
 });

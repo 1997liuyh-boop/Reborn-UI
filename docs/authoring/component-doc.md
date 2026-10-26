@@ -79,7 +79,7 @@ badge: New
 | --- | --- | --- |
 | `title` | 是 | 不带「组件」二字（写「按钮」不写「按钮组件」）。优先纯中文名（「按钮」「徽章」）；组件以英文名更为人知时写「English 中文」（「Form 表单」「PickerView 选择器视图」）。**不要只写英文**。 |
 | `description` | 是 | 一句话 ≤60 字。见下方专条。 |
-| `category` | 是 | 从固定分类表取值：`按钮` / `通用` / `布局` / `导航` / `表单与输入` / `数据展示` / `反馈` / `卡片` / `文字动画` / `特效` / `设备模型`（定义在 `app/composables/useComponentsCatalog.ts` 的 `CATEGORY_ORDER`）。侧栏与总览按「系列 → 分类」分组，**不再按目录**，目录只决定 URL；写了表外的名字会在两大区末尾单独成组，「杂项」「数据」「输入与表单」是已废弃的旧名。按用途归位：弹层 / 提示 / 加载归反馈，列表 / 展示类归数据展示，页面骨架与定位归布局。 |
+| `category` | 是 | 从固定分类表取值：`按钮` / `通用` / `布局` / `导航` / `表单与输入` / `数据展示` / `反馈` / `卡片` / `文字动画` / `特效` / `设备模型`（定义在 `app/utils/componentsCatalog.ts` 的 `CATEGORY_ORDER`）。侧栏与总览按「系列 → 分类」分组，**不再按目录**，目录只决定 URL；写了表外的名字会在两大区末尾单独成组，「杂项」「数据」「输入与表单」是已废弃的旧名。按用途归位：弹层 / 提示 / 加载归反馈，列表 / 展示类归数据展示，页面骨架与定位归布局。 |
 | `series` | 否 | 组件系列：`reborn` Reborn 自研 / `community` 社区移植。缺省按文档 slug 的 `reborn-` 前缀判定，只有自研却未带前缀的组件（如 `scrollbar`）才需要显式写 `series: reborn`。 |
 | `platform` | 是 | 适用端：`web` 仅 Web / `uniapp` 仅 UniApp / `both` 双端通用。以实现目录为准（`app/components/reborn/ui/<id>` 与 `packages/uniapp-project/src/components/<id>` 是否存在），不看文案。文档站顶栏的 Web / UniApp 开关据此筛选侧栏、总览与移动端预览，`both` 两边都列；漏写按 `web` 处理，UniApp 档下会看不到。 |
 | `tags` | 是 | 小写英文，含技术栈与组件名；双端组件必须带 `uniapp`。 |

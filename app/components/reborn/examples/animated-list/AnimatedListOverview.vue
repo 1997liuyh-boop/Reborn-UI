@@ -2,8 +2,8 @@
 /**
  * 总览卡片缩略：纵向叠放的两条通知卡片，最新一条在上
  *
- * AnimatedList 内部是 while(true) + setTimeout 的无限轮播，没有关闭开关，挂载后会一直运行；
- * 这里只复用它的列表项组件 Notification，按列表的排布静态摆出其中一帧。
+ * AnimatedList 挂载期间靠 useIntervalFn 按 delay 持续轮换，总览卡片挂载后不卸载，轮换会一直运行；
+ * 因此只复用它的列表项组件 Notification，按列表的排布静态摆出其中一帧。
  * 三条在卡片里要缩到一半以下、文字看不清，所以只放两条。
  */
 const notifications = [

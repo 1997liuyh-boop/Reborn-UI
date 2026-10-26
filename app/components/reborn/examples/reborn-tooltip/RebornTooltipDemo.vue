@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornTooltip from "~/components/reborn/ui/reborn-tooltip/RebornTooltip.vue";
 
@@ -20,7 +21,7 @@ const triggerOptions = [
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
+const state = shallowRef<Record<string, any>>({
   title: "这是一个文字提示",
   placement: "top",
   trigger: "hover",
@@ -86,7 +87,7 @@ const tooltipCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** title 置空禁用演示 */
-const emptyTitle = ref(false);
+const emptyTitle = shallowRef(false);
 
 /** 自定义背景颜色演示色板 */
 const colors = ["#8358F6", "#1b6dfa", "#f50", "#2db7f5", "#87d068", "#108ee9"];

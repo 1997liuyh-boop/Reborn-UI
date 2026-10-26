@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornLoading from '@/components/reborn-loading/RebornLoading.vue'
@@ -8,15 +8,14 @@ import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 import RebornColorPicker from '@/components/reborn-color-picker/RebornColorPicker.vue'
 import { LoadingTypes, LoadingColors } from '@/components/reborn-loading/reborn-loading.config'
 
-const demoColor = ref<typeof LoadingColors[number] | null>('primary')
-const demoType = ref<typeof LoadingTypes[number]>('outline')
-const colorValue = ref<string>('#000000')
+const demoColor = shallowRef<typeof LoadingColors[number] | null>('primary')
+const demoType = shallowRef<typeof LoadingTypes[number]>('outline')
+const colorValue = shallowRef<string>('#000000')
 
 const demoColorChange = (color: typeof LoadingColors[number]) => {
   demoColor.value = color
 }
-const onChange = (color: string) => {
-  colorValue.value = color
+const onChange = () => {
   demoColor.value = null
 }
 </script>
@@ -24,7 +23,7 @@ const onChange = (color: string) => {
   <RebornPage title="Loading" description="加载组件">
     <RebornCard title="配置" custom-class="space-y-4" overflowVisible>
 
-      <reborn-loading :type="demoType" :color="demoColor ? demoColor : colorValue" size="80rpx" />
+      <RebornLoading :type="demoType" :color="demoColor ? demoColor : colorValue" size="80rpx" />
       <view class="
                 text-sm font-medium text-slate-500
                 dark:text-slate-200
@@ -45,7 +44,7 @@ const onChange = (color: string) => {
                 ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
           @click="demoColorChange(c)" />
       </view>
-      <RebornColorPicker v-model="colorValue" @onChange="onChange" />
+      <RebornColorPicker v-model="colorValue" @change="onChange" />
       <RebornRadioGroup v-model="demoType">
         <RebornRadio v-for="t in LoadingTypes" :key="t" :value="t">
           {{ t }}

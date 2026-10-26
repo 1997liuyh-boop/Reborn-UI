@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornImage from '@/components/reborn-image/RebornImage.vue'
 import { inputColors, inputShapes, inputSizes, inputVariants } from '@/components/reborn-input/reborn-input.config'
@@ -11,38 +11,38 @@ import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 import RebornText from '@/components/reborn-text/RebornText.vue'
 
-const input1 = ref('')
-const input2 = ref('')
+const input1 = shallowRef('')
+const input2 = shallowRef('')
 
-const isTranslated = ref(false)
+const isTranslated = shallowRef(false)
 
 function toggleTranslate() {
   isTranslated.value = !isTranslated.value
 }
 
-const colors = ref<typeof inputColors[number]>('primary')
-const currentSize = ref<typeof inputSizes[number]>('sm')
-const currentVariant = ref<typeof inputVariants[number]>('filled')
-const currentShape = ref<typeof inputShapes[number]>('square')
-const disabled = ref(false)
-const password = ref(false)
-const clearable = ref(true)
+const colors = shallowRef<typeof inputColors[number]>('primary')
+const currentSize = shallowRef<typeof inputSizes[number]>('sm')
+const currentVariant = shallowRef<typeof inputVariants[number]>('filled')
+const currentShape = shallowRef<typeof inputShapes[number]>('square')
+const disabled = shallowRef(false)
+const password = shallowRef(false)
+const clearable = shallowRef(true)
 
 // ─── 场景演示状态（各卡片独立持有，避免相互牵连） ────────────────
 
-const variantValue = ref('Reborn UI')
-const iconValue = ref('')
-const groupValue = ref('')
-const limitValue = ref('字数统计')
-const limitOutsideValue = ref('')
-const limitAreaValue = ref('')
-const pwdValue = ref('reborn-ui-2026')
-const clearValue = ref('点右侧图标清空')
-const textareaValue = ref('')
-const autosizeValue = ref('高度随内容自动增长。')
+const variantValue = shallowRef('Reborn UI')
+const iconValue = shallowRef('')
+const groupValue = shallowRef('')
+const limitValue = shallowRef('字数统计')
+const limitOutsideValue = shallowRef('')
+const limitAreaValue = shallowRef('')
+const pwdValue = shallowRef('reborn-ui-2026')
+const clearValue = shallowRef('点右侧图标清空')
+const textareaValue = shallowRef('')
+const autosizeValue = shallowRef('高度随内容自动增长。')
 
 // 格式化与解析：千分位展示，绑定值保持纯数字文本
-const formattedValue = ref('1234567')
+const formattedValue = shallowRef('1234567')
 
 /** 千分位格式化，如 1234567 → 1,234,567 */
 function formatThousands(value: string | number) {

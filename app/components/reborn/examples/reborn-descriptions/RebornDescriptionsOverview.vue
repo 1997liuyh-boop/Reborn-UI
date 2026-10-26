@@ -5,8 +5,8 @@
  * 选边框形态而非无边框：标签格的灰底让「字段名 / 字段值」两栏一眼可辨；
  * 默认 24px 标题与 16px 单元格内边距放不进卡片，这里通过 ui 缩小字号与内边距。
  */
-import type { DescriptionsItem } from '~/components/reborn/ui/reborn-descriptions/RebornDescriptions.vue'
-import RebornDescriptions from '~/components/reborn/ui/reborn-descriptions/RebornDescriptions.vue'
+import type { DescriptionsItem } from "~/components/reborn/ui/reborn-descriptions/RebornDescriptions.vue";
+import RebornDescriptions from "~/components/reborn/ui/reborn-descriptions/RebornDescriptions.vue";
 
 const items: DescriptionsItem[] = [
   { label: '姓名', value: '张三' },

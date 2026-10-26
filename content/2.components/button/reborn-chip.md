@@ -205,7 +205,7 @@ const hasUnread = ref(true);
 | `variant` | `"solid" \| "outline" \| "textDot" \| "textOutline"` | `-` | 视觉变体。不传时按 `text` 自动选择：有文本取 `textDot`，否则取 `solid`。 |
 | `text` | `string \| number` | `-` | 角标文本，仅 `textDot` / `textOutline` 渲染；按真值判断，`0` 与空字符串都不显示。 |
 | `position` | `"top-right" \| "bottom-right" \| "top-left" \| "bottom-left"` | `"top-right"` | 角标吸附在宿主的哪个角。 |
-| `show` | `boolean` | `true` | 是否渲染角标节点，支持 `v-model:show`；组件内部不会改写它。 |
+| `show` | `boolean` | `undefined` | 是否渲染角标节点；未传时可见，显式 `false`、`undefined`、`null` 时隐藏。组件内部不会改写它。 |
 | `inset` | `boolean` | `false` | 为 `true` 时取消向外平移，角标整个落在宿主内部。 |
 | `standalone` | `boolean` | `false` | 只给角标节点追加 `absolute`，而角标节点本身已是 `absolute`，目前没有可见效果。 |
 | `class` | `any` | `-` | 追加到根节点 `root` 的类名。 |
@@ -224,7 +224,7 @@ const hasUnread = ref(true);
 | `variant` | `"solid" \| "outline" \| "textDot" \| "textOutline"` | `-` | 视觉变体。不传时按 `text` 自动选择：有文本取 `textDot`，否则取 `solid`。 |
 | `text` | `string \| number` | `-` | 角标文本，仅 `textDot` / `textOutline` 渲染；按真值判断，`0` 与空字符串都不显示。 |
 | `position` | `"top-right" \| "bottom-right" \| "top-left" \| "bottom-left"` | `"top-right"` | 角标吸附在宿主的哪个角。 |
-| `show` | `boolean` | `true` | 是否渲染角标节点，支持 `v-model:show`；组件内部不会改写它。 |
+| `show` | `boolean` | `undefined` | 是否渲染角标节点，支持 `v-model:show`；未传时可见，显式 `false`、`undefined`、`null` 时隐藏。组件内部不会改写它。 |
 | `inset` | `boolean` | `false` | 为 `true` 时取消向外平移，角标整个落在宿主内部。 |
 | `standalone` | `boolean` | `false` | 只给角标节点追加 `absolute`，而角标节点本身已是 `absolute`，目前没有可见效果。 |
 | `customClass` | `any` | `-` | 追加到定位容器（Web 端 `root` 对应的节点）的类名。 |
@@ -287,6 +287,7 @@ const hasUnread = ref(true);
 
 ## 注意事项
 
+- **两端缺省可见与显式空值不同。** 未传 `show` 时显示角标；显式传入 `false`、`undefined` 或 `null` 都隐藏，更新绑定不会回显旧值。UniApp 读取真实 MP 属性缓存识别动态绑定，移除绑定后恢复缺省可见。
 - **显示数字 0 要传字符串 `"0"`。** 两端都按 `props.text` 的真值决定是否渲染文本节点，数字 `0` 与空字符串都会被当成「没有文本」；不传 `variant` 时还会因此自动退回 `solid` 圆点。
 - **`solid` / `outline` 传了 `text` 也不显示。** 这两种变体最大只有 16px，装不下文字，组件直接跳过文本节点。需要带文字的角标请用 `textDot` 或 `textOutline`。
 - **显式传 `variant` 后不再自动切换。** 自动选择只在不传 `variant` 时生效；写死 `variant="textDot"` 但 `text` 为空时，会渲染一个没有文字的实心圆，尺寸与文字角标相同。

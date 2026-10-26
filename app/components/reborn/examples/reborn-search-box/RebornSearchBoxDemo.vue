@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import type { SearchBoxModelValue } from "~/components/reborn/ui/reborn-search-box/RebornSearchBox.vue";
+import type { BadgeProps } from "~/components/reborn/ui/reborn-badge/RebornBadge.vue";
+import type { SearchBoxModelValue, SearchBoxProps } from "~/components/reborn/ui/reborn-search-box/RebornSearchBox.vue";
 import type { SkuOption } from "~/components/reborn/ui/reborn-sku/RebornSku.vue";
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
+import { computed, ref, shallowRef } from 'vue';
 import RebornBadge from "~/components/reborn/ui/reborn-badge/RebornBadge.vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { inputColors, inputShapes } from "~/components/reborn/ui/reborn-input/reborn-input.config";
@@ -32,13 +35,13 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 演练场绑定值 */
-const playgroundValue = ref<SearchBoxModelValue>({
+const playgroundValue = shallowRef<SearchBoxModelValue>({
   inputValue: "",
   selectValue: "1",
 });
 
 /** 最近一次触发的事件，让预览区的交互「有回应」 */
-const lastEvent = ref("暂无");
+const lastEvent = shallowRef("暂无");
 
 function onSearch(val: SearchBoxModelValue) {
   lastEvent.value = `search · 关键词「${val.inputValue || "空"}」`;
@@ -80,6 +83,7 @@ const searchBoxCode = computed(() => {
   const s = state.value;
   const props: string[] = [
     `v-model="value"`,
+    'v-model:history="history"',
     `size="${s.size}"`,
     `color="${s.color}"`,
     `shape="${s.shape}"`,
@@ -114,13 +118,15 @@ const recommendKeywords = ["iPhone 15 Pro", "MacBook Air M3", "AirPods Pro", "Ap
 const outerSlotValue = ref<SearchBoxModelValue>({ inputValue: "", selectValue: "1" });
 
 /** 内置插槽示例绑定值 */
-const innerSlotValue = ref<SearchBoxModelValue>({ inputValue: "", selectValue: "" });
+const innerSlotValue = shallowRef<SearchBoxModelValue>({ inputValue: "", selectValue: "" });
 
 /** 方形圆角示例绑定值 */
-const squareValue = ref<SearchBoxModelValue>({ inputValue: "", selectValue: "" });
+const squareValue = shallowRef<SearchBoxModelValue>({ inputValue: "", selectValue: "" });
+/** 方形示例：input-attrs 透传给内部 RebornInput，限制最多输入 20 个字符 */
+const squareInputAttrs: SearchBoxProps['inputAttrs'] = { maxlength: 20 };
 
 /** 纯输入框（无前后插槽/无面板）示例绑定值 */
-const pureValue = ref<SearchBoxModelValue>({ inputValue: "", selectValue: "" });
+const pureValue = shallowRef<SearchBoxModelValue>({ inputValue: "", selectValue: "" });
 
 /** SKU 搜索绑定值 */
 const skuSearchValue = ref<SearchBoxModelValue>({
@@ -132,7 +138,7 @@ const skuSearchValue = ref<SearchBoxModelValue>({
 });
 
 /** SKU 属性列表：slots 指定用插槽自定义该属性的选择区 */
-const skuAttributes = ref<SkuOption[]>([
+const skuAttributes: SkuOption[] = [
   {
     key: "language",
     title: "语言",
@@ -157,14 +163,21 @@ const skuAttributes = ref<SkuOption[]>([
       { label: "Yahoo", value: "yahoo" },
     ],
   },
-]);
+];
+/** 外部持有的历史只随搜索动作整体更新，各搜索框互不串用。 */
+const playgroundHistory = shallowRef<string[]>(["Vue 组件"]);
+/** 历史记录标签：文字压到 gray-7，弱于输入内容 */
+const historyBadgeUi: BadgeProps['ui'] = { label: 'text-gray-7' };
+function onSkuChange(key: string, value: unknown) {
+  lastEvent.value = `sku change · ${key} → ${JSON.stringify(value)}`;
+}
 </script>
 
 <template>
   <div class="flex w-full flex-col">
     <Playground v-model="state" :controls="controls" :code="searchBoxCode" component-name="RebornSearchBox"
       title="交互演练场"
-      description="调节左侧参数，实时查看搜索框表现；所有区域全是插槽、无任何默认内容。外层边框把外置插槽一并囊括进来并恒为 gray-4，输入框聚焦时只在输入框区内另起一圈 color 对应色的描边——点左侧选择器或右侧按钮都不会点亮任何描边。">
+      description="调节上方参数，实时查看搜索框表现；所有区域全是插槽、无任何默认内容。外层边框把外置插槽一并囊括进来并恒为 gray-4，输入框聚焦时只在输入框区内另起一圈 color 对应色的描边——点左侧选择器或右侧按钮都不会点亮任何描边。">
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
           <template #leading>
@@ -175,7 +188,7 @@ const skuAttributes = ref<SkuOption[]>([
       </template>
 
       <div class="flex w-full flex-col gap-8 pb-40">
-        <RebornSearchBox v-model="playgroundValue" :size="state.size" :color="state.color" :shape="state.shape"
+        <RebornSearchBox v-model="playgroundValue" v-model:history="playgroundHistory" :size="state.size" :color="state.color" :shape="state.shape"
           :placeholder="state.placeholder" :show-dropdown="state.showDropdown" @search="onSearch">
           <!-- 外置前置插槽（在边框内、输入框之外，聚焦不点亮边框）：自行组合 RebornSelect，分隔线等装饰样式自行提供 -->
           <template #leading>
@@ -222,7 +235,7 @@ const skuAttributes = ref<SkuOption[]>([
               </div>
               <div v-if="history.length > 0" class="flex flex-wrap gap-2">
                 <RebornBadge v-for="h in history" :key="h" :label="h" closable variant="soft" color="neutral" size="md"
-                  :ui="{ label: 'text-gray-7' }" @click="selectHistory(h)" @close="removeHistoryItem(h)" />
+                  :ui="historyBadgeUi" @click="selectHistory(h)" @close="removeHistoryItem(h)" />
               </div>
               <div v-else class="text-sm text-gray-4 py-2">
                 暂无最近的搜索记录
@@ -254,7 +267,7 @@ const skuAttributes = ref<SkuOption[]>([
     <DemoSection class="relative z-50" title="基础用法"
       description="不填任何插槽并关闭 show-dropdown，即为一只只剩输入能力的搜索框；回车仍会触发 search 并写入历史。">
       <DemoBlock layout="stack">
-        <RebornSearchBox v-model="pureValue" :show-dropdown="false" placeholder="无插槽 + 不展开面板，回车触发搜索"
+        <RebornSearchBox v-model="pureValue" history-key="reborn-demo-pureValue" :show-dropdown="false" placeholder="无插槽 + 不展开面板，回车触发搜索"
           @search="onSearch" />
       </DemoBlock>
     </DemoSection>
@@ -268,7 +281,7 @@ const skuAttributes = ref<SkuOption[]>([
         <code>lg</code> 为 12px。
       </template>
       <DemoBlock layout="stack">
-        <RebornSearchBox v-model="outerSlotValue" size="md" shape="square" :show-dropdown="false"
+        <RebornSearchBox v-model="outerSlotValue" history-key="reborn-demo-outerSlotValue" size="md" shape="square" :show-dropdown="false"
           placeholder="点选择器不会出现描边，点这里才会">
           <!-- 外置前置：搜索源选择器 + 分隔线（分隔线样式自行提供） -->
           <template #leading>
@@ -294,7 +307,7 @@ const skuAttributes = ref<SkuOption[]>([
         随输入框一起进入激活态；作用域除 <code>ui</code> 外还额外透出 <code>inputUi</code>，可直接套用输入框自身的样式键。
       </template>
       <DemoBlock layout="stack">
-        <RebornSearchBox v-model="innerSlotValue" size="md" shape="square" :show-dropdown="false"
+        <RebornSearchBox v-model="innerSlotValue" history-key="reborn-demo-innerSlotValue" size="md" shape="square" :show-dropdown="false"
           placeholder="放大镜与相机都在输入框里" @search="onSearch">
           <!-- 内置前置：放大镜 -->
           <template #input-leading>
@@ -317,8 +330,8 @@ const skuAttributes = ref<SkuOption[]>([
         <code>input-attrs</code> 会 v-bind 透传给内部 <code>RebornInput</code>（显式 prop 优先）。
       </template>
       <DemoBlock layout="stack">
-        <RebornSearchBox v-model="squareValue" shape="square" size="md" placeholder="方形圆角 + maxlength 透传..."
-          :input-attrs="{ maxlength: 20 }" @search="onSearch">
+        <RebornSearchBox v-model="squareValue" history-key="reborn-demo-squareValue" shape="square" size="md" placeholder="方形圆角 + maxlength 透传..."
+          :input-attrs="squareInputAttrs" @search="onSearch">
           <template #input-trailing="{ search }">
             <RebornButton size="sm" color="primary" @click.stop="search">
               <Icon name="lucide:search" class="size-5" />
@@ -349,16 +362,15 @@ const skuAttributes = ref<SkuOption[]>([
         带 <code>slots</code> 的属性项可用 <code>RebornSku</code> 的同名插槽自定义选择方式。
       </template>
       <DemoBlock layout="stack">
-        <RebornSearchBox v-model="skuSearchValue" placeholder="搜索商品属性..." @search="onSearch" size="lg">
+        <RebornSearchBox v-model="skuSearchValue" history-key="reborn-demo-skuSearchValue" placeholder="搜索商品属性..." @search="onSearch" size="lg">
           <template #input-trailing="{ search }">
-            <RebornButton size="sm" color="primary" @click.stop="search" variant="round">
+            <RebornButton size="sm" color="primary" round variant="filled" @click.stop="search">
               <Icon name="lucide:search" class="size-5" />
             </RebornButton>
           </template>
           <template #dropdown>
-            <RebornSku :model-value="skuSearchValue" :options="skuAttributes"
-              @update:model-value="(val: any) => (skuSearchValue = val)"
-              @change="(key: string, val: any) => (lastEvent = `sku change · ${key} → ${JSON.stringify(val)}`)"
+            <RebornSku v-model="skuSearchValue" :options="skuAttributes"
+              @change="onSkuChange"
               @click.stop>
               <template #language>
                 <RebornRadioGroup v-model="skuSearchValue.language">

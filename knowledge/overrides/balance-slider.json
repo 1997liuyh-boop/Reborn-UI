@@ -6,12 +6,12 @@
     "需要自定义左右背景色与提示文案的比例展示。"
   ],
   "whenNotToUse": [
-    "表单中需要取值提交的数值滑块，改用 reborn-slider。",
-    "需要监听滑动值变化的场景：该组件未定义任何事件，取不到当前值。"
+    "表单中需要校验、步长与刻度的数值滑块，改用 reborn-slider。"
   ],
   "pitfalls": [
     "仅 web 端可用。",
-    "无事件、无插槽、无 v-model，仅能通过 initialValue（0-100）设置初始位置，无法向外读取用户拖动后的值。",
-    "minShiftLimit / maxShiftLimit（默认 40 / 68）控制位移动画的启停阈值，而非取值范围。"
+    "通过 v-model（modelValue，0-100 的数字）读取拖动结果；未绑定时 initialValue 作为初值。",
+    "minShiftLimit / maxShiftLimit（默认 40 / 68）控制位移动画的启停阈值，而非取值范围。",
+    "Web 显式绑定 modelValue 为 undefined/null 时显示比例复位到 initialValue，不回显旧交互副本，也不主动回写父模型。"
   ]
 }

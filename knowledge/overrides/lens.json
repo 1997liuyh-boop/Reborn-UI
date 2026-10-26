@@ -3,7 +3,7 @@
   "whenToUse": [
     "商品图、设计稿等需要鼠标悬停局部放大查看细节时。",
     "需要固定位置的静态放大展示（isStatic + position）。",
-    "需要联动外部 UI（如放大时模糊周边文案）时，配合 hovering 与 hover-update。"
+    "需要联动外部 UI（如放大时模糊周边文案）时，配合 v-model:hovering。"
   ],
   "whenNotToUse": [
     "整图点击放大预览，改用 reborn-image。",
@@ -12,7 +12,7 @@
   "pitfalls": [
     "仅 web 端可用，依赖 motion-v。",
     "isStatic 为 true 时镜头固定在 position 指定坐标，不跟随鼠标。",
-    "hovering 为外部受控 prop，需监听 hover-update 事件回写，否则悬停状态不更新。",
+    "悬停状态用 v-model:hovering 双向绑定（事件为 update:hovering）；原 hover-update 事件已移除。",
     "zoomFactor 默认 1.5，lensSize 为镜头直径（默认 170px）。"
   ]
 }

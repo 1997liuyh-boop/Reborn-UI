@@ -2,7 +2,7 @@
 /**
  * AppThemePicker —— 主题色切换
  *
- * 这里只负责把选中色系对应的预设名写到 <html data-theme-color="...">，
+ * 选择器只修改全站状态，常驻插件负责 cookie 与 html 属性。
  * 真正的色值由 app/assets/theme/base.css 的 [data-theme-color] 规则给出。
  *
  * 不用 element.style 直接写 --color-primary：内联样式权重高于 .dark 类选择器，
@@ -11,35 +11,18 @@
  */
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'
 import RebornPopover from '~/components/reborn/ui/reborn-popover/RebornPopover.vue'
-
-/** 可选色系，首个为品牌蓝 */
-interface ThemeColorOption {
-  /** 色系名，存进 cookie */
-  name: string
-  /** base.css 里对应的预设名：品牌蓝的预设叫 brand，其余与色系名相同 */
-  preset: string
-  /** 中文名，用于悬停提示与读屏 */
-  label: string
-}
+import { themeColors as colors } from '~/utils/themeColor'
 
 /**
  * 色块背景不写死十六进制：色块自己挂上 data-theme-color 后由 bg-primary 解析，色块与实际主色永远同源。
  * 品牌蓝的预设会把整条 brand 色阶写回原始蓝，所以页面切到其他色系时，品牌蓝色块依然是蓝色
  */
-const colors: ThemeColorOption[] = [
-  { name: 'blue', preset: 'brand', label: '品牌蓝' },
-  { name: 'orange', preset: 'orange', label: '橙色' },
-  { name: 'green', preset: 'green', label: '绿色' },
-  { name: 'red', preset: 'red', label: '红色' },
-]
 
-/** 选中的色系。用 cookie 而非 localStorage：服务端渲染时也能读到，属性随首屏 HTML 一起下发 */
-const themeColor = useCookie<string>('theme-color', { default: () => 'blue' })
+/** 选中的色系由全站插件持久化。 */
+const themeColor = useThemeColor()
 /** cookie 可能是旧值或被篡改，认不出时回落到首个色系 */
 const current = computed(() => colors.find(color => color.name === themeColor.value) ?? colors[0]!)
 
-// SSR 阶段就把属性写进 <html>，避免首屏先按默认色渲染、水合后再跳一次色
-useHead(computed(() => ({ htmlAttrs: { 'data-theme-color': current.value.preset } })))
 </script>
 
 <template>

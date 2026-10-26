@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, shallowRef } from 'vue';
 import {
   inputColors,
   inputShapes,
@@ -26,7 +27,7 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 最近一次 change 事件的值 */
-const lastChange = ref<string | number | null>(null);
+const lastChange = shallowRef<string | number | null>(null);
 
 function handleChange(value: string | number) {
   lastChange.value = value;
@@ -98,20 +99,22 @@ const codeExtras = ['placeholder="请输入内容"', '@change="handleChange"'];
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 // 各 section 独立持有绑定值，避免调整一处示例牵连其他示例
-const variantValue = ref("Reborn UI");
-const basicValue = ref("");
-const iconValue = ref("");
-const groupValue = ref("");
-const limitValue = ref("字数统计");
-const limitOutsideValue = ref("");
-const limitAreaValue = ref("");
-const passwordValue = ref("reborn-ui-2026");
-const clearValue = ref("点右侧图标清空");
-const textareaValue = ref("");
-const autosizeValue = ref("高度随内容自动增长，最多 6 行。");
+const variantValue = shallowRef("Reborn UI");
+const basicValue = shallowRef("");
+const iconValue = shallowRef("");
+const groupValue = shallowRef("");
+const limitValue = shallowRef("字数统计");
+const limitOutsideValue = shallowRef("");
+const limitAreaValue = shallowRef("");
+const passwordValue = shallowRef("reborn-ui-2026");
+const clearValue = shallowRef("点右侧图标清空");
+const textareaValue = shallowRef("");
+const resizeValue = shallowRef("");
+const adornmentValue = shallowRef("Reborn UI");
+const autosizeValue = shallowRef("高度随内容自动增长，最多 6 行。");
 
 // 格式化与解析：千分位展示，绑定值保持纯数字文本
-const formattedValue = ref("1234567");
+const formattedValue = shallowRef("1234567");
 
 /** 千分位格式化，如 1234567 → 1,234,567 */
 function formatThousands(value: string | number) {
@@ -242,7 +245,7 @@ function parseThousands(text: string) {
       </template>
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem mono>
-          <RebornInput v-model="variantValue" placeholder="请输入内容" :ui="{
+          <RebornInput v-model="adornmentValue" placeholder="请输入内容" :ui="{
             append: 'bg-brand-6 text-white px-[12px] border border-brand-6'
           }">
             <template #append>
@@ -251,7 +254,7 @@ function parseThousands(text: string) {
           </RebornInput>
         </DemoItem>
         <DemoItem mono>
-          <RebornInput v-model="variantValue" disabled placeholder="请输入内容" :ui="{
+          <RebornInput v-model="adornmentValue" disabled placeholder="请输入内容" :ui="{
             append: 'bg-brand-3 text-gray-2 px-[12px] border border-brand-3'
           }">
             <template #append>
@@ -260,7 +263,7 @@ function parseThousands(text: string) {
           </RebornInput>
         </DemoItem>
         <DemoItem mono>
-          <RebornInput v-model="variantValue" placeholder="请输入内容" :ui="{
+          <RebornInput v-model="adornmentValue" placeholder="请输入内容" :ui="{
             append: 'bg-white text-gray-10 px-[8px]'
           }">
             <template #prepend>
@@ -274,7 +277,7 @@ function parseThousands(text: string) {
           </RebornInput>
         </DemoItem>
         <DemoItem mono>
-          <RebornInput v-model="variantValue" disabled placeholder="请输入内容" :ui="{
+          <RebornInput v-model="adornmentValue" disabled placeholder="请输入内容" :ui="{
             append: 'bg-gray-2 text-gray-5 px-[8px]'
           }">
             <template #prepend>
@@ -365,7 +368,7 @@ function parseThousands(text: string) {
         </DemoItem>
 
         <DemoItem label="resize=&quot;vertical&quot;（允许纵向拖拽）" mono>
-          <RebornInput v-model="textareaValue" type="textarea" :rows="3" resize="vertical" maxlength="100"
+          <RebornInput v-model="resizeValue" type="textarea" :rows="3" resize="vertical" maxlength="100"
             show-word-limit placeholder="右下角可拖拽" />
         </DemoItem>
       </DemoBlock>

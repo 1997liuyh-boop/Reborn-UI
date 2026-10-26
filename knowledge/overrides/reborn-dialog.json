@@ -22,6 +22,7 @@
     "destroy-on-close 默认 false：首开后内容 DOM 常驻复用，需要每次重置内部状态就开它。",
     "Modal.method() 的遮罩/ESC/关闭按钮统一走 onBeforeCancel/onCancel 门控；onLoading 默认开启，异步期间按钮 loading；返回 { close, destroy }，Modal.destroyAll() 批量销毁（跳过动画）。",
     "draggable 在 fullscreen 模式下无效，默认拖拽限制在可视区内（overflow 放开）；lockScroll 默认 true 打开时锁定页面滚动。",
-    "事件名对齐 Element Plus：before-open/opened/before-close/closed/open-auto-focus/close-auto-focus；expose 有 open/close/handleClose/resetPosition。"
+    "事件名对齐 Element Plus：before-open/opened/before-close/closed/open-auto-focus/close-auto-focus；expose 有 open/close/handleClose/resetPosition。",
+    "嵌套弹窗与 Drawer 共用弹层栈：Esc 只关闭最上层，z-index 是基础层级，打开时自动递增到高于已打开的弹层；未声明的属性（id/style/data-*/aria-*）透传到面板节点。"
   ]
 }

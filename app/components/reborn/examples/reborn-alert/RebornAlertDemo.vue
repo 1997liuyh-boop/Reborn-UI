@@ -11,16 +11,23 @@ const variantOptions = alertVariants.map((v) => ({ label: v, value: v }));
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
-  type: "info",
-  variant: "soft",
+/** 演练场默认值，重置时恢复全部配置 */
+const defaultState = {
+  type: "info" as const,
+  variant: "soft" as const,
   title: "",
   content: "这是一条警告提示的内容",
   showIcon: true,
   closable: false,
   banner: false,
   center: false,
-});
+};
+const state = ref({ ...defaultState });
+const playgroundShow = shallowRef(true);
+
+/** 任意参数变更后恢复演练场提示 */
+watch(state, () => { playgroundShow.value = true; }, { deep: true });
+
 
 /** 演练场控制面板配置 */
 const controls = [
@@ -72,8 +79,8 @@ const alertCode = computed(() => {
 // ─── 场景演示 ───────────────────────────────────────────────────
 
 /** 可关闭示例的显隐状态与关闭动画回调 */
-const closableShow = ref(true);
-const afterCloseLog = ref("");
+const closableShow = shallowRef(true);
+const afterCloseLog = shallowRef("");
 function handleAfterClose() {
   afterCloseLog.value = "after-close 已触发（关闭动画结束）";
 }
@@ -85,10 +92,19 @@ const noticeMessages = [
   "文档站已支持双端演示与在线运行",
   "组件库知识库与 AI 助手已上线，欢迎试用",
 ];
-const noticeIndex = ref(0);
+const noticeIndex = shallowRef(0);
 
 /** 自定义关闭元素示例的显隐状态 */
-const closeElementShow = ref(true);
+const closeElementShow = shallowRef(true);
+/** 重置配置与场景回显 */
+function resetState() {
+  state.value = { ...defaultState };
+  playgroundShow.value = true;
+  closableShow.value = true;
+  afterCloseLog.value = "";
+  noticeIndex.value = 0;
+  closeElementShow.value = true;
+}
 </script>
 
 <template>
@@ -101,8 +117,13 @@ const closeElementShow = ref(true);
       title="交互演练场"
       description="调节参数实时预览警告提示；banner 模式会去除边框和圆角作为顶部公告使用。"
     >
+      <template #tag>
+        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+          重置配置
+        </RebornButton>
+      </template>
       <RebornAlert
-        :key="`${state.closable}`"
+        v-model:show="playgroundShow"
         :type="state.type"
         :variant="state.variant"
         :title="state.title || undefined"

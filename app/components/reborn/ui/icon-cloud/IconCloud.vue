@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { IconCloudProps, SphereIcon } from "./index";
-import { onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from "vue";
+import { computed, onBeforeUnmount, onMounted, useTemplateRef, watch } from "vue";
 import { cn } from "~/lib/utils";
 
 interface TargetRotation {
@@ -17,19 +17,17 @@ const props = withDefaults(defineProps<IconCloudProps>(), {
   images: () => [],
 });
 
-const canvasRef = ref<HTMLCanvasElement | null>(null);
-const animationFrameRef = ref<number>(0);
+const canvasRef = useTemplateRef<HTMLCanvasElement>("canvasRef");
 
-const imageCanvasesRef = ref<HTMLCanvasElement[]>([]);
-const imagesLoadedRef = ref<boolean[]>([]);
-const imagePositions = ref<SphereIcon[]>([]);
-
-const rotation = reactive({ x: 0, y: 0 });
-const isDragging = ref(false);
-const lastMousePos = reactive({ x: 0, y: 0 });
-const mousePos = reactive({ x: 0, y: 0 });
-
-const targetRotation = ref<TargetRotation | null>(null);
+// 以下状态只在事件处理与 rAF 帧循环里读写，不参与模板渲染：用普通变量保存，避免每帧对每个图标做多次响应式代理读取
+let animationFrame = 0;
+let imageCanvases: HTMLCanvasElement[] = [];
+let imagesLoaded: boolean[] = [];
+const rotation = { x: 0, y: 0 };
+let isDragging = false;
+const lastMousePos = { x: 0, y: 0 };
+const mousePos = { x: 0, y: 0 };
+let targetRotation: TargetRotation | null = null;
 
 function easeOutCubic(t: number): number {
   return 1 - (1 - t) ** 3;
@@ -37,15 +35,22 @@ function easeOutCubic(t: number): number {
 
 watch(
   () => props.images,
-  (currentImages) => {
+  (currentImages, _oldImages, onCleanup) => {
     if (!import.meta.client) {
-      imageCanvasesRef.value = [];
-      imagesLoadedRef.value = [];
+      imageCanvases = [];
+      imagesLoaded = [];
       return;
     }
 
+    // images 变化后旧图片晚到的 onload 不再按下标标记新数组
+    let stale = false;
+    onCleanup(() => {
+      stale = true;
+    });
+
     const images = currentImages ?? [];
-    imagesLoadedRef.value = new Array(images.length).fill(false);
+    const loaded: boolean[] = new Array(images.length).fill(false);
+    imagesLoaded = loaded;
 
     const newImageCanvases = images.map((url, idx) => {
       const offscreen = document.createElement("canvas");
@@ -62,6 +67,7 @@ watch(
       img.crossOrigin = "anonymous";
       img.src = url;
       img.onload = () => {
+        if (stale) return;
         offCtx.clearRect(0, 0, offscreen.width, offscreen.height);
         offCtx.beginPath();
         offCtx.arc(20, 20, 20, 0, Math.PI * 2);
@@ -69,27 +75,23 @@ watch(
         offCtx.clip();
         offCtx.drawImage(img, 0, 0, 40, 40);
 
-        if (idx < imagesLoadedRef.value.length) {
-          imagesLoadedRef.value[idx] = true;
-        }
+        loaded[idx] = true;
       };
 
       return offscreen;
     });
 
-    imageCanvasesRef.value = newImageCanvases;
+    imageCanvases = newImageCanvases;
   },
   {
     immediate: true,
   },
 );
 
-watchEffect(() => {
+// 图标在球面上的位置只由图标数量决定，是派生值，用 computed
+const imagePositions = computed<SphereIcon[]>(() => {
   const count = props.images.length;
-  if (count === 0) {
-    imagePositions.value = [];
-    return;
-  }
+  if (count === 0) return [];
 
   const newPositions: SphereIcon[] = [];
   const offset = 2 / count;
@@ -112,7 +114,7 @@ watchEffect(() => {
     });
   }
 
-  imagePositions.value = newPositions;
+  return newPositions;
 });
 
 function handleMouseDown(e: MouseEvent) {
@@ -148,7 +150,7 @@ function handleMouseDown(e: MouseEvent) {
       const distance = Math.sqrt((targetX - currentX) ** 2 + (targetY - currentY) ** 2);
       const duration = Math.min(2000, Math.max(800, distance * 1000));
 
-      targetRotation.value = {
+      targetRotation = {
         x: targetX,
         y: targetY,
         startX: currentX,
@@ -160,7 +162,7 @@ function handleMouseDown(e: MouseEvent) {
     }
   });
 
-  isDragging.value = true;
+  isDragging = true;
   lastMousePos.x = e.clientX;
   lastMousePos.y = e.clientY;
 }
@@ -173,7 +175,7 @@ function handleMouseMove(e: MouseEvent) {
   mousePos.x = e.clientX - rect.left;
   mousePos.y = e.clientY - rect.top;
 
-  if (isDragging.value) {
+  if (isDragging) {
     const deltaX = e.clientX - lastMousePos.x;
     const deltaY = e.clientY - lastMousePos.y;
 
@@ -186,7 +188,7 @@ function handleMouseMove(e: MouseEvent) {
 }
 
 function handleMouseUp() {
-  isDragging.value = false;
+  isDragging = false;
 }
 
 onMounted(() => {
@@ -210,8 +212,8 @@ onMounted(() => {
     const distance = Math.sqrt(dx * dx + dy * dy);
     const speed = 0.003 + (distance / maxDistance) * 0.01;
 
-    if (targetRotation.value) {
-      const { startX, startY, x: tx, y: ty, startTime, duration } = targetRotation.value;
+    if (targetRotation) {
+      const { startX, startY, x: tx, y: ty, startTime, duration } = targetRotation;
       const elapsed = performance.now() - startTime;
       const progress = Math.min(1, elapsed / duration);
       const eased = easeOutCubic(progress);
@@ -220,9 +222,9 @@ onMounted(() => {
       rotation.y = startY + (ty - startY) * eased;
 
       if (progress >= 1) {
-        targetRotation.value = null;
+        targetRotation = null;
       }
-    } else if (!isDragging.value) {
+    } else if (!isDragging) {
       rotation.x += (dy / safeCanvas.height) * speed;
       rotation.y += (dx / safeCanvas.width) * speed;
     }
@@ -239,8 +241,8 @@ onMounted(() => {
 
       const scale = (rotatedZ + 200) / 300;
       const opacity = Math.max(0.2, Math.min(1, (rotatedZ + 150) / 200));
-      const imageCanvas = imageCanvasesRef.value[index];
-      const isLoaded = imagesLoadedRef.value[index] === true;
+      const imageCanvas = imageCanvases[index];
+      const isLoaded = imagesLoaded[index] === true;
 
       ctx.save();
       ctx.translate(centerX + rotatedX, centerY + rotatedY);
@@ -254,15 +256,15 @@ onMounted(() => {
       ctx.restore();
     });
 
-    animationFrameRef.value = requestAnimationFrame(animate);
+    animationFrame = requestAnimationFrame(animate);
   }
 
-  animationFrameRef.value = requestAnimationFrame(animate);
+  animationFrame = requestAnimationFrame(animate);
 });
 
 onBeforeUnmount(() => {
-  if (animationFrameRef.value) {
-    cancelAnimationFrame(animationFrameRef.value);
+  if (animationFrame) {
+    cancelAnimationFrame(animationFrame);
   }
 });
 </script>

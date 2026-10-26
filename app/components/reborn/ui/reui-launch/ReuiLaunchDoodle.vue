@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, useId } from "vue";
+import { computed, onBeforeUnmount, onMounted, shallowRef, useId, useTemplateRef } from "vue";
 import { launchDoodleLayout, launchScreenClasses } from "./reui-launch.config";
 
 interface Props {
@@ -16,11 +16,11 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { text: "REUI", screenText: "RE", screenEffect: "crt", expanded: false, compact: false });
-const stage = ref<HTMLButtonElement>();
-const hovering = ref(false);
-const pinned = ref(false);
-const visible = ref(true);
-const pageVisible = ref(true);
+const stage = useTemplateRef<HTMLButtonElement>('stage');
+const hovering = shallowRef(false);
+const pinned = shallowRef(false);
+const visible = shallowRef(true);
+const pageVisible = shallowRef(true);
 const isExpanded = computed(() => props.expanded || hovering.value || pinned.value);
 const isAnimating = computed(() => isExpanded.value && visible.value && pageVisible.value);
 // 屏幕在收起时也播放；离屏与后台只暂停时间线，返回时接着播放。

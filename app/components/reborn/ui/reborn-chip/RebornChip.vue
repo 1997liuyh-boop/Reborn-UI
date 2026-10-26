@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, getCurrentInstance, onBeforeUpdate, shallowRef } from 'vue'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
 import theme from './reborn-chip.config'
@@ -46,7 +46,18 @@ export interface ChipProps {
 }
 
 /** 是否渲染角标节点，配合 `v-model:show` 同步；组件内部不会改写它 */
-const show = defineModel<boolean>('show', { default: true })
+defineModel<boolean>('show', { default: undefined })
+/**
+ * 要区分「未传 show」与「显式传了 undefined / null」：前者保持可见，后者隐藏。
+ * defineModel 只看值、分不出这两种情况，所以读原始 vnode.props 的键；
+ * 只在更新前同步一个布尔值，键集合没变时 show 不跟着重算
+ */
+const instance = getCurrentInstance()!
+const hasShowProp = () => !!instance.vnode.props && Object.hasOwn(instance.vnode.props, 'show')
+const showPassed = shallowRef(hasShowProp())
+onBeforeUpdate(() => { showPassed.value = hasShowProp() })
+/** 缺省时保持可见；显式 false、undefined、null 都按隐藏处理。 */
+const show = computed(() => showPassed.value ? !!instance.props.show : true)
 
 /** 实际生效的变体：未指定时按有无文本自动选择，「传 text 显示计数、不传显示圆点」的用法保持不变 */
 const variant = computed<ChipVariant>(() => props.variant ?? (props.text ? 'textDot' : 'solid'))
@@ -72,7 +83,7 @@ const ui = computed(() => {
 </script>
 
 <template>
-  <span :class="ui.root({ class: props.class })">
+  <span :class="ui.root()">
     <slot />
     <div v-if="show" :class="ui.base()">
       <div v-if="showLabel" :class="ui.label()">

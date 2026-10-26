@@ -64,9 +64,9 @@ export function useUniDemoPanel() {
             }
         }
 
-        // setup 上下文内自动挂载卸载清理；上下文外由调用方自行处理
-        if (getCurrentInstance()) {
-            onUnmounted(cleanup)
+        // 注册项属于当前作用域，组件卸载与 effectScope 停止都自动注销。
+        if (getCurrentScope()) {
+            onScopeDispose(cleanup)
         }
         return cleanup
     }

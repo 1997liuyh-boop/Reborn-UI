@@ -17,6 +17,8 @@ tags: [css, tailwind, aceternity-ui]
 | `count`| `number` | `20`   | 动画中显示的流星数量。                      |
 | `class`| `string` | `""`   | 应用于流星的额外 CSS 类，便于自定义。       |
 
+组件根节点是一层铺满定位父容器的 `absolute inset-0` 盒子，并带 `pointer-events-none`，不会挡住下方内容的点击。`class` 是声明的属性，会加到每一颗流星上；`style`、`data-*` 等未声明的属性落在这一层上，例如 `style="opacity: 0.5"` 会让整层流星半透明。父容器仍需 `relative` 与 `overflow-hidden`，否则流星以更外层的定位祖先为基准并溢出。
+
 #instructions
 
 在 `main.css` 的 inline theme 中添加以下内容：

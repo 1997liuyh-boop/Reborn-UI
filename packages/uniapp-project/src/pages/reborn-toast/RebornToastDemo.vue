@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { MessageType, MessageVariant } from '@/components/reborn-toast/index'
-import { ref } from 'vue'
+import { onUnload } from '@dcloudio/uni-app'
+import { shallowRef } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornInput from '@/components/reborn-input/RebornInput.vue'
@@ -12,11 +13,32 @@ import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 import { message, messageTypes, messageVariants } from '@/components/reborn-toast/index'
 
 // 演练场状态（默认值与 Web 端 Playground 一致）
-const content = ref('这是一条消息提示')
-const type = ref<MessageType>('success')
-const variant = ref<MessageVariant>('base')
-const duration = ref(3)
-const pauseOnHover = ref(true)
+const content = shallowRef('这是一条消息提示')
+const type = shallowRef<MessageType>('success')
+const variant = shallowRef<MessageVariant>('base')
+const duration = shallowRef(3)
+const pauseOnHover = shallowRef(true)
+let keyTimer: ReturnType<typeof setTimeout> | undefined
+let configTimer: ReturnType<typeof setTimeout> | undefined
+let disposed = false
+let configChanged = false
+let promiseVersion = 0
+const ownedKeys = new Set<string>()
+
+function restoreConfig() {
+  if (configChanged) message.config({ maxCount: 0 })
+  configChanged = false
+}
+
+onUnload(() => {
+  disposed = true
+  promiseVersion++
+  clearTimeout(keyTimer)
+  clearTimeout(configTimer)
+  restoreConfig()
+  ownedKeys.forEach(key => message.destroy(key))
+  ownedKeys.clear()
+})
 
 /** 按演练场当前参数弹出消息 */
 function fireFromPlayground() {
@@ -30,27 +52,35 @@ function fireFromPlayground() {
 
 /** Promise 接口：loading 关闭后接续提示 */
 function firePromiseDemo() {
-  message.loading('正在提交…', 1.5).then(() => {
-    message.success('提交成功，感谢反馈！')
+  const version = ++promiseVersion
+  ownedKeys.add('demo-promise')
+  message.loading({ content: '正在提交…', key: 'demo-promise', duration: 1.5 }).then(() => {
+    if (!disposed && version === promiseVersion) message.success('提交成功，感谢反馈！')
   })
 }
 
 /** 同 key 更新：先 loading 再原位变成功 */
 function fireKeyDemo() {
+  clearTimeout(keyTimer)
+  ownedKeys.add('updatable')
   message.loading({ content: '加载中…', key: 'updatable', duration: 0 })
-  setTimeout(() => {
+  keyTimer = setTimeout(() => {
     message.success({ content: '加载完成！', key: 'updatable', duration: 2 })
   }, 1200)
 }
 
 /** maxCount 演示：限 3 条后连发 6 条 */
 function fireMaxCountDemo() {
+  clearTimeout(configTimer)
+  configChanged = true
   message.config({ maxCount: 3 })
   for (let i = 1; i <= 6; i++) {
-    message.info(`第 ${i} 条消息（最多同时 3 条）`, 2 + i * 0.4)
+    const key = `demo-maxcount-${i}`
+    ownedKeys.add(key)
+    message.info({ content: `第 ${i} 条消息（最多同时 3 条）`, key, duration: 2 + i * 0.4 })
   }
   // 演示完还原，避免影响其他示例
-  setTimeout(() => message.config({ maxCount: 0 }), 100)
+  configTimer = setTimeout(restoreConfig, 100)
 }
 
 /** 视觉变体演示 */

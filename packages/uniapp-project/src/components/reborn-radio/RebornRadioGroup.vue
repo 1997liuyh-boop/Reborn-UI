@@ -2,9 +2,10 @@
 import type { ClassValue } from 'clsx'
 import type { ButtonProps } from '../reborn-button/RebornButton.vue'
 import type { RadioColor, RadioDirection, RadioFieldNames, RadioOption, RadioSize, RadioType, RadioValue, RadioVariant } from './reborn-radio.config'
-import { computed, provide, ref, toRef } from 'vue'
+import { computed, provide, toRef } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
+import { radioGroupKey } from './context'
 import theme from './reborn-radio.config'
 import RebornRadio from './RebornRadio.vue'
 
@@ -63,11 +64,11 @@ const {
   validate,
 } = useFormInject(props)
 
-/** 非受控状态的内部值，未绑定 v-model 时以 defaultValue 起始 */
-const innerValue = ref<RadioValue>(props.defaultValue)
-
-/** 当前选中值：受控时取 v-model，非受控时取内部值 */
-const currentValue = computed(() => (model.value !== undefined ? model.value : innerValue.value))
+/**
+ * 当前选中值：绑定值为 undefined（未绑定且尚未选择，或被父级置回 undefined，例如表单重置）时回到 defaultValue。
+ * 未绑定 v-model 时 defineModel 自己持有本地值，非受控用法不需要另存一份内部状态
+ */
+const currentValue = computed(() => (model.value !== undefined ? model.value : props.defaultValue))
 
 /** 尺寸回退链：FormItem/Form > 自身 props > md */
 const computedSize = computed<RadioSize>(() => fieldGroupSize.value || props.size || 'md')
@@ -87,14 +88,13 @@ const normalizedOptions = computed<RadioOption[]>(() => {
 })
 
 function updateValue(value: RadioValue, _ev: Event) {
-  innerValue.value = value
   model.value = value
   // 受控绑定下 model 赋值后同步回读仍是旧值，事件载荷一律用本地新值
   emit('change', value)
   validate('change')
 }
 
-provide('RebornRadioGroup', {
+provide(radioGroupKey, {
   modelValue: currentValue,
   disabled: computedDisabled,
   size: computedSize,
@@ -119,21 +119,37 @@ const groupClass = computed(() =>
   <view :class="groupClass">
     <!-- options 优先：传入数据时由组自行渲染，默认插槽不再渲染 -->
     <template v-if="normalizedOptions.length">
-      <RebornRadio
-        v-for="opt in normalizedOptions" :key="String(opt.value)" :value="opt.value" :disabled="opt.disabled"
-      >
-        <!-- radio 插槽透传：自定义每个单选框的整体渲染。
-             作用域逐项展开而非 v-bind="scope"，uniapp 小程序编译器不支持插槽上的对象展开 v-bind -->
-        <template v-if="$slots.radio" #radio="{ checked, disabled: itemDisabled }">
-          <slot name="radio" :checked="checked" :disabled="itemDisabled" />
-        </template>
-        <!-- label 插槽：自定义选项文案，作用域参数为选项对象 -->
-        <template #default>
-          <slot name="label" :data="opt">
-            {{ opt.label }}
-          </slot>
-        </template>
-      </RebornRadio>
+      <!-- 按组自身的 $slots（来自使用方，两端都准确）分两支渲染，不在插槽模板上写 v-if：
+           小程序编译器无视插槽上的 v-if，转发的 #radio 一律记为已传入，子项的 $slots.radio 恒为真，
+           使用方没写 #radio 时子项也不再渲染自带的单选框 / 按钮 -->
+      <template v-if="$slots.radio">
+        <RebornRadio
+          v-for="opt in normalizedOptions" :key="String(opt.value)" :value="opt.value" :disabled="opt.disabled"
+        >
+          <!-- radio 插槽透传：自定义每个单选框的整体渲染。
+               作用域逐项展开而非 v-bind="scope"，uniapp 小程序编译器不支持插槽上的对象展开 v-bind -->
+          <template #radio="{ checked, disabled: itemDisabled }">
+            <slot name="radio" :checked="checked" :disabled="itemDisabled" />
+          </template>
+          <!-- label 插槽：自定义选项文案，作用域参数为选项对象 -->
+          <template #default>
+            <slot name="label" :data="opt">
+              {{ opt.label }}
+            </slot>
+          </template>
+        </RebornRadio>
+      </template>
+      <template v-else>
+        <RebornRadio
+          v-for="opt in normalizedOptions" :key="String(opt.value)" :value="opt.value" :disabled="opt.disabled"
+        >
+          <template #default>
+            <slot name="label" :data="opt">
+              {{ opt.label }}
+            </slot>
+          </template>
+        </RebornRadio>
+      </template>
     </template>
     <slot v-else />
   </view>

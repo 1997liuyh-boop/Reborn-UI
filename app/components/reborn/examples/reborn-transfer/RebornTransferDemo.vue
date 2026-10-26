@@ -3,9 +3,9 @@ import type {
   TransferCheckShape,
   TransferColor,
   TransferDataRecord,
-  TransferItem,
   TransferVariant,
 } from "~/components/reborn/ui/reborn-transfer/reborn-transfer.config";
+import { computed, shallowRef } from "vue";
 
 import RebornBadge from "~/components/reborn/ui/reborn-badge/RebornBadge.vue";
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
@@ -17,6 +17,9 @@ import {
 } from "~/components/reborn/ui/reborn-transfer/reborn-transfer.config";
 import RebornTransfer from "~/components/reborn/ui/reborn-transfer/RebornTransfer.vue";
 import { cn } from "~/lib/utils";
+
+/** 本演示使用默认字段，同时满足支持字段别名的宽记录契约。 */
+interface DemoTransferItem extends TransferDataRecord { key: string; label: string; description?: string; disabled?: boolean }
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -42,7 +45,7 @@ const defaultPlaygroundState = {
 
 const defaultPlaygroundTargetKeys = ["3", "6", "9"];
 
-const state = ref<Record<string, any>>({ ...defaultPlaygroundState });
+const state = shallowRef<Record<string, any>>({ ...defaultPlaygroundState });
 
 /** 高度预设为 auto 时不下发 height；演练场容器本身高度为 auto，列表随条目增高 */
 const playgroundHeight = computed(() => {
@@ -50,10 +53,10 @@ const playgroundHeight = computed(() => {
   return preset === "auto" ? undefined : (preset as number);
 });
 
-const playgroundTargetKeys = ref([...defaultPlaygroundTargetKeys]);
+const playgroundTargetKeys = shallowRef([...defaultPlaygroundTargetKeys]);
 
 /** 最近一次触发的事件描述，替代 console 输出 */
-const lastEvent = ref("");
+const lastEvent = shallowRef("");
 
 /** 还原演练场的全部配置与已选项 */
 function resetPlaygroundConfig() {
@@ -172,7 +175,7 @@ const codeString = computed(() => {
 });
 
 /** 演练场数据源 */
-const playgroundData: TransferItem[] = [
+const playgroundData: DemoTransferItem[] = [
   { key: "1", label: "语文", description: "人教版 · 必修" },
   { key: "2", label: "数学", description: "人教版 · 必修" },
   { key: "3", label: "英语", description: "人教版 · 必修" },
@@ -188,7 +191,7 @@ const playgroundData: TransferItem[] = [
 // ─── 场景演示数据 ───────────────────────────────────────────────
 
 /** 形态变体：两种形态共用一份数据，各自维护已选项 */
-const variantDemoData: TransferItem[] = [
+const variantDemoData: DemoTransferItem[] = [
   { key: "bj", label: "北京" },
   { key: "sh", label: "上海" },
   { key: "gz", label: "广州" },
@@ -196,13 +199,13 @@ const variantDemoData: TransferItem[] = [
   { key: "hz", label: "杭州" },
   { key: "cd", label: "成都" },
 ];
-const variantOutlinedTargetKeys = ref(["sh", "hz"]);
-const variantBorderlessTargetKeys = ref(["sh", "hz"]);
+const variantOutlinedTargetKeys = shallowRef(["sh", "hz"]);
+const variantBorderlessTargetKeys = shallowRef(["sh", "hz"]);
 
 /** 列表分页：56 条模拟员工数据 */
 const DEPARTMENTS = ["研发部", "产品部", "设计部", "运营部", "市场部", "人力部"] as const;
 
-const paginationDemoData: TransferItem[] = Array.from({ length: 56 }, (_, i) => {
+const paginationDemoData: DemoTransferItem[] = Array.from({ length: 56 }, (_, i) => {
   const no = i + 1;
   const dept = DEPARTMENTS[i % DEPARTMENTS.length]!;
   return {
@@ -212,12 +215,12 @@ const paginationDemoData: TransferItem[] = Array.from({ length: 56 }, (_, i) => 
   };
 });
 
-const paginationTargetKeys = ref(["emp-3", "emp-12", "emp-28", "emp-41"]);
+const paginationTargetKeys = shallowRef(["emp-3", "emp-12", "emp-28", "emp-41"]);
 
 /** 虚拟滚动：3000 条只有 label 的商品数据，行高 28 加 4px 行间距正好是默认步长 32 */
 const SKU_CATEGORIES = ["数码", "家电", "服饰", "食品", "图书", "美妆"] as const;
 
-const virtualDemoData: TransferItem[] = Array.from({ length: 3000 }, (_, i) => {
+const virtualDemoData: DemoTransferItem[] = Array.from({ length: 3000 }, (_, i) => {
   const no = i + 1;
   return {
     key: `sku-${no}`,
@@ -225,10 +228,10 @@ const virtualDemoData: TransferItem[] = Array.from({ length: 3000 }, (_, i) => {
   };
 });
 
-const virtualTargetKeys = ref(["sku-2", "sku-15", "sku-1024", "sku-2999"]);
+const virtualTargetKeys = shallowRef(["sku-2", "sku-15", "sku-1024", "sku-2999"]);
 
 /** 自定义搜索方法：通讯录，description 为「工号 · 部门」 */
-const filterDemoData: TransferItem[] = [
+const filterDemoData: DemoTransferItem[] = [
   { key: "f1", label: "陈晨", description: "E10021 · 研发部" },
   { key: "f2", label: "苏木木", description: "E10035 · 研发部" },
   { key: "f3", label: "林涛", description: "E10042 · 设计部" },
@@ -238,7 +241,7 @@ const filterDemoData: TransferItem[] = [
   { key: "f7", label: "Lucas Chen", description: "E10081 · 设计部" },
   { key: "f8", label: "Mia Wang", description: "E10094 · 产品部" },
 ];
-const filterDemoTargetKeys = ref(["f3"]);
+const filterDemoTargetKeys = shallowRef(["f3"]);
 
 /** 姓名、工号、部门任一包含搜索词即命中，英文不区分大小写 */
 function filterByLabelOrDescription(input: string, item: TransferDataRecord): boolean {
@@ -249,7 +252,7 @@ function filterByLabelOrDescription(input: string, item: TransferDataRecord): bo
 }
 
 /** 禁用条目：内置角色不可移除 */
-const withDisabledData: TransferItem[] = [
+const withDisabledData: DemoTransferItem[] = [
   { key: "admin", label: "超级管理员", description: "系统内置，不可移除", disabled: true },
   { key: "editor", label: "内容编辑", description: "可编辑文章与媒体" },
   { key: "viewer", label: "访客", description: "只读权限" },
@@ -257,29 +260,29 @@ const withDisabledData: TransferItem[] = [
   { key: "finance", label: "财务", description: "查看财务报表", disabled: true },
   { key: "marketing", label: "市场推广", description: "管理营销活动" },
 ];
-const withDisabledTargetKeys = ref(["editor", "ops"]);
+const withDisabledTargetKeys = shallowRef(["editor", "ops"]);
 
 /** 单向模式：任务看板 */
-const oneWayData: TransferItem[] = [
+const oneWayData: DemoTransferItem[] = [
   { key: "a", label: "待办 · 优化登录流程", description: "预计 2 天" },
   { key: "b", label: "待办 · 修复支付 Bug", description: "预计 0.5 天" },
   { key: "c", label: "待办 · 数据看板重构", description: "预计 5 天" },
   { key: "d", label: "待办 · 增加单元测试", description: "预计 3 天" },
   { key: "e", label: "待办 · 文档更新", description: "预计 1 天" },
 ];
-const oneWayTargetKeys = ref(["b", "c"]);
-const oneWayEnabled = ref(true);
+const oneWayTargetKeys = shallowRef(["b", "c"]);
+const oneWayEnabled = shallowRef(true);
 
 /** 自定义中间操作按钮：区域覆盖 */
-const customOpData: TransferItem[] = [
+const customOpData: DemoTransferItem[] = [
   { key: "1", label: "华北区" },
   { key: "2", label: "华东区" },
   { key: "3", label: "华南区" },
   { key: "4", label: "西南区" },
   { key: "5", label: "西北区" },
 ];
-const customOpTargetKeys = ref(["2", "4"]);
-const customOpSlotTargetKeys = ref(["2", "4"]);
+const customOpTargetKeys = shallowRef(["2", "4"]);
+const customOpSlotTargetKeys = shallowRef(["2", "4"]);
 
 /** operation 插槽示例：按 action 给出按钮文案 */
 const operationSlotLabels = {
@@ -289,7 +292,7 @@ const operationSlotLabels = {
 } as const;
 
 /** 高度跟随父元素：16 个统计指标，超出父元素高度后在列表内滚动 */
-const heightDemoData: TransferItem[] = [
+const heightDemoData: DemoTransferItem[] = [
   "访问量",
   "独立访客",
   "跳出率",
@@ -307,10 +310,10 @@ const heightDemoData: TransferItem[] = [
   "崩溃率",
   "搜索次数",
 ].map((label, i) => ({ key: `m${i + 1}`, label }));
-const heightDemoTargetKeys = ref(["m1", "m2", "m8"]);
+const heightDemoTargetKeys = shallowRef(["m1", "m2", "m8"]);
 
 /** 头部与底部插槽：候选人名单 */
-const slotDemoData: TransferItem[] = [
+const slotDemoData: DemoTransferItem[] = [
   { key: "c1", label: "周宁", description: "一面通过" },
   { key: "c2", label: "吴桐", description: "二面通过" },
   { key: "c3", label: "郑一帆", description: "一面通过" },
@@ -318,10 +321,10 @@ const slotDemoData: TransferItem[] = [
   { key: "c5", label: "何青", description: "二面通过" },
   { key: "c6", label: "许诺", description: "一面通过" },
 ];
-const slotDemoTargetKeys = ref(["c4"]);
+const slotDemoTargetKeys = shallowRef(["c4"]);
 
 /** 自定义条目插槽：成员列表 */
-const memberData: TransferItem[] = [
+const memberData: DemoTransferItem[] = [
   { key: "u1", label: "陈晨", description: "前端工程师 · P5" },
   { key: "u2", label: "苏木木", description: "后端工程师 · P6" },
   { key: "u3", label: "林涛", description: "UI 设计师 · D4" },
@@ -334,7 +337,8 @@ const memberData: TransferItem[] = [
 const memberDefaultTargetKeys = ["u2", "u4", "u6"];
 
 /** 根据姓名生成头像色 */
-function getAvatarColor(name: string): string {
+function getAvatarColor(value: unknown): string {
+  const name = String(value ?? "");
   const colors = [
     "bg-primary/15 text-primary",
     "bg-success/15 text-success",
@@ -347,7 +351,8 @@ function getAvatarColor(name: string): string {
 }
 
 /** 根据描述中的职级生成徽标样式 */
-function getRankClass(description: string): string {
+function getRankClass(value: unknown): string {
+  const description = String(value ?? "");
   if (description.includes("P6") || description.includes("P7") || description.includes("D5")) {
     return "bg-primary/10 text-primary";
   }
@@ -699,7 +704,7 @@ function getRankClass(description: string): string {
                   )
                 "
               >
-                {{ item.label.charAt(0) }}
+                {{ String(item.label ?? "").charAt(0) }}
               </div>
               <!-- 姓名与职级 -->
               <div class="min-w-0 flex-1">
@@ -718,10 +723,10 @@ function getRankClass(description: string): string {
                       )
                     "
                   >
-                    {{ item.description.split(" · ")[1] }}
+                    {{ String(item.description ?? "").split(" · ")[1] }}
                   </span>
                   <span class="text-dimmed truncate text-sm">
-                    {{ item.description.split(" · ")[0] }}
+                    {{ String(item.description ?? "").split(" · ")[0] }}
                   </span>
                 </div>
               </div>

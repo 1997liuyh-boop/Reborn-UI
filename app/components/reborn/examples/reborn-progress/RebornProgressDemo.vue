@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PlaygroundControlGroup } from '~/components/common/play-ground/Playground.vue';
 import type { ProgressFlowDirection, ProgressGradient, ProgressSegment, ProgressSize, ProgressStatus, ProgressType } from '~/components/reborn/ui/reborn-progress/reborn-progress.config';
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 import DemoBlock from '~/components/common/demo/DemoBlock.vue';
 import DemoNote from '~/components/common/demo/DemoNote.vue';
 import DemoSection from '~/components/common/demo/DemoSection.vue';
@@ -69,9 +69,9 @@ const segments: ProgressSegment[] = [{ percentage: 30, color: '#108ee9' }, { per
 /** 逐步骤颜色，可少于步骤数，剩余步骤回退到状态色。 */
 const stepColors = ['#108ee9', '#108ee9', '#ffccc7'];
 /** 模拟用户控制的上传任务。 */
-const taskPercent = ref(35);
+const taskPercent = shallowRef(35);
 /** 记录任务操作，展示交互确实已响应。 */
-const lastAction = ref('等待操作');
+const lastAction = shallowRef('等待操作');
 
 /** 手动推进任务，不创建后台定时器。 */
 function advanceTask() {

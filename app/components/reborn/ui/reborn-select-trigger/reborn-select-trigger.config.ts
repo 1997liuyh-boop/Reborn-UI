@@ -8,6 +8,17 @@ export { sizes as selectTriggerSizes };
 export const selectTriggerSides = ["auto", "top", "bottom", "left", "right"] as const;
 export type SelectTriggerSide = (typeof selectTriggerSides)[number];
 
+/** 无箭头时浮层与触发器的默认间距（px） */
+export const TRIGGER_OFFSET = 4;
+
+/**
+ * 带箭头时浮层与触发器的默认间距（px）。
+ * 箭头是 12px 方块旋转 45°，中心骑在面板朝向触发器的边上，伸出面板 6√2 ≈ 8.49px；
+ * 间距比伸出量短时尖端会压进触发器，向上展开时还会和触发器里朝下的下拉图标连成两个箭头。
+ * 取 12，尖端与触发器之间留出约 3.5px，与无箭头时 4px 的间隙观感一致
+ */
+export const ARROW_TRIGGER_OFFSET = 12;
+
 /** 浮层在交叉轴上的对齐方式 */
 export const selectTriggerAligns = ["start", "center", "end"] as const;
 export type SelectTriggerAlign = (typeof selectTriggerAligns)[number];

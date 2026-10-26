@@ -48,11 +48,14 @@ const slots = useSlots();
 /**
  * 三段都按需渲染：没内容的段直接不出现在 DOM 里，
  * 这样段间的 24px 间距不会因为空段变成 48px。
+ * 插槽不是响应式数据，放进 computed 会在插槽动态增删后不刷新，所以写成渲染期调用的普通函数。
  */
-const showImage = computed(() => props.image !== null || !!slots.image);
-const showContent = computed(
-  () => !!props.title || !!props.description || !!slots.title || !!slots.description,
-);
+function showImage() {
+  return props.image !== null || !!slots.image;
+}
+function showContent() {
+  return !!props.title || !!props.description || !!slots.title || !!slots.description;
+}
 
 /** image 留空走内置插画；传 null 表示这一段交给 image 插槽或整段不要 */
 const imageSrc = computed(() =>
@@ -84,7 +87,7 @@ const ui = computed(() => {
 <template>
   <div :class="ui.root()">
     <div
-      v-if="showImage"
+      v-if="showImage()"
       :class="ui.image()"
     >
       <slot name="image">
@@ -99,7 +102,7 @@ const ui = computed(() => {
     </div>
 
     <div
-      v-if="showContent"
+      v-if="showContent()"
       :class="ui.content()"
     >
       <div

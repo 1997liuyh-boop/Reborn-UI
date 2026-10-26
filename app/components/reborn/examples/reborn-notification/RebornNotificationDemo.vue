@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import type { NotificationHandle, NotificationPlacement } from "~/components/reborn/ui/reborn-notification";
-import { h } from "vue";
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
+import { computed, h, onBeforeUnmount, ref, shallowRef } from 'vue';
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { notification } from "~/components/reborn/ui/reborn-notification";
-import {
-  notificationPlacements,
-  notificationTypes,
-} from "~/components/reborn/ui/reborn-notification/reborn-notification.config";
+import { notificationPlacements, notificationTypes } from "~/components/reborn/ui/reborn-notification/reborn-notification.config";
 
 const typeOptions = [
   { label: "无类型（不显示图标）", value: "" },
@@ -45,13 +43,13 @@ const defaultState: Record<string, any> = {
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 事件回显，让预览区的交互「有回应」 */
-const lastEvent = ref("尚无事件");
+const lastEvent = shallowRef("尚无事件");
 
 /** 重置演练场配置 */
 function resetState() {
   state.value = { ...defaultState };
   lastEvent.value = "尚无事件";
-  notification.destroy();
+  destroyDemo();
 }
 
 /** 演练场控制面板配置 */
@@ -149,7 +147,7 @@ function fireFromPlayground() {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 常驻通知的实例句柄：duration 为 0 时只能靠句柄手动关闭 */
-const stickyHandle = ref<NotificationHandle | null>(null);
+const stickyHandle = shallowRef<NotificationHandle | null>(null);
 
 /** 弹出常驻通知并保存句柄 */
 function fireSticky() {
@@ -169,15 +167,29 @@ function closeSticky() {
   stickyHandle.value?.close();
 }
 
+/** 同 key 更新归本页所有，销毁或卸载时取消待执行的更新。 */
+let keyTimer: ReturnType<typeof setTimeout> | null = null;
+function cancelKeyUpdate() {
+  if (keyTimer !== null) clearTimeout(keyTimer);
+  keyTimer = null;
+}
+function destroyDemo(key?: string) {
+  if (key === undefined || key === "sync-task") cancelKeyUpdate();
+  notification.destroy(key);
+}
+onBeforeUnmount(cancelKeyUpdate);
+
 /** 同 key 原位更新：先常驻提示，再变成成功态并开始倒计时 */
 function fireKeyDemo() {
+  cancelKeyUpdate();
   notification.info({
     key: "sync-task",
     title: "正在同步",
     message: "共 128 个文件，正在上传…",
     duration: 0,
   });
-  setTimeout(() => {
+  keyTimer = setTimeout(() => {
+    keyTimer = null;
     notification.success({
       key: "sync-task",
       title: "同步完成",
@@ -200,7 +212,7 @@ function fireHtmlDemo() {
 
 /** VNode 正文 + 底部操作区：正文独立成段，与头部间隔 20px */
 function fireVNodeDemo() {
-  notification.info({
+  const handle = notification.info({
     title: "李工 邀请你加入项目",
     message: () =>
       h("div", { class: "flex flex-col gap-1" }, [
@@ -210,8 +222,8 @@ function fireVNodeDemo() {
     duration: 0,
     footer: () =>
       h("div", { class: "flex gap-2" }, [
-        h(RebornButton, { size: "sm", variant: "soft", color: "neutral" }, () => "稍后处理"),
-        h(RebornButton, { size: "sm" }, () => "接受邀请"),
+        h(RebornButton, { size: "sm", variant: "soft", color: "neutral", onClick: () => { lastEvent.value = "稍后处理邀请"; handle.close(); } }, () => "稍后处理"),
+        h(RebornButton, { size: "sm", onClick: () => { lastEvent.value = "已接受邀请"; handle.close(); } }, () => "接受邀请"),
       ]),
   });
 }
@@ -271,7 +283,7 @@ function fireClickableDemo() {
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="notificationCode" component-name="notification"
-      title="交互演练场" description="notification 为命令式 API，调节左侧参数后点击按钮触发；悬停在通知上可暂停自动关闭计时。"
+      title="交互演练场" description="notification 为命令式 API，调节上方参数后点击按钮触发；悬停在通知上可暂停自动关闭计时。"
     >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
@@ -285,7 +297,7 @@ function fireClickableDemo() {
       <div class="flex w-full flex-col items-center gap-6">
         <div class="flex flex-wrap items-center justify-center gap-3">
           <RebornButton @click="fireFromPlayground">弹出通知</RebornButton>
-          <RebornButton variant="outlined" color="neutral" @click="notification.destroy()">
+          <RebornButton variant="outlined" color="neutral" @click="destroyDemo()">
             关闭全部
           </RebornButton>
         </div>
@@ -420,7 +432,7 @@ function fireClickableDemo() {
           句柄 close() 关闭
         </RebornButton>
         <RebornButton variant="soft" @click="fireKeyDemo">同 key 原位更新</RebornButton>
-        <RebornButton color="error" variant="outlined" @click="notification.destroy('sync-task')">
+        <RebornButton color="error" variant="outlined" @click="destroyDemo('sync-task')">
           destroy('sync-task')
         </RebornButton>
       </DemoBlock>

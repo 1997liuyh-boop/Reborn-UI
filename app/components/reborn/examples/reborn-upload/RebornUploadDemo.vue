@@ -10,7 +10,7 @@ import type {
   UploadUserFile,
 } from "~/components/reborn/ui/reborn-upload/reborn-upload.config"
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components"
-import { computed, ref, watch } from "vue"
+import { computed, onBeforeUnmount, ref, shallowRef, useTemplateRef, watch } from "vue"
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
 import RebornDialog from "~/components/reborn/ui/reborn-dialog/RebornDialog.vue"
 import RebornSwitch from "~/components/reborn/ui/reborn-switch/RebornSwitch.vue"
@@ -52,6 +52,18 @@ function formatSize(bytes = 0) {
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`
 }
 
+/** 演示拥有的异步任务在卸载时统一取消。 */
+let disposed = false
+const pendingTasks = new Set<() => void>()
+let stopRecording: (() => void) | undefined
+onBeforeUnmount(() => {
+  disposed = true
+  stopRecording?.()
+  for (const cancel of [...pendingTasks]) cancel()
+  pendingTasks.clear()
+  settleRemove(false)
+})
+
 /** 模拟上传：按固定间隔推进进度，结束时按结果回调成功或失败；返回 abort 供组件中止。 */
 function createMockRequest(opts: {
   outcome?: () => 'success' | 'fail'
@@ -60,15 +72,18 @@ function createMockRequest(opts: {
 } = {}): UploadRequestHandler {
   return (req) => {
     let percent = 0
-    const timer = setInterval(() => {
+    let timer: ReturnType<typeof setInterval>
+    const abort = () => { clearInterval(timer); pendingTasks.delete(abort) }
+    timer = setInterval(() => {
       percent = Math.min(100, percent + 10 + Math.random() * 15)
       req.onProgress(Object.assign(new ProgressEvent('progress'), { percent }))
       if (percent < 100) return
-      clearInterval(timer)
+      abort()
       if (opts.outcome?.() === 'fail') req.onError(new Error('服务器繁忙，请稍后重试'))
       else req.onSuccess(opts.response?.(req) ?? { ok: true })
     }, opts.interval ?? 200)
-    return { abort: () => clearInterval(timer) }
+    pendingTasks.add(abort)
+    return { abort }
   }
 }
 
@@ -89,7 +104,7 @@ const defaultState: Record<string, any> = {
   mockResult: 'success',
 }
 
-const state = ref<Record<string, any>>({ ...defaultState })
+const state = shallowRef<Record<string, any>>({ ...defaultState })
 
 /** 演练场预置文件：成功的图片、带失败原因的文件、超长文件名；工厂函数保证每次重置拿到新对象 */
 function createPresetFiles(): UploadUserFile[] {
@@ -100,11 +115,11 @@ function createPresetFiles(): UploadUserFile[] {
   ]
 }
 
-const playRef = ref<InstanceType<typeof RebornUpload>>()
+const playRef = useTemplateRef<InstanceType<typeof RebornUpload>>('playRef')
 const playFiles = ref<UploadUserFile[]>(createPresetFiles())
 
 /** 最近一次钩子回调，让预览区的交互「有回应」 */
-const lastEvent = ref('')
+const lastEvent = shallowRef('')
 
 /** 各状态的文件数，随 v-model 列表实时变化；演练场没开分片上传，不会出现已暂停，统计里略过 */
 const statusCounts = computed(() => uploadStatuses
@@ -227,8 +242,8 @@ const wallFiles = ref<UploadUserFile[]>([
   { name: 'strata.webp', url: '/images/lithos/strata.webp' },
   { name: 'living-strata.webp', url: '/images/lithos/living-strata.webp' },
 ])
-const previewOpen = ref(false)
-const previewFile = ref<UploadFile>()
+const previewOpen = shallowRef(false)
+const previewFile = shallowRef<UploadFile>()
 /** 预览弹窗里视频用播放器、图片用 img */
 const previewIsVideo = computed(() => !!previewFile.value && isVideoFile({ type: previewFile.value.raw?.type, name: previewFile.value.name }))
 function onWallPreview(file: UploadFile) {
@@ -237,11 +252,11 @@ function onWallPreview(file: UploadFile) {
 }
 
 /** 视频预览 */
-const videoListRef = ref<InstanceType<typeof RebornUpload>>()
-const videoCardRef = ref<InstanceType<typeof RebornUpload>>()
+const videoListRef = useTemplateRef<InstanceType<typeof RebornUpload>>('videoListRef')
+const videoCardRef = useTemplateRef<InstanceType<typeof RebornUpload>>('videoCardRef')
 const videoListFiles = ref<UploadUserFile[]>([])
 const videoCardFiles = ref<UploadUserFile[]>([])
-const videoRecording = ref(false)
+const videoRecording = shallowRef(false)
 let sampleVideoSeq = 0
 
 /**
@@ -254,7 +269,8 @@ async function recordSampleVideo() {
   const canvas = document.createElement('canvas')
   canvas.width = 320
   canvas.height = 180
-  const ctx = canvas.getContext('2d')!
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('当前浏览器不支持画布录制')
   const stream = canvas.captureStream(30)
   const recorder = new MediaRecorder(stream, { mimeType })
   const chunks: Blob[] = []
@@ -264,10 +280,23 @@ async function recordSampleVideo() {
     chunks.push(e.data)
     if (!start) start = performance.now()
   }
-  const stopped = new Promise(resolve => (recorder.onstop = resolve))
+  let frame: number | undefined
+  const stop = () => {
+    if (frame !== undefined) cancelAnimationFrame(frame)
+    frame = undefined
+    if (recorder.state !== 'inactive') recorder.stop()
+    stream.getTracks().forEach(track => track.stop())
+  }
+  stopRecording = stop
+  const stopped = new Promise<void>((resolve, reject) => {
+    recorder.onstop = () => resolve()
+    recorder.onerror = () => { stop(); reject(new Error('视频录制失败')) }
+  })
   const index = ++sampleVideoSeq
   const deadline = performance.now() + 10000
   const draw = () => {
+    frame = undefined
+    if (disposed) { stop(); return }
     const t = start ? Math.min(1, (performance.now() - start) / 2000) : 0
     ctx.fillStyle = `hsl(${(index * 70 + t * 90) % 360}, 65%, 45%)`
     ctx.fillRect(0, 0, 320, 180)
@@ -278,14 +307,23 @@ async function recordSampleVideo() {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(`示例视频 ${index}`, 160, 90)
-    if (t < 1 && performance.now() < deadline) requestAnimationFrame(draw)
-    else recorder.stop()
+    if (t < 1 && performance.now() < deadline) frame = requestAnimationFrame(draw)
+    else stop()
   }
   // 每 100ms 交一次数据，用来判断编码器是否已经开始出画面
-  recorder.start(100)
-  draw()
-  await stopped
-  stream.getTracks().forEach(track => track.stop())
+  try {
+    recorder.start(100)
+    draw()
+    await stopped
+  }
+  finally {
+    stop()
+    if (stopRecording === stop) stopRecording = undefined
+    recorder.ondataavailable = null
+    recorder.onstop = null
+    recorder.onerror = null
+  }
+  if (disposed) throw new DOMException('演示已卸载', 'AbortError')
   if (!start) throw new Error('录制超时，请直接选择本地视频')
   return { blob: new Blob(chunks, { type: mimeType }), name: `示例视频-${index}.${mimeType === 'video/mp4' ? 'mp4' : 'webm'}` }
 }
@@ -299,13 +337,14 @@ async function addSampleVideo() {
   videoRecording.value = true
   try {
     const { blob, name } = await recordSampleVideo()
+    if (disposed) return
     for (const uploader of [videoListRef.value, videoCardRef.value]) {
       uploader?.handleStart(new File([blob], name, { type: blob.type }) as UploadRawFile)
       uploader?.submit()
     }
   }
   catch (error) {
-    message.error((error as Error).message)
+    if (!disposed) message.error(error instanceof Error ? error.message : '视频录制失败')
   }
   finally {
     videoRecording.value = false
@@ -321,7 +360,9 @@ function onLimitExceed(files: File[], uploadFiles: UploadUserFile[]) {
 /** 上传前处理：记录压缩前的大小，成功后回显「原始 → 提交」 */
 const compressFiles = ref<UploadUserFile[]>([])
 const originalSizes = new Map<number, number>()
-const compressLog = ref<string[]>([])
+interface UploadLogEntry { id: number, text: string }
+let logSequence = 0
+const compressLog = shallowRef<UploadLogEntry[]>([])
 const compressRequest = createMockRequest({
   response: req => ({ original: originalSizes.get(req.file.uid) ?? req.file.size, submitted: req.file.size }),
 })
@@ -357,7 +398,7 @@ async function compressBeforeUpload(rawFile: UploadRawFile) {
 
 function onCompressSuccess(response: unknown, file: UploadFile) {
   const { original, submitted } = response as { original: number, submitted: number }
-  compressLog.value = [`${file.name}：${formatSize(original)} → ${formatSize(submitted)}`, ...compressLog.value].slice(0, 3)
+  compressLog.value = [{ id: ++logSequence, text: `${file.name}：${formatSize(original)} → ${formatSize(submitted)}` }, ...compressLog.value].slice(0, 3)
 }
 
 /** 删除前确认：before-remove 返回 Promise，由确认弹窗决定结果 */
@@ -365,8 +406,8 @@ const confirmFiles = ref<UploadUserFile[]>([
   { name: '需求评审纪要.docx' },
   { name: '接口文档 v2.pdf' },
 ])
-const removeConfirmOpen = ref(false)
-const removeTarget = ref('')
+const removeConfirmOpen = shallowRef(false)
+const removeTarget = shallowRef('')
 let resolveRemove: ((ok: boolean) => void) | null = null
 
 function confirmBeforeRemove(file: UploadFile) {
@@ -393,7 +434,7 @@ watch(removeConfirmOpen, (open) => {
 })
 
 /** 手动上传 */
-const manualRef = ref<InstanceType<typeof RebornUpload>>()
+const manualRef = useTemplateRef<InstanceType<typeof RebornUpload>>('manualRef')
 const manualFiles = ref<UploadUserFile[]>([])
 const manualRequest = createMockRequest({ interval: 400 })
 const manualReadyCount = computed(() => manualFiles.value.filter(f => f.status === 'ready').length)
@@ -402,14 +443,14 @@ const manualUploadingCount = computed(() => manualFiles.value.filter(f => f.stat
 /** 额外参数与请求头：回显组件交给 http-request 的参数 */
 const extraFiles = ref<UploadUserFile[]>([])
 const extraHeaders = { Authorization: 'Bearer demo-token' }
-const extraEcho = ref('')
+const extraEcho = shallowRef('')
 const extraRequest = createMockRequest({
   response: req => ({ filename: req.filename, data: req.data, headers: req.headers }),
 })
 
 /** 模拟先向服务端换取签名，再随文件一起提交 */
 async function resolveExtraData(rawFile: UploadRawFile) {
-  await new Promise(resolve => setTimeout(resolve, 300))
+  await wait(300)
   return { bizType: 'contract', signature: `sig-${rawFile.uid}` }
 }
 
@@ -420,7 +461,7 @@ function onExtraSuccess(response: unknown) {
 /** 真实接口上传：乐淘测试环境的图片上传接口，文件字段名是 multipart，查询参数直接写在地址里 */
 const realAction = 'https://api-admin-letaofun.test.rebornnet.cn/api/admin/upload/image?model=config&pid=0'
 const realFiles = ref<UploadUserFile[]>([])
-const realEcho = ref('')
+const realEcho = shallowRef('')
 
 /** 接口响应：成败看 code，HTTP 状态码不论成败都是 200 */
 interface RealUploadResponse {
@@ -462,15 +503,15 @@ interface MockChunkTask {
 const mockChunkServer = new Map<string, MockChunkTask>()
 let mockUploadSeq = 0
 
-const resumeRef = ref<InstanceType<typeof RebornUpload>>()
+const resumeRef = useTemplateRef<InstanceType<typeof RebornUpload>>('resumeRef')
 const resumeFiles = ref<UploadUserFile[]>([])
-const resumeLog = ref<string[]>([])
-const flakyNetwork = ref(false)
+const resumeLog = shallowRef<UploadLogEntry[]>([])
+const flakyNetwork = shallowRef(false)
 const resumeUploadingCount = computed(() => resumeFiles.value.filter(f => f.status === 'uploading').length)
 const resumeResumableCount = computed(() => resumeFiles.value.filter(f => f.status === 'paused' || f.status === 'fail').length)
 
 function logResume(line: string) {
-  resumeLog.value = [line, ...resumeLog.value].slice(0, 8)
+  resumeLog.value = [{ id: ++logSequence, text: line }, ...resumeLog.value].slice(0, 8)
 }
 
 /** 名称、大小、修改时间都相同视为同一个文件，删掉后重新选择也能接上服务端的上传任务 */
@@ -479,14 +520,22 @@ function fingerprint(file: File) {
 }
 
 /** 模拟网络耗时；暂停、删除时 signal 触发，立即中断 */
-function wait(ms: number, signal: AbortSignal) {
+function wait(ms: number, signal?: AbortSignal) {
   return new Promise<void>((resolve, reject) => {
-    if (signal.aborted) return reject(signal.reason)
-    const timer = setTimeout(resolve, ms)
-    signal.addEventListener('abort', () => {
+    if (disposed || signal?.aborted) { reject(signal?.reason ?? new DOMException('演示已卸载', 'AbortError')); return }
+    let timer: ReturnType<typeof setTimeout>
+    function cleanup() {
       clearTimeout(timer)
-      reject(signal.reason)
-    }, { once: true })
+      pendingTasks.delete(cancel)
+      signal?.removeEventListener('abort', cancel)
+    }
+    function cancel() {
+      cleanup()
+      reject(signal?.reason ?? new DOMException('演示已卸载', 'AbortError'))
+    }
+    timer = setTimeout(() => { cleanup(); resolve() }, ms)
+    pendingTasks.add(cancel)
+    signal?.addEventListener('abort', cancel, { once: true })
   })
 }
 
@@ -548,7 +597,7 @@ function addResumeTestFile() {
 const folderFiles = ref<UploadUserFile[]>([])
 
 /** 自定义文件项 */
-const customRef = ref<InstanceType<typeof RebornUpload>>()
+const customRef = useTemplateRef<InstanceType<typeof RebornUpload>>('customRef')
 const customFiles = ref<UploadUserFile[]>([
   { name: '用户访谈录音.m4a', size: 8388608 },
   { name: '竞品分析.key', size: 3145728 },
@@ -680,8 +729,8 @@ const disabledCardFiles = ref<UploadUserFile[]>([
           :http-request="mockRequest" :on-preview="onWallPreview"
         />
       </DemoBlock>
-      <RebornDialog v-model="previewOpen" :title="previewFile?.name" width="640px" :cancel-btn="false" :confirm-btn="false">
-        <video v-if="previewFile?.url && previewIsVideo" :src="previewFile.url" controls autoplay class="w-full rounded-sm" />
+      <RebornDialog v-model="previewOpen" destroy-on-close :title="previewFile?.name" width="640px" :cancel-btn="false" :confirm-btn="false">
+        <video v-if="previewOpen && previewFile?.url && previewIsVideo" :src="previewFile.url" controls autoplay class="w-full rounded-sm" />
         <img v-else-if="previewFile?.url" :src="previewFile.url" :alt="previewFile.name" class="w-full rounded-sm">
       </RebornDialog>
     </DemoSection>
@@ -763,8 +812,8 @@ const disabledCardFiles = ref<UploadUserFile[]>([
         </RebornUpload>
         <DemoNote tone="dimmed" class="font-mono text-xs">
           <template v-if="compressLog.length">
-            <div v-for="line in compressLog" :key="line">
-              {{ line }}
+            <div v-for="line in compressLog" :key="line.id">
+              {{ line.text }}
             </div>
           </template>
           <template v-else>
@@ -919,8 +968,8 @@ const disabledCardFiles = ref<UploadUserFile[]>([
         </RebornUpload>
         <DemoNote tone="dimmed" class="font-mono text-xs">
           <template v-if="resumeLog.length">
-            <div v-for="(line, i) in resumeLog" :key="i">
-              {{ line }}
+            <div v-for="line in resumeLog" :key="line.id">
+              {{ line.text }}
             </div>
           </template>
           <template v-else>

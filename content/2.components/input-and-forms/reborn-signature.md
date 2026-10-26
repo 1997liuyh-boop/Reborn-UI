@@ -12,9 +12,53 @@ Web 端独立组件说明暂不维护；文档站预览通过 UniApp H5 渲染�
 ::ComponentViewer{demoFile="RebornSignatureDemo.vue" config="RebornSignatureConfig" componentId="reborn-signature" :componentFiles='[]' :uniappFiles='["RebornSignature.vue", "reborn-signature.config.ts", "index.ts"]'}
 ::
 
-# API
+## 简介
 
-## Props
+Signature 是 UniApp 的手写签名画布，保存后返回临时图片路径；同目录还导出 `RebornSignatureLandscape` 横屏容器，Web 暂无独立实现。
+
+`height` 决定画布尺寸，`lineWidth` / `penPressure` 决定笔触，`backgroundColor` / `fileType` 决定导出背景与格式。
+
+`showUndo` / `showRedo` 控制工具栏，`disabled` / `readonly` 限制绘制；主组件 `v-model` 是图片路径，横屏容器另用 `v-model:show` 管理显隐。
+
+### 何时使用
+
+- 收集协议签名——用 `height` 设置书写区，保存后读取 `v-model`。
+- 允许用户调整笔迹——开启 `showUndo` / `showRedo`。
+- 导出透明图片——设 `backgroundColor=""`，保留 `fileType="png"`。
+
+### 何时不使用
+
+- 普通文字输入——改用 `reborn-input` 或 `reborn-textarea`。
+- 需要数字证书签章——本库暂无替代，需接入签章服务。
+
+## 用法
+
+### 横屏签名显隐
+
+`RebornSignatureLandscape` 的 `show` 与图片路径 `modelValue` 分开绑定；传入 `show` 后，关闭操作请求父级更新，父级拒收就保持显示。
+
+| 绑定 | 初始值 | 典型用途 |
+| --- | --- | --- |
+| `v-model` | `''` | 保存导出的图片路径 |
+| `v-model:show` | 未传时本地初始关闭 | 父级打开或关闭横屏签名 |
+| `v-model:pen-color` | `'#111827'` | 同步当前笔色 |
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { RebornSignatureLandscape } from '@/components/reborn-signature'
+const visible = ref(false)
+const image = ref('')
+</script>
+<template>
+  <button @click="visible = true">打开签名</button>
+  <RebornSignatureLandscape v-model="image" v-model:show="visible" />
+</template>
+```
+
+## API
+
+### Props
 
 | 属性              | 类型                                                                                   | 默认值                                                               | 描述                                                                          |
 | :---------------- | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
@@ -47,14 +91,14 @@ Web 端独立组件说明暂不维护；文档站预览通过 UniApp H5 渲染�
 | `rotate`          | `0 \| 90 \| 180 \| 270`                                                                | `0`                                                                  | 外层 CSS `rotate` 顺时针角度，用于修正触点坐标；**微信小程序横屏常设为 `90`** |
 | `closeOnSave`     | `boolean`                                                                              | `false`                                                              | 保存成功后是否额外触发 `close`（便于关弹窗）                                  |
 
-## v-model
+### 模型绑定
 
 | 绑定                | 类型     | 默认值      | 描述                                                 |
 | :------------------ | :------- | :---------- | :--------------------------------------------------- |
 | `v-model`           | `string` | `''`        | 上次「完成」导出后的临时文件路径；清空、撤销等会重置 |
 | `v-model:pen-color` | `string` | `'#111827'` | 当前画笔颜色                                         |
 
-## Emits
+### Emits
 
 | 事件名   | 回调参数                                                                   | 描述                                      |
 | :------- | :------------------------------------------------------------------------- | :---------------------------------------- |
@@ -69,7 +113,14 @@ Web 端独立组件说明暂不维护；文档站预览通过 UniApp H5 渲染�
 | `close`  | `-`                                                                        | 需手动触发或由 `closeOnSave` 在保存后触发 |
 | `error`  | `error: Error`                                                             | 导出等失败                                |
 
-## Expose
+### Slots
+
+| 插槽名        | 描述                                                                                                                                                                                                            |
+| :------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `placeholder` | 无笔迹时展示；默认显示 `placeholder` 文案。作用域：`{ isEmpty }`                                                                                                                                                |
+| `toolbar`     | 自定义整条工具栏（色板、撤销/恢复、清空、完成）。作用域：`isEmpty`、`disabled`、`readonly`、`clear`、`undo`、`redo`、`save`、`penColor`、`penColors`、`selectPenColor`、`toolbarPosition`、`canUndo`、`canRedo` |
+
+### Expose
 
 | 名称             | 类型                                                      | 描述                                       |
 | :--------------- | :-------------------------------------------------------- | :----------------------------------------- |
@@ -87,14 +138,7 @@ Web 端独立组件说明暂不维护；文档站预览通过 UniApp H5 渲染�
 | `strokeCount`    | `ComputedRef<number>`                                     | 笔画数量                                   |
 | `pointCount`     | `Ref<number>`                                             | 触点总数                                   |
 
-### Slots（模板）
-
-| 插槽名        | 描述                                                                                                                                                                                                            |
-| :------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `placeholder` | 无笔迹时展示；默认显示 `placeholder` 文案。作用域：`{ isEmpty }`                                                                                                                                                |
-| `toolbar`     | 自定义整条工具栏（色板、撤销/恢复、清空、完成）。作用域：`isEmpty`、`disabled`、`readonly`、`clear`、`undo`、`redo`、`save`、`penColor`、`penColors`、`selectPenColor`、`toolbarPosition`、`canUndo`、`canRedo` |
-
-### UI
+### 自定义样式（ui）
 
 | 名称               | 描述          |
 | :----------------- | :------------ |
@@ -110,7 +154,7 @@ Web 端独立组件说明暂不维护；文档站预览通过 UniApp H5 渲染�
 | `actionIcon`       | 按钮图标      |
 | `actionText`       | 按钮文字      |
 
-### Variants
+### 样式变体
 
 | 变体              | 选项                        | 描述                   |
 | :---------------- | :-------------------------- | :--------------------- |
@@ -121,7 +165,19 @@ Web 端独立组件说明暂不维护；文档站预览通过 UniApp H5 渲染�
 | `error`           | `true`                      | 错误态描边（表单校验） |
 | `toolbarPosition` | `bottom` / `left` / `right` | 横屏签名时操作按钮位置 |
 
-## 使用注意
+### 横屏容器显隐契约
+
+以下仅适用于 `RebornSignatureLandscape`，不改变主组件的图片路径模型：
+
+| 成员 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `show` | `boolean` | `undefined` | 对应 `v-model:show`；未传时本地初始关闭，显式 `false` / `null` / `undefined` 均关闭 |
+| `update:show` | `(value: boolean) => void` | - | `close()` 请求关闭时派发；父级拒收时保持父值 |
+| `close` | `() => void` | - | 暴露方法：请求关闭并发出 `close` 事件 |
+
+## 注意事项
+
+- **横屏显隐由是否传入 `show` 决定归属**。未传时本地管理，移除绑定后恢复本地值；初始化不派发 `update:show` 或 `close`。主组件 `modelValue` 仍是图片路径字符串，不能拿它代替显隐开关。
 
 - `height` 传数字时单位为 `rpx`，传字符串时按原值使用，例如 `420rpx`、`50vh`。
 - 默认不允许空白签名导出，空白点击「完成」会触发 `error`；需要空白导出时设置 `allowEmpty`。

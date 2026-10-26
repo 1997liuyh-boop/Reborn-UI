@@ -13,6 +13,9 @@
     "仅 web 端可用。",
     "可见性由 loading prop 控制，所有步骤完成后不会自动关闭，需在 complete 事件或步骤 action 中把 loading 置回 false。",
     "Step.async 为 true 时该步骤会一直等待，直到对应状态变为 false 才前进；非异步步骤按 duration（缺省用 defaultDuration，默认 1500ms）自动前进。",
-    "preventClose 为 true 时不显示关闭按钮，用户无法手动中断。"
+    "步骤计时与 action 只在客户端挂载后开始：SSR 首屏渲染第一步但不执行 action，水合后才从第一步开始。",
+    "action 的类型是 () => void | Promise<void>，直接返回 fetch(...) 会因返回 Promise<Response> 报类型错误，应写成 async () => { await fetch(...) }。",
+    "preventClose 为 true 时不显示关闭按钮，用户无法手动中断。",
+    "全屏层使用 Teleport to=\"#teleports\"；宿主须在应用根外提供专用目标容器，SSR 时注入该目标的 Teleport 输出。"
   ]
 }

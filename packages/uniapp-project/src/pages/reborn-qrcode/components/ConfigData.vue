@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import type { QrConfig } from '../types'
 import { computed } from 'vue'
 
-const props = defineProps<{
-    modelValue: any
-}>()
+interface Props { config: QrConfig }
+const props = defineProps<Props>()
 
 const formattedData = computed(() => {
-    return JSON.stringify(props.modelValue, null, 2)
+    return JSON.stringify(props.config, null, 2)
 })
 
 const copyConfig = () => {

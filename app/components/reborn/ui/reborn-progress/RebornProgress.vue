@@ -83,9 +83,13 @@ const gradientVector = computed(() => {
 const fallback = computed(() => typeof props.strokeColor === 'string' && props.strokeColor ? props.strokeColor : 'currentColor');
 const colorRanges = computed(() => getColorRanges(props.segments, gradientStops.value.length ? `url(#${gradientId})` : fallback.value));
 
-/** 先等分逻辑进度，再扣除圆弧间距，确保同一百分比在六种形态中含义一致。 */
+/**
+ * 先等分逻辑进度，再扣除圆弧间距，确保同一百分比在六种形态中含义一致。
+ * 叠压顺序、内联样式与圆弧路径也在这里一并算好：steps 最多 1000 个，放在模板里每次渲染都要逐个重算。
+ */
 const cells = computed(() => {
-  const ranges = getStepRanges(count.value, props.type === 'line' ? undefined : geometry.value);
+  const isLine = props.type === 'line';
+  const ranges = getStepRanges(count.value, isLine ? undefined : geometry.value);
   return ranges.map((range, index) => {
     const colors = Array.isArray(props.strokeColor) && count.value > 0
       ? [{ from: 0, to: 100, color: props.strokeColor[index] || 'currentColor' }]
@@ -95,7 +99,18 @@ const cells = computed(() => {
       to: Math.min(range.to, color.to, value.value),
       color: color.color,
     })).filter(part => part.to > part.from);
-    return { ...range, parts };
+    // 分段叠压靠渲染顺序实现：终点大的先画垫底、终点小的后画在上，因此反序输出，不引入 z-index。
+    const layers = [...parts].reverse().map(part => ({
+      color: part.color,
+      style: isLine ? linePartStyle(range, part) : undefined,
+      d: isLine ? '' : getArcPath(geometry.value, part.from, part.to),
+    }));
+    return {
+      ...range,
+      layers,
+      trackPath: isLine ? '' : getArcPath(geometry.value, range.from, range.to),
+      stripe: isLine && props.striped && parts.length ? stripeStyle(range) : null,
+    };
   });
 });
 
@@ -126,11 +141,6 @@ function linePartStyle(cell: { from: number; to: number }, part: { from: number;
   return { [reversed.value ? 'right' : 'left']: `${left}%`, width: `${width}%`, background: part.color };
 }
 
-/** 分段叠压靠渲染顺序实现：终点大的先画垫底、终点小的后画在上，因此反序输出，不引入 z-index。 */
-function stackedParts(parts: { from: number; to: number; color: string }[]): { from: number; to: number; color: string }[] {
-  return [...parts].reverse();
-}
-
 /** 条纹覆盖层跟随已填充宽度，位于所有填充之后渲染；时长与方向作为 CSS 变量传给动画类。 */
 function stripeStyle(cell: { from: number; to: number }): CSSProperties {
   const width = (Math.min(cell.to, value.value) - cell.from) / (cell.to - cell.from) * 100;
@@ -154,10 +164,10 @@ const insideTextStyle = computed<CSSProperties>(() => reversed.value
     <div v-if="type === 'line'" :class="styles.track({ class: props.ui?.track })" aria-hidden="true">
       <div v-for="(cell, index) in cells" :key="index" data-progress-track :class="styles.step({ class: props.ui?.step })">
         <span
-          v-for="(part, partIndex) in stackedParts(cell.parts)" :key="partIndex" data-progress-fill
-          :class="styles.fill({ class: props.ui?.fill })" :style="linePartStyle(cell, part)"
+          v-for="(layer, partIndex) in cell.layers" :key="partIndex" data-progress-fill
+          :class="styles.fill({ class: props.ui?.fill })" :style="layer.style"
         />
-        <span v-if="striped && cell.parts.length" data-progress-stripes :class="styles.stripes({ class: props.ui?.stripes })" :style="stripeStyle(cell)" />
+        <span v-if="cell.stripe" data-progress-stripes :class="styles.stripes({ class: props.ui?.stripes })" :style="cell.stripe" />
       </div>
     </div>
     <svg v-else :class="styles.circle({ class: props.ui?.circle })" :viewBox="`0 0 ${geometry.diameter} ${geometry.diameter}`" fill="none" aria-hidden="true">
@@ -167,11 +177,11 @@ const insideTextStyle = computed<CSSProperties>(() => reversed.value
         </linearGradient>
       </defs>
       <g :stroke-width="geometry.strokeWidth" :stroke-linecap="count ? 'butt' : 'round'">
-        <path v-for="(cell, index) in cells" :key="`track-${index}`" data-progress-track :d="getArcPath(geometry, cell.from, cell.to)" class="stroke-gray-3" :class="[props.ui?.track]" />
+        <path v-for="(cell, index) in cells" :key="`track-${index}`" data-progress-track :d="cell.trackPath" class="stroke-gray-3" :class="[props.ui?.track]" />
         <template v-for="(cell, index) in cells" :key="index">
           <path
-            v-for="(part, partIndex) in stackedParts(cell.parts)" :key="partIndex" data-progress-fill
-            :d="getArcPath(geometry, part.from, part.to)" :stroke="part.color" :class="cn(props.ui?.fill)"
+            v-for="(layer, partIndex) in cell.layers" :key="partIndex" data-progress-fill
+            :d="layer.d" :stroke="layer.color" :class="cn(props.ui?.fill)"
           />
         </template>
       </g>

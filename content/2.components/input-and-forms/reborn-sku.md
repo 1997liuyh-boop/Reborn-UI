@@ -11,19 +11,76 @@ RebornSku 面向商品详情页等场景，按 `options` 配置渲染「颜色�
 选项默认用 RebornBadge 渲染，可通过 `item` 插槽自定义单个选项的内容（如附带价格）；也可以在某个属性组上配置 `slots` 指定动态插槽，在选项列表后追加自定义内容（如输入框），配合 `slotsCover` 可完全接管该属性组的渲染。
 
 ::ComponentViewer{demoFile="RebornSkuDemo.vue" config="RebornSkuConfig" componentId="reborn-sku" :componentFiles='["RebornSku.vue", "reborn-sku.config.ts"]'}
+::
 
-#api
+## 简介
+
+Sku 是 Web 商品规格选择器，将多个属性组渲染为可选择的条目。
+
+`options` 定义属性组和子项，`modelValue` 按组的 `key` 存储结果；组内 `multiple` 决定结果是单值还是数组。
+
+`item` 与组的动态插槽可自定义选项内容，`ui` / `class` 覆盖布局；选择变化通过模型更新与 `change` 事件向外通知。
+
+### 何时使用
+
+- 商品有颜色、尺码等多个属性组——用 `options` 定义各组。
+- 需要按属性键保存选择结果——用 `modelValue` 绑定结果对象。
+- 规格选项需要与商品样式统一——用 `ui` 覆盖各组和条目容器。
+
+### 何时不使用
+
+- 只有一个普通单选字段——改用 `reborn-radio`。
+- 选项很多且需要收起列表——改用 `reborn-select`。
+
+## 用法
+
+### 商品规格选择
+
+`options` 定义规格组，每组 `key` 对应模型对象的字段。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `options` | 配置颜色和尺寸组 |
+| `modelValue` | 保存按键组织的选择 |
+
+```vue
+<template>
+  <RebornSku
+    :options="[
+      { key: 'size', title: '尺码', children: ['S', 'M', 'L'] },
+    ]"
+  />
+</template>
+```
+
+### 自定义选项渲染
+
+`item` 插槽接收选项及选中状态，`options` 仍负责数据结构。
+
+| 配置 | 典型用途 |
+| --- | --- |
+| `options` | 提供可选项 |
+| `ui` | 覆盖选项容器样式 |
+
+```vue
+<template>
+  <RebornSku :options="[{ key: 'size', title: '尺码', children: ['S', 'M'] }]">
+    <template #item="{ item, selected }">
+      <span :class="{ 'font-bold': selected }">{{ item }}</span>
+    </template>
+  </RebornSku>
+</template>
+```
 
 ## API
-
 ### Props
 
 | 属性名       | 类型                  | 默认值 | 描述                                                                                             |
 | :----------- | :-------------------- | :----- | :----------------------------------------------------------------------------------------------- |
-| `options`    | `SkuOption[]`         | `[]`   | 属性组配置列表，结构见下方 SkuOption 字段表                                                      |
+| `options` | `SkuOption[]`         | `[]`   | 属性组配置列表，结构见下方 SkuOption 字段表                                                      |
 | `modelValue` | `Record<string, any>` | `{}`   | 双向绑定值，key 为 `SkuOption.key`，value 为选中项按 `fieldNames.value` 取到的值（多选时为数组） |
-| `class`      | `any`                 | —      | 追加到根容器的自定义类名                                                                         |
-| `ui`         | `SkuUi`               | `{}`   | 分区样式覆盖对象，键位见下方 SkuUi 键位表                                                        |
+| `class` | `any`                 | —      | 追加到根容器的自定义类名                                                                         |
+| `ui` | `SkuUi`               | `{}`   | 分区样式覆盖对象，键位见下方 SkuUi 键位表                                                        |
 
 ### Emits
 
@@ -37,6 +94,11 @@ RebornSku 面向商品详情页等场景，按 `options` 配置渲染「颜色�
 | 插槽名         | 描述                                                                                                                                           |
 | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
 | `item`         | 自定义单个选项内容，作用域参数：`item`（选项数据）、`option`（所属属性组）、`selected`（是否选中）                                             |
+
+### 动态属性组插槽
+
+| 插槽表达式 | 说明 |
+| --- | --- |
 | `[option.slots]` | 由属性组 `slots` 字段指定的动态插槽，作用域参数：`option`、`modelValue`；`slotsCover` 为 `true` 时完全替换该属性组渲染，否则追加在选项列表后方 |
 
 ## 类型说明
@@ -62,7 +124,7 @@ RebornSku 面向商品详情页等场景，按 `options` 配置渲染「颜色�
 | `label` | `string` | `"label"` | 展示文案字段名                          |
 | `value` | `string` | `"value"` | 选项值字段名，取到的值写入 `modelValue` |
 
-### SkuUi 键位
+### 自定义样式（ui）
 
 | 键名      | 说明           |
 | :-------- | :------------- |
@@ -74,9 +136,8 @@ RebornSku 面向商品详情页等场景，按 `options` 配置渲染「颜色�
 
 ## 注意事项
 
-- 仅 web 端提供，uniapp 端无此组件。
-- 多层级联动选择（省市区、分类）请改用 `reborn-cascader`；单组互斥选项请改用 `reborn-radio`。
-- 单选组再次点击已选项会将该组的值置为 `undefined`（取消选中），提交前注意做空值校验。
-- `modelValue` 里存的是按 `fieldNames.value` 取到的字段值，而不是整个选项对象；对象项既没有 `value` 字段也没配置 `fieldNames` 时，每一项都取到 `undefined`，组件无法区分哪一项被选中，这种数据务必配置 `fieldNames`。需要完整选项时，拿值回 `children` 里查找。
-
-::
+- **仅提供 Web 实现**。仅 web 端提供，uniapp 端无此组件。
+- **级联与单组选项有专用组件**。多层级联动选择（省市区、分类）请改用 `reborn-cascader`；单组互斥选项请改用 `reborn-radio`。
+- **再次点击可清空单选组**。单选组再次点击已选项会将该组的值置为 `undefined`（取消选中），提交前注意做空值校验。
+- **不绑定 `v-model` 也能点选。** 组件此时自己持有选中结果，通过 `change` 事件读取变化；绑定了 `v-model` 时以父级的值为准，父级不接收更新，选中态就不变。
+- **模型保存字段值而非对象**。`modelValue` 里存的是按 `fieldNames.value` 取到的字段值，而不是整个选项对象；对象项既没有 `value` 字段也没配置 `fieldNames` 时，每一项都取到 `undefined`，组件无法区分哪一项被选中，这种数据务必配置 `fieldNames`。需要完整选项时，拿值回 `children` 里查找。

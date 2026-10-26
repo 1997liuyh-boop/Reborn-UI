@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import type { RadioFieldNames } from "~/components/reborn/ui/reborn-radio/reborn-radio.config";
+import type { RadioGroupProps } from "~/components/reborn/ui/reborn-radio/RebornRadioGroup.vue";
+import { DemoBlock, DemoNote, DemoSection, Playground } from '#components';
+import { computed, ref, shallowRef } from 'vue';
 import { radioColors, radioSizes } from "~/components/reborn/ui/reborn-radio/reborn-radio.config";
 import RebornRadio from "~/components/reborn/ui/reborn-radio/RebornRadio.vue";
 import RebornRadioGroup from "~/components/reborn/ui/reborn-radio/RebornRadioGroup.vue";
@@ -109,17 +113,21 @@ const fruits = [
   { value: "grape", label: "葡萄" },
 ];
 
-const selectedFruit = ref("apple");
-const selectedColor = ref("primary");
-const selectedCity = ref("beijing");
-const selectedPay = ref("wechat");
-const selectedPlan = ref("basic");
-const selectedMode = ref("day");
-const selectedAlign = ref("居中");
-const selectedVariant = ref("apple");
+const selectedFruit = shallowRef("apple");
+const selectedColor = shallowRef("primary");
+const selectedCity = shallowRef("beijing");
+const selectedPay = shallowRef("wechat");
+const selectedPlan = shallowRef("basic");
+const selectedMode = shallowRef("day");
+const selectedAlign = shallowRef("居中");
+/** 实体按钮拼接：字符串数组直接作为选项，文案即取值 */
+const alignOptions = ['左对齐', '居中', '右对齐'];
+/** 通过 button-props 统一透传给每个按钮：虚线边框 */
+const dashedButtonProps: RadioGroupProps['buttonProps'] = { borderStyle: 'dashed' };
+const selectedVariant = shallowRef("apple");
 
 /** 非受控用法的最新值，仅由 change 事件回填展示 */
-const uncontrolledValue = ref("banana");
+const uncontrolledValue = shallowRef("banana");
 
 /** 非受控模式下通过 change 事件拿到最新值 */
 function onUncontrolledChange(value: string | number | boolean) {
@@ -140,7 +148,9 @@ const shippingOptions = [
   { code: "pickup", name: "门店自提", fee: 0 },
   { code: "same-day", name: "同城急送", fee: 20, closed: true },
 ];
-const selectedShipping = ref("express");
+const selectedShipping = shallowRef("express");
+/** 把接口的 name / code / closed 依次当作 label / value / disabled */
+const shippingFieldNames: RadioFieldNames = { label: 'name', value: 'code', disabled: 'closed' };
 
 const plans = [
   { value: "basic", label: "基础版", desc: "适合个人开发者" },
@@ -186,9 +196,9 @@ const plans = [
       <template #description><code>type="pure-button"</code> 每项复用 RebornButton，首尾圆角、相邻边框折叠；<code>button-props</code>
         统一透传按钮参数。</template>
       <DemoBlock layout="stack" class="gap-4">
-        <RebornRadioGroup v-model="selectedAlign" type="pure-button" color="success" :options="['左对齐', '居中', '右对齐']" />
+        <RebornRadioGroup v-model="selectedAlign" type="pure-button" color="success" :options="alignOptions" />
         <RebornRadioGroup v-model="selectedAlign" type="pure-button" color="success"
-          :button-props="{ borderStyle: 'dashed' }" :options="['左对齐', '居中', '右对齐']" />
+          :button-props="dashedButtonProps" :options="alignOptions" />
       </DemoBlock>
       <DemoNote tone="dimmed">
         当前值：<span class="text-primary font-mono font-medium">{{ selectedAlign }}</span>
@@ -229,7 +239,7 @@ const plans = [
         </RebornRadioGroup>
         <!-- 数据源是 code / name / closed，fee 不参与映射，照样能在插槽里读到 -->
         <RebornRadioGroup v-model="selectedShipping" :options="shippingOptions"
-          :field-names="{ label: 'name', value: 'code', disabled: 'closed' }">
+          :field-names="shippingFieldNames">
           <template #label="{ data }">
             {{ data.label }}<span class="text-dimmed ml-1 text-xs">¥{{ data.fee }}</span>
           </template>

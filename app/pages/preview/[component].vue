@@ -1,30 +1,3 @@
-<template>
-    <div class="bg-default text-default min-h-screen">
-        <!-- 极简顶栏：embed 模式（iframe 内嵌）下隐藏，保留纯画布 -->
-        <header v-if="!embed"
-            class="border-default bg-default/80 sticky top-0 z-50 flex items-center justify-between gap-4 border-b px-4 py-2 backdrop-blur">
-            <UButton icon="i-lucide-arrow-left" variant="ghost" color="neutral" size="sm" @click="goBack">
-                返回文档
-            </UButton>
-            <span class="text-muted truncate font-mono text-xs">{{ componentName }}</span>
-            <UColorModeButton />
-        </header>
-
-        <main :class="embed ? '' : 'p-4 sm:p-6 lg:p-8'">
-            <ClientOnly>
-                <component :is="componentName" />
-                <template #fallback>
-                    <!-- SSR 占位：客户端挂载前显示加载态 -->
-                    <div class="text-muted flex min-h-[50vh] items-center justify-center gap-2 text-sm">
-                        <UIcon name="i-lucide-loader-circle" class="size-4 animate-spin" />
-                        正在加载预览…
-                    </div>
-                </template>
-            </ClientOnly>
-        </main>
-    </div>
-</template>
-
 <script setup lang="ts">
 /**
  * 组件独立预览页 —— /preview/<组件名>
@@ -73,3 +46,30 @@ function goBack() {
     }
 }
 </script>
+
+<template>
+    <div class="bg-default text-default min-h-screen">
+        <!-- 极简顶栏：embed 模式（iframe 内嵌）下隐藏，保留纯画布 -->
+        <header v-if="!embed"
+            class="border-default bg-default/80 sticky top-0 z-50 flex items-center justify-between gap-4 border-b px-4 py-2 backdrop-blur">
+            <UButton icon="i-lucide-arrow-left" variant="ghost" color="neutral" size="sm" @click="goBack">
+                返回文档
+            </UButton>
+            <span class="text-muted truncate font-mono text-xs">{{ componentName }}</span>
+            <UColorModeButton />
+        </header>
+
+        <main :class="embed ? '' : 'p-4 sm:p-6 lg:p-8'">
+            <ClientOnly>
+                <component :is="componentName" />
+                <template #fallback>
+                    <!-- SSR 占位：客户端挂载前显示加载态 -->
+                    <div class="text-muted flex min-h-[50vh] items-center justify-center gap-2 text-sm">
+                        <UIcon name="i-lucide-loader-circle" class="size-4 animate-spin" />
+                        正在加载预览…
+                    </div>
+                </template>
+            </ClientOnly>
+        </main>
+    </div>
+</template>

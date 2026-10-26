@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import theme, { textColors } from "./reborn-text.config";
@@ -8,6 +8,7 @@ import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
 
 const b = tv(theme);
 
+// 未声明的属性不落在 RebornTooltip 外壳上，由模板手动绑到承载文字的 span
 defineOptions({ inheritAttrs: false });
 
 export interface RebornTextProps {
@@ -84,12 +85,13 @@ const ui = computed(() => {
 const textStyle = computed(() => {
     const style: Record<string, any> = {};
     if (props.ellipsis) {
+        // 带厂商前缀的两项保留连字符写法：SSR 序列化驼峰键时不会补回开头的 "-"，会输出无效的 webkit-line-clamp
         style["-webkit-line-clamp"] = props.lines;
-        style["line-clamp"] = props.lines;
         style["-webkit-box-orient"] = "vertical";
-        style["display"] = "-webkit-box";
-        style["overflow"] = "hidden";
-        style["word-break"] = "break-all";
+        style.lineClamp = props.lines;
+        style.display = "-webkit-box";
+        style.overflow = "hidden";
+        style.wordBreak = "break-all";
     }
     if (props.size) {
         style.fontSize = `${props.size}px`;
@@ -154,26 +156,25 @@ const ELLIPSIS_MARK = "…";
 /** 头部 / 中间省略：CSS line-clamp 只能截断尾部，这两种位置改为逐字测量后写入截断文本 */
 const isJsClamp = computed(() => props.ellipsis && props.ellipsisPosition !== "end");
 /** 原文节点：始终承载插槽内容；截断生效后转为仅读屏可见，用于读取全文和无障碍朗读 */
-const sourceRef = ref<HTMLElement | null>(null);
+const sourceRef = useTemplateRef<HTMLElement>("sourceRef");
 /** 截断结果节点：文本由 runClamp 直接写入、不经 Vue 渲染，测量时反复改写也不会触发重渲染 */
-const clampRef = ref<HTMLElement | null>(null);
+const clampRef = useTemplateRef<HTMLElement>("clampRef");
 /** 截断结果是否已写入；写入前原文照常显示（SSR 首屏和挂载前是 CSS 尾部省略），避免出现空白 */
-const clampReady = ref(false);
+const clampReady = shallowRef(false);
 /** 截断后是否确实省略了内容 */
-const clampTruncated = ref(false);
+const clampTruncated = shallowRef(false);
 /** 参与截断的完整纯文本，同时作为气泡文案 */
-const clampFullText = ref("");
+const clampFullText = shallowRef("");
 
 /** 省略号自动气泡提示逻辑 */
-const textRef = ref<HTMLElement | null>(null);
-const isEllipsisActive = ref(false);
-const tooltipText = ref("");
-let observer: ResizeObserver | null = null;
+const textRef = useTemplateRef<HTMLElement>("textRef");
+const isEllipsisActive = shallowRef(false);
+const tooltipText = shallowRef("");
 
 /** 气泡宽度下限，取 RebornTooltip 设计稿的 240px：文本比它窄时仍按 240px 折行，避免气泡挤成细长条 */
 const TOOLTIP_MIN_WIDTH = 240;
 /** 文本节点当前的渲染宽度 */
-const textWidth = ref(0);
+const textWidth = shallowRef(0);
 /** 气泡宽度跟随文本宽度，不低于下限；全文较短时气泡仍按内容收窄 */
 const tooltipBodyStyle = computed(() => ({ maxWidth: `${Math.max(TOOLTIP_MIN_WIDTH, textWidth.value)}px` }));
 
@@ -335,27 +336,24 @@ onMounted(() => {
     document.fonts?.ready.then(() => {
         if (isJsClamp.value) scheduleClamp();
     });
-
-    if (props.tooltip && textRef.value) {
-        // 渲染完成后稍微延迟检查，确保字体和布局完全就绪
-        nextTick(() => {
-            nextTick(checkEllipsis);
-        });
-
-        observer = new ResizeObserver(() => {
-            checkEllipsis();
-        });
-        observer.observe(textRef.value);
-    }
 });
 
-onBeforeUnmount(() => {
-    stopClampObservers();
-    if (observer) {
-        observer.disconnect();
-        observer = null;
-    }
-});
+/**
+ * 省略检测的尺寸监听：tooltip 开关会切换模板分支、换成新的 textRef 节点，
+ * 观察器跟着节点重建，旧节点的观察器在 onCleanup 里断开（卸载时同样会执行）
+ */
+watch([() => props.tooltip, textRef], ([enabled, el], _, onCleanup) => {
+    if (!enabled || !el || typeof ResizeObserver === "undefined") return;
+    const tooltipObserver = new ResizeObserver(checkEllipsis);
+    tooltipObserver.observe(el);
+    onCleanup(() => tooltipObserver.disconnect());
+    // 渲染完成后稍微延迟检查，确保字体和布局完全就绪
+    nextTick(() => {
+        nextTick(checkEllipsis);
+    });
+}, { flush: "post" });
+
+onBeforeUnmount(stopClampObservers);
 
 // 当内容或样式参数变化时，重新检查
 watch(() => [content.value, props.lines, props.size, props.ellipsis, props.tooltip], () => {
@@ -370,7 +368,7 @@ watch(() => [content.value, props.lines, props.size, props.ellipsis, props.toolt
   <!-- 截断后悬停可看全文：用帮助光标提示这里有气泡，文字本身不可点，不用手型 -->
   <RebornTooltip v-if="props.tooltip" :disabled="!isEllipsisActive" placement="top" :ui="{ content: 'max-w-none p-0' }">
     <span
-      ref="textRef" :class="cn(ui.base({ class: props.class }), { 'cursor-help': isEllipsisActive })"
+      ref="textRef" v-bind="$attrs" :class="cn(ui.base({ class: props.class }), { 'cursor-help': isEllipsisActive })"
       :style="textStyle"
     >
       <span ref="sourceRef" :class="{ 'sr-only': clampReady }">
@@ -393,7 +391,7 @@ watch(() => [content.value, props.lines, props.size, props.ellipsis, props.toolt
       <span class="p-2" :style="tooltipBodyStyle">{{ tooltipText }}</span>
     </template>
   </RebornTooltip>
-  <span v-else ref="textRef" :class="ui.base({ class: props.class })" :style="textStyle">
+  <span v-else ref="textRef" v-bind="$attrs" :class="ui.base({ class: props.class })" :style="textStyle">
     <span ref="sourceRef" :class="{ 'sr-only': clampReady }">
       <slot :content="content">
         <template v-if="props.currency">

@@ -37,6 +37,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+/** 上下篇仅接收数组数据，未提供时交给内容组件使用缺省展示。 */
+const contentSurround = computed(() => Array.isArray(props.surround) ? props.surround : undefined)
 
 /**
  * 页头标题的两段：英文名作主标题，中文名紧随其后弱化显示。
@@ -193,8 +195,8 @@ provide(suggestionContextKey, { value: suggestionPage })
  * 这类页面渲染完成后从正文 DOM 扫描 h2/h3 重建目录（仅客户端，SSR 时为空不影响水合）。
  * 组件文档的标题都在 ::ComponentViewer 块之外，构建期 TOC 是全的，走不到这条兜底。
  */
-const bodyEl = ref<HTMLElement | null>(null)
-const domTocLinks = ref<TocLinkItem[]>([])
+const bodyEl = useTemplateRef<HTMLElement>('bodyEl')
+const domTocLinks = shallowRef<TocLinkItem[]>([])
 
 function collectDomToc() {
     if (!bodyEl.value) return
@@ -230,9 +232,9 @@ function collectDomToc() {
 let tocObserver: MutationObserver | null = null
 let tocRescanTimer: ReturnType<typeof setTimeout> | null = null
 
-onMounted(() => nextTick(() => {
+watch([bodyEl, () => renderedPage.value?.body?.toc?.links?.length ?? 0], ([element, serverCount], _, onCleanup) => {
+    if (!import.meta.client || !element || serverCount) return
     collectDomToc()
-    if (!bodyEl.value) return
     tocObserver = new MutationObserver(() => {
         if (tocRescanTimer) clearTimeout(tocRescanTimer)
         tocRescanTimer = setTimeout(collectDomToc, 300)
@@ -243,20 +245,16 @@ onMounted(() => nextTick(() => {
     // 不直接盯 "style"：胶囊滑块的形变与 useResizeObserver 触发的重排都在逐帧写内联 style，
     // 每次都会把 300ms 去抖重新推后，collectDomToc 可能永远轮不上。
     // "hidden" / "data-state" 保留——正文里其他 Nuxt UI 控件仍靠这两个属性表达显隐。
-    tocObserver.observe(bodyEl.value, {
+    tocObserver.observe(element, {
         childList: true,
         subtree: true,
         attributeFilter: ["hidden", "data-state", "data-tab-active"],
     })
-}))
-
-onUnmounted(() => {
-    tocObserver?.disconnect()
-    if (tocRescanTimer) clearTimeout(tocRescanTimer)
-})
-
-// 布局层 UPage 以 route.path 为 key，路由切换会整体重挂载；watch 仅兜底同路径内容热替换
-watch(() => props.page?.path, () => nextTick(collectDomToc))
+    onCleanup(() => {
+        tocObserver?.disconnect()
+        if (tocRescanTimer) clearTimeout(tocRescanTimer)
+    })
+}, { immediate: true, flush: 'post' })
 
 /**
  * 目录链接：优先构建期 TOC（取删减后的那份），为空时回退 DOM 扫描结果。
@@ -265,7 +263,7 @@ watch(() => props.page?.path, () => nextTick(collectDomToc))
  * 它同样在 Preview 面板里、上方压着吸顶 Tab 栏，所以也打 inDemo。
  */
 const tocLinks = computed<TocLinkItem[]>(() => {
-    const server = renderedPage.value?.body?.toc?.links ?? []
+    const server: TocLinkItem[] = renderedPage.value?.body?.toc?.links ?? []
     const links = server.length ? server : domTocLinks.value
     const playground = viewerAttrs.value ? demoMeta.value?.playgroundTitle : ''
     // DOM 兜底目录扫的是 h2[id]，走到那条路时演练场已经在列表里，不再重复加
@@ -357,7 +355,7 @@ const editLink = computed(() => {
           </UButton>
         </div>
       </USeparator>
-      <UContentSurround :surround="(surround as any)" />
+      <UContentSurround :surround="contentSurround" />
       <!-- 页面最底部的装饰人群，由 frontmatter footerCrowd 开启 -->
       <DocsFooterCrowd v-if="page.footerCrowd" />
     </UPageBody>

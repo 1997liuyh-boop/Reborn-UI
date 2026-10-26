@@ -2,7 +2,7 @@
 import type { ClassValue } from "clsx";
 import type { CSSProperties } from "vue";
 import type { sliderColors, sliderSizes } from "./reborn-slider.config";
-import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, shallowRef, useTemplateRef, watch } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -22,10 +22,19 @@ export interface SliderTooltip {
     formatter?: ((value: number) => string | number) | null;
 }
 
+/** thumb 插槽的作用域参数：单值与范围模式共用 */
+export interface SliderThumbSlotProps {
+    /** 该滑块的当前值 */
+    value: number;
+    /** 滑块下标：单值模式恒为 0，范围模式为排序后的节点位置 */
+    index: number;
+    /** 是否为激活滑块（单值模式恒为 true） */
+    active: boolean;
+    /** 该滑块是否禁用（整体禁用或 disabled 数组单独禁用） */
+    disabled: boolean;
+}
+
 export interface SliderProps {
-    modelValue?: number;
-    /** range 模式的节点值数组，editable 时长度可变 */
-    values?: number[];
     min?: number;
     max?: number;
     /** 步长；传 "mark" 时取值只能落在 marks 定义的刻度上（此时必须设置 marks） */
@@ -87,8 +96,6 @@ export interface SliderProps {
 }
 
 const props = withDefaults(defineProps<SliderProps>(), {
-    modelValue: 0,
-    values: () => [0, 0],
     min: 0,
     max: 100,
     step: 1,
@@ -105,8 +112,6 @@ const props = withDefaults(defineProps<SliderProps>(), {
 });
 
 const emit = defineEmits<{
-    (e: "update:modelValue", value: number): void;
-    (e: "update:values", value: number[]): void;
     /** 值每次变化都会触发（拖拽过程实时触发，对齐 Ant Design 的 onChange） */
     (e: "change", value: number | number[]): void;
     /** 交互结束（松开指针 / 松开按键）时触发，对齐 Ant Design 的 onChangeComplete */
@@ -114,6 +119,31 @@ const emit = defineEmits<{
     /** 兼容保留：与 change 同时机触发 */
     (e: "changing", value: number | number[]): void;
 }>();
+
+defineSlots<{
+    /** 滑轨起始端内容，覆盖 prefixIcon */
+    prefix?: () => any;
+    /** 滑轨末尾端内容，覆盖 suffixIcon */
+    suffix?: () => any;
+    /**
+     * 替换滑块中心圆（thumbDot）。外层滑块节点（定位、尺寸、可聚焦、键盘步进、气泡）始终由组件渲染，
+     * 自定义内容不会让键盘操作失效；单值与范围模式都可用
+     */
+    thumb?: (props: SliderThumbSlotProps) => any;
+    /** 末尾数值显示，value 为当前值文本（范围模式为「起 - 止」） */
+    value?: (props: { value: string }) => any;
+}>();
+
+/** 把值夹在 [min, max] 内 */
+function clampValue(val: number) {
+    return Math.max(props.min, Math.min(props.max, val));
+}
+
+/** 单值模式的绑定值（v-model），读取时夹在 [min, max] 内 */
+const model = defineModel<number>({ default: 0, get: val => clampValue(val) });
+
+/** range 模式的节点值（v-model:values），读取时逐个夹取；editable 时长度可变 */
+const values = defineModel<number[]>("values", { default: () => [0, 0], get: list => list.map(clampValue) });
 
 const b = tv(theme);
 
@@ -207,33 +237,67 @@ const ui = computed(() => {
     };
 });
 
-const value = ref(props.modelValue);
-/** range 模式的节点数组，始终保持升序 */
-const rangeValue = ref([...props.values]);
-const trackRef = ref<HTMLElement | null>(null);
-const innerRef = ref<HTMLElement | null>(null);
-const thumbRefs = ref<(HTMLElement | null)[]>([]);
+/** 单值模式的当前值（已夹取） */
+const value = computed(() => model.value);
+/** range 模式的节点数组（已夹取），get 每次读取都会新建数组，这里缓存一份供模板与逻辑共用 */
+const rangeValue = computed(() => values.value);
+
+/**
+ * 同步桥：受控绑定下给 model 赋值后，要等父级重新渲染才读得到新值。
+ * 同一段同步逻辑里先提交、再读取的场景（松手时先冲刷合帧移动，再结算删除节点与 changeComplete）读这里的本地新值；
+ * 下一次刷新后父级的值已回传，清空桥接，之后以绑定值为准（父级拒收或改写时显示父级的值）。
+ */
+let pendingValue: number | null = null;
+let pendingNodes: number[] | null = null;
+let bridgeScheduled = false;
+
+function scheduleBridgeReset() {
+    if (bridgeScheduled) return;
+    bridgeScheduled = true;
+    nextTick(() => {
+        bridgeScheduled = false;
+        pendingValue = null;
+        pendingNodes = null;
+    });
+}
+
+/** 逻辑读取用的当前值：优先取本轮刚提交、尚未回传的本地新值 */
+function readValue() {
+    return pendingValue ?? value.value;
+}
+
+function readNodes() {
+    return pendingNodes ?? rangeValue.value;
+}
+
+const trackRef = useTemplateRef<HTMLElement>("trackRef");
+const innerRef = useTemplateRef<HTMLElement>("innerRef");
+/**
+ * 滑块元素按下标存放，用于按下 / 换位 / 新增节点后转移焦点。
+ * 用普通数组而不是响应式 ref：函数式 ref 每次渲染都会先写 null 再写元素，拖拽时每帧都在写，没必要触发依赖追踪
+ */
+const thumbEls: (HTMLElement | null)[] = [];
 /** 激活节点下标：默认最右侧，此后跟随用户最近一次按下的滑块 */
-const activeThumbIndex = ref(Math.max(0, props.values.length - 1));
+const activeThumbIndex = shallowRef(Math.max(0, values.value.length - 1));
 /** 是否处于拖拽中：用显式状态而非 e.buttons，后者在部分浏览器的捕获移动事件里不可靠 */
-const dragging = ref(false);
+const dragging = shallowRef(false);
 /** 是否处于选区整体平移中（draggableTrack） */
-const trackDragging = ref(false);
+const trackDragging = shallowRef(false);
 /** 选区平移的锚点值与起始节点快照 */
 let trackDragStartValue = 0;
 let trackDragBaseNodes: number[] = [];
 /** 可编辑模式下正被拖离滑轨的节点下标，松手即删除；拖回则恢复 */
-const removingIndex = ref<number | null>(null);
+const removingIndex = shallowRef<number | null>(null);
 /** 本轮按键交互是否改过值，松键时据此触发 changeComplete */
-const keyboardDirty = ref(false);
+const keyboardDirty = shallowRef(false);
 
 /** 按下位置距滑块中心多少像素内算「抓住滑块」 */
 const GRAB_THRESHOLD = 12;
 /** 垂直于滑轨方向拖离多少像素进入删除预览 */
 const REMOVE_DISTANCE = 40;
 
-function setThumbRef(el: any, index: number) {
-    thumbRefs.value[index] = (el as HTMLElement) ?? null;
+function setThumbRef(el: unknown, index: number) {
+    thumbEls[index] = el instanceof HTMLElement ? el : null;
 }
 
 /** 激活滑块的外径，即交互带厚度（色晕不占布局空间，越界部分直接溢出绘制） */
@@ -403,12 +467,13 @@ function adjacentMark(current: number, dir: number): number {
 
 /** 按值距离选出最近的可用滑块（跳过禁用）；距离相等时取靠后的，重合场景点击数值大侧应抓大值滑块 */
 function nearestEnabledThumb(touch: number): number {
+    const nodes = readNodes();
     let best = -1;
     let bestD = Infinity;
-    for (let i = 0; i < rangeValue.value.length; i++) {
+    for (let i = 0; i < nodes.length; i++) {
         if (handleDisabled(i)) continue;
-        const d = Math.abs(touch - rangeValue.value[i]!);
-        if (d < bestD || (d === bestD && touch >= rangeValue.value[i]!)) {
+        const d = Math.abs(touch - nodes[i]!);
+        if (d < bestD || (d === bestD && touch >= nodes[i]!)) {
             best = i;
             bestD = d;
         }
@@ -439,11 +504,12 @@ function findGrabbableThumb(e: PointerCoords): number {
     if (!trackRef.value) return -1;
     const rect = trackRef.value.getBoundingClientRect();
     const cursor = props.vertical ? e.clientY : e.clientX;
+    const nodes = readNodes();
     let best = -1;
     let bestD = Infinity;
-    for (let i = 0; i < rangeValue.value.length; i++) {
+    for (let i = 0; i < nodes.length; i++) {
         if (handleDisabled(i)) continue;
-        const d100 = toDisplayPct(toPct(rangeValue.value[i]!)) / 100;
+        const d100 = toDisplayPct(toPct(nodes[i]!)) / 100;
         const px = props.vertical ? rect.top + d100 * rect.height : rect.left + d100 * rect.width;
         const d = Math.abs(cursor - px);
         if (d < bestD || (d === bestD && cursor >= px)) {
@@ -459,38 +525,40 @@ function findGrabbableThumb(e: PointerCoords): number {
  * step="mark" 时平移量无法保证所有节点同时落在刻度上，一并禁用。
  */
 function canDragTrack(): boolean {
-    if (!props.draggableTrack || !props.range || rangeValue.value.length < 2) return false;
+    const nodes = readNodes();
+    if (!props.draggableTrack || !props.range || nodes.length < 2) return false;
     if (props.step === "mark") return false;
-    for (let i = 0; i < rangeValue.value.length; i++) {
+    for (let i = 0; i < nodes.length; i++) {
         if (handleDisabled(i)) return false;
     }
     return true;
 }
 
-/** 提交节点数组：写内部状态并向外发 update:values + change（changing 兼容保留），同时触发表单的 change 校验 */
+/** 提交节点数组：写 v-model:values（发 update:values）并发 change（changing 兼容保留），同时触发表单的 change 校验 */
 function commitNodes(arr: number[]) {
-    rangeValue.value = arr;
-    emit("update:values", [...arr]);
+    pendingNodes = arr;
+    scheduleBridgeReset();
+    values.value = [...arr];
     emit("change", [...arr]);
     emit("changing", [...arr]);
     validate("change");
 }
 
 function updateValue(newValue: number) {
-    if (value.value !== newValue) {
-        const minVal = props.min ?? 0;
-        const maxVal = props.max ?? 100;
-        value.value = Math.max(minVal, Math.min(maxVal, newValue));
-        emit("update:modelValue", newValue);
-        emit("change", newValue);
-        emit("changing", newValue);
-        validate("change");
-    }
+    const next = clampValue(newValue);
+    if (readValue() === next) return;
+    pendingValue = next;
+    scheduleBridgeReset();
+    // 受控时赋值后同步读到的仍是旧值，事件载荷用本地算出的新值
+    model.value = next;
+    emit("change", next);
+    emit("changing", next);
+    validate("change");
 }
 
 /** 交互结束（松开指针 / 按键）：滑块没有失焦概念，以此时机对齐表单的 blur 校验 */
 function emitChangeComplete() {
-    emit("changeComplete", props.range ? [...rangeValue.value] : value.value);
+    emit("changeComplete", props.range ? [...readNodes()] : readValue());
     validate("blur");
 }
 
@@ -504,17 +572,18 @@ function moveActiveThumb(raw: number) {
     const idx = activeThumbIndex.value;
     if (idx < 0 || handleDisabled(idx)) return;
 
+    const nodes = readNodes();
     let lo = props.min;
     let hi = props.max;
-    for (let j = 0; j < rangeValue.value.length; j++) {
+    for (let j = 0; j < nodes.length; j++) {
         if (j === idx || !handleDisabled(j)) continue;
-        if (j < idx) lo = Math.max(lo, rangeValue.value[j]!);
-        else hi = Math.min(hi, rangeValue.value[j]!);
+        if (j < idx) lo = Math.max(lo, nodes[j]!);
+        else hi = Math.min(hi, nodes[j]!);
     }
     const val = Math.max(lo, Math.min(hi, raw));
-    if (val === rangeValue.value[idx]) return;
+    if (val === nodes[idx]) return;
 
-    const arr = [...rangeValue.value];
+    const arr = [...nodes];
     arr[idx] = val;
     let ni = idx;
     while (ni > 0 && arr[ni]! < arr[ni - 1]!) {
@@ -525,25 +594,30 @@ function moveActiveThumb(raw: number) {
         [arr[ni], arr[ni + 1]] = [arr[ni + 1]!, arr[ni]!];
         ni++;
     }
+    // 滑块 DOM 以下标为 key 原地复用：值换了位而焦点还停在旧下标的元素上时，
+    // 方向键会去移动被越过的那个节点，所以换位后把焦点跟到新下标（节点值可能重复，拿不到稳定 key）
+    const hadFocus = typeof document !== "undefined" && thumbEls[idx] === document.activeElement;
     activeThumbIndex.value = ni;
     commitNodes(arr);
+    if (hadFocus && ni !== idx) nextTick(() => thumbEls[ni]?.focus());
 }
 
 /** 在点击位置插入新节点并立即激活、聚焦（便于随后按键删除） */
 function addNode(val: number) {
-    const arr = [...rangeValue.value];
+    const arr = [...readNodes()];
     let idx = arr.findIndex(n => n > val);
     if (idx === -1) idx = arr.length;
     arr.splice(idx, 0, val);
     activeThumbIndex.value = idx;
     commitNodes(arr);
-    nextTick(() => thumbRefs.value[idx]?.focus());
+    nextTick(() => thumbEls[idx]?.focus());
 }
 
 /** 删除节点（至少保留一个），并收敛激活下标；changeComplete 由交互结束方（松指针/松按键）触发 */
 function removeNode(index: number) {
-    if (rangeValue.value.length <= 1) return;
-    const arr = [...rangeValue.value];
+    const nodes = readNodes();
+    if (nodes.length <= 1) return;
+    const arr = [...nodes];
     arr.splice(index, 1);
     commitNodes(arr);
     activeThumbIndex.value = Math.min(activeThumbIndex.value, arr.length - 1);
@@ -559,7 +633,7 @@ function onThumbKeydown(e: KeyboardEvent, index: number) {
     if (dir !== 0) {
         if (props.reverse) dir = -dir;
         e.preventDefault();
-        const current = props.range ? rangeValue.value[index]! : value.value;
+        const current = props.range ? readNodes()[index]! : readValue();
         // step="mark" 时跳到相邻刻度，否则按数字步长步进
         const target = props.step === "mark"
             ? adjacentMark(current, dir)
@@ -569,7 +643,7 @@ function onThumbKeydown(e: KeyboardEvent, index: number) {
             activeThumbIndex.value = index;
             moveActiveThumb(target);
         } else {
-            updateValue(Math.max(props.min, Math.min(props.max, target)));
+            updateValue(target);
         }
         keyboardDirty.value = true;
         return;
@@ -597,21 +671,22 @@ function onPointerDown(e: PointerEvent) {
 
     const val = calculateValue(e);
     if (props.range) {
+        const nodes = readNodes();
         const grabbed = findGrabbableThumb(e);
         if (grabbed !== -1) {
             dragging.value = true;
             activeThumbIndex.value = grabbed;
-            thumbRefs.value[grabbed]?.focus();
+            thumbEls[grabbed]?.focus();
         } else if (
             canDragTrack()
-            && val >= rangeValue.value[0]!
-            && val <= rangeValue.value[rangeValue.value.length - 1]!
+            && val >= nodes[0]!
+            && val <= nodes[nodes.length - 1]!
         ) {
             // 按在选区内且没压着滑块：整体平移选区
             dragging.value = true;
             trackDragging.value = true;
             trackDragStartValue = val;
-            trackDragBaseNodes = [...rangeValue.value];
+            trackDragBaseNodes = [...nodes];
         } else if (props.editable) {
             // 没按在滑块上：在点击位置添加节点并直接进入拖拽
             dragging.value = true;
@@ -643,7 +718,7 @@ function processMove(e: PointerCoords) {
     }
 
     // 可编辑模式：垂直于滑轨方向拖离进入删除预览，拖回则恢复；预览期间冻结取值
-    if (props.range && props.editable && rangeValue.value.length > 1 && innerRef.value) {
+    if (props.range && props.editable && readNodes().length > 1 && innerRef.value) {
         const rect = innerRef.value.getBoundingClientRect();
         const off = props.vertical
             ? (e.clientX < rect.left ? rect.left - e.clientX : Math.max(0, e.clientX - rect.right))
@@ -709,12 +784,11 @@ onBeforeUnmount(() => {
     pendingMove = null;
 });
 
-watch(() => props.modelValue, (v) => { if (v !== value.value) value.value = Math.max(props.min, Math.min(props.max, v)); }, { immediate: true });
-watch(() => props.values, (v) => {
-    rangeValue.value = v.map(n => Math.max(props.min, Math.min(props.max, n)));
-    activeThumbIndex.value = Math.min(activeThumbIndex.value, Math.max(0, v.length - 1));
-    thumbRefs.value.length = v.length;
-}, { immediate: true });
+// 节点数变化（父级改写或 editable 增删）时收敛激活下标，并截掉多余的元素引用
+watch(() => rangeValue.value.length, (length) => {
+    activeThumbIndex.value = Math.min(activeThumbIndex.value, Math.max(0, length - 1));
+    thumbEls.length = length;
+});
 </script>
 
 <template>
@@ -754,38 +828,43 @@ watch(() => props.values, (v) => {
         {{ m.label }}
       </div>
 
-      <!-- 单滑块：恒为激活态，可聚焦以支持方向键步进 -->
+      <!-- 单滑块：恒为激活态，可聚焦以支持方向键步进；thumb 插槽只替换中心圆，定位、聚焦与键盘交互仍在外层 -->
       <template v-if="!range">
-        <slot name="thumb" :value="{ value: displayValue, style: singleThumbStyle }">
-          <div
-            :ref="(el) => setThumbRef(el, 0)" :class="ui.thumb({ pressed: thumbPressed(0) })" :style="singleThumbStyle"
-            :tabindex="isDisabled ? undefined : 0" @keydown="onThumbKeydown($event, 0)" @keyup="onThumbKeyup"
-          >
+        <div
+          :ref="(el) => setThumbRef(el, 0)" :class="ui.thumb({ pressed: thumbPressed(0) })" :style="singleThumbStyle"
+          :tabindex="isDisabled ? undefined : 0" @keydown="onThumbKeydown($event, 0)" @keyup="onThumbKeyup"
+        >
+          <slot name="thumb" :value="value" :index="0" :active="true" :disabled="isDisabled">
             <div :class="ui.thumbDot()" />
-            <div v-if="thumbTooltipVisible(0)" :class="ui.tooltip()">{{ tooltipContent(value) }}</div>
-          </div>
-        </slot>
+          </slot>
+          <div v-if="thumbTooltipVisible(0)" :class="ui.tooltip()">{{ tooltipContent(value) }}</div>
+        </div>
       </template>
 
       <!-- 多滑块：最近一次按下的为激活态（默认最右侧），未激活的小一号且无色晕；
            可聚焦以支持方向键步进，editable 时按 Delete / Backspace 删除 -->
       <template v-if="range">
         <div
-          v-for="(pct, i) in nodePercentages" :key="i" :ref="(el) => setThumbRef(el, i)" :class="ui.thumb({
+          v-for="(thumbValue, i) in rangeValue" :key="i" :ref="(el) => setThumbRef(el, i)" :class="ui.thumb({
             active: i === activeThumbIndex && !handleDisabled(i),
             pressed: thumbPressed(i),
             handleDisabled: handleDisabled(i),
             removing: removingIndex === i,
-          })" :style="thumbStyle(pct)" :tabindex="handleDisabled(i) ? undefined : 0"
+          })" :style="thumbStyle(toPct(thumbValue))" :tabindex="handleDisabled(i) ? undefined : 0"
           @keydown="onThumbKeydown($event, i)" @keyup="onThumbKeyup"
         >
-          <div
-            :class="ui.thumbDot({
-              active: i === activeThumbIndex && !handleDisabled(i),
-              handleDisabled: handleDisabled(i),
-            })"
-          />
-          <div v-if="thumbTooltipVisible(i)" :class="ui.tooltip()">{{ tooltipContent(rangeValue[i]!) }}</div>
+          <slot
+            name="thumb" :value="thumbValue" :index="i" :active="i === activeThumbIndex && !handleDisabled(i)"
+            :disabled="handleDisabled(i)"
+          >
+            <div
+              :class="ui.thumbDot({
+                active: i === activeThumbIndex && !handleDisabled(i),
+                handleDisabled: handleDisabled(i),
+              })"
+            />
+          </slot>
+          <div v-if="thumbTooltipVisible(i)" :class="ui.tooltip()">{{ tooltipContent(thumbValue) }}</div>
         </div>
       </template>
     </div>

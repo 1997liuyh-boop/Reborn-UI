@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import { textColors } from '@/components/reborn-text/reborn-text.config'
 import RebornText from '@/components/reborn-text/RebornText.vue'
 
-const lines = ref([
+const lines = [
   '《游子吟》',
   '慈母手中线，',
   '游子身上衣。',
@@ -13,7 +12,7 @@ const lines = ref([
   '意恐迟迟归。',
   '谁言寸草心，',
   '报得三春晖。',
-])
+] as const
 </script>
 
 <template>
@@ -25,7 +24,7 @@ const lines = ref([
     </RebornCard>
 
     <RebornCard title="基本用法" custom-class="space-y-4">
-      <RebornText v-for="(item, index) in lines" :key="index" :ui="{ base: 'block' }" :color="textColors[index]">
+      <RebornText v-for="(item, index) in lines" :key="item" :ui="{ base: 'block' }" :color="textColors[index]">
         {{ item }}
       </RebornText>
     </RebornCard>

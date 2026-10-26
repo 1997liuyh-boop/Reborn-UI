@@ -13,6 +13,7 @@
     "slideMode 默认 \"hover\"（悬停即滑动），需要拖动手柄交互时设为 \"drag\"。",
     "不传 firstImage / secondImage 时必须用 first-content / second-content 插槽提供内容，插槽内容占满容器宽高。",
     "自定义 handle 插槽需自行用绝对定位放在分割线处。",
-    "滑块位置通过 update:percentage 事件（0-100）监听。"
+    "滑块位置可用 v-model:percentage（0-100）双向绑定；未绑定时以 initialSliderPercentage 为初值，也可只监听 update:percentage。",
+    "Web 显式绑定 percentage 为 undefined/null 时显示比例复位到 initialSliderPercentage，不回显旧交互副本，也不主动回写父模型。"
   ]
 }

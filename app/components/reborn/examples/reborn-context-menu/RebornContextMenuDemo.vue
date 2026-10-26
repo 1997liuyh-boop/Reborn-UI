@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import RebornContextMenu, {
-  type RebornContextMenuItem,
-} from "~/components/reborn/ui/reborn-context-menu/RebornContextMenu.vue";
 
-const latestAction = ref("等待操作");
+import type { RebornContextMenuItem } from "~/components/reborn/ui/reborn-context-menu/RebornContextMenu.vue";
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
+import { computed, shallowRef } from "vue";
+import RebornContextMenu from "~/components/reborn/ui/reborn-context-menu/RebornContextMenu.vue";
 
-const state = ref({
+const latestAction = shallowRef("等待操作");
+/** 自定义面板的固定主题选项。 */
+const paletteTones = ["Ocean", "Glow", "Sand"];
+/** 选中主题后更新回显并关闭面板。 */
+function pickTone(tone: string, close: () => void) {
+  latestAction.value = `已切换主题：${tone}`;
+  close();
+}
+
+const state = shallowRef({
   size: "md" as "sm" | "md" | "lg",
   modal: false,
   disabled: false,
@@ -46,10 +54,7 @@ const controls = [
 ];
 
 const playgroundCode = computed(() => {
-  const attrs = [
-    `:items="items"`,
-    `size="${state.value.size}"`,
-  ];
+  const attrs = [`:items="items"`, `size="${state.value.size}"`];
 
   if (state.value.modal) attrs.push("modal");
   if (state.value.disabled) attrs.push("disabled");
@@ -57,7 +62,7 @@ const playgroundCode = computed(() => {
   return `<RebornContextMenu ${attrs.join(" ")}>\n  <div class="context-target">右键打开菜单</div>\n</RebornContextMenu>`;
 });
 
-const items = computed<RebornContextMenuItem[][]>(() => [
+const items: RebornContextMenuItem[][] = [
   [
     {
       label: "快速发布",
@@ -117,7 +122,7 @@ const items = computed<RebornContextMenuItem[][]>(() => [
     {
       label: "锁定布局",
       icon: "lucide:lock",
-      disabled: state.value.disabled,
+      disabled: true,
       onSelect: () => {
         latestAction.value = "已执行：锁定布局";
       },
@@ -133,7 +138,7 @@ const items = computed<RebornContextMenuItem[][]>(() => [
       },
     },
   ],
-]);
+];
 
 /** 划词菜单：onSelect 的第二个参数带有当前选中的文字 */
 const selectionItems: RebornContextMenuItem[] = [
@@ -206,15 +211,20 @@ const automationItems: RebornContextMenuItem[][] = [
     },
   ],
 ];
-
 </script>
 
 <template>
   <div class="flex w-full flex-col">
     <!-- 交互演练场：Playground 自带标题栏 -->
-    <Playground v-model="state" :controls="controls" component-name="RebornContextMenu" :code="playgroundCode"
-      title="右键菜单 Playground" description="右键任意目标区域，体验分组、快捷键、危险操作与子菜单展开">
-      <template #left>
+    <Playground
+      v-model="state"
+      :controls="controls"
+      component-name="RebornContextMenu"
+      :code="playgroundCode"
+      title="右键菜单 Playground"
+      description="右键任意目标区域，体验分组、快捷键、危险操作与子菜单展开"
+    >
+      <template #extra>
         <div class="flex w-full flex-col gap-4">
           <div class="flex items-center justify-between">
             <h4 class="text-highlighted text-sm font-semibold">操作回执</h4>
@@ -235,14 +245,17 @@ const automationItems: RebornContextMenuItem[][] = [
               <Icon name="lucide:mouse-pointer-click" class="text-primary mt-0.5 size-4 shrink-0" />
               <div class="flex flex-col gap-0.5">
                 <span class="text-default text-sm font-medium">交互主路径</span>
-                <DemoNote class="text-xs">左侧先读反馈，右侧再执行右键操作，视线会更顺。</DemoNote>
+                <DemoNote class="text-xs">先在上方读回执，再到下方预览区执行右键操作，视线自上而下更顺。</DemoNote>
               </div>
             </li>
             <li class="flex items-start gap-3 py-3">
               <Icon name="lucide:keyboard" class="text-info mt-0.5 size-4 shrink-0" />
               <div class="flex flex-col gap-0.5">
                 <span class="text-default text-sm font-medium">快捷键提示</span>
-                <DemoNote class="text-xs"><code>kbds</code> 会直接显示在菜单尾部，适合高频动作。</DemoNote>
+                <DemoNote class="text-xs">
+                  <code>kbds</code>
+                  会直接显示在菜单尾部，适合高频动作。
+                </DemoNote>
               </div>
             </li>
             <li class="flex items-start gap-3 py-3">
@@ -315,15 +328,15 @@ const automationItems: RebornContextMenuItem[][] = [
       </RebornContextMenu>
     </Playground>
 
-    <DemoSection title="划词菜单"
-      description="trigger=selection 与浏览器 Selection API 组合：在触发区内选中一段文字，菜单在选区上方居中弹出；onSelect / select 事件的 context.selectionText 为选中的文字，换一段选区会先收起再在新位置展开。">
+    <DemoSection
+      title="划词菜单"
+      description="trigger=selection 与浏览器 Selection API 组合：在触发区内选中一段文字，菜单在选区上方居中弹出；onSelect / select 事件的 context.selectionText 为选中的文字，换一段选区会先收起再在新位置展开。"
+    >
       <DemoBlock layout="stack">
         <RebornContextMenu v-slot="{ selectionText }" :items="selectionItems" trigger="selection">
           <div class="flex flex-col gap-3">
             <p class="border-default text-default rounded-2xl border border-dashed p-5 text-sm leading-7 select-text">
-              增长实验主画布支持在同一页面内对多个流量分组做 A/B 对比。选中这段文字里的任意片段，
-              例如「流量分组」或「A/B 对比」，松开鼠标后会在选区上方弹出操作菜单；点击菜单项时选区不会被清掉，
-              回调里可以直接拿到选中的文字用于复制、搜索或标记。
+              增长实验主画布支持在同一页面内对多个流量分组做 A/B 对比。选中这段文字里的任意片段，例如「流量分组」或「A/B 对比」，松开鼠标后会在选区上方弹出操作菜单；点击菜单项时选区不会被清掉，回调里可以直接拿到选中的文字用于复制、搜索或标记。
             </p>
             <DemoNote tone="dimmed">当前选区：{{ selectionText || "（尚未选择文字）" }}</DemoNote>
           </div>
@@ -352,7 +365,12 @@ const automationItems: RebornContextMenuItem[][] = [
                 <Icon name="lucide:palette" class="text-warning size-5" />
               </div>
               <span class="text-highlighted text-lg font-bold">自定义内容插槽</span>
-              <DemoNote class="text-sm">如果不传 <code>items</code>，你也可以直接使用 <code>#content</code> 自定义菜单面板。</DemoNote>
+              <DemoNote class="text-sm">
+                如果不传
+                <code>items</code>，你也可以直接使用
+                <code>#content</code>
+                自定义菜单面板。
+              </DemoNote>
             </div>
           </template>
 
@@ -364,9 +382,12 @@ const automationItems: RebornContextMenuItem[][] = [
                 <DemoNote class="text-sm">适合插入颜色、状态或轻量业务卡片。</DemoNote>
               </div>
               <div class="grid grid-cols-3 gap-3">
-                <button v-for="tone in ['Ocean', 'Glow', 'Sand']" :key="tone"
+                <button
+                  v-for="tone in paletteTones"
+                  :key="tone"
                   class="border-default rounded-lg hover:border-primary/40 hover:text-primary cursor-pointer border px-3 py-3 text-sm font-semibold transition"
-                  @click="latestAction = `已切换主题：${tone}`; close()">
+                  @click="pickTone(tone, close)"
+                >
                   {{ tone }}
                 </button>
               </div>

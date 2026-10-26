@@ -15,6 +15,7 @@
   ],
   "pitfalls": [
     "组件需要确定高度才会产生滚动，请在类名上给出 h-* 或由父容器约束高度。",
+    "滚动与悬停只让内部子组件 RebornScrollbarBars 更新，默认插槽不随每次 scroll 重跑；手动拷贝源码时需连同 RebornScrollbarBars.vue 一起拷贝。",
     "滚动条是自绘 DOM 而非原生滚动条，无法通过 ::-webkit-scrollbar 定制，请改用 --reborn-scrollbar-* 变量或 size / track / inset 属性。",
     "Chromium 下元素的 scrollbar-width / scrollbar-color 为非 auto 值时，所有 ::-webkit-scrollbar 规则整体失效，且 scrollbar-color 会从祖先继承 —— 这是原生滚动条方案无法自定义粗细与悬停色的根因。",
     "overflow: overlay 已在 Chromium 121+ 被移除，computed 回退为 auto，无法实现浮层式滚动条。",

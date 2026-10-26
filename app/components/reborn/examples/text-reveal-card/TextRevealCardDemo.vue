@@ -26,7 +26,7 @@
         </template>
       </TextRevealCard>
       <TextRevealCard
-        :stars-count="500"
+        :stars-count="130"
         stars-class="bg-red-500"
         class="mx-auto"
       >

@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { useColorMode } from "@vueuse/core";
+import { useColorMode } from "#imports";
+import { computed } from "vue";
+import Sparkles from "~/components/reborn/ui/sparkles/Sparkles.vue";
 
+/** 在 setup 顶层读取站点主题，监听跟随组件作用域。 */
+const colorMode = useColorMode();
 /** 粒子颜色跟随亮暗模式 */
-const particlesColor = computed(() => (useColorMode().value === "dark" ? "#FFFFFF" : "#000000"));
+const particlesColor = computed(() => (colorMode.value === "dark" ? "#FFFFFF" : "#000000"));
 </script>
 
 <template>

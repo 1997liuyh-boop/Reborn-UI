@@ -341,8 +341,8 @@ function drawLogo(ctx: any, options: QrcodeOptions, imageSource: any) {
 /**
  * 绘制二维码到Canvas上下文
  */
-export async function drawQrcode(ctx: any, options: QrcodeOptions, canvasNode?: any) {
-	if (!ctx) return;
+export async function drawQrcode(ctx: any, options: QrcodeOptions, canvasNode?: any, isStale: () => boolean = () => false) {
+	if (!ctx || isStale()) return;
 
 	// 生成二维码数据矩阵
 	const frame = generateFrame(options.text, options.ecc);
@@ -476,11 +476,13 @@ export async function drawQrcode(ctx: any, options: QrcodeOptions, canvasNode?: 
 			}
 			// #endif
 			fgImageSource = await loadImageSource(src, canvasNode);
+            if (isStale()) return;
 		} catch (e) {
 			console.error("加载前景图失败", e);
 		}
 	}
 
+    if (isStale()) return;
 	if (fgImageSource) {
 		ctx.save();
 		ctx.beginPath();
@@ -574,6 +576,7 @@ export async function drawQrcode(ctx: any, options: QrcodeOptions, canvasNode?: 
 				}
 			}
 			// #endif
+            if (isStale()) return;
 
 			// #ifdef MP-WEIXIN
 			// 对于 http/https 或以 /、data: 开头的路径，直接使用原路径
@@ -589,6 +592,7 @@ export async function drawQrcode(ctx: any, options: QrcodeOptions, canvasNode?: 
 			// #endif
 
 			const logoImageSource = await loadImageSource(logoSrc, canvasNode);
+            if (isStale()) return;
 			drawLogo(ctx, options, logoImageSource);
 		} catch (err) {
 			console.error("二维码 Logo 加载失败", err);
@@ -596,5 +600,5 @@ export async function drawQrcode(ctx: any, options: QrcodeOptions, canvasNode?: 
 	}
 
 	// 执行绘制
-	flushDraw(ctx);
+	if (!isStale()) flushDraw(ctx);
 }

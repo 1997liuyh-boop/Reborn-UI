@@ -21,10 +21,7 @@ const props = withDefaults(defineProps<BackTopProps>(), {
   size: 'md',
 })
 
-const emit = defineEmits([
-  /** 点击返回顶部按钮时触发，无参数；组件已先发起回到顶部滚动，无需在回调中重复处理 */
-  'click',
-])
+const emit = defineEmits<{ click: [] }>()
 
 export interface BackTopProps {
   // 当前页面的滚动距离
@@ -94,6 +91,7 @@ const ui = computed(() => {
 
 // 回到顶部
 function toTop() {
+  if (!visible.value) return
   uni.pageScrollTo({
     scrollTop: 0,
     duration: props.duration,
@@ -103,7 +101,7 @@ function toTop() {
 </script>
 
 <template>
-  <view :class="ui.wrapper()" :style="{ bottom: viewBottom, opacity: visible ? 1 : 0 }" @tap.stop="toTop">
+  <view :class="ui.wrapper()" :style="{ bottom: viewBottom, opacity: visible ? 1 : 0, pointerEvents: visible ? 'auto' : 'none', visibility: visible ? 'visible' : 'hidden' }" @tap.stop="toTop">
     <slot>
       <view :class="[
         ui.base(),

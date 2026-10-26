@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { InputHTMLAttributes, StyleValue } from 'vue';
 import type {
   inputColors,
   inputResizes,
@@ -6,7 +7,7 @@ import type {
   inputSizes,
   inputVariants,
 } from "./reborn-input.config";
-import { computed, nextTick, onMounted, ref, toRef, useAttrs, useSlots, watch } from "vue";
+import { computed, nextTick, onMounted, shallowRef, toRef, useAttrs, useTemplateRef, watch } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -63,6 +64,19 @@ const emit = defineEmits<{
   (e: "compositionupdate", event: CompositionEvent): void;
   /** 输入法合成完成时触发 */
   (e: "compositionend", event: CompositionEvent): void;
+}>();
+
+const slots = defineSlots<{
+  /** 前缀内容，优先于 prefix-icon；ui 为内部样式函数集合 */
+  prefix?: (props: { ui: InputSlotUi }) => any;
+  /** 后缀内容，优先于 suffix-icon；ui 为内部样式函数集合 */
+  suffix?: (props: { ui: InputSlotUi }) => any;
+  /** 密码明文 / 密文切换图标；visible 为当前是否明文 */
+  "password-icon"?: (props: { visible: boolean }) => any;
+  /** 前置块，仅单行模式渲染 */
+  prepend?: () => any;
+  /** 后置块，仅单行模式渲染 */
+  append?: () => any;
 }>();
 
 /**
@@ -187,20 +201,27 @@ export interface InputProps {
   ui?: InputUi;
 }
 
-const attrs = useAttrs();
-const slots = useSlots();
+/** 作用域插槽下发的样式函数集合：键同 InputUi，调用后返回合并好的类名 */
+type InputSlotUi = Record<keyof InputUi, (opts?: { class?: any }) => string>;
 
-const inputRef = ref<HTMLInputElement | HTMLTextAreaElement | null>(null);
-const localValue = ref(props.defaultValue ?? "");
+const attrs = useAttrs();
+/** attrs 不参与依赖追踪，渲染时读取才能同步父级样式。 */
+function rootStyle(): StyleValue {
+  return attrs.style as StyleValue;
+}
+const nativeInputmode = computed(() => props.inputmode as InputHTMLAttributes['inputmode']);
+
+const inputRef = useTemplateRef<HTMLInputElement | HTMLTextAreaElement>("inputRef");
+const localValue = shallowRef(props.defaultValue ?? "");
 
 // 聚焦状态
-const isFocus = ref(false);
+const isFocus = shallowRef(false);
 /** 是否处于输入法合成中；合成期间不同步 v-model */
-const isComposing = ref(false);
+const isComposing = shallowRef(false);
 /** 密码是否以明文展示 */
-const passwordVisible = ref(false);
+const passwordVisible = shallowRef(false);
 /** 聚焦时的快照值，用于判定 change 事件 */
-const focusedValue = ref<string>("");
+const focusedValue = shallowRef<string>("");
 
 /** 当前生效值：已有 v-model 值时取 model，否则回退到非受控的本地值 */
 const inputValue = computed(() =>
@@ -263,6 +284,13 @@ const ui = computed(() => {
       && !!props.resize && props.resize !== "none",
     error: isError.value,
     disabled: isDisabled.value,
+  });
+
+  /**
+   * 前后置块是否存在只影响 wrapper 的圆角，作为 slot 级变体在渲染期传入：
+   * 插槽不是响应式数据，放进 computed 会在 prepend / append 动态增删后不刷新
+   */
+  const slotVariants = () => ({
     hasPrepend: !isMultiline.value && !!slots.prepend,
     hasAppend: !isMultiline.value && !!slots.append,
   });
@@ -273,7 +301,7 @@ const ui = computed(() => {
     prepend: (opts?: { class?: any }) => styles.prepend({ class: cn(opts?.class, uiOverrides.value.prepend) }),
     append: (opts?: { class?: any }) => styles.append({ class: cn(opts?.class, uiOverrides.value.append) }),
     wrapper: (opts?: { class?: any }) =>
-      styles.wrapper({ class: cn(opts?.class, props.class, uiOverrides.value.wrapper) }),
+      styles.wrapper({ ...slotVariants(), class: cn(opts?.class, props.class, uiOverrides.value.wrapper) }),
     input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
     prefix: (opts?: { class?: any }) => styles.prefix({ class: cn(opts?.class, uiOverrides.value.prefix) }),
     iconBox: (opts?: { class?: any }) => styles.iconBox({ class: cn(opts?.class, uiOverrides.value.iconBox) }),
@@ -286,10 +314,10 @@ const ui = computed(() => {
   };
 });
 
-const inputAttrs = computed(() => {
+function inputAttrs() {
   const { class: _class, style: _style, ...rest } = attrs;
   return rest;
-});
+}
 
 // ─── 展示值与格式化 ─────────────────────────────────────────────
 
@@ -313,7 +341,7 @@ const nativeType = computed(() => {
 // ─── textarea 高度自适应 ────────────────────────────────────────
 
 /** autosize 计算出的 textarea 内联样式 */
-const textareaStyle = ref<Record<string, string>>({});
+const textareaStyle = shallowRef<Record<string, string>>({});
 
 /**
  * 重新计算 textarea 高度：先归零再取 scrollHeight，
@@ -507,7 +535,8 @@ defineExpose({
 </script>
 
 <template>
-  <div :class="ui.root()">
+  <!-- class 走 prop 落在 wrapper，其余透传属性落在原生 input；style 单独落在根节点，保证 style="width: 240px" 这类写法生效 -->
+  <div :class="ui.root()" :style="rootStyle()">
     <div :class="ui.group()">
       <!-- 前置块：仅单行模式渲染，与输入框连体 -->
       <div v-if="$slots.prepend && !isMultiline" :class="ui.prepend()">
@@ -523,12 +552,12 @@ defineExpose({
           </slot>
         </span>
 
-        <component :is="isMultiline ? 'textarea' : 'input'" :id="props.id" ref="inputRef" v-bind="inputAttrs"
+        <component :is="isMultiline ? 'textarea' : 'input'" :id="props.id" ref="inputRef" v-bind="inputAttrs()"
           :type="nativeType" :rows="isMultiline ? props.rows : undefined" :disabled="isDisabled"
           :readonly="props.readonly" :placeholder="props.placeholder" :value="displayValue" :maxlength="nativeMaxlength"
           :minlength="nativeMinlength" :autocomplete="props.autocomplete" :name="props.name" :form="props.form"
           :max="props.max" :min="props.min" :step="props.step" :autofocus="props.autofocus"
-          :aria-label="props.ariaLabel || props.label" :tabindex="props.tabindex" :inputmode="(props.inputmode as any)"
+          :aria-label="props.ariaLabel || props.label" :tabindex="props.tabindex" :inputmode="nativeInputmode"
           :style="mergedInputStyle" :class="ui.input()" @input="handleInput" @focus="onFocus" @blur="onBlur"
           @keydown="onKeydown" @compositionstart="onCompositionStart" @compositionupdate="onCompositionUpdate"
           @compositionend="onCompositionEnd" />

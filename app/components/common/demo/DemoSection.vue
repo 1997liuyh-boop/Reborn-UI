@@ -16,6 +16,7 @@
  *
  * 完整规范见 ./demo.config.ts 顶部注释与文档页 /getting-started/demo-guidelines。
  */
+import { computed, getCurrentInstance, onBeforeUpdate, shallowRef } from 'vue'
 import RebornCollapse from '~/components/reborn/ui/reborn-collapse/RebornCollapse.vue'
 import { tv } from '~/lib/tv'
 import { sectionConfig } from './demo.config'
@@ -40,7 +41,28 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 /** 源码是否展开 */
-const open = defineModel<boolean>('open', { default: false })
+const emit = defineEmits<{
+  'update:open': [value: boolean];
+}>();
+
+const openModel = defineModel<boolean>('open', { default: undefined });
+const instance = getCurrentInstance()!;
+const modelProps = shallowRef(instance.vnode.props ?? {});
+onBeforeUpdate(() => { modelProps.value = { ...instance.vnode.props }; });
+// 显式空模型按关闭读取，缺省状态独立保留本地交互。
+const localOpen = shallowRef(false);
+const open = computed({
+  get: () => Object.hasOwn(modelProps.value, 'open') ? !!instance.props.open : localOpen.value,
+  set: (value: boolean) => {
+    if (Object.hasOwn(modelProps.value, 'open')) emit('update:open', value);
+    else {
+      localOpen.value = value;
+      openModel.value = value;
+    }
+  },
+});
+const hasOpened = shallowRef(open.value)
+watch(open, value => { if (value) hasOpened.value = true })
 
 const b = tv(sectionConfig)
 const ui = computed(() => b({ divider: props.divider }))
@@ -89,10 +111,10 @@ const askSubject = computed(() =>
 const themeGroups = computed(() => ctx?.themeGroups?.value ?? [])
 
 /** 本示例的 Theme slots 面板是否展开 */
-const themeOpen = ref(false)
+const themeOpen = shallowRef(false)
 
 /** 示例本体容器：面板以它为主作用域查找 slot 对应的真实节点 */
-const bodyEl = ref<HTMLElement | null>(null)
+const bodyEl = useTemplateRef<HTMLElement>('bodyEl')
 
 /**
  * 给示例本体打上作用域标记（见 DEMO_SCOPE_ATTR）。
@@ -152,7 +174,7 @@ const scopeAttrs = computed(() => ({ [DEMO_SCOPE_ATTR]: props.title || 'demo' })
       <!-- 源码：在底栏下方折叠展开（reborn-collapse 的 grid 0fr↔1fr 高度动画，高度由代码撑开） -->
       <RebornCollapse v-if="source" v-model="open">
         <template #content>
-          <DemoCode :class="ui.code()" :code="source" />
+          <DemoCode v-if="hasOpened" :class="ui.code()" :code="source" />
         </template>
       </RebornCollapse>
     </div>

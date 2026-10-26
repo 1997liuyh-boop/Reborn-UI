@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import type { SelectTriggerProps } from '../reborn-select-trigger/RebornSelectTrigger.vue';
 import type {
-  DropdownContext,
   DropdownOption,
   DropdownPlacement,
   DropdownTrigger,
   DropdownUI,
   DropdownValue,
 } from './reborn-dropdown.config';
-import { computed, inject, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from 'vue';
+import { computed, getCurrentInstance, inject, onBeforeUnmount, onBeforeUpdate, onMounted, provide, shallowRef, useTemplateRef, watch } from 'vue';
 import { resolvePlacement } from '~/lib/placement';
 import { cn } from '~/lib/utils';
 import RebornSelectTrigger from '../reborn-select-trigger/RebornSelectTrigger.vue';
-import { DROPDOWN_INJECTION_KEY, dropdownTheme } from './reborn-dropdown.config';
+import { ARROW_POPUP_OFFSET, DROPDOWN_INJECTION_KEY, dropdownTheme, POPUP_OFFSET } from './reborn-dropdown.config';
 import RebornDoption from './RebornDoption.vue';
 
 defineOptions({ name: 'RebornDropdown' });
@@ -30,10 +29,22 @@ const props = withDefaults(defineProps<DropdownProps>(), {
 });
 
 const emit = defineEmits<{
+  'update:popupVisible': [value: boolean];
   /** 下拉框显示状态发生改变时触发（模板中以 @popup-visible-change 监听） */
   popupVisibleChange: [visible: boolean];
   /** 用户选择时触发 */
   select: [value: DropdownValue, ev: Event];
+}>();
+
+const slots = defineSlots<{
+  /** 触发器内容；下发显隐状态与控制方法，供 manual 触发方式（或任意触发方式下的局部控件）使用 */
+  default?: (props: { visible: boolean; open: () => void; close: () => void; toggle: () => void }) => any;
+  /** 菜单内容，优先于 options */
+  content?: () => any;
+  /** 面板页眉 */
+  header?: () => any;
+  /** 面板页脚 */
+  footer?: () => any;
 }>();
 
 export interface DropdownProps {
@@ -59,7 +70,7 @@ export interface DropdownProps {
    * @defaultValue 'click'
    */
   trigger?: DropdownTrigger;
-  /** 浮层与触发器的间距（px）；未传时无箭头为 4、带箭头为 8 */
+  /** 浮层与触发器的间距（px）；未传时无箭头为 4、带箭头为 12（箭头伸出面板约 8.5px，尖端再留约 3.5px） */
   popupOffset?: number;
   /**
    * 用户选择后是否自动收起菜单
@@ -87,16 +98,31 @@ export interface DropdownProps {
   ui?: DropdownUI;
 }
 
-const slots = useSlots();
-
 /**
  * 父级 Dropdown 的上下文（子菜单场景）。必须在本组件 provide 之前 inject，
  * 否则读到的是自己刚 provide 的那份。
+ * 宿主不一定是 Dropdown（如 Breadcrumb），悬停与嵌套方法可能缺失，调用一律用 `?.()`。
  */
-const parent = inject<DropdownContext | null>(DROPDOWN_INJECTION_KEY, null);
+const parent = inject(DROPDOWN_INJECTION_KEY, null);
 
 /** 下拉框显隐，支持 v-model:popup-visible 受控 */
-const popupVisible = defineModel<boolean>('popupVisible', { default: false });
+const popupVisibleModel = defineModel<boolean>('popupVisible', { default: undefined });
+const instance = getCurrentInstance()!;
+const modelProps = shallowRef(instance.vnode.props ?? {});
+onBeforeUpdate(() => { modelProps.value = { ...instance.vnode.props }; });
+const hasPopupVisible = computed(() => Object.hasOwn(modelProps.value, 'popupVisible') || Object.hasOwn(modelProps.value, 'popup-visible'));
+// 显式空模型按关闭读取，缺省状态独立保留本地交互。
+const localPopupVisible = shallowRef(false);
+const popupVisible = computed({
+  get: () => hasPopupVisible.value ? !!instance.props.popupVisible : localPopupVisible.value,
+  set: (value: boolean) => {
+    if (hasPopupVisible.value) emit('update:popupVisible', value);
+    else {
+      localPopupVisible.value = value;
+      popupVisibleModel.value = value;
+    }
+  },
+});
 
 /** hover 触发的展开 / 收起延迟：前者防误触，后者留出鼠标从触发器移入面板的时间 */
 const HOVER_OPEN_DELAY = 100;
@@ -114,6 +140,9 @@ function clearTimers() {
     closeTimer = null;
   }
 }
+
+// 模型绑定或父值改变后，旧悬停任务不能再提交交互结果。
+watch([hasPopupVisible, () => instance.props.popupVisible], clearTimers, { flush: 'sync' });
 
 /** 显隐变更统一走这里，保证事件只触发一次 */
 function setVisible(visible: boolean) {
@@ -145,7 +174,7 @@ watch(() => props.disabled, (disabled) => {
 
 // ─── 嵌套（子菜单）────────────────────────────────────────────────
 
-const triggerRef = ref<InstanceType<typeof RebornSelectTrigger> | null>(null);
+const triggerRef = useTemplateRef<InstanceType<typeof RebornSelectTrigger>>('triggerRef');
 /** 已注册的子级面板判定，外部点击落在子级面板内时不收起 */
 const nestedContains: Array<(node: Node) => boolean> = [];
 
@@ -164,7 +193,7 @@ function containsNode(node: Node) {
 
 let unregisterFromParent: (() => void) | null = null;
 onMounted(() => {
-  unregisterFromParent = parent?.registerNested(containsNode) ?? null;
+  unregisterFromParent = parent?.registerNested?.(containsNode) ?? null;
 });
 
 onBeforeUnmount(() => {
@@ -183,14 +212,14 @@ function onTriggerClick() {
  * 作为子菜单时同时上报父级，父级据此维持展开（子面板同样不在父面板 DOM 内）。
  */
 function onMouseEnter() {
-  parent?.hoverEnter();
+  parent?.hoverEnter?.();
   if (props.trigger !== 'hover') return;
   clearTimers();
   if (!popupVisible.value) openTimer = setTimeout(open, HOVER_OPEN_DELAY);
 }
 
 function onMouseLeave() {
-  parent?.hoverLeave();
+  parent?.hoverLeave?.();
   if (props.trigger !== 'hover') return;
   clearTimers();
   closeTimer = setTimeout(close, HOVER_CLOSE_DELAY);
@@ -220,9 +249,26 @@ function handleSelect(value: DropdownValue, ev: Event) {
   parent?.select(value, ev);
 }
 
-/** 12 向位置映射为 SelectTrigger 的 side / align；间距显式传入优先，否则带箭头时留出箭头高度 */
+/** 12 向位置映射为 SelectTrigger 的 side / align；间距显式传入优先，否则带箭头时留出箭头伸出面板的长度再加间隙 */
 const resolvedPlacement = computed(() => resolvePlacement(props.placement));
-const offset = computed(() => props.popupOffset ?? (props.showArrow ? 8 : 4));
+const offset = computed(() => props.popupOffset ?? (props.showArrow ? ARROW_POPUP_OFFSET : POPUP_OFFSET));
+
+/**
+ * options 渲染用的 key：原始值带上类型前缀作 key，增删选项时不会错位复用；对象值无法作 key，退回下标。
+ * 两类 key 放在不同前缀下互不相撞（数字值 1 与第 2 项对象的下标 1 不再重复），
+ * 同一原始值重复出现时按出现次数追加序号，保证兄弟节点间 key 唯一
+ */
+const optionKeys = computed(() => {
+  const seen = new Map<string, number>();
+  return props.options.map((option, index) => {
+    const { value } = option;
+    if (typeof value === 'object' && value !== null) return `i:${index}`;
+    const base = `v:${typeof value}:${String(value)}`;
+    const count = seen.get(base) ?? 0;
+    seen.set(base, count + 1);
+    return count ? `${base}#${count}` : base;
+  });
+});
 
 // ─── 样式 ───────────────────────────────────────────────────────
 
@@ -247,7 +293,7 @@ const ui = computed(() => {
   };
 });
 
-provide<DropdownContext>(DROPDOWN_INJECTION_KEY, {
+provide(DROPDOWN_INJECTION_KEY, {
   select: handleSelect,
   hoverEnter: onMouseEnter,
   hoverLeave: onMouseLeave,
@@ -303,7 +349,8 @@ defineExpose({
           <!-- content 插槽优先；未提供时按 options 渲染 -->
           <slot name="content">
             <RebornDoption
-              v-for="(option, index) in options" :key="index" :value="option.value"
+              v-for="(option, index) in options" :key="optionKeys[index]"
+              :value="option.value"
               :disabled="option.disabled"
             >
               <template v-if="option.icon" #icon>

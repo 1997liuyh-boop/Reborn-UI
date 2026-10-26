@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRafFn } from "@vueuse/core";
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, useTemplateRef } from "vue";
 
 interface Props {
   background?: string;
@@ -31,23 +31,32 @@ const props = withDefaults(defineProps<Props>(), {
   particleDensity: 120,
 });
 
-const containerRef = useTemplateRef("containerRef");
-const canvasRef = useTemplateRef("canvasRef");
-const particles = ref<Particle[]>([]);
-const ctx = ref<CanvasRenderingContext2D | null>(null);
+const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
+const canvasRef = useTemplateRef<HTMLCanvasElement>("canvasRef");
 
-// Adjust canvas size on mount and resize
+// 粒子与画布上下文只给 canvas 绘制用、不参与渲染：用普通变量并原地修改，
+// 放在深层 ref 里每帧都要经过响应式代理，还会整体重建对象带来持续的 GC 压力
+let particles: Particle[] = [];
+let ctx: CanvasRenderingContext2D | null = null;
+/** 画布的 CSS 尺寸：上下文已按 DPR 缩放，绘制坐标必须用 CSS 像素，否则高 DPR 下坐标被缩放两次 */
+let cssWidth = 0;
+let cssHeight = 0;
+
+// 挂载与容器尺寸变化时同步画布尺寸
 function resizeCanvas() {
   if (!canvasRef.value || !containerRef.value) return;
 
   const dpr = window.devicePixelRatio || 1;
   const rect = containerRef.value.getBoundingClientRect();
 
+  cssWidth = rect.width;
+  cssHeight = rect.height;
+  // 重设宽高会把上下文变换复位为单位矩阵，所以这里每次只缩放一次
   canvasRef.value.width = rect.width * dpr;
   canvasRef.value.height = rect.height * dpr;
 
-  if (ctx.value) {
-    ctx.value.scale(dpr, dpr);
+  if (ctx) {
+    ctx.scale(dpr, dpr);
   }
 }
 
@@ -71,16 +80,15 @@ function generateParticles(): void {
     });
   }
 
-  particles.value = newParticles;
+  particles = newParticles;
 }
 
 function updateAndDrawParticles() {
-  if (!ctx.value || !canvasRef.value) return;
+  if (!ctx) return;
 
-  const canvas = canvasRef.value;
-  ctx.value.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, cssWidth, cssHeight);
 
-  particles.value = particles.value?.map((particle) => {
+  for (const particle of particles) {
     let newX = particle.x + particle.vx;
     let newY = particle.y + particle.vy;
 
@@ -92,43 +100,34 @@ function updateAndDrawParticles() {
     const newPhase = (particle.phase + particle.phaseSpeed) % (Math.PI * 2);
     const opacity = 0.3 + (Math.sin(newPhase) * 0.3 + 0.3);
 
-    // Draw particle
-    ctx.value!.beginPath();
-    ctx.value!.arc(
-      (newX * canvas.width) / 100,
-      (newY * canvas.height) / 100,
-      particle.size,
-      0,
-      Math.PI * 2,
-    );
-    ctx.value!.fillStyle = `${props.particleColor}${Math.floor(opacity * 255)
+    particle.x = newX;
+    particle.y = newY;
+    particle.phase = newPhase;
+    particle.opacity = opacity;
+
+    // 绘制粒子：坐标按 CSS 尺寸换算
+    ctx.beginPath();
+    ctx.arc((newX * cssWidth) / 100, (newY * cssHeight) / 100, particle.size, 0, Math.PI * 2);
+    ctx.fillStyle = `${props.particleColor}${Math.floor(opacity * 255)
       .toString(16)
       .padStart(2, "0")}`;
-    ctx.value!.fill();
-
-    return {
-      ...particle,
-      x: newX,
-      y: newY,
-      phase: newPhase,
-      opacity,
-    };
-  });
+    ctx.fill();
+  }
 }
 
 const { pause, resume } = useRafFn(updateAndDrawParticles, { immediate: false });
 
-// Handle window resize
+// 监听容器尺寸变化
 let resizeObserver: ResizeObserver | undefined;
 
 onMounted(() => {
   if (!canvasRef.value) return;
 
-  ctx.value = canvasRef.value.getContext("2d");
+  ctx = canvasRef.value.getContext("2d");
   resizeCanvas();
   generateParticles();
 
-  // Set up resize observer
+  // 注册尺寸观察
   resizeObserver = new ResizeObserver(resizeCanvas);
   if (containerRef.value) {
     resizeObserver.observe(containerRef.value);
@@ -139,9 +138,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   pause();
-  if (resizeObserver && containerRef.value) {
-    resizeObserver.unobserve(containerRef.value);
-  }
+  resizeObserver?.disconnect();
+  resizeObserver = undefined;
+  ctx = null;
 });
 </script>
 

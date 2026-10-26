@@ -1,9 +1,6 @@
-<script lang="ts">
-import type { inputColors, inputShapes, inputSizes, inputVariants } from './reborn-input.config'
-</script>
-
 <script setup lang="ts">
-import { computed, nextTick, ref, toRef, useSlots, watch } from 'vue'
+import type { inputColors, inputShapes, inputSizes, inputVariants } from './reborn-input.config'
+import { computed, nextTick, normalizeStyle, ref, shallowRef, toRef, useAttrs, useSlots, watch } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -175,36 +172,46 @@ const emit = defineEmits<{
 const model = defineModel<string | number>()
 
 const slots = useSlots()
+const attrs = useAttrs()
+// 样式附着外层，原生属性及未声明监听转发到实际输入节点。
+function getNativeAttrs() {
+  const nativeAttrs = { ...attrs }
+  delete nativeAttrs.class
+  delete nativeAttrs.style
+  return nativeAttrs
+}
 
 const inputRef = ref<any>(null)
 
-const localValue = ref(props.defaultValue ?? '')
+const localValue = shallowRef(props.defaultValue ?? '')
 
 // 是否聚焦（样式作用）
-const isFocus = ref<boolean>(props.autofocus)
+const isFocus = shallowRef<boolean>(props.autofocus)
 
 // 是否聚焦（输入框作用）
-const isFocusing = ref<boolean>(props.autofocus)
+const isFocusing = shallowRef<boolean>(props.autofocus)
 
 // 标记是否正在执行程序主动触焦（屏蔽中间 blur 副作用）
-const isProgrammaticFocus = ref(false)
+let isProgrammaticFocus = false
 
 /** 是否启用密码掩码（新旧属性任一开启即生效） */
 const isPasswordMode = computed(() => props.showPassword || props.password)
 
 /** 密码是否以明文展示（与 web 端 expose 同名同语义） */
-const passwordVisible = ref(false)
+const passwordVisible = shallowRef(false)
 
 /** 是否渲染为多行 textarea */
 const isMultiline = computed(() => props.type === 'textarea')
 
 function getNativeInputElement() {
+  // #ifdef H5
   const input = inputRef.value
 
   if (!input) { return null }
   if (input instanceof HTMLInputElement) { return input }
   if (input.$el instanceof HTMLInputElement) { return input.$el }
   if (input.$el?.querySelector) { return input.$el.querySelector('input') as HTMLInputElement | null }
+  // #endif
 
   return null
 }
@@ -252,6 +259,8 @@ const displayValue = computed(() => {
   return useFormatter.value ? props.formatter!(value) : value
 })
 
+const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled, isError, validate } = useFormInject(props)
+
 // 是否显示清除按钮
 const showClear = computed(() => {
   return props.clearable && !isMultiline.value && !fieldGroupDisabled.value && !props.readonly && `${inputValue.value}` !== ''
@@ -269,7 +278,7 @@ const showLimit = computed(
   () => props.showWordLimit && props.maxlength > 0 && (props.type === 'text' || isMultiline.value),
 )
 
-const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled, isError, validate } = useFormInject(props)
+
 
 const size = toRef(props, 'size')
 
@@ -280,7 +289,9 @@ const textareaStyle = computed(() =>
 
 const b = tv(theme)
 const uiOverrides = computed(() => props.ui || {})
-const ui = computed(() => {
+interface SlotVariants { hasPrefix: boolean, hasSuffix: boolean, hasPrepend: boolean, hasAppend: boolean }
+
+function buildUi({ hasPrefix, hasSuffix, hasPrepend, hasAppend }: SlotVariants) {
   const styles = b({
     size: (fieldGroupSize.value || size.value) as any,
     color: props.color,
@@ -288,10 +299,10 @@ const ui = computed(() => {
     shape: props.shape,
     fieldGroup: orientation.value,
     multiline: isMultiline.value,
-    hasPrefix: !isMultiline.value && (!!slots.prefix || !!props.prefixIcon),
-    hasSuffix: !!slots.suffix || showClear.value,
-    hasPrepend: !isMultiline.value && !!slots.prepend,
-    hasAppend: !isMultiline.value && !!slots.append,
+    hasPrefix,
+    hasSuffix,
+    hasPrepend,
+    hasAppend,
     error: isError.value,
     focus: isFocus.value,
   })
@@ -326,7 +337,33 @@ const ui = computed(() => {
       styles.count({ class: cn(opts?.class, uiOverrides.value.count) }),
   }
 }
-)
+
+/**
+ * 按插槽组合缓存样式对象。四个 has* 变体依赖插槽，插槽不能在 computed 里读；
+ * 这里的 computed 只追踪与插槽无关的变体参数，参数一变就换一张空表，
+ * 渲染时按当前插槽组合取表、缺失才调用一次 buildUi，键入等只改输入值的重渲染不再重跑变体计算。
+ */
+const uiCache = computed(() => {
+  // 读取一遍非插槽参数，任一变化都让缓存整体失效
+  void [fieldGroupSize.value, size.value, props.color, props.variant, props.shape, orientation.value, isMultiline.value, isError.value, isFocus.value, uiOverrides.value]
+  return new Map<string, ReturnType<typeof buildUi>>()
+})
+function ui() {
+  const variants: SlotVariants = {
+    hasPrefix: !isMultiline.value && (!!slots.prefix || !!props.prefixIcon),
+    hasSuffix: !!slots.suffix || showClear.value,
+    hasPrepend: !isMultiline.value && !!slots.prepend,
+    hasAppend: !isMultiline.value && !!slots.append,
+  }
+  const key = `${+variants.hasPrefix}${+variants.hasSuffix}${+variants.hasPrepend}${+variants.hasAppend}`
+  const cache = uiCache.value
+  let entry = cache.get(key)
+  if (!entry) {
+    entry = buildUi(variants)
+    cache.set(key, entry)
+  }
+  return entry
+}
 
 // v-model 值变化时同步本地兜底值，保证非受控展示来源一致
 watch(model, (value) => {
@@ -378,13 +415,13 @@ function focus() {
   if (focusNativeInputToEnd()) { return }
 
   // 标记为程序主动触焦，防止 isFocusing 切换时产生的 blur 事件破坏样式状态
-  isProgrammaticFocus.value = true
+  isProgrammaticFocus = true
   setTimeout(() => {
     isFocusing.value = false
 
     nextTick(() => {
       isFocusing.value = true
-      isProgrammaticFocus.value = false
+      isProgrammaticFocus = false
     })
   }, 0)
 }
@@ -399,7 +436,7 @@ function onFocus(e: any) {
 // 失去焦点事件
 function onBlur(e: any) {
   // 程序主动触焦过程中产生的 blur 为副作用，忽略以保持样式连贯
-  if (isProgrammaticFocus.value) return
+  if (isProgrammaticFocus) return
   isFocus.value = false
   emit('blur', e)
   if (validate) { validate('blur') }
@@ -407,13 +444,13 @@ function onBlur(e: any) {
 // 处理密码显示/隐藏图标的交互事件
 // 使用 touchstart.prevent 阻止移动端默认失焦行为，同时处理切换逻辑
 // 不再单独绑定 tap 事件，避免 touchstart + tap 在移动端重复触发导致状态抵消
-const isPasswordToggling = ref(false)
+let isPasswordToggling = false
 function handleInteraction() {
   if (fieldGroupDisabled.value || props.readonly) { return }
-  if (isPasswordToggling.value) { return }
-  isPasswordToggling.value = true
+  if (isPasswordToggling) { return }
+  isPasswordToggling = true
   passwordVisible.value = !passwordVisible.value
-  setTimeout(() => { isPasswordToggling.value = false }, 300)
+  setTimeout(() => { isPasswordToggling = false }, 300)
 }
 
 // 切换密码显示状态
@@ -441,6 +478,7 @@ function clear() {
   model.value = ''
   emit('change', '')
   emit('clear')
+  if (validate) validate('change')
 
   // #ifdef H5
   focus()
@@ -456,23 +494,35 @@ defineExpose({
 </script>
 
 <template>
-  <view :class="ui.root({ class: props.customClass })">
-    <view :class="ui.group()">
+  <view :class="ui().root({ class: [props.customClass, attrs.class] })" :style="normalizeStyle(attrs.style)">
+    <view :class="ui().group()">
       <!-- 前置块：仅单行模式渲染，与输入框连体 -->
-      <view v-if="$slots.prepend && !isMultiline" :class="ui.prepend()">
+      <view v-if="$slots.prepend && !isMultiline" :class="ui().prepend()">
         <slot name="prepend" />
       </view>
 
-      <view :class="ui.wrapper()" :data-disabled="fieldGroupDisabled" :data-filled="isFilled">
+      <view :class="ui().wrapper()" :data-disabled="fieldGroupDisabled" :data-filled="isFilled">
         <!-- 前缀：#prefix 插槽优先，其次 prefix-icon -->
-        <view v-if="($slots.prefix || prefixIcon) && !isMultiline" :class="ui.prefix()">
-          <slot name="prefix" :ui="ui">
+        <view v-if="($slots.prefix || prefixIcon) && !isMultiline" :class="ui().prefix()">
+          <slot name="prefix" :ui="ui()">
             <view v-if="prefixIcon" :class="prefixIcon" />
           </slot>
         </view>
 
         <!-- 多行文本域：autosize 映射 uniapp 原生 auto-height，否则按 rows 估算固定高度 -->
-        <view v-if="isMultiline" :class="ui.input({ class: 'h-auto pr-3 py-1' })">
+        <view v-if="isMultiline" :class="ui().input({ class: 'h-auto pr-3 py-1' })">
+          <!-- #ifdef H5 -->
+          <textarea
+            v-bind="getNativeAttrs()" ref="inputRef" :value="`${inputValue}`" :disabled="fieldGroupDisabled || props.readonly"
+            :placeholder="props.placeholder" :placeholder-class="`text-gray-5 ${props.placeholderClass}`"
+            :maxlength="props.maxlength" :auto-height="!!props.autosize" :style="textareaStyle"
+            :cursor-spacing="props.cursorSpacing" :adjust-position="props.adjustPosition"
+            :hold-keyboard="props.holdKeyboard" :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
+            class="w-full" @input="onInput" @focus="onFocus" @blur="onBlur" @confirm="onConfirm"
+            @keyboardheightchange="onKeyboardheightchange"
+          />
+          <!-- #endif -->
+          <!-- #ifndef H5 -->
           <textarea
             ref="inputRef" :value="`${inputValue}`" :disabled="fieldGroupDisabled || props.readonly"
             :placeholder="props.placeholder" :placeholder-class="`text-gray-5 ${props.placeholderClass}`"
@@ -482,13 +532,28 @@ defineExpose({
             class="w-full" @input="onInput" @focus="onFocus" @blur="onBlur" @confirm="onConfirm"
             @keyboardheightchange="onKeyboardheightchange"
           />
+          <!-- #endif -->
         </view>
 
-        <!-- #ifdef H5 || APP-PLUS -->
-        <view v-if="!isMultiline" :class="ui.input({ class: 'h-full' })" @touchstart="handleFocus">
+        <!-- #ifdef H5 -->
+        <view v-if="!isMultiline" :class="ui().input({ class: 'h-full' })" @touchstart="handleFocus">
+          <input
+            v-bind="getNativeAttrs()" ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly"
+            :readonly="props.readonly" :placeholder="props.placeholder" :value="displayValue" :class="ui().inputItem()"
+            :password="isPasswordMode && !passwordVisible" :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
+            :placeholder-class="`text-gray-5 ${props.placeholderClass}`" :maxlength="props.maxlength"
+            :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
+            :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard" @input="onInput" @focus="onFocus"
+            @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange"
+          >
+        </view>
+        <!-- #endif -->
+
+        <!-- #ifdef APP-PLUS -->
+        <view v-if="!isMultiline" :class="ui().input({ class: 'h-full' })" @touchstart="handleFocus">
           <input
             ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly"
-            :readonly="props.readonly" :placeholder="props.placeholder" :value="displayValue" :class="ui.inputItem()"
+            :readonly="props.readonly" :placeholder="props.placeholder" :value="displayValue" :class="ui().inputItem()"
             :password="isPasswordMode && !passwordVisible" :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
             :placeholder-class="`text-gray-5 ${props.placeholderClass}`" :maxlength="props.maxlength"
             :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
@@ -499,10 +564,10 @@ defineExpose({
         <!-- #endif -->
 
         <!-- #ifdef MP-WEIXIN || MP-ALIPAY || MP-BAIDU || MP-TOUTIAO -->
-        <view v-if="!isMultiline" :class="ui.input({ class: 'h-full' })">
+        <view v-if="!isMultiline" :class="ui().input({ class: 'h-full' })">
           <input
             ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly"
-            :readonly="props.readonly" :placeholder="props.placeholder" :value="displayValue" :class="ui.inputItem()"
+            :readonly="props.readonly" :placeholder="props.placeholder" :value="displayValue" :class="ui().inputItem()"
             :password="isPasswordMode && !passwordVisible" :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
             :placeholder-class="`text-gray-5 ${props.placeholderClass}`" :maxlength="props.maxlength"
             :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
@@ -513,21 +578,21 @@ defineExpose({
         <!-- #endif -->
 
         <!-- textarea 的字数统计悬浮在右下角 -->
-        <view v-if="isMultiline && showLimit && wordLimitPosition === 'inside'" :class="ui.count()">
+        <view v-if="isMultiline && showLimit && wordLimitPosition === 'inside'" :class="ui().count()">
           {{ currentCount }} / {{ props.maxlength }}
         </view>
 
         <!-- 图标功能区 -->
-        <view v-if="!isMultiline" :class="ui.iconBox()" @tap.stop.prevent>
-          <view v-if="showClear" :class="ui.clear({ class: 'right-0' })" @tap.stop="clear">
+        <view v-if="!isMultiline" :class="ui().iconBox()" @tap.stop.prevent>
+          <view v-if="showClear" :class="ui().clear({ class: 'right-0' })" @tap.stop="clear">
             <!-- 清除图标固定 40rpx，与 config 中 icon 变体的 text-40（1em = 40rpx）一致 -->
             <view class="size-[40rpx]" :class="props.clearIcon" />
           </view>
 
-          <view v-if="separator && showClear && (isPasswordMode || $slots.suffix || suffixIcon)" :class="ui.separator()" />
+          <view v-if="separator && showClear && (isPasswordMode || $slots.suffix || suffixIcon)" :class="ui().separator()" />
 
           <!-- #ifdef H5 || APP-PLUS -->
-          <view v-if="isPasswordMode" :class="ui.password({ class: 'h-full' })" @touchstart.prevent="handleInteraction">
+          <view v-if="isPasswordMode" :class="ui().password({ class: 'h-full' })" @touchstart.prevent="handleInteraction">
             <slot name="password-icon" :visible="passwordVisible">
               <view :class="[passwordVisible ? 'i-lucide-eye-off' : 'i-lucide-eye']" />
             </slot>
@@ -535,7 +600,7 @@ defineExpose({
           <!-- #endif -->
 
           <!-- #ifdef MP-WEIXIN || MP-ALIPAY || MP-BAIDU || MP-TOUTIAO -->
-          <view v-if="isPasswordMode" :class="ui.password({ class: 'h-full' })" @tap.stop="showPasswordToggle">
+          <view v-if="isPasswordMode" :class="ui().password({ class: 'h-full' })" @tap.stop="showPasswordToggle">
             <slot name="password-icon" :visible="passwordVisible">
               <view :class="[passwordVisible ? 'i-lucide-eye-off' : 'i-lucide-eye']" />
             </slot>
@@ -543,15 +608,15 @@ defineExpose({
           <!-- #endif -->
 
           <!-- 单行的字数统计 -->
-          <view v-if="showLimit && wordLimitPosition === 'inside'" :class="ui.count()">
+          <view v-if="showLimit && wordLimitPosition === 'inside'" :class="ui().count()">
             {{ currentCount }} / {{ props.maxlength }}
           </view>
 
-          <view v-if="separator && isPasswordMode && ($slots.suffix || suffixIcon)" :class="ui.separator()" />
+          <view v-if="separator && isPasswordMode && ($slots.suffix || suffixIcon)" :class="ui().separator()" />
 
           <!-- 后缀：#suffix 插槽优先，其次 suffix-icon -->
-          <view v-if="$slots.suffix || suffixIcon" :class="ui.suffix()">
-            <slot name="suffix" :ui="ui">
+          <view v-if="$slots.suffix || suffixIcon" :class="ui().suffix()">
+            <slot name="suffix" :ui="ui()">
               <view v-if="suffixIcon" :class="suffixIcon" />
             </slot>
           </view>
@@ -559,13 +624,13 @@ defineExpose({
       </view>
 
       <!-- 后置块：仅单行模式渲染，与输入框连体 -->
-      <view v-if="$slots.append && !isMultiline" :class="ui.append()">
+      <view v-if="$slots.append && !isMultiline" :class="ui().append()">
         <slot name="append" />
       </view>
     </view>
 
     <!-- 外置字数统计：输入框下方右对齐 -->
-    <view v-if="showLimit && wordLimitPosition === 'outside'" :class="ui.count({ class: 'self-end' })">
+    <view v-if="showLimit && wordLimitPosition === 'outside'" :class="ui().count({ class: 'self-end' })">
       {{ currentCount }} / {{ props.maxlength }}
     </view>
   </view>

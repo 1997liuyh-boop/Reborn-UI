@@ -219,8 +219,8 @@ defineProps<{ message: string; current: number; total: number; finish: () => voi
 | --- | --- | --- |
 | `update:current` | `current: number` | 同步受控步骤；关闭或结束时为 `-1`。 |
 | `change` | `(current: number, context?: { e: MouseEvent; total: number })` | 已启动的引导切换到另一有效步骤时触发。 |
-| `next-step-click` | `{ e: MouseEvent; next: number; current: number; total: number }` | 进入下一步。 |
-| `prev-step-click` | `{ e: MouseEvent; prev: number; current: number; total: number }` | 返回上一步。 |
+| `nextStepClick` | `{ e: MouseEvent; next: number; current: number; total: number }` | 进入下一步；模板中写作 `@next-step-click`。 |
+| `prevStepClick` | `{ e: MouseEvent; prev: number; current: number; total: number }` | 返回上一步；模板中写作 `@prev-step-click`。 |
 | `finish` | `{ e: MouseEvent; current: number; total: number }` | 完成引导。 |
 | `skip` | `{ e: MouseEvent; current: number; total: number }` | 跳过剩余步骤。 |
 | `close` | `{ e: MouseEvent; current: number; total: number }` | 关闭当前引导，与完成和跳过区分。 |
@@ -304,3 +304,4 @@ defineProps<{ message: string; current: number; total: number; finish: () => voi
 - **`children` 优先于 `chidren`**。同时提供时只展开 `children`；子步骤只继承目标，不自动继承父步骤的标题、按钮或其他配置。
 - **整步替换后需要自行提供退出操作**。`component` 不保留默认关闭按钮与底部按钮；可通过注入的 `close` 或 `finish` 结束，组件对象进入响应式数据前建议使用 `markRaw`。
 - **`popupProps` 当前是保留字段**。面板由 Guide 自己定位，没有转交其他 Popup 组件；请使用步骤的 `placement`、`offset` 与 `ui` 调整。
+- **只有索引、目标与形态变化才会重放切步动画**。`steps` 换了新引用但当前步骤的 `element`、`mode` 没变时，面板只就地刷新标题、正文等内容，不再淡出淡入、重新居中。`element` 写成内联函数时每次都是新函数，会被当作目标变化，引导打开期间请让 `steps`（尤其是函数形式的 `element`）保持稳定引用，例如定义在 `setup` 顶层而不是写在模板里。
