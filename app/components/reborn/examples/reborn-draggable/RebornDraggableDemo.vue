@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue';
+import { DemoBlock, DemoNote, DemoSection } from "#components";
+import { shallowRef } from "vue";
+import RebornDraggable from "~/components/reborn/ui/reborn-draggable/RebornDraggable.vue";
 
 /** 基础列表：可自由拖拽排序 */
 const list1 = shallowRef([
@@ -43,13 +45,13 @@ function handleChange(newList: { name: string }[]) {
       <DemoBlock layout="stack">
         <RebornDraggable
           v-model="list1"
-          class-name="flex flex-wrap gap-2"
+          class-name="w-full grid-cols-2 sm:grid-cols-4"
           @start="handleStart"
           @change="handleChange"
         >
           <template #item="{ item }">
             <div
-              class="rounded-lg flex h-16 items-center px-4 text-white"
+              class="flex h-16 items-center justify-center rounded-lg px-4 text-white"
               :class="item.color"
             >
               {{ item.name }}
@@ -73,11 +75,11 @@ function handleChange(newList: { name: string }[]) {
       <DemoBlock layout="stack">
         <RebornDraggable
           v-model="list2"
-          class-name="flex flex-wrap gap-2"
+          class-name="w-full grid-cols-3"
         >
           <template #item="{ item }">
             <div
-              class="rounded-lg flex h-16 w-16 items-center justify-center text-white"
+              class="flex h-16 items-center justify-center rounded-lg text-white"
               :class="item.color"
             >
               {{ item.name }}
@@ -95,11 +97,11 @@ function handleChange(newList: { name: string }[]) {
         <RebornDraggable
           v-model="list1"
           disabled
-          class-name="flex flex-wrap gap-2"
+          class-name="w-full grid-cols-2 sm:grid-cols-4"
         >
           <template #item="{ item }">
             <div
-              class="rounded-lg flex h-16 items-center px-4 text-white"
+              class="flex h-16 items-center justify-center rounded-lg px-4 text-white"
               :class="item.color"
             >
               {{ item.name }}

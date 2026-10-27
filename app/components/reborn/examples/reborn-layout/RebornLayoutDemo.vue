@@ -66,13 +66,27 @@ const playgroundDirection = computed<LayoutDirection | undefined>(() =>
   state.value.direction === "auto" ? undefined : (state.value.direction as LayoutDirection),
 );
 
+/**
+ * 出现顶栏或底栏时外层转为纵向，侧边栏若与它们并列只会占一行内容高度；
+ * 这时把 Aside + Main 包进内层 Layout（横向），侧边栏才能纵向铺满中间区域。
+ */
+const nestAside = computed(() => state.value.showAside && (state.value.showHeader || state.value.showFooter));
+
 /** 演练场右上角展示的等价代码 */
 const layoutCode = computed(() => {
   const dir = state.value.direction === "auto" ? "" : ` direction="${state.value.direction}"`;
   const lines = [`<RebornLayout${dir}>`];
   if (state.value.showHeader) lines.push(`  <RebornLayoutHeader height="${state.value.headerHeight}px">顶栏</RebornLayoutHeader>`);
-  if (state.value.showAside) lines.push(`  <RebornLayoutAside width="${state.value.asideWidth}px">侧边栏</RebornLayoutAside>`);
-  lines.push("  <RebornLayoutMain>主区域</RebornLayoutMain>");
+  if (nestAside.value) {
+    lines.push("  <RebornLayout>");
+    lines.push(`    <RebornLayoutAside width="${state.value.asideWidth}px">侧边栏</RebornLayoutAside>`);
+    lines.push("    <RebornLayoutMain>主区域</RebornLayoutMain>");
+    lines.push("  </RebornLayout>");
+  }
+  else {
+    if (state.value.showAside) lines.push(`  <RebornLayoutAside width="${state.value.asideWidth}px">侧边栏</RebornLayoutAside>`);
+    lines.push("  <RebornLayoutMain>主区域</RebornLayoutMain>");
+  }
   if (state.value.showFooter) lines.push(`  <RebornLayoutFooter height="${state.value.headerHeight}px">底栏</RebornLayoutFooter>`);
   lines.push("</RebornLayout>");
   return lines.join("\n");
@@ -110,7 +124,7 @@ const sideNavs = [
 /** 顶部-侧边布局-通栏的菜单激活态 */
 const bannerTopActive = shallowRef(["1"]);
 const bannerSideActive = shallowRef(["1"]);
-/** 侧边布局（暗色 Sider）的激活态与收起状态 */
+/** 侧边布局的激活态与收起状态 */
 const darkSideActive = shallowRef(["1"]);
 const darkCollapsed = shallowRef(false);
 /** 自定义触发器的两种形态（激活态各自独立） */
@@ -132,17 +146,26 @@ function onSiderCollapse(collapsed: boolean, type: "clickTrigger" | "responsive"
 
 /** 与 antd 顶部导航一致的深色底 */
 const darkTone = "bg-[#001529]";
-/** 深色侧边栏的折叠触发器配色，侧边布局 / 自定义触发器 / 折叠覆盖布局共用同一套视觉 */
+/** 深色侧边栏的折叠触发器配色，自定义触发器 / 折叠覆盖布局共用同一套视觉 */
 const darkAsideUi = { trigger: "border-white/10 text-white/65 hover:text-white" };
 /** 深色区域上的菜单：去掉菜单自带的卡片视觉，交给布局区块着色 */
 const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-transparent" };
+/**
+ * 侧边布局的菜单：未选中项沿用一级标题的 text-gray-10，选中项改为 bg-primary 实底 + text-gray-1。
+ * 选中项带 aria-current="page"，属性变体的优先级高于组件内置的 bg-brand-2 / text-brand-6，
+ * 两种色值都会随明暗模式反转，侧栏因此改用随主题反转的 bg-gray-1 底色，而不是写死的深色。
+ */
+const sideMenuUi = {
+  ...flatMenuUi,
+  menuItem: "aria-[current=page]:bg-primary aria-[current=page]:text-gray-1",
+};
 </script>
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="layoutCode" component-name="RebornLayout" title="交互演练场"
-      description="勾选区块观察方向自动推断：只有侧边栏与主区域时横向排列，一旦出现顶栏或底栏就转为纵向堆叠；也可显式指定 direction 覆盖推断结果。"
+      description="勾选区块观察方向自动推断：只有侧边栏与主区域时横向排列，一旦出现顶栏或底栏就转为纵向堆叠，此时侧边栏与主区域嵌进内层 Layout 横向排列、纵向铺满；也可显式指定 direction 覆盖外层推断结果。"
     >
       <div :class="boxClass">
         <RebornLayout :direction="playgroundDirection" class="h-full">
@@ -150,13 +173,24 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
             Header
           </RebornLayoutHeader>
 
-          <RebornLayoutAside v-if="state.showAside" :width="`${state.asideWidth}px`" :class="tone.aside">
-            Aside
-          </RebornLayoutAside>
+          <!-- 有顶栏 / 底栏时嵌一层横向 Layout，侧边栏纵向铺满中间区域 -->
+          <RebornLayout v-if="nestAside">
+            <RebornLayoutAside :width="`${state.asideWidth}px`" :class="tone.aside">
+              Aside
+            </RebornLayoutAside>
+            <RebornLayoutMain :class="tone.main">
+              Main
+            </RebornLayoutMain>
+          </RebornLayout>
 
-          <RebornLayoutMain :class="tone.main">
-            Main
-          </RebornLayoutMain>
+          <template v-else>
+            <RebornLayoutAside v-if="state.showAside" :width="`${state.asideWidth}px`" :class="tone.aside">
+              Aside
+            </RebornLayoutAside>
+            <RebornLayoutMain :class="tone.main">
+              Main
+            </RebornLayoutMain>
+          </template>
 
           <RebornLayoutFooter v-if="state.showFooter" :height="`${state.headerHeight}px`" :class="tone.footer">
             Footer
@@ -298,16 +332,15 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="侧边布局：可收起侧栏" description="深色侧边栏通高、可收起（collapsible），右侧为顶栏 + 内容 + 底栏。收起后菜单进入折叠态，只显示图标。">
+    <DemoSection title="侧边布局：可收起侧栏" description="侧边栏通高、可收起（collapsible），右侧为顶栏 + 内容 + 底栏。收起后菜单进入折叠态，只显示图标。">
       <DemoBlock layout="stack">
         <div :class="tallBoxClass">
           <RebornLayout has-sider class="h-full">
-            <RebornLayoutAside v-model:collapsed="darkCollapsed" collapsible :class="darkTone" :ui="darkAsideUi">
-              <div class="m-4 h-8 rounded bg-white/20" aria-hidden="true" />
+            <RebornLayoutAside v-model:collapsed="darkCollapsed" collapsible class="border-gray-2 bg-gray-1 border-r">
+              <div class="bg-gray-2 m-4 h-8 rounded" aria-hidden="true" />
               <RebornMenu
                 v-model:selected-keys="darkSideActive" mode="vertical" :collapse="darkCollapsed"
-                background-color="transparent" text-color="rgba(255,255,255,0.65)" active-text-color="#ffffff"
-                :ui="flatMenuUi"
+                background-color="transparent" :ui="sideMenuUi"
               >
                 <RebornMenuItem v-for="(nav, index) in sideNavs" :key="nav.key" :index="String(index + 1)">
                   <template #icon>

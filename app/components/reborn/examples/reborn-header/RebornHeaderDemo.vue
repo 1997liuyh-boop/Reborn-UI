@@ -1,14 +1,29 @@
 <script setup lang="ts">
-import { computed, shallowRef } from 'vue';
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
+import { computed, shallowRef } from "vue";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornHeader from "~/components/reborn/ui/reborn-header/RebornHeader.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = shallowRef<Record<string, any>>({
+/** 演练场默认状态 */
+const defaultState: Record<string, any> = {
   title: "Reborn UI",
   toggleSide: "right",
   sticky: true,
-});
+  mountToParent: true,
+};
+
+const state = shallowRef<Record<string, any>>({ ...defaultState });
+
+/** 演练场侧边栏的显隐，交给外部按钮也能打开，宽屏下不必依赖汉堡按钮 */
+const playgroundOpen = shallowRef(false);
+
+/** 重置演练场配置 */
+function resetState() {
+  state.value = { ...defaultState };
+  playgroundOpen.value = false;
+}
 
 /** 演练场控制面板配置 */
 const controls = [
@@ -31,6 +46,17 @@ const controls = [
       { label: "滚动吸顶", key: "sticky", component: "checkbox" as const, defaultValue: true },
     ],
   },
+  {
+    title: "侧边栏",
+    children: [
+      {
+        label: "挂载到父元素（append-to-body 为 false）",
+        key: "mountToParent",
+        component: "checkbox" as const,
+        defaultValue: true,
+      },
+    ],
+  },
 ];
 
 /** 演练场右上角展示的等价代码 */
@@ -40,11 +66,15 @@ const headerCode = computed(() => {
 
   if (s.toggleSide !== "right") props.push(`toggle-side="${s.toggleSide}"`);
   if (s.sticky) props.push("sticky");
+  if (s.mountToParent) props.push(':append-to-body="false"');
 
   return `<RebornHeader\n  ${props.join("\n  ")}\n>\n  <nav>…</nav>\n  <template #right>…</template>\n  <template #content="{ close }">…</template>\n</RebornHeader>`;
 });
 
 // ─── 场景演示数据 ───────────────────────────────────────────────
+
+/** 挂载位置演示：两块宿主各自的侧边栏开关 */
+const parentOpen = shallowRef(false);
 
 /** 中间区域的导航项 */
 const links = [
@@ -57,62 +87,90 @@ const links = [
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" :code="headerCode" component-name="RebornHeader" title="交互演练场"
-      description="在下方可滚动的宿主区域内滚动内容，即可观察吸顶行为；窄屏时右上角会出现侧边栏开关。">
-      <!-- 宿主区域：仅描边不填充，模拟一个独立的滚动视口 -->
-      <div class="border-default rounded-lg relative h-[420px] w-full overflow-y-auto border">
-        <RebornHeader :title="state.title" to="/" :toggle-side="state.toggleSide" :sticky="state.sticky">
-          <!-- 中间导航：默认插槽 -->
-          <nav class="flex items-center gap-8">
-            <NuxtLink v-for="link in links" :key="link.label" :to="link.to"
-              class="text-muted hover:text-highlighted text-sm font-medium transition-colors">
-              {{ link.label }}
-              <Icon v-if="link.label === 'GitHub'" name="lucide:external-link" class="ml-1 inline size-3 opacity-50" />
-            </NuxtLink>
-          </nav>
-
-          <!-- 右侧操作区 -->
-          <template #right>
-            <div class="flex items-center gap-2">
-              <RebornButton size="sm" color="success" circle variant="filled" aria-label="搜索">
-                <Icon name="lucide:search" />
-              </RebornButton>
-              <RebornButton size="sm" color="secondary" circle variant="filled" aria-label="切换主题">
-                <Icon name="lucide:moon" />
-              </RebornButton>
-              <RebornButton size="sm" class="hidden sm:flex" label="立即体验" />
-            </div>
+    <Playground
+      v-model="state" :controls="controls" :code="headerCode" component-name="RebornHeader" title="交互演练场"
+      description="在下方可滚动的宿主区域内滚动内容观察吸顶；打开侧边栏对比挂载到父元素与挂载到 body 的覆盖范围。"
+    >
+      <template #tag>
+        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+          <template #leading>
+            <Icon name="lucide:rotate-ccw" size="12" />
           </template>
+          重置配置
+        </RebornButton>
+      </template>
 
-          <!-- 移动端侧边栏内容，作用域参数 close 用于关闭弹层 -->
-          <template #content="{ close }">
-            <div class="flex flex-col gap-4">
-              <div class="border-default border-b px-2 py-4">
-                <p class="text-dimmed px-2 text-xs font-semibold tracking-wider uppercase">
-                  导航页面
-                </p>
-                <nav class="mt-4 flex flex-col gap-1">
-                  <NuxtLink v-for="link in links" :key="link.label" :to="link.to"
-                    class="text-default hover:text-highlighted rounded-lg px-3 py-2 text-base font-medium transition-colors"
-                    @click="close">
-                    {{ link.label }}
-                  </NuxtLink>
-                </nav>
-              </div>
+      <div class="flex w-full flex-col gap-3">
+        <!-- 外层只负责定位与裁切：挂载到父元素时抽屉以它为参照铺满，不随内层滚动 -->
+        <div class="border-default rounded-lg relative h-[420px] w-full overflow-hidden border">
+          <!-- 内层是独立的滚动视口，吸顶相对它生效 -->
+          <div class="h-full overflow-y-auto">
+            <RebornHeader v-model:open="playgroundOpen" :title="state.title" to="/" :toggle-side="state.toggleSide" :sticky="state.sticky" :append-to-body="!state.mountToParent">
+              <!-- 中间导航：默认插槽 -->
+              <nav class="flex items-center gap-8">
+                <NuxtLink
+                  v-for="link in links" :key="link.label" :to="link.to"
+                  class="text-muted hover:text-highlighted text-sm font-medium transition-colors"
+                >
+                  {{ link.label }}
+                  <Icon v-if="link.label === 'GitHub'" name="lucide:external-link" class="ml-1 inline size-3 opacity-50" />
+                </NuxtLink>
+              </nav>
 
-              <div class="px-2">
-                <RebornButton class="w-full" label="登录账户" @click="close" />
-              </div>
+              <!-- 右侧操作区 -->
+              <template #right>
+                <div class="flex items-center gap-2">
+                  <RebornButton size="sm" color="success" circle variant="filled" aria-label="搜索">
+                    <Icon name="lucide:search" />
+                  </RebornButton>
+                  <RebornButton size="sm" color="secondary" circle variant="filled" aria-label="切换主题">
+                    <Icon name="lucide:moon" />
+                  </RebornButton>
+                  <RebornButton size="sm" class="hidden sm:flex" label="立即体验" />
+                </div>
+              </template>
+
+              <!-- 移动端侧边栏内容，作用域参数 close 用于关闭弹层 -->
+              <template #content="{ close }">
+                <div class="flex flex-col gap-4">
+                  <div class="border-default border-b px-2 py-4">
+                    <p class="text-dimmed px-2 text-xs font-semibold tracking-wider uppercase">
+                      导航页面
+                    </p>
+                    <nav class="mt-4 flex flex-col gap-1">
+                      <NuxtLink
+                        v-for="link in links" :key="link.label" :to="link.to"
+                        class="text-default hover:text-highlighted rounded-lg px-3 py-2 text-base font-medium transition-colors"
+                        @click="close"
+                      >
+                        {{ link.label }}
+                      </NuxtLink>
+                    </nav>
+                  </div>
+
+                  <div class="px-2">
+                    <RebornButton class="w-full" label="登录账户" @click="close" />
+                  </div>
+                </div>
+              </template>
+            </RebornHeader>
+
+            <!-- 占位内容：制造足够的滚动高度以观察吸顶 -->
+            <div class="flex flex-col gap-4 p-6">
+              <p class="text-muted text-sm">
+                向下滚动这块区域，{{ state.sticky ? "顶栏将保持吸顶" : "顶栏会随内容一起滚走" }}。
+              </p>
+              <div v-for="i in 6" :key="i" class="border-default rounded-lg h-32 shrink-0 border border-dashed" />
             </div>
-          </template>
-        </RebornHeader>
-
-        <!-- 占位内容：制造足够的滚动高度以观察吸顶 -->
-        <div class="flex flex-col gap-4 p-6">
-          <p class="text-muted text-sm">
-            向下滚动这块区域，{{ state.sticky ? "顶栏将保持吸顶" : "顶栏会随内容一起滚走" }}。
-          </p>
-          <div v-for="i in 6" :key="i" class="border-default rounded-lg h-32 shrink-0 border border-dashed" />
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <RebornButton size="sm" variant="outlined" color="neutral" @click="playgroundOpen = true">
+            打开侧边栏
+          </RebornButton>
+          <DemoNote tone="dimmed">
+            {{ state.mountToParent ? "侧边栏铺满上方宿主区域，页面其余部分仍可见。" : "侧边栏挂到 body，铺满整个浏览器视口。" }}
+          </DemoNote>
         </div>
       </div>
     </Playground>
@@ -121,6 +179,38 @@ const links = [
       <DemoNote tone="dimmed">
         <code>toggle-side</code> 决定侧边栏从哪一侧滑出；<code>auto-close</code> 控制点击内部链接后是否自动收起；
         <code>before-toggle</code> 可返回 <code>false</code> 阻止本次开合，适合做未保存提示。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="侧边栏挂载位置">
+      <template #description>
+        移动端侧边栏默认挂载到 body、铺满视口；<code>append-to-body</code>
+        为 <code>false</code> 时在顶栏所在位置渲染，铺满最近的定位父元素，适合嵌在局部预览区或后台的内容区里。
+      </template>
+      <DemoBlock layout="stack">
+        <div class="border-default rounded-lg relative h-[280px] w-full overflow-hidden border">
+          <RebornHeader v-model:open="parentOpen" title="局部预览" to="/" :append-to-body="false">
+            <template #content="{ close }">
+              <nav class="flex flex-col gap-1 p-2">
+                <NuxtLink
+                  v-for="link in links" :key="link.label" :to="link.to"
+                  class="text-default hover:text-highlighted rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                  @click="close"
+                >
+                  {{ link.label }}
+                </NuxtLink>
+              </nav>
+            </template>
+          </RebornHeader>
+          <p class="text-muted p-6 text-sm">点击右上角菜单或下方按钮，侧边栏只覆盖这块区域。</p>
+        </div>
+        <RebornButton size="sm" variant="outlined" color="neutral" @click="parentOpen = !parentOpen">
+          {{ parentOpen ? "收起侧边栏" : "打开侧边栏" }}
+        </RebornButton>
+      </DemoBlock>
+      <DemoNote>
+        父元素必须带 <code>relative</code>（或其他定位）：抽屉以绝对定位铺满最近的定位祖先，找不到时会一路铺到更外层。
+        滚动容器与定位容器最好分两层，否则抽屉会随内容滚走。
       </DemoNote>
     </DemoSection>
   </div>

@@ -15,6 +15,7 @@ import type { DemoHeadingMeta } from '#build/demo-heading-meta'
 import { demoHeadingMeta } from '#build/demo-heading-meta'
 import { suggestionContextKey } from '~/components/common/component-viewer/types'
 import { demoUsageContextKey } from '~/components/common/demo/types'
+import { applyPlatformScopes } from '~/utils/applyPlatformScopes'
 import { trimComponentDocBody } from '~/utils/trimComponentDocBody'
 
 /** 页脚文案（i18n 页面传入 t() 结果，默认英文） */
@@ -100,6 +101,19 @@ const demoMeta = computed<DemoHeadingMeta>(() => {
     return demoHeadingMeta[`${attrs.componentId}/${attrs.demoFile}`] ?? empty
 })
 
+/** 顶栏平台开关的当前档位：决定 ::platform-only 块的去留 */
+const { platform: docsPlatform } = useDocsPlatform()
+
+/**
+ * 先按平台档位处理 ::platform-only 块（见 utils/applyPlatformScopes），后续的搬运与裁剪都基于这份正文。
+ * 首屏档位固定为 web、水合后才恢复用户选择，所以 SSR 与客户端首帧一致，不产生水合差异。
+ */
+const scopedBody = computed(() => {
+    const value = props.page?.body?.value
+    if (!Array.isArray(value)) return null
+    return applyPlatformScopes(value, docsPlatform.value)
+})
+
 /**
  * 按标题把正文 AST 切成「留在正文」与「搬进 suggestion 面板」两份，
  * 再把留在正文里、已由示例卡片承担的部分裁掉（见 utils/trimComponentDocBody）。
@@ -110,7 +124,7 @@ const demoMeta = computed<DemoHeadingMeta>(() => {
  * 返回 null 表示非组件文档，正文原样渲染。
  */
 const splitBody = computed(() => {
-    const value = props.page?.body?.value
+    const value = scopedBody.value?.value
     if (!Array.isArray(value)) return null
     // 只有组件文档才处理。普通文档同样可能写「注意事项」，但没有承接它的面板，搬走就是内容丢失
     if (!viewerAttrs.value) return null
@@ -147,11 +161,16 @@ const splitBody = computed(() => {
  *   上方压着吸顶 Tab 栏，打上 inDemo 让 DocsToc 滚过去时多让出这条栏的高度。
  */
 function pruneTocLinks(links: TocLinkItem[], removedH2: Set<string>): TocLinkItem[] {
+    const hiddenIds = scopedBody.value?.hiddenIds
     return links.flatMap((link): TocLinkItem[] => {
+        // 当前平台档位下被剔除的 ::platform-only 块里的标题，连同其子项一起去掉
+        if (hiddenIds?.has(link.id)) return []
         if (SUGGESTION_HEADING_IDS.includes(link.id)) return []
         if (removedH2.has(link.id)) {
             return link.id === '用法'
-                ? (link.children ?? []).map(child => ({ ...child, depth: 2, inDemo: true }))
+                ? (link.children ?? [])
+                        .filter(child => !hiddenIds?.has(child.id))
+                        .map(child => ({ ...child, depth: 2, inDemo: true }))
                 : []
         }
         if (!link.children?.length) return [link]
@@ -164,8 +183,16 @@ function pruneTocLinks(links: TocLinkItem[], removedH2: Set<string>): TocLinkIte
 /** 真正交给 ContentRenderer 的文档：处理过则用删减版正文，否则原样透传 */
 const renderedPage = computed<Record<string, any>>(() => {
     const split = splitBody.value
-    if (!split) return props.page
     const body = props.page.body
+    if (!split) {
+        // 非组件文档不做搬运与裁剪，但 ::platform-only 块照样按档位处理，目录同步删掉被剔除的标题
+        const scoped = scopedBody.value
+        if (!scoped || scoped.value === body?.value) return props.page
+        return {
+            ...props.page,
+            body: { ...body, value: scoped.value, toc: { ...body?.toc, links: pruneTocLinks(body?.toc?.links ?? [], new Set()) } },
+        }
+    }
     return {
         ...props.page,
         body: {

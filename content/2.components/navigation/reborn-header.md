@@ -51,6 +51,22 @@ Header 是仅 Web 的响应式站点头部，桌面导航与移动菜单由同�
 </template>
 ```
 
+### 侧边栏挂载位置
+
+移动端侧边栏默认挂载到 body、铺满视口；`appendToBody` 为 `false` 时在顶栏所在位置渲染，铺满最近的定位父元素，适合嵌在局部预览区或后台内容区里。
+
+```vue
+<template>
+  <div class="relative h-[280px] overflow-hidden">
+    <RebornHeader title="局部预览" to="/" :append-to-body="false" />
+  </div>
+</template>
+```
+
+::tip
+父元素必须带 `relative`（或其他定位）：抽屉以绝对定位铺满最近的定位祖先，找不到时会一路铺到更外层。滚动容器与定位容器最好分两层，否则抽屉会随内容滚走。
+::
+
 ## API
 ### Props
 
@@ -64,6 +80,7 @@ Header 是仅 Web 的响应式站点头部，桌面导航与移动菜单由同�
 | `sticky` | `boolean` | `false` | 是否吸顶显示 |
 | `autoClose` | `boolean` | `true` | 路由改变时是否自动关闭菜单 |
 | `beforeToggle` | `() => boolean \| Promise<boolean>` | - | 菜单展开前的拦截函数 |
+| `appendToBody` | `boolean` | `true` | 移动端菜单抽屉是否挂载到 body；为 `false` 时在顶栏所在位置渲染，铺满最近的定位父元素，父元素需带 `relative` |
 | `class` | `any` | - | 根元素的自定义类名 |
 | `ui` | `Partial<RebornHeaderUI>` | `{}` | UI 插槽样式覆盖 |
 

@@ -6,22 +6,6 @@ platform: both
 badge: New
 ---
 
-::tip
-UniApp 端依赖页面的滚动事件来计算吸顶效果。你需要：
-1. 在页面中监听 `onPageScroll`。
-2. 将滚动距离传递给组件的 `:scroll-top` 属性。
-
-```typescript
-const scrollTop = ref(0)
-onPageScroll((e) => {
-    scrollTop.value = e.scrollTop;
-})
-```
-
-Web 端组件内部统一监听窗口滚动并采集几何快照，无需传入 `scrollTop`。
-::
-
-
 ::ComponentViewer{demoFile="RebornStickyDemo.vue" config="RebornStickyConfig" componentId="reborn-sticky" :componentFiles='["RebornSticky.vue", "useStickyMetrics.ts", "useStickyTop.ts", "useStickyBottom.ts", "reborn-sticky.config.ts"]' :uniappFiles='["RebornSticky.vue", "reborn-sticky.config.ts"]'}
 ::
 
@@ -115,9 +99,15 @@ Sticky 的效果与 CSS `position: sticky` 一致：内容随页面正常排布�
 </template>
 ```
 
+::platform-only{platform="uniapp"}
 ### UniApp 用法
 
-UniApp 端必须把 `onPageScroll` 的滚动距离传给 `scrollTop`；当吸顶元素上方还有标题等内容、测量位置与实际吸顶点不一致时，可用 `stickyTriggerLead` 让吸顶判定提前若干 px：
+UniApp 端依赖页面的滚动事件来计算吸顶效果，需要两步：
+
+1. 在页面中监听 `onPageScroll`。
+2. 将滚动距离传递给组件的 `:scroll-top` 属性。
+
+当吸顶元素上方还有标题等内容、测量位置与实际吸顶点不一致时，可用 `stickyTriggerLead` 让吸顶判定提前若干 px：
 
 ```vue
 <script setup lang="ts">
@@ -137,6 +127,9 @@ onPageScroll((e) => {
   </RebornSticky>
 </template>
 ```
+
+Web 端组件内部统一监听窗口滚动并采集几何快照，无需传入 `scrollTop`。
+::
 
 ## API
 

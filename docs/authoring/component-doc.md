@@ -211,6 +211,20 @@ badge: New
 
 `label` / `icon` 两个属性照抄，不要自创图标名。判断「是否对齐」必须**回源码对比**，不能沿用旧文档里的表述——旧表可能已经过时。
 
+### 单端专属的整节
+
+整节只对一端有意义（如 UniApp 的 `onPageScroll` 接线、小程序开放能力）时，用 `::platform-only{platform="uniapp"}`（或 `"web"`）把 `###` 标题连同正文一起包住：文档站顶栏切到对应档位才渲染，本页目录同步出现该标题；另一档位下整节与目录项一并隐藏。块内再嵌提示块要多加一层冒号（`:::warning`）。
+
+```mdc
+::platform-only{platform="uniapp"}
+### UniApp 用法
+
+UniApp 端需要把 `onPageScroll` 的滚动距离传给 `scrollTop`……
+::
+```
+
+只用于整节；表格、代码块级别的差异仍按上面的 tabs 写法拆。块写在正文顶层时由 `DocsPage` 在数据层拆包或剔除（`app/utils/applyPlatformScopes.ts`），md 源文件里的内容知识库照常读取。
+
 ---
 
 ## 7. `## API`（CI 强校验）

@@ -5,6 +5,8 @@ import { computed, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { chipColors, chipPositions, chipSizes, chipVariants } from "~/components/reborn/ui/reborn-chip/reborn-chip.config";
 import RebornChip from "~/components/reborn/ui/reborn-chip/RebornChip.vue";
+import RebornRadio from "~/components/reborn/ui/reborn-radio/RebornRadio.vue";
+import RebornRadioGroup from "~/components/reborn/ui/reborn-radio/RebornRadioGroup.vue";
 
 /**
  * 角标锚点占位样式：只描边不填充。
@@ -115,6 +117,9 @@ const chipCode = computed(() => {
 });
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
+
+/** 位置与内嵌演示：分段按钮选中的角落，两个宿主共用，便于对比 inset 前后 */
+const positionValue = shallowRef<(typeof chipPositions)[number]>("top-right");
 
 /** 显隐控制演示：组件内部不会改写 show，由外部按钮切换 */
 const hasUnread = shallowRef(true);
@@ -279,19 +284,26 @@ const hasUnread = shallowRef(true);
         选择四角之一；默认角标中心压在宿主角上（向外平移半个自身），<code>inset</code>
         取消平移，让角标整个落在宿主内部。
       </template>
-      <DemoBlock layout="row" align="center" class="gap-10">
-        <div v-for="p in chipPositions" :key="p" class="flex flex-col items-center gap-3">
-          <RebornChip :position="p" color="error" text="3">
-            <div :class="anchorClass" class="size-12" />
-          </RebornChip>
-          <span class="text-dimmed text-xs font-medium">{{ p }}</span>
-        </div>
-
-        <div v-for="p in chipPositions" :key="`inset-${p}`" class="flex flex-col items-center gap-3">
-          <RebornChip :position="p" color="success" size="lg" inset>
-            <div :class="anchorClass" class="size-12" />
-          </RebornChip>
-          <span class="text-dimmed text-xs font-medium">{{ p }} · inset</span>
+      <DemoBlock layout="stack" class="gap-6">
+        <RebornRadioGroup v-model="positionValue" type="button">
+          <RebornRadio v-for="p in chipPositions" :key="p" :value="p">
+            {{ p }}
+          </RebornRadio>
+        </RebornRadioGroup>
+        <!-- 角标默认向外平移半个自身，四周留出 px-3 / gap-6 的余量，切到下方两角时不压住说明文字 -->
+        <div class="flex flex-wrap items-end gap-x-16 gap-y-8 px-3">
+          <div class="flex flex-col items-center gap-6">
+            <RebornChip :position="positionValue" color="error" text="3">
+              <div :class="anchorClass" class="size-16" />
+            </RebornChip>
+            <span class="text-dimmed text-xs font-medium">默认 · 中心压在角上</span>
+          </div>
+          <div class="flex flex-col items-center gap-6">
+            <RebornChip :position="positionValue" color="success" text="3" inset>
+              <div :class="anchorClass" class="size-16" />
+            </RebornChip>
+            <span class="text-dimmed text-xs font-medium">inset · 落在宿主内部</span>
+          </div>
         </div>
       </DemoBlock>
     </DemoSection>

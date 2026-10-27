@@ -19,6 +19,7 @@ const props = withDefaults(defineProps<RebornHeaderProps>(), {
     as: 'header',
     sticky: false,
     autoClose: true,
+    appendToBody: true,
     ui: () => ({}),
 });
 
@@ -68,6 +69,12 @@ export interface RebornHeaderProps {
     autoClose?: boolean;
     /** 菜单展开前的拦截函数 */
     beforeToggle?: () => boolean | Promise<boolean>;
+    /**
+     * 移动端菜单抽屉是否挂载到 body；为 false 时在顶栏所在位置渲染，
+     * 铺满最近的定位父元素（需给父元素加 relative），适合局部预览或嵌入式页面
+     * @defaultValue true
+     */
+    appendToBody?: boolean;
     /** 根元素的自定义类名 */
     class?: any;
     /** UI 插槽样式覆盖 */
@@ -208,7 +215,7 @@ async function toggleMenu() {
 
   <!-- 移动端菜单抽屉，保留原有 ui.popup 样式入口。 -->
   <RebornDrawer
-    v-model="isMenuOpen" :direction="toggleSide" size="100%" with-header :z-index="980" :ui="{
+    v-model="isMenuOpen" :direction="toggleSide" size="100%" with-header :z-index="980" :append-to-body="appendToBody" :ui="{
       // 位于吸顶导航栏下方 (Header 通常 z-1000)；层级通过 z-index 控制
       root: ui.popup(),
       body: 'p-0',

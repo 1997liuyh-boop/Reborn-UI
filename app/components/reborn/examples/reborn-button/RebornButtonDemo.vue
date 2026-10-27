@@ -209,11 +209,6 @@ const borderedVariants = ["outlined", "subtle"] as const;
       </DemoBlock>
 
       <DemoBlock layout="stack" class="gap-6">
-        <div class="flex flex-wrap items-center gap-4">
-          <RebornButton v-for="c in buttonColors" :key="c" variant="text" :color="c">
-            {{ c }}
-          </RebornButton>
-        </div>
         <div class="text-default flex flex-wrap items-baseline gap-3 text-sm">
           <span>行内混排示例：</span>
           <RebornButton variant="text" color="primary">查看详情</RebornButton>
@@ -357,13 +352,6 @@ const borderedVariants = ["outlined", "subtle"] as const;
       <DemoNote>
         表单尺寸覆盖自身
         <code>size</code>，圆形按钮也跟随表单高度。
-      </DemoNote>
-    </DemoSection>
-
-    <DemoSection title="小程序开放能力（UniApp）">
-      <DemoNote>
-        本演练场运行于 Web；<code>openType</code>
-        仅在小程序生效，请切换到 UniApp 演示查看。
       </DemoNote>
     </DemoSection>
   </div>

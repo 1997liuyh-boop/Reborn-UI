@@ -307,6 +307,7 @@ const form = ref({})
 </template>
 ```
 
+::platform-only{platform="uniapp"}
 ### 小程序开放能力（UniApp）
 
 UniApp 端在容器内叠了一个透明的原生 `button` 作为点击层，因此可以在保留自定义样式的同时完整代理小程序开放能力。传入 `openType` 后，回调经同名事件抛出。
@@ -334,8 +335,9 @@ function onError(e: any) {
 </template>
 ```
 
-::warning
+:::warning
 各开放能力对具体小程序平台（微信 / QQ / 支付宝等）的支持范围、以及是否需要资质与用户授权，均以对应平台官方文档为准。组件只负责透传，不做能力降级。
+:::
 ::
 
 ## API

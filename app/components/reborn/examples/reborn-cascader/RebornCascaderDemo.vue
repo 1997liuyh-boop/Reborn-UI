@@ -6,6 +6,8 @@ import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
 import { cascaderColors, cascaderSizes, cascaderVariants } from "~/components/reborn/ui/reborn-cascader/reborn-cascader.config";
 import RebornCascader from "~/components/reborn/ui/reborn-cascader/RebornCascader.vue";
 import RebornCascaderPanel from "~/components/reborn/ui/reborn-cascader/RebornCascaderPanel.vue";
+import RebornRadio from "~/components/reborn/ui/reborn-radio/RebornRadio.vue";
+import RebornRadioGroup from "~/components/reborn/ui/reborn-radio/RebornRadioGroup.vue";
 
 /** 三级地区数据，全部 demo 共用 */
 const options: CascaderOption[] = [
@@ -266,6 +268,11 @@ function loadMore(option: CascaderOption, done: (children?: CascaderOption[]) =>
   loadTimers.add(timer);
 }
 
+/** 尺寸、形态与状态：分段按钮选中的尺寸 */
+const sectionSize = shallowRef<(typeof cascaderSizes)[number]>("md");
+/** 尺寸、形态与状态：分段按钮选中的形态 */
+const sectionVariant = shallowRef<(typeof cascaderVariants)[number]>("outlined");
+
 /** 独立面板的绑定值 */
 const panelValue = shallowRef<any>("xihu");
 
@@ -445,18 +452,29 @@ function onChange(value: any) {
       title="尺寸、形态与状态"
       description="尺寸与形态和 reborn-select 共用同一套档位；error 画红框，disabled 锁交互，loading 把箭头换成转圈并把面板改成加载态。"
     >
-      <DemoBlock layout="stack">
-        <div v-for="s in cascaderSizes" :key="s" class="flex flex-col gap-1">
-          <span class="text-dimmed text-xs">{{ s }}</span>
-          <RebornCascader :options="options" :size="s" placeholder="请选择地区" />
+      <DemoBlock layout="stack" class="gap-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-dimmed w-8 shrink-0 text-xs">尺寸</span>
+          <RebornRadioGroup v-model="sectionSize" type="button">
+            <RebornRadio v-for="s in cascaderSizes" :key="s" :value="s">
+              {{ s }}
+            </RebornRadio>
+          </RebornRadioGroup>
         </div>
-        <div v-for="v in cascaderVariants" :key="v" class="flex flex-col gap-1">
-          <span class="text-dimmed text-xs">{{ v }}</span>
-          <RebornCascader :options="options" :variant="v" placeholder="请选择地区" />
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-dimmed w-8 shrink-0 text-xs">形态</span>
+          <RebornRadioGroup v-model="sectionVariant" type="button">
+            <RebornRadio v-for="v in cascaderVariants" :key="v" :value="v">
+              {{ v }}
+            </RebornRadio>
+          </RebornRadioGroup>
         </div>
-        <RebornCascader :options="options" error placeholder="错误状态" />
-        <RebornCascader :options="options" disabled placeholder="禁用状态" />
-        <RebornCascader :options="options" loading placeholder="加载中" />
+        <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+          <RebornCascader :options="options" :size="sectionSize" :variant="sectionVariant" placeholder="默认状态" />
+          <RebornCascader :options="options" :size="sectionSize" :variant="sectionVariant" error placeholder="错误状态" />
+          <RebornCascader :options="options" :size="sectionSize" :variant="sectionVariant" disabled placeholder="禁用状态" />
+          <RebornCascader :options="options" :size="sectionSize" :variant="sectionVariant" loading placeholder="加载中" />
+        </div>
       </DemoBlock>
     </DemoSection>
 
