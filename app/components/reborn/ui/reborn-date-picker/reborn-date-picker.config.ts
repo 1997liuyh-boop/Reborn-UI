@@ -61,9 +61,9 @@ export default {
             "absolute inset-0 hidden cursor-pointer items-center justify-center text-gray-5 transition-colors hover:text-gray-7",
         /**
          * 触发器加载中指示器（RebornLoading）：占满尾部图标格子，替代箭头。
-         * 颜色走 text-gray-5，配合 color="currentColor" 让指示器继承它。
+         * 颜色使用 RebornLoading 默认的 primary。
          */
-        triggerLoadingIcon: "size-full text-gray-5",
+        triggerLoadingIcon: "size-full",
 
         /* ---------------- 范围类型的双段文本 ---------------- */
 

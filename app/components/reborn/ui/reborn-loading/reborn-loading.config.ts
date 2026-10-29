@@ -49,7 +49,7 @@ const config = {
     },
     defaultVariants: {
         color: 'primary',
-        type: 'ring'
+        type: 'outline'
     }
 } as const
 

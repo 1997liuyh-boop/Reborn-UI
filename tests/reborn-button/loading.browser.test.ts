@@ -61,13 +61,13 @@ it('圆形按钮三档加载图标保持双向居中，普通按钮保留文字�
         (window as any).buttonFixture.state.loading = loading;
         await (window as any).buttonFixture.flush();
       }, loading);
-      assert.equal(await page.locator('#circle-filled-md svg').count(), loading ? 1 : 3);
+      assert.equal(await page.locator('#circle-filled-md svg').count(), loading ? 2 : 3);
     }
     for (const size of ['sm', 'md', 'lg']) {
       for (const variant of ['filled', 'outlined', 'soft', 'subtle', 'text']) {
         const button = page.locator(`#circle-${variant}-${size}`);
         const bounds = (await button.boundingBox())!;
-        for (const selector of ['.rb-loading', '.rb-loading svg']) {
+        for (const selector of ['.rb-loading', '.rb-loading .rb-loading-indicator']) {
           const icon = (await button.locator(selector).boundingBox())!;
           assert.ok(Math.abs(icon.x + icon.width / 2 - bounds.x - bounds.width / 2) <= 0.5, `${variant} ${size} ${selector} 水平偏移 ${JSON.stringify({ bounds, icon })}`);
           assert.ok(Math.abs(icon.y + icon.height / 2 - bounds.y - bounds.height / 2) <= 0.5, `${variant} ${size} ${selector} 垂直偏移 ${JSON.stringify({ bounds, icon })}`);

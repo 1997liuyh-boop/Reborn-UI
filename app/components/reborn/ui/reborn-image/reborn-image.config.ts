@@ -40,7 +40,7 @@ export default {
         /** 默认不带圆角，与 uniapp 端一致；需要圆角时经 customClass 或 ui.root 传入 */
         root: "relative flex flex-row items-center justify-center overflow-hidden",
         error: "absolute h-full w-full bg-gray-2 flex flex-col items-center justify-center",
-        errorIcon: "text-gray-4 size-8 icon-[lucide--image-off]",
+        errorIcon: "text-gray-4 size-8 icon-[lucide--image]",
         loading: "absolute h-full w-full bg-gray-2 flex flex-col items-center justify-center",
         loadingIcon: "text-gray-4 size-8 border-2 border-gray-3 border-t-primary rounded-full animate-spin",
         inner: "w-full h-full",

@@ -11,7 +11,7 @@
   ],
   "pitfalls": [
     "web、uniapp 双端可用。",
-    "type 默认 ring，size 默认 30px，zIndex 默认 2000。",
+    "type 默认 outline，size 默认 30px，zIndex 默认 2000。",
     "background 可传任意 CSS 颜色，覆盖默认的 bg-white/80（暗色 bg-gray-9/80）遮罩背景。",
     "afterLeave 事件在遮罩离场动画结束后触发。"
   ]

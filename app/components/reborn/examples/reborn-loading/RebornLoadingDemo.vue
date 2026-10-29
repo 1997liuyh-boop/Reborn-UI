@@ -8,7 +8,7 @@ import {
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
 const state = shallowRef<Record<string, any>>({
-  type: "ring",
+  type: "outline",
   color: "primary",
   size: "40px",
 });
@@ -22,7 +22,7 @@ const controls = [
         label: "动画类型",
         key: "type",
         component: "select" as const,
-        defaultValue: "ring",
+        defaultValue: "outline",
         props: { options: LoadingTypes.map((t) => ({ label: t, value: t })) },
       },
       {

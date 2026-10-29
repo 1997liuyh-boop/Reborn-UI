@@ -28,7 +28,7 @@ export interface UploadFile {
   response?: unknown;
   /** 列表内唯一标识。 */
   uid: number;
-  /** 缩略图或下载地址；图片类列表在选择图片或视频时自动生成本地预览地址。 */
+  /** 缩略图或下载地址；图片自动生成本地预览地址，视频仅在图片类列表中生成。 */
   url?: string;
   /** 失败原因，失败图标的气泡里展示。 */
   errorMessage?: string;
@@ -144,7 +144,7 @@ export default {
     root: 'text-base text-default',
     // 触发区只是一层点击 / 拖放的外壳，真正的外观由插槽内容或下面的变体决定。
     trigger: 'outline-none',
-    dragger: 'flex w-full flex-col items-center justify-center gap-[8px] rounded-lg border border-dashed border-gray-4 bg-gray-2 px-[16px] py-[24px] text-center transition-colors',
+    dragger: 'flex w-full flex-col items-center justify-center rounded-lg border border-dashed border-gray-4 bg-gray-2 px-6 py-12 text-center transition-colors',
     tip: 'text-sm text-gray-6',
     list: '',
     // item 只用于 text / picture 的列表行（picture-card 用 card），整行显示手型指针。
@@ -165,7 +165,7 @@ export default {
     // 遮罩只盖住中间的图片区域：与 cardImage 同为 88px 并同样居中，不盖卡片边框内的留白；
     // 指针落在图片上才出现（遮罩自身 hover），键盘聚焦卡片内按钮时也出现。
     cardMask: 'absolute inset-0 m-auto flex size-22 items-center justify-center gap-[8px] rounded-[2px] bg-[rgba(25,30,39,0.5)] text-white opacity-0 transition-opacity hover:opacity-100 group-focus-within:opacity-100',
-    cardAction: 'flex size-4 cursor-pointer items-center justify-center rounded-[2px] outline-none focus-visible:ring-2 focus-visible:ring-white',
+    cardAction: 'flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[2px] p-0 outline-none focus-visible:ring-2 focus-visible:ring-white',
   },
   variants: {
     listType: {
@@ -231,7 +231,8 @@ export default {
     // 文字 / 图片列表下，非拖拽的触发区按内容宽度收缩；拖拽区铺满整行。
     { listType: ['text', 'picture'], drag: false, class: { trigger: 'inline-flex' } },
     { listType: ['text', 'picture'], drag: true, class: { trigger: 'flex w-full' } },
-    { listType: ['text', 'picture'], class: { tip: 'mt-[8px]' } },
+    { listType: ['text', 'picture'], drag: false, class: { tip: 'mt-2' } },
+    { listType: ['text', 'picture'], drag: true, class: { tip: 'text-base text-gray-7' } },
     { drag: true, disabled: false, class: { dragger: 'hover:border-primary' } },
     { listType: 'picture-card', disabled: false, class: { trigger: 'hover:border-primary hover:text-primary focus-visible:border-primary' } },
     { listType: 'picture-card', disabled: true, class: { trigger: 'text-gray-5' } },
@@ -239,6 +240,8 @@ export default {
     { listType: ['text', 'picture'], status: 'fail', class: { itemAction: 'text-red-6', itemControl: 'text-red-6' } },
     { listType: 'text', status: 'fail', class: { itemAction: 'opacity-100' } },
     { listType: 'picture', status: 'fail', class: { item: 'border-red-6' } },
+    // 加载图标沿用 40px 占位，但不显示普通文件图标的背景。
+    { listType: 'picture', status: 'uploading', class: { itemIcon: 'bg-transparent' } },
     // 图片列表的进度条右侧再让出一个 24px 按钮与 4px 间距。
     { listType: 'picture', chunk: true, class: { progress: 'right-[68px]' } },
     { listType: ['text', 'picture'], disabled: false, class: { trigger: 'focus-visible:ring-2 focus-visible:ring-primary rounded-sm' } },

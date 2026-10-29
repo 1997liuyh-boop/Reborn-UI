@@ -150,7 +150,7 @@ function onTap() {
         <!-- <view :class="absolute w-[2px] h-full bg-current rotate-45"></view>
 				<view :class="absolute w-[2px] h-full bg-current -rotate-45"></view> -->
         <view :class="ui.errorIcon()">
-          <view class="i-lucide-image-off size-[48rpx]" />
+          <view class="i-lucide-image size-[48rpx]" />
         </view>
       </slot>
     </view>

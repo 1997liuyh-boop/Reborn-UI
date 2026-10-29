@@ -41,7 +41,7 @@ export interface RebornLoadingMaskProps {
 const props = withDefaults(defineProps<RebornLoadingMaskProps>(), {
     visible: false,
     fixed: false,
-    type: 'ring',
+    type: 'outline',
     color: 'primary',
     size: '24px',
     zIndex: 2000,

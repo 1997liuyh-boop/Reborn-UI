@@ -30,7 +30,7 @@ export interface LoadingOptions {
   lock?: boolean;
   /** 加载文字（显示在图标下方） */
   text?: string;
-  /** 加载图标类型，默认 'ring' */
+  /** 加载图标类型，默认 'outline' */
   type?: LoadingType;
   /** 图标与文字颜色：预设色名或任意 CSS 颜色，默认 'primary' */
   color?: string;

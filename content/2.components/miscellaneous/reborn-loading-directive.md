@@ -241,7 +241,7 @@ function loadPanel() {
 | :--- | :--- | :--- | :--- | :--- |
 | `loading` | `boolean` | `false` | 是否处于加载中。 | Web |
 | `text` | `string` | - | 加载文字（显示在图标下方）。 | Web |
-| `type` | `LoadingType` | `'ring'` | 加载图标类型，与 `RebornLoading` 一致。 | Web |
+| `type` | `LoadingType` | `'outline'` | 加载图标类型，与 `RebornLoading` 一致。 | Web |
 | `color` | `string` | `'primary'` | 图标与文字颜色：预设色名或任意 CSS 颜色。 | Web |
 | `size` | `string \| number` | `'24px'` | 图标尺寸。 | Web |
 | `background` | `string` | - | 遮罩背景色（任意 CSS 颜色，覆盖默认 `bg-gray-1/80`）。 | Web |
@@ -292,7 +292,7 @@ loading.close()
 | `fullscreen` | `boolean` | 未指定 `target` 时 `true` | 全屏遮罩（挂载 `body`、`fixed` 铺满视口）。 | Web |
 | `lock` | `boolean` | `false` | 锁定滚动：全屏时使用全局引用计数锁（与 `RebornOverlay` 共享），局部时为目标元素添加 `overflow: hidden`。 | Web |
 | `text` | `string` | - | 加载文字（显示在图标下方）。 | Web |
-| `type` | `LoadingType` | `'ring'` | 加载图标类型。 | Web |
+| `type` | `LoadingType` | `'outline'` | 加载图标类型。 | Web |
 | `color` | `string` | `'primary'` | 图标与文字颜色：预设色名或任意 CSS 颜色。 | Web |
 | `size` | `string \| number` | `'24px'` | 图标尺寸。 | Web |
 | `background` | `string` | - | 遮罩背景色（任意 CSS 颜色，覆盖默认 `bg-gray-1/80`）。 | Web |

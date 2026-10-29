@@ -807,7 +807,7 @@ defineExpose({
         <div :class="ui.triggerIconWrapper()">
           <slot v-if="loading" name="loading-icon">
             <!-- size 必须给 100%：RebornLoading 会把 size 写成行内宽高，行内样式压过 class 上的尺寸 -->
-            <RebornLoading type="ring" color="currentColor" size="100%" :class="ui.triggerLoadingIcon()" />
+            <RebornLoading size="100%" :class="ui.triggerLoadingIcon()" />
           </slot>
           <slot v-else-if="isSearching" name="search-icon">
             <Icon name="lucide:search" :class="ui.searchIcon()" />

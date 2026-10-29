@@ -940,7 +940,7 @@ function scrollToActive(instant = false) {
           <div v-if="showArrow || showClearButton || loading" :class="ui.triggerIconWrapper()">
             <!-- 加载中优先占据整格：RebornLoading 替代箭头，此时清空按钮已被 showClearButton 关掉 -->
             <!-- size 必须给 100%：RebornLoading 会把 size 写成行内宽高，行内样式压过 class 上的尺寸 -->
-            <RebornLoading v-if="loading" type="ring" color="currentColor" size="100%"
+            <RebornLoading v-if="loading" size="100%"
               :class="ui.triggerLoadingIcon()" />
             <Icon v-else-if="showArrow" :name="icon" :class="ui.arrow()" />
             <span v-if="showClearButton" :class="ui.clearBtn({ class: showArrow ? undefined : 'static flex' })"

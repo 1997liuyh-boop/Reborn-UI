@@ -16,7 +16,7 @@ import RebornDialog from "~/components/reborn/ui/reborn-dialog/RebornDialog.vue"
 import RebornSwitch from "~/components/reborn/ui/reborn-switch/RebornSwitch.vue"
 import { message } from "~/components/reborn/ui/reborn-toast/index"
 import { uploadListTypes, uploadStatuses } from "~/components/reborn/ui/reborn-upload/reborn-upload.config"
-import { ajaxUpload, isVideoFile } from "~/components/reborn/ui/reborn-upload/reborn-upload.utils"
+import { ajaxUpload } from "~/components/reborn/ui/reborn-upload/reborn-upload.utils"
 import RebornUpload from "~/components/reborn/ui/reborn-upload/RebornUpload.vue"
 
 /** 列表形态的中英对照标签 */
@@ -244,9 +244,8 @@ const wallFiles = ref<UploadUserFile[]>([
 ])
 const previewOpen = shallowRef(false)
 const previewFile = shallowRef<UploadFile>()
-/** 预览弹窗里视频用播放器、图片用 img */
-const previewIsVideo = computed(() => !!previewFile.value && isVideoFile({ type: previewFile.value.raw?.type, name: previewFile.value.name }))
-function onWallPreview(file: UploadFile) {
+/** 视频通过自定义预览回调打开播放器，图片使用组件内置预览。 */
+function onVideoPreview(file: UploadFile) {
   previewFile.value = file
   previewOpen.value = true
 }
@@ -721,18 +720,14 @@ const disabledCardFiles = ref<UploadUserFile[]>([
 
     <DemoSection title="照片墙与预览">
       <template #description>
-        <code>list-type="picture-card"</code> 让卡片与上传入口排在同一行；传入 <code>on-preview</code> 后，悬停卡片出现预览按钮。
+        <code>list-type="picture-card"</code> 让卡片与上传入口排在同一行；图片默认使用 <code>RebornImage</code> 预览，支持缩放、旋转与多图切换。
       </template>
       <DemoBlock layout="stack">
         <RebornUpload
           v-model:file-list="wallFiles" list-type="picture-card" accept="image/*" multiple
-          :http-request="mockRequest" :on-preview="onWallPreview"
+          :http-request="mockRequest"
         />
       </DemoBlock>
-      <RebornDialog v-model="previewOpen" destroy-on-close :title="previewFile?.name" width="640px" :cancel-btn="false" :confirm-btn="false">
-        <video v-if="previewOpen && previewFile?.url && previewIsVideo" :src="previewFile.url" controls autoplay class="w-full rounded-sm" />
-        <img v-else-if="previewFile?.url" :src="previewFile.url" :alt="previewFile.name" class="w-full rounded-sm">
-      </RebornDialog>
     </DemoSection>
 
     <DemoSection title="视频预览">
@@ -761,12 +756,15 @@ const disabledCardFiles = ref<UploadUserFile[]>([
         </RebornUpload>
         <RebornUpload
           ref="videoCardRef" v-model:file-list="videoCardFiles" list-type="picture-card" accept="video/*" multiple
-          :http-request="mockRequest" :on-preview="onWallPreview"
+          :http-request="mockRequest" :on-preview="onVideoPreview"
         />
         <DemoNote tone="dimmed">
           「生成示例视频」用 canvas 现录一段 2 秒的视频，同时加入上面两个列表；也可以直接选择本地视频，照片墙悬停后点预览可播放。
         </DemoNote>
       </DemoBlock>
+      <RebornDialog v-model="previewOpen" destroy-on-close :title="previewFile?.name" width="640px" :cancel-btn="false" :confirm-btn="false">
+        <video v-if="previewOpen && previewFile?.url" :src="previewFile.url" controls autoplay class="w-full rounded-sm" />
+      </RebornDialog>
     </DemoSection>
 
     <DemoSection title="数量限制">
@@ -1032,7 +1030,7 @@ const disabledCardFiles = ref<UploadUserFile[]>([
 
     <DemoSection title="禁用">
       <template #description>
-        <code>disabled</code> 后不能选择文件，列表也不再显示删除按钮；照片墙仍可通过 <code>on-preview</code> 预览。
+        <code>disabled</code> 后不能选择文件，列表也不再显示删除按钮；图片仍可使用内置预览。
       </template>
       <DemoBlock layout="grid" :columns="2" align="start">
         <RebornUpload v-model:file-list="disabledFiles" disabled class="w-full">
@@ -1043,7 +1041,7 @@ const disabledCardFiles = ref<UploadUserFile[]>([
             点击上传
           </RebornButton>
         </RebornUpload>
-        <RebornUpload v-model:file-list="disabledCardFiles" list-type="picture-card" disabled :on-preview="onWallPreview" />
+        <RebornUpload v-model:file-list="disabledCardFiles" list-type="picture-card" disabled />
       </DemoBlock>
     </DemoSection>
   </div>

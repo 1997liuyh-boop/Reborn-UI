@@ -78,12 +78,12 @@ const files = ref<UploadUserFile[]>([]);
 ```
 
 ::tip
-图片类列表（`picture` / `picture-card`）在选中图片或视频时会用 `URL.createObjectURL` 生成本地预览地址，上传成功前就能看到缩略图；上传失败时这个地址保留，失败的图片仍显示缩略图并标红，方便辨认是哪一张。地址在文件移除、清空或组件卸载时释放；`text` 列表不生成。
+选中图片时会用 `URL.createObjectURL` 生成本地预览地址，三种列表均可点击预览；图片类列表（`picture` / `picture-card`）还会为视频生成地址，上传成功前就能看到缩略图。上传失败时地址保留，失败的图片仍显示缩略图并标红，方便辨认是哪一张。地址在文件移除、清空或组件卸载时释放。
 ::
 
 ### 拖拽上传
 
-`drag` 把触发区换成虚线拖放区，点击和拖入都能选择文件；拖入的文件同样按 `accept` 过滤。
+`drag` 把触发区换成虚线拖放区，点击和拖入都能选择文件；拖入的文件同样按 `accept` 过滤。默认显示加号与「点击或拖拽到此处上传」，`tip` 插槽显示在框内的上传文案下方。
 
 ```vue
 <template>
@@ -97,21 +97,17 @@ const files = ref<UploadUserFile[]>([]);
 
 ### 照片墙与预览
 
-`picture-card` 下悬停卡片中的图片出现操作层，操作层只盖住 88px 的图片区域、不盖卡片的留白；传入 `onPreview` 后操作层多出预览按钮，弹窗内容由调用方决定。
+`picture-card` 下悬停图片出现预览按钮，操作层只盖住 88px 的图片区域、不盖卡片的留白。图片默认复用 `RebornImage` 的预览器，支持缩放、旋转、翻转与同组图片切换；`text` / `picture` 列表点击图片文件名也可打开。传入 `onPreview` 后替代内置预览，视频与其他文件的预览由该回调自行实现。
 
 ```vue
 <script setup lang="ts">
-import type { UploadFile } from "~/components/reborn/ui/reborn-upload";
-
-const previewUrl = ref("");
-const previewVisible = ref(false);
-function handlePreview(file: UploadFile) {
-  previewUrl.value = file.url ?? "";
-  previewVisible.value = true;
-}
+const files = ref([
+  { name: "封面.png", url: "/images/cover.png" },
+  { name: "详情.png", url: "/images/detail.png" },
+]);
 </script>
 <template>
-  <RebornUpload v-model:file-list="files" action="/api/upload" list-type="picture-card" accept="image/*" multiple :on-preview="handlePreview" />
+  <RebornUpload v-model:file-list="files" action="/api/upload" list-type="picture-card" accept="image/*" multiple />
 </template>
 ```
 
@@ -372,7 +368,7 @@ const uploadRef = useTemplateRef("uploadRef");
 
 ### 禁用
 
-`disabled` 禁止选择文件，列表不再显示删除按钮；照片墙传了 `onPreview` 时预览按钮仍可用。处于禁用的表单组内时同样生效。插槽里的按钮由调用方提供，组件不会改它的外观，需要给按钮同步 `disabled`。
+`disabled` 禁止选择文件，列表不再显示删除按钮；内置图片预览与自定义 `onPreview` 仍可用。处于禁用的表单组内时同样生效。插槽里的按钮由调用方提供，组件不会改它的外观，需要给按钮同步 `disabled`。
 
 ```vue
 <template>
@@ -409,7 +405,7 @@ const uploadRef = useTemplateRef("uploadRef");
 | `disabled`        | `boolean`                                                                                                    | `false`      | 是否禁用；禁用后不能选择文件，列表也不再显示删除按钮；继承表单禁用状态                       |
 | `limit`           | `number`                                                                                                     | -            | 最多允许的文件数，本次选择会超出时触发 `onExceed`，且这批文件都不加入                        |
 | `directory`       | `boolean`                                                                                                    | `false`      | 只能选择文件夹，夹内文件递归展开后逐个加入列表                                               |
-| `onPreview`       | `(file: UploadFile) => void`                                                                                 | -            | 点击文件名或卡片预览按钮时触发；传入后文件名变为可点击                                       |
+| `onPreview`       | `(file: UploadFile) => void`                                                                                 | -            | 自定义文件预览，传入后替代内置的 RebornImage 图片预览，也可预览视频及其他文件                   |
 | `onRemove`        | `(file: UploadFile, uploadFiles: UploadFile[]) => void`                                                      | -            | 文件从列表移除后触发                                                                         |
 | `onSuccess`       | `(response: unknown, file: UploadFile, uploadFiles: UploadFile[]) => void`                                   | -            | 文件上传成功时触发                                                                           |
 | `onError`         | `(error: Error, file: UploadFile, uploadFiles: UploadFile[]) => void`                                        | -            | 文件上传失败时触发，失败的文件保留在列表里                                                   |
@@ -449,7 +445,7 @@ const uploadRef = useTemplateRef("uploadRef");
 | --------- | --------------------------------------- | ---------------------------------------------------------------------------- |
 | `default` | -                                       | 触发区内容；`text` / `picture` 非拖拽形态下组件不内置按钮，需在这里放按钮；同时提供 `trigger` 插槽时，改为渲染在触发区之后 |
 | `trigger` | -                                       | 触发文件选择的内容，优先于默认插槽                                           |
-| `tip`     | -                                       | 提示说明文字，`text` / `picture` 下在触发区下方，`picture-card` 下另起一行   |
+| `tip`     | -                                       | 提示说明文字，拖拽模式在框内，普通 `text` / `picture` 在触发区下方，`picture-card` 下另起一行 |
 | `file`    | `{ file: UploadFile, index: number }`   | 自定义单个文件的展示，替换整条列表项（照片墙下为整张卡片）的内容             |
 
 ### Expose

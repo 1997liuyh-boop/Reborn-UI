@@ -873,8 +873,6 @@ defineExpose({
           <div v-if="showArrow || showClearButton || loading" :class="ui.triggerIconWrapper()">
             <RebornLoading
               v-if="loading"
-              type="ring"
-              color="currentColor"
               size="100%"
               :class="ui.triggerLoadingIcon()"
             />

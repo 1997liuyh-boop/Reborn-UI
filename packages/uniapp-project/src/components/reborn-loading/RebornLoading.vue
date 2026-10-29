@@ -22,7 +22,7 @@ export type RebornLoadingProps = {
 
 const props = withDefaults(defineProps<RebornLoadingProps>(), {
     ui: () => ({}),
-    type: 'ring',
+    type: 'outline',
     color: 'primary',
     size: '30px'
 })

@@ -25,6 +25,8 @@ import theme, { defaultTransferFieldNames } from "./reborn-transfer.config";
 export interface TransferPaginationConfig {
   /** 每页条数，默认 10 */
   pageSize?: number;
+  /** 是否使用简单分页，默认 false */
+  simple?: boolean;
 }
 
 const props = withDefaults(defineProps<TransferProps>(), {
@@ -173,7 +175,7 @@ export interface TransferProps {
   showUndo?: boolean;
   /**
    * 是否开启列表分页；数据量大时建议开启，避免单页渲染过多条目
-   * 传 true 使用默认每页 10 条，或传入 { pageSize } 配置
+   * 传 true 使用默认每页 10 条，或传入 { pageSize, simple } 配置
    */
   pagination?: boolean | TransferPaginationConfig;
   /**
@@ -1543,7 +1545,7 @@ function getPanelMenu(panel: PanelDescriptor): PanelMenuState {
             <div v-if="paginationEnabled && panel.filtered.length" :class="ui.panelPagination()">
               <RebornPagination
                 :model-value="panel.currentPage" :total="panel.filtered.length"
-                :page-size="paginationPageSize" :disabled="isDisabled" size="sm" @update:model-value="panel.setPage"
+                :page-size="paginationPageSize" :simple="typeof props.pagination === 'object' && props.pagination.simple" :disabled="isDisabled" size="sm" @update:model-value="panel.setPage"
               />
             </div>
             <slot name="footer" :direction="panel.direction" :total="panel.total" :checked-count="panel.checkedCount" />

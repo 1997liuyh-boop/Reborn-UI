@@ -61,9 +61,9 @@ export default {
         /**
          * 触发器加载中指示器（RebornLoading）：占满尾部图标格子，替代箭头。
          * 转圈动画由 RebornLoading 自带，这里不必再挂 animate-spin；
-         * 颜色走 text-gray-5，配合 color="currentColor" 让指示器继承它。
+         * 颜色使用 RebornLoading 默认的 primary。
          */
-        triggerLoadingIcon: "size-full text-gray-5",
+        triggerLoadingIcon: "size-full",
 
         /* ---------------- 下拉列表 ---------------- */
 
@@ -127,9 +127,9 @@ export default {
          * gap 同时作用于主轴与交叉轴，因此换行后的行间距无需额外声明。
          */
         tagList: "flex min-w-0 flex-1 items-center gap-1 overflow-hidden",
-        tag: "rounded-sm! border-gray-3 bg-gray-2 text-gray-9",
+        tag: "rounded-sm!",
         tagLabel: "truncate",
-        tagClose: "shrink-0 text-gray-5 transition-colors hover:text-gray-8",
+        tagClose: "shrink-0",
         /** 标签关闭图标的尺寸 */
         tagCloseIcon: "size-full",
         /** collapse-tags 折叠后的 “+N” 标签 */
@@ -223,37 +223,37 @@ export default {
         },
         /**
          * 配色。同时决定两件事：
-         * 1. 触发器悬停使用色板第 6 阶，聚焦 / 展开沿用语义色（group-focus 依赖外层 group + tabindex）；
+         * 1. 触发器悬停使用色板第 6 阶，聚焦 / 展开使用语义色描边与 20% 透明度外圈；
          * 2. 选项选中态：底色取色阶第 2 阶、文字取第 6 阶（设计稿的 tag 填充 / default 规则）。
          * 色阶 token 自身已随主题切换，不可再写 dark: 前缀，否则深色模式二次翻转。
          */
         color: {
             primary: {
-                trigger: "hover:border-brand-6 group-focus:border-primary data-[state=open]:border-primary",
+                trigger: "hover:border-brand-6 group-focus:border-primary focus-within:border-primary data-[state=open]:border-primary ring-primary/20",
                 optionActive: "bg-brand-1 text-primary",
             },
             secondary: {
-                trigger: "hover:border-secondary-6 group-focus:border-secondary data-[state=open]:border-secondary",
+                trigger: "hover:border-secondary-6 group-focus:border-secondary focus-within:border-secondary data-[state=open]:border-secondary ring-secondary/20",
                 optionActive: "bg-secondary-1 text-secondary-6",
             },
             success: {
-                trigger: "hover:border-green-6 group-focus:border-success data-[state=open]:border-success",
+                trigger: "hover:border-green-6 group-focus:border-success focus-within:border-success data-[state=open]:border-success ring-success/20",
                 optionActive: "bg-green-1 text-green-6",
             },
             info: {
-                trigger: "hover:border-blue-6 group-focus:border-info data-[state=open]:border-info",
+                trigger: "hover:border-blue-6 group-focus:border-info focus-within:border-info data-[state=open]:border-info ring-info/20",
                 optionActive: "bg-blue-1 text-blue-6",
             },
             warning: {
-                trigger: "hover:border-orange-6 group-focus:border-warning data-[state=open]:border-warning",
+                trigger: "hover:border-orange-6 group-focus:border-warning focus-within:border-warning data-[state=open]:border-warning ring-warning/20",
                 optionActive: "bg-orange-1 text-orange-6",
             },
             error: {
-                trigger: "hover:border-red-6 group-focus:border-error data-[state=open]:border-error",
+                trigger: "hover:border-red-6 group-focus:border-error focus-within:border-error data-[state=open]:border-error ring-error/20",
                 optionActive: "bg-red-1 text-red-6",
             },
             neutral: {
-                trigger: "hover:border-gray-6 group-focus:border-neutral data-[state=open]:border-neutral",
+                trigger: "hover:border-gray-6 group-focus:border-neutral focus-within:border-neutral data-[state=open]:border-neutral ring-neutral/20",
                 optionActive: "bg-gray-1 text-gray-6",
             },
         },
@@ -283,7 +283,7 @@ export default {
         },
         error: {
             true: {
-                trigger: "border-red-5 hover:border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
+                trigger: "border-red-5 hover:border-red-5 group-focus:border-red-5 focus-within:border-red-5 data-[state=open]:border-red-5 ring-error/20",
             },
         },
         /**
@@ -296,6 +296,8 @@ export default {
         },
     },
     compoundVariants: [
+        // 外圈不占布局尺寸；禁用时不显示聚焦或展开外圈。
+        { disabled: false, class: { trigger: "group-focus:ring-2 focus-within:ring-2 data-[state=open]:ring-2" } },
         // borderless 形态本身没有描边宽度，出错时需要补一圈，否则错误态完全不可见
         { variant: "borderless", error: true, class: { trigger: "border" } },
         // underlined 形态只在底边报错，避免补出一整圈与形态语言冲突的红框

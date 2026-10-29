@@ -51,7 +51,7 @@ type LoadingType = 'outline' | 'ring' | 'spinner' | 'bars-scale' | 'blocks-shuff
 | `fullscreen` | 未传 `target` 时为 `true` | 挂到 `body` 并以 `fixed` 铺满视口；为 `true` 时忽略 `target`。 |
 | `lock` | `false` | 锁定滚动：全屏时使用与 `RebornDrawer`、`RebornOverlay` 共享计数的全局滚动锁，局部时给目标元素加 `overflow: hidden`。 |
 | `text` | - | 图标下方的文字。 |
-| `type` | `'ring'` | 图标类型，与 `RebornLoading` 的 `type` 一致。 |
+| `type` | `'outline'` | 图标类型，与 `RebornLoading` 的 `type` 一致。 |
 | `color` | `'primary'` | 预设色名（`primary` / `secondary` / `success` / `info` / `warning` / `error` / `neutral`）或任意 CSS 颜色，文字颜色跟随图标。 |
 | `size` | `'24px'` | 图标尺寸。 |
 | `background` | - | 遮罩背景色，覆盖默认的 `bg-gray-1/80`（gray-1 随主题反转，浅色为白、深色近黑）。 |

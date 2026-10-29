@@ -19,7 +19,7 @@ const defaultState = {
   fullscreen: false,
   lock: false,
   text: "正在同步订单数据…",
-  type: "ring",
+  type: "outline",
   color: "primary",
   customColor: "#7c3aed",
   size: 24,
@@ -86,7 +86,7 @@ const controls = [
         label: "图标类型",
         key: "type",
         component: "select" as const,
-        defaultValue: "ring",
+        defaultValue: "outline",
         props: { options: typeOptions },
       },
       {
@@ -142,7 +142,7 @@ const codeString = computed(() => {
   const mods = `${s.fullscreen ? ".fullscreen" : ""}${s.lock ? ".lock" : ""}`;
   const lines = ["<div", `  v-loading${mods}="loading"`];
   if (s.text) lines.push(`  reborn-loading-text="${s.text}"`);
-  if (s.type !== "ring") lines.push(`  reborn-loading-type="${s.type}"`);
+  if (s.type !== "outline") lines.push(`  reborn-loading-type="${s.type}"`);
   if (playgroundColor.value !== "primary") lines.push(`  reborn-loading-color="${playgroundColor.value}"`);
   if (s.size !== 24) lines.push(`  reborn-loading-size="${s.size}px"`);
   if (playgroundBackground.value) lines.push(`  reborn-loading-background="${playgroundBackground.value}"`);
@@ -267,7 +267,7 @@ const publishing = shallowRef(false);
 async function runPublishFlow() {
   if (publishing.value) return;
   publishing.value = true;
-  const loading = showLoading({ text: "正在连接服务器…", type: "ring", size: "30px" });
+  const loading = showLoading({ text: "正在连接服务器…", size: "30px" });
   loadingInstances.add(loading);
   try {
     pushLog("showLoading() 创建全屏加载实例");

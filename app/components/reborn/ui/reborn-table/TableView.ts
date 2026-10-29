@@ -306,7 +306,7 @@ export default defineComponent({
         // 懒加载子行期间显示等待光标；整表加载时按钮被禁用，同样是等待（加载遮罩也盖在上面）
         class: ['inline-flex size-6 shrink-0 items-center justify-center rounded-sm hover:bg-gray-3 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait', loading ? 'cursor-wait' : 'cursor-pointer'],
         onClick: (event: MouseEvent) => { event.stopPropagation(); state.toggleRowExpansion(item.row); },
-      }, [loading ? h(RebornLoading, { size: 12, type: 'ring', 'aria-hidden': true }) : chevron(expanded ? 'down' : 'right')]);
+      }, [loading ? h(RebornLoading, { size: 12, 'aria-hidden': true }) : chevron(expanded ? 'down' : 'right')]);
     }
     function radioKeydown(event: KeyboardEvent, item: TableVisibleRow) {
       if (!state.canSelect(item.row, item.index)) return;
@@ -520,7 +520,7 @@ export default defineComponent({
         }, () => [h(TableScrollContent, { render: renderScrollContent, afterRender: doLayout, slotRevision: props.slotRevision })]),
         // 拖拽落点指示线：横跨可视宽度，位置由拖拽逻辑直接写入，平时隐藏
         h('div', { ref: indicatorElement, 'aria-hidden': 'true', class: 'pointer-events-none absolute inset-x-0 z-20 hidden h-0.5 -translate-y-1/2 bg-primary' }),
-        props.table.loading ? h('div', { class: cls('loading'), role: 'status', 'aria-live': 'polite' }, slots.loading?.() ?? [h(RebornLoading, { size: 20, type: 'ring' }), h('span', '加载中')]) : null,
+        props.table.loading ? h('div', { class: cls('loading'), role: 'status', 'aria-live': 'polite' }, slots.loading?.() ?? [h(RebornLoading, { size: 20 }), h('span', '加载中')]) : null,
       ]),
       slots.footer ? h('div', { class: cls('footer') }, slots.footer({ data: state.processed.value, selection: state.getSelectionRows() })) : null,
       props.table.pagination ? h('div', { class: cls('pagination') }, [h(RebornPagination, {

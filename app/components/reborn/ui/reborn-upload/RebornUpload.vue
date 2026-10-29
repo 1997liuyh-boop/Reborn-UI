@@ -16,9 +16,10 @@ import type {
   UploadUserFile,
 } from './reborn-upload.config';
 import type { UploadChunkState } from './reborn-upload.utils';
-import { computed, isReadonly, onBeforeUnmount, ref, shallowRef, toRaw, useTemplateRef, watch } from 'vue';
+import { computed, isReadonly, nextTick, onBeforeUnmount, ref, shallowRef, toRaw, useTemplateRef, watch } from 'vue';
 import { useFormInject } from '~/composables/useFieldGroup';
 import { tv } from '~/lib/tv';
+import RebornImage from '../reborn-image/RebornImage.vue';
 import RebornLoading from '../reborn-loading/RebornLoading.vue';
 import RebornProgress from '../reborn-progress/RebornProgress.vue';
 import RebornText from '../reborn-text/RebornText.vue';
@@ -67,7 +68,7 @@ export interface RebornUploadProps {
   limit?: number;
   /** 只能选择文件夹，夹内文件递归展开后逐个加入列表。 */
   directory?: boolean;
-  /** 点击文件名或卡片预览按钮时触发；传入后文件名变为可点击。 */
+  /** 自定义文件预览；传入后替代内置图片预览，也可用于预览视频或其他文件。 */
   onPreview?: (file: UploadFile) => void;
   /** 文件从列表移除后触发。 */
   onRemove?: (file: UploadFile, uploadFiles: UploadFile[]) => void;
@@ -108,7 +109,7 @@ const slots = defineSlots<{
   default?: () => unknown;
   /** 触发文件选择的内容，优先于 default 插槽。 */
   trigger?: () => unknown;
-  /** 提示说明文字。 */
+  /** 提示说明文字，拖拽模式放在拖拽框内，其他模式放在触发区下方。 */
   tip?: () => unknown;
   /** 自定义单个文件的展示，替换整条列表项（照片墙下为整张卡片）的内容。 */
   file?: (props: { file: UploadFile; index: number }) => unknown;
@@ -210,7 +211,7 @@ function handleStart(rawFile: UploadRawFile) {
   if (disposed) return;
   if (!rawFile.uid) rawFile.uid = genFileId();
   const file: UploadFile = { name: rawFile.name, percentage: 0, status: 'ready', size: rawFile.size, uid: rawFile.uid, raw: rawFile };
-  if (props.listType !== 'text' && (isImageFile(rawFile) || isVideoFile(rawFile))) {
+  if (isImageFile(rawFile) || (props.listType !== 'text' && isVideoFile(rawFile))) {
     file.url = URL.createObjectURL(rawFile);
     objectUrls.add(file.url);
   }
@@ -577,17 +578,44 @@ const triggerAttrs = computed(() => {
   };
 });
 
+/** 图片预览复用 RebornImage，上传列表只负责选择当前图片与提供同组地址。 */
+const previewImageRef = useTemplateRef<InstanceType<typeof RebornImage>>('previewImageRef');
+const previewSrc = shallowRef('');
+const previewUrls = computed(() => uploadFiles.value.filter(file => file.url && isImage(file)).map(file => file.url!));
+
+function isImage(file: UploadFile) {
+  if (file.raw) return isImageFile(file.raw);
+  return isImageFile({ name: file.name }) || isImageFile({ name: file.url?.split(/[?#]/)[0] }) || !!file.url?.startsWith('data:image/');
+}
+
+function canPreview(file: UploadFile) {
+  return !!props.onPreview || (!!file.url && isImage(file));
+}
+
+// 图片增删或地址更新时销毁旧预览，避免继续访问已释放的本地地址。
+watch(previewUrls, (urls, previous) => {
+  if (urls.length !== previous.length || urls.some((url, index) => url !== previous[index])) previewSrc.value = '';
+});
+
 function previewAttrs(file: UploadFile) {
-  if (!props.onPreview) return {};
+  if (!canPreview(file)) return {};
   return { 'role': 'button', 'tabindex': 0, 'class': 'cursor-pointer hover:underline', 'aria-label': `预览 ${file.name}` };
 }
 
-function preview(file: UploadFile) {
-  props.onPreview?.(file);
+async function preview(file: UploadFile) {
+  if (props.onPreview) {
+    props.onPreview(file);
+    return;
+  }
+  if (!canPreview(file)) return;
+  const src = file.url!;
+  previewSrc.value = src;
+  await nextTick();
+  if (!disposed && previewSrc.value === src) previewImageRef.value?.showPreview();
 }
 
 function onPreviewKeydown(e: KeyboardEvent, file: UploadFile) {
-  if (!props.onPreview || (e.key !== 'Enter' && e.key !== ' ')) return;
+  if (!canPreview(file) || (e.key !== 'Enter' && e.key !== ' ')) return;
   e.preventDefault();
   preview(file);
 }
@@ -665,6 +693,10 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
 
 <template>
   <div :class="styles.root({ class: [props.class, props.ui?.root] })">
+    <RebornImage
+      v-if="previewSrc" :key="previewSrc" ref="previewImageRef" :src="previewSrc" :preview-list="previewUrls"
+      custom-class="hidden" aria-hidden="true" :show-loading="false"
+    />
     <input
       ref="inputRef" type="file" class="hidden" tabindex="-1" aria-hidden="true" :name="props.name"
       :accept="props.accept" :multiple="isMultiple" :disabled="isDisabled" v-bind="directoryAttrs"
@@ -697,30 +729,30 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
                 :class="styles.cardImage({ class: props.ui?.cardImage })"
               >
               <div v-else :class="styles.cardStatus({ class: props.ui?.cardStatus })">
-                <Icon name="lucide:file" class="size-[24px] shrink-0" />
+                <Icon name="cil:paperclip" class="size-6 shrink-0 text-gray-8" />
                 <div class="w-full min-w-0 text-center">
                   <RebornText :value="file.name" ellipsis tooltip />
                 </div>
               </div>
 
-              <div v-if="props.onPreview || !isDisabled" :class="styles.cardMask({ class: props.ui?.cardMask })">
+              <div v-if="canPreview(file) || !isDisabled" :class="styles.cardMask({ class: props.ui?.cardMask })">
                 <button
-                  v-if="props.onPreview" type="button" :aria-label="`预览 ${file.name}`"
+                  v-if="canPreview(file)" type="button" :aria-label="`预览 ${file.name}`"
                   :class="styles.cardAction({ class: props.ui?.cardAction })" @click="preview(file)"
                 >
-                  <Icon name="lucide:eye" class="size-[16px]" />
+                  <Icon name="lucide:eye" class="size-4 shrink-0" />
                 </button>
                 <button
                   v-if="!isDisabled && controlOf(file)" type="button" :aria-label="`${controlOf(file)?.label ?? ''} ${file.name}`"
                   :class="styles.cardAction({ class: props.ui?.cardAction })" @click="onControl(file)"
                 >
-                  <Icon :name="controlOf(file)?.icon ?? ''" class="size-[16px]" />
+                  <Icon :name="controlOf(file)?.icon ?? ''" class="size-4 shrink-0" />
                 </button>
                 <button
                   v-if="!isDisabled" type="button" :aria-label="removeLabel(file)"
                   :class="styles.cardAction({ class: props.ui?.cardAction })" @click="handleRemove(file)"
                 >
-                  <Icon name="lucide:trash-2" class="size-[16px]" />
+                  <Icon name="lucide:trash-2" class="size-4 shrink-0" />
                 </button>
               </div>
             </slot>
@@ -734,7 +766,7 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
       >
         <slot name="trigger">
           <slot>
-            <Icon name="lucide:plus" class="size-[24px]" />
+            <Icon name="lucide:upload" class="size-4" />
           </slot>
         </slot>
       </div>
@@ -745,7 +777,7 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
       </div>
     </template>
 
-    <!-- 文字 / 图片列表：触发区在上，提示与列表依次排在下方 -->
+    <!-- 文字 / 图片列表：拖拽提示放入框内，普通提示与文件列表放在触发区下方。 -->
     <template v-else>
       <div
         v-bind="triggerAttrs" :class="styles.trigger({ class: props.ui?.trigger })" @click="openPicker"
@@ -754,10 +786,13 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
         <div v-if="useDragger" :class="styles.dragger({ class: props.ui?.dragger })">
           <slot name="trigger">
             <slot>
-              <Icon name="lucide:cloud-upload" class="size-[32px] text-gray-6" />
-              <div>拖拽文件到此处，或 <span :class="isDisabled ? undefined : 'text-primary'">点击上传</span></div>
+              <span class="mb-4 flex text-gray-8"><Icon name="lucide:upload" class="size-4" /></span>
+              <div class="text-base text-gray-9" :class="slots.tip ? 'mb-2' : undefined">点击或拖拽到此处上传</div>
             </slot>
           </slot>
+          <div v-if="slots.tip" :class="styles.tip({ class: props.ui?.tip })">
+            <slot name="tip" />
+          </div>
         </div>
         <slot v-else name="trigger">
           <slot />
@@ -765,7 +800,7 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
       </div>
       <slot v-if="slots.trigger" />
 
-      <div v-if="slots.tip" :class="styles.tip({ class: props.ui?.tip })">
+      <div v-if="slots.tip && !useDragger" :class="styles.tip({ class: props.ui?.tip })">
         <slot name="tip" />
       </div>
 
@@ -773,11 +808,9 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
         <li v-for="(file, index) in uploadFiles" :key="file.uid" :class="statusStyles[file.status].item({ class: props.ui?.item })">
           <slot name="file" :file="file" :index="index">
             <!-- 图标：上传中换成 loading；图片列表下有地址的图片、视频显示缩略图 -->
-            <span v-if="file.status === 'uploading'" :class="styles.itemIcon({ class: props.ui?.itemIcon })">
-              <!-- 用组件库统一的 ring 加载图标而不是 lucide 的 loader-circle：后者只是 3/4 段开口弧，
-                   视觉重心偏离圆心约 2px，16px 下转起来像在绕圈抖动（text 形态没有底色方块作参照时最明显）；
-                   ring 接近整圆、重心落在圆心，且与按钮、选择器的加载态一致 -->
-              <RebornLoading type="ring" color="currentColor" :size="16" />
+            <span v-if="file.status === 'uploading'" :class="statusStyles.uploading.itemIcon({ class: props.ui?.itemIcon })">
+              <!-- 图片列表使用 24px 加载图标，文字列表使用 16px；占位尺寸保持不变。 -->
+              <RebornLoading :size="props.listType === 'picture' ? 24 : 16" />
             </span>
             <video
               v-else-if="props.listType === 'picture' && thumbOf(file) === 'video'" :src="videoSrc(file.url)" :aria-label="file.name"
@@ -789,7 +822,7 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
               :crossorigin="props.crossorigin" :class="styles.itemThumb({ class: props.ui?.itemThumb })"
             >
             <span v-else :class="styles.itemIcon({ class: props.ui?.itemIcon })">
-              <Icon name="lucide:file" class="size-[16px]" />
+              <Icon name="cil:paperclip" class="size-4 text-gray-8" />
             </span>
 
             <div
@@ -804,7 +837,7 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
               :trigger="['hover', 'focus']" placement="top"
             >
               <span tabindex="0" :aria-label="`上传失败：${file.errorMessage || '上传失败'}`" :class="statusStyles[file.status].itemStatus({ class: props.ui?.itemStatus })">
-                <Icon name="lucide:circle-alert" class="size-[16px]" />
+                <Icon name="lucide:circle-alert" class="size-4 shrink-0" />
               </span>
             </RebornTooltip>
             <span v-else-if="file.status === 'paused'" :class="statusStyles.paused.itemStatus({ class: props.ui?.itemStatus })">已暂停</span>
@@ -814,13 +847,13 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
                 v-if="controlOf(file)" type="button" :aria-label="`${controlOf(file)?.label ?? ''} ${file.name}`"
                 :class="statusStyles[file.status].itemControl({ class: props.ui?.itemControl })" @click="onControl(file)"
               >
-                <Icon :name="controlOf(file)?.icon ?? ''" class="size-[16px]" />
+                <Icon :name="controlOf(file)?.icon ?? ''" class="size-4 shrink-0" />
               </button>
               <button
                 type="button" :aria-label="removeLabel(file)"
                 :class="statusStyles[file.status].itemAction({ class: props.ui?.itemAction })" @click="handleRemove(file)"
               >
-                <Icon name="lucide:trash-2" class="size-[16px]" />
+                <Icon name="lucide:trash-2" class="size-4 shrink-0" />
               </button>
             </div>
 

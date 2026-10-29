@@ -23,7 +23,7 @@ const config = {
     label: 'inline-flex items-center justify-center truncate max-w-full min-w-0',
     leadingIcon: 'shrink-0',
     trailingIcon: 'shrink-0',
-    closeButton: 'inline-flex items-center justify-center rounded-full transition-colors hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer focus:outline-none',
+    closeButton: 'inline-flex items-center justify-center rounded-full text-gray-6 transition-colors hover:text-gray-9 cursor-pointer focus:outline-none',
     closeIcon: ''
   },
   /** 徽章变体配置 */
