@@ -98,7 +98,7 @@ export interface TransferOperationButtons {
 }
 
 /**
- * 不设尺寸档位：面板高度由父元素决定（根节点 h-full），文字统一取七级令牌的 text-sm，
+ * 不设尺寸档位：面板高度由父元素决定（根节点 h-full），计数与条目标题取 text-base，描述取 text-sm，
  * 搜索框与操作按钮分别交给 RebornInput / RebornButton 的 sm 档。
  */
 const config = {
@@ -125,7 +125,10 @@ const config = {
      * 下拉触发器：传给 RebornSelect 的 triggerUi.trigger。
      * 覆盖 sm 档的 h-6，以内容高度展示头部计数；h-auto! 沿用头部触发器的优先级。
      */
-    headerSelectTrigger: 'h-auto! w-auto gap-1 bg-transparent text-gray-7',
+    headerSelectTrigger: 'h-auto! w-auto gap-1 bg-transparent text-base text-gray-9',
+    /** 下拉箭头固定为 16px，覆盖 RebornSelect 的 sm 档图标尺寸 */
+    headerSelectIconWrapper: 'size-4',
+    headerSelectArrow: 'text-lg text-gray-8',
     /** 下拉浮层：传给 RebornSelect 的 triggerUi.dropdown，浮层挂到 body；触发器只有计数文字宽，这里给出最小宽度 */
     headerSelectDropdown: 'min-w-40 max-w-64',
     /** 单个选项：传给 RebornSelect 的 ui.option，默认留空沿用下拉选择的选项样式 */
@@ -135,7 +138,7 @@ const config = {
     panelTitleArea: 'flex min-w-0 flex-1 items-center justify-end gap-2',
     panelTitle: 'text-sm font-semibold text-gray-9 truncate',
     /** 计数文案：显示全选复选框时作为它的 label，隐藏时单独显示在头部左侧 */
-    panelCount: 'shrink-0 whitespace-nowrap text-sm text-gray-7',
+    panelCount: 'shrink-0 whitespace-nowrap text-base text-gray-9',
 
     /** 搜索 + 列表 + 底部的内容区，占满头部以下的全部高度 */
     panelContent: 'flex min-h-0 flex-1 flex-col',
@@ -176,11 +179,11 @@ const config = {
     /** 单个列表项。shrink-0 防止条目较多时被列表的 flex 布局压扁 */
     item: 'flex shrink-0 items-center gap-2 cursor-pointer transition-colors select-none px-1.5 py-1',
     /** 选中条目的底色，具体色值由 color 变体给出 */
-    itemSelected: '',
+    itemSelected: 'rounded-sm',
     itemContent: 'flex-1 min-w-0',
-    /** 条目主文案。行高由 text-sm 令牌自带，不写 leading-（令牌行高 = 字号 + 8px） */
-    itemLabel: 'text-sm text-gray-9',
-    itemDesc: 'text-sm text-gray-5 truncate mt-0.5',
+    /** 条目主文案与描述使用字号令牌自带行高，二者相隔 2px */
+    itemLabel: 'text-base text-gray-8',
+    itemDesc: 'text-sm text-gray-7 truncate mt-0.5',
 
     /** 单向模式右侧条目撤回按钮 */
     itemUndoBtn:
@@ -199,6 +202,11 @@ const config = {
   },
 
   variants: {
+    /** 指定单个面板宽度后不再伸缩；缺省继续均分父容器的可用空间 */
+    fixedWidth: {
+      true: { panel: 'flex-none' },
+      false: {},
+    },
     /** 勾选框圆角；rounded 沿用 RebornCheckbox 自带的 rounded-sm，不再额外覆盖 */
     checkShape: {
       square: {

@@ -52,10 +52,12 @@ const defaultState: PlaygroundState = {
   closeOn: "mousedown",
   portal: true,
   shortcuts: false,
+  shortcutPosition: "left",
   showWeekNumber: false,
   unlinkPanels: false,
   singlePanel: false,
   showToday: false,
+  highlightToday: false,
 };
 
 /** 演练场当前配置：控制面板整体替换对象，绑定值由预览区经 v-model:value 写回 */
@@ -187,6 +189,18 @@ const controls = [
         defaultValue: false,
       },
       {
+        label: "快捷选项位置",
+        key: "shortcutPosition",
+        component: "select" as const,
+        defaultValue: "left",
+        props: {
+          options: [
+            { label: "左侧", value: "left" },
+            { label: "右侧", value: "right" },
+          ],
+        },
+      },
+      {
         label: "显示周数（week 类型无效）",
         key: "showWeekNumber",
         component: "checkbox" as const,
@@ -210,6 +224,7 @@ const controls = [
         component: "checkbox" as const,
         defaultValue: false,
       },
+      { label: "高亮今天（默认关闭）", key: "highlightToday", component: "checkbox" as const, defaultValue: false },
     ],
   },
 ];
@@ -239,10 +254,12 @@ const pickerCode = computed(() => {
     `:portal="${s.portal}"`,
     `active-type="${s.activeType}"`,
     playgroundShortcuts.value.length ? ':shortcuts="shortcuts"' : ':shortcuts="[]"',
+    `shortcut-position="${s.shortcutPosition}"`,
     `:show-week-number="${s.showWeekNumber}"`,
     `:unlink-panels="${s.unlinkPanels}"`,
     `:single-panel="${s.singlePanel}"`,
     `:show-today="${s.showToday}"`,
+    `:highlight-today="${s.highlightToday}"`,
     '@change="onChange"',
     '@visible-change="onVisibleChange"',
     '@calendar-change="onCalendarChange"',
@@ -456,7 +473,7 @@ const customRangeUi = {
         点击触发器展开日期面板，选中后自动收起。不传
         <code>value-format</code>
         时绑定值是 Date 对象，传了则按格式输出字符串；<code>format</code>
-        只改触发器里的展示文本，不影响绑定值。
+        只改触发器里的展示文本，不影响绑定值。全部类型支持手动输入：年用 <code>YYYY</code>，月用 <code>YYYY-MM</code>，季度用 <code>YYYY-Q1</code>，日期和周用 <code>YYYY-MM-DD</code>，日期时间用 <code>YYYY-MM-DD HH:mm:ss</code>；回车或离开输入框后确认，多选用逗号追加，悬停只预览。
       </template>
       <DemoBlock layout="grid" :columns="3" align="start">
         <DemoItem label="绑定 Date 对象" note="没有 value-format，选中后拿到的是 Date">
@@ -465,7 +482,7 @@ const customRangeUi = {
             <span class="font-mono text-xs">{{ formatDisplay(basicDateValue) }}</span>
           </DemoNote>
         </DemoItem>
-        <DemoItem label="绑定字符串" note="value-format 决定绑定值的格式">
+        <DemoItem label="绑定字符串" note="可输入 YYYY-MM-DD，回车确认；无效日期恢复原值">
           <RebornDatePicker v-model="basicStringValue" value-format="YYYY-MM-DD" class="w-full" />
           <DemoNote tone="dimmed">
             <span class="font-mono text-xs">{{ formatDisplay(basicStringValue) }}</span>
@@ -709,11 +726,11 @@ const customRangeUi = {
     <DemoSection title="快捷选项">
       <template #description>
         <code>shortcuts</code>
-        在面板左侧列出常用日期，点击后直接写回并收起。<code>value</code>
+        列出常用日期，<code>shortcut-position</code> 可设置在面板左侧或右侧，点击后直接写回并收起。<code>value</code>
         写成函数才能每次点击都按当天重新计算，范围类型的函数返回 [起点, 终点]。
       </template>
       <DemoBlock layout="grid" :columns="2" align="start">
-        <DemoItem label="单值">
+        <DemoItem label="单值 · 左侧快捷选项">
           <RebornDatePicker
             v-model="singleShortcutValue"
             value-format="YYYY-MM-DD"
@@ -724,12 +741,13 @@ const customRangeUi = {
             <span class="font-mono text-xs">{{ formatDisplay(singleShortcutValue) }}</span>
           </DemoNote>
         </DemoItem>
-        <DemoItem label="范围">
+        <DemoItem label="范围 · 右侧快捷选项">
           <RebornDatePicker
             v-model="rangeShortcutValue"
             type="daterange"
             value-format="YYYY-MM-DD"
             :shortcuts="rangeShortcuts"
+            shortcut-position="right"
             class="w-full"
           />
           <DemoNote tone="dimmed">

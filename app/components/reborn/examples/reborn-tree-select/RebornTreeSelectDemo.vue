@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TreeSelectValue } from "~/components/reborn/ui/reborn-tree-select/reborn-tree-select.config";
-import type { TreeSelectProps } from "~/components/reborn/ui/reborn-tree-select/RebornTreeSelect.vue";
+import type { TreeSelectProps, TreeSelectSearchContext } from "~/components/reborn/ui/reborn-tree-select/RebornTreeSelect.vue";
+import type { TreeDataNode } from "~/components/reborn/ui/reborn-tree/reborn-tree.config";
 import { DemoBlock, DemoItem, DemoNote, DemoSection, Icon, Playground } from "#components";
 import { computed, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
@@ -86,6 +87,23 @@ const customItem = shallowRef<TreeSelectValue>("design");
 const selectValue = shallowRef("web");
 const selectOptions = [{ label: "前端开发", value: "web" }];
 const variants = { outlined: "描边", filled: "填充", borderless: "无边框", underlined: "下划线" };
+/** 异步搜索单独维护数据，与 loadData 一样由回调写回 treeData。 */
+const remoteTreeData = shallowRef<TreeDataNode[]>(treeData);
+const remoteValue = shallowRef<TreeSelectValue>(null);
+/** 模拟服务端沿祖先路径返回结果，空关键词恢复全部团队。 */
+function searchTeamNodes(nodes: TreeDataNode[], keyword: string): TreeDataNode[] {
+  if (!keyword) return nodes;
+  return nodes.flatMap((node) => {
+    const children = searchTeamNodes(node.children ?? [], keyword);
+    const matches = [node.key, node.title].some(value => String(value ?? "").toLowerCase().includes(keyword));
+    return matches || children.length ? [{ ...node, children }] : [];
+  });
+}
+/** 模拟网络延迟；写回前检查取消信号，旧请求不能覆盖新结果。 */
+async function searchTeams(keyword: string, { signal }: TreeSelectSearchContext) {
+  await new Promise(resolve => setTimeout(resolve, 350));
+  if (!signal.aborted) remoteTreeData.value = searchTeamNodes(treeData, keyword.toLowerCase());
+}
 </script>
 
 <template>
@@ -176,13 +194,23 @@ const variants = { outlined: "描边", filled: "填充", borderless: "无边框"
       </DemoBlock>
     </DemoSection>
     <DemoSection title="搜索节点">
-      <template #description><code>allowSearch</code> 在选择框内输入关键词，保留匹配节点及祖先路径；不会清除其他已选节点。</template>
+      <template #description><code>allowSearch</code> 默认关闭，开启后同时匹配 key 与标题；使用 <code>fieldNames</code> 时按映射字段搜索，并保留祖先路径。</template>
       <DemoBlock layout="stack">
-        <RebornTreeSelect :tree-data="treeData" allow-search placeholder="输入“设计”搜索团队" class="w-full max-w-md" />
+        <RebornTreeSelect :tree-data="treeData" allow-search placeholder="输入“设计”或 design 搜索团队" class="w-full max-w-md" />
         <RebornTreeSelect
           :tree-data="treeData" multiple allow-search collapse-tags collapse-tags-tooltip clearable
           placeholder="搜索并选择多个团队" class="w-full max-w-md"
         />
+      </DemoBlock>
+    </DemoSection>
+    <DemoSection title="异步搜索">
+      <template #description>开启 <code>allowSearch</code> 并传入 <code>searchData</code>；与 <code>loadData</code> 一样返回 Promise 并写回 <code>treeData</code>，组件负责加载状态。</template>
+      <DemoBlock layout="stack">
+        <RebornTreeSelect
+          v-model="remoteValue" :tree-data="remoteTreeData" :search-data="searchTeams" allow-search clearable
+          placeholder="输入名称或 key，模拟异步搜索" class="w-full max-w-md"
+        />
+        <DemoNote tone="dimmed">此例模拟 350ms 网络延迟；回调通过 signal 检查请求是否已取消，清空输入恢复全部团队。</DemoNote>
       </DemoBlock>
     </DemoSection>
     <DemoSection title="浮层行为">

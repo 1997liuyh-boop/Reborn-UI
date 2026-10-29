@@ -5,7 +5,7 @@ import { defaultWindow, useEventListener } from "@vueuse/core";
 import { computed, getCurrentInstance, onBeforeUpdate, onDeactivated, onUnmounted, shallowRef, useTemplateRef, watch } from "vue";
 import { useFloatingDismiss } from "~/composables/useFloatingDismiss";
 import { useFloatingHost } from "~/composables/useFloatingHost";
-import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
+import { getArrowCenter, getArrowShadow, resolveFloatingPosition } from "~/lib/floating";
 import { resolvePlacement } from "~/lib/placement";
 import { tv } from "~/lib/tv";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
@@ -303,12 +303,19 @@ function updatePosition() {
   });
 }
 
+/** 面板实际的 box-shadow，展开时读取，供箭头投影底片换算 */
+const panelShadow = shallowRef("none");
+
 const onBeforeEnter = (el: Element) => {
   calculatePosition(el as HTMLElement);
 };
 
 const onEnter = (el: Element) => {
   calculatePosition(el as HTMLElement);
+  // 面板实际的阴影（随 ui.content 覆盖走，如 Popconfirm 的双层阴影），供箭头投影底片换算；
+  // 面板到 enter 才插入文档，before-enter 时读不到计算样式
+  const content = el.firstElementChild;
+  if (props.arrow && content) panelShadow.value = getComputedStyle(content).boxShadow;
 };
 
 let resizeObserver: ResizeObserver | null = null;
@@ -408,6 +415,19 @@ const arrowStyle = computed(() => {
   };
 });
 
+/**
+ * 箭头投影底片：与箭头同形同位，只带面板的阴影（偏移已换算到旋转后的坐标系，见 getArrowShadow）。
+ * z-index -1 让它垫到面板背后，只有露出面板的那截阴影可见，接住箭头尖；
+ * 向上弹出时箭头不再像贴在面板阴影带上的另一层。底色与描边置透明，ui.arrow 覆盖的颜色也不会透出来
+ */
+const arrowShadowStyle = computed(() => ({
+  ...arrowStyle.value,
+  zIndex: "-1",
+  boxShadow: getArrowShadow(panelShadow.value),
+  background: "transparent",
+  borderColor: "transparent",
+}));
+
 const b = tv(theme);
 const ui = computed(() => {
   const s = b({
@@ -462,6 +482,7 @@ defineExpose({
             :style="{ margin: `-${placementInfo.offset}px` }"
           />
 
+          <div v-if="arrow" :class="ui.arrow()" :style="arrowShadowStyle" aria-hidden="true" />
           <div v-if="arrow" :class="ui.arrow()" :style="arrowStyle" />
         </div>
       </RebornTransition>

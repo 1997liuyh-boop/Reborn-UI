@@ -95,7 +95,7 @@ export interface RebornTabsProps {
   draggable?: boolean;
   /** 切换标签的触发方式 */
   trigger?: TabsTrigger;
-  /** 标签超出容器时的导航方式：scroll 仅滚动，arrows 两端箭头分步滚动，dropdown 末尾下拉选标；后两者只在真正溢出时渲染按钮 */
+  /** 标签超出容器时的导航方式：scroll 两侧箭头滚动，dropdown 在有隐藏标签的一侧显示省略号，悬停展开对应列表 */
   overflow?: TabsOverflow;
   /** 被选中标签的滚动位置，auto 只在超出可视区域时滚动，数字为直接指定的滚动距离 */
   scrollPosition?: "start" | "end" | "center" | "auto" | number;
@@ -108,6 +108,7 @@ export interface RebornTabsProps {
 const activeKey = defineModel<TabKey | undefined>("activeKey", { default: undefined });
 
 const wrapperRef = useTemplateRef<HTMLElement>('wrapperRef');
+const navRef = useTemplateRef<HTMLElement>('navRef');
 const listRef = useTemplateRef<HTMLElement>('listRef');
 /** 内容区内侧的无内边距容器，高度过渡锁在这一层 */
 const stageRef = useTemplateRef<HTMLElement>('stageRef');
@@ -224,14 +225,13 @@ const isLiquid = computed(() => ["rounded", "capsule"].includes(props.type));
 /** 可编辑模式才渲染增加按钮 */
 const showAdd = computed(() => props.editable && props.showAddButton);
 
-/** 标签列是否真的超出了滚动容器，箭头与下拉开关都只在此时渲染 */
+/** 标签列是否真的超出了头部，省略号只在此时渲染 */
 const hasOverflow = shallowRef(false);
-/** 是否还能向前 / 向后滚动，箭头据此置灰；1px 容差吸收亚像素误差 */
 const canScrollPrev = shallowRef(false);
 const canScrollNext = shallowRef(false);
-
-/** 当前未完整落在可视区域内的标签 key，下拉选标只列这些；随滚动与尺寸变化实时维护 */
-const hiddenKeys = shallowRef<TabKey[]>([]);
+type OverflowSide = "start" | "end";
+/** 两侧分别保存未完整露出的标签，滚动时只更新发生变化的一侧。 */
+const hiddenKeys = shallowRef<Record<OverflowSide, TabKey[]>>({ start: [], end: [] });
 
 /**
  * 逐个标签与滚动容器的视口矩形对比，没完整露出的都算隐藏（半截露出的也点不准，一并收进下拉）。
@@ -245,13 +245,15 @@ function updateHiddenTabs() {
   const view = wrapper.getBoundingClientRect();
   const viewStart = (vertical ? view.top : view.left) - 1;
   const viewEnd = (vertical ? view.bottom : view.right) + 1;
-  const next: TabKey[] = [];
+  const next: Record<OverflowSide, TabKey[]> = { start: [], end: [] };
   list.querySelectorAll<HTMLElement>("[role=\"tab\"]").forEach((tab, index) => {
     const rect = tab.getBoundingClientRect();
     const start = vertical ? rect.top : rect.left;
     const end = vertical ? rect.bottom : rect.right;
     const pane = panes.value[index];
-    if (pane && (start < viewStart || end > viewEnd)) next.push(pane.key);
+    if (!pane) return;
+    if (start < viewStart) next.start.push(pane.key);
+    if (end > viewEnd) next.end.push(pane.key);
   });
   // 滚动事件里每帧都会走到这，内容没变就不写，避免无谓地触发下拉列表重渲染
   if (JSON.stringify(next) !== JSON.stringify(hiddenKeys.value)) hiddenKeys.value = next;
@@ -264,66 +266,67 @@ function updateOverflowState() {
   const scrollSize = vertical ? wrapper.scrollHeight : wrapper.scrollWidth;
   const view = vertical ? wrapper.clientHeight : wrapper.clientWidth;
   const scrolled = vertical ? wrapper.scrollTop : wrapper.scrollLeft;
-  hasOverflow.value = scrollSize - view > 1;
+  // 导航按钮占用的空间加回后再判断，容器变宽时才能正确退出溢出模式。
+  const controls = navRef.value?.querySelectorAll<HTMLElement>(":scope > [data-tabs-overflow], :scope > [data-tabs-scroll]");
+  const gap = navRef.value ? Number.parseFloat(getComputedStyle(navRef.value)[vertical ? "rowGap" : "columnGap"]) || 0 : 0;
+  const reserved = Array.from(controls ?? []).reduce((sum, control) => sum + (vertical ? control.offsetHeight : control.offsetWidth) + gap, 0);
+  hasOverflow.value = scrollSize - view - reserved > 1;
   canScrollPrev.value = scrolled > 1;
   canScrollNext.value = scrolled + view < scrollSize - 1;
   if (props.overflow === "dropdown") updateHiddenTabs();
 }
 
-const showArrows = computed(() => props.overflow === "arrows" && hasOverflow.value);
 const showDropdown = computed(() => props.overflow === "dropdown" && hasOverflow.value);
+const showScrollButtons = computed(() => props.overflow === "scroll" && hasOverflow.value);
 
-/**
- * 溢出导航模式下滚动容器两端做渐隐（mask-image）：标签自身淡出成透明，
- * 读起来就是滑进箭头 / 下拉按钮下面。不用叠深色遮罩，明暗主题与任何底色天然成立。
- * 渐隐段固定 28px，滚过哪一端才在哪一端开孔，滚到端点即恢复实心——
- * 四种组合各写成完整的字面量类名，Tailwind 才能静态扫描到
- */
-const scrollMaskClass = computed(() => {
-  if (props.overflow !== "arrows" && props.overflow !== "dropdown") return "";
-  if (!hasOverflow.value) return "";
-  const prev = canScrollPrev.value;
-  const next = canScrollNext.value;
-  if (!prev && !next) return "";
-  if (isVertical.value) {
-    if (prev && next)
-      return "[mask-image:linear-gradient(to_bottom,transparent,black_28px,black_calc(100%-28px),transparent)]";
-    if (prev) return "[mask-image:linear-gradient(to_bottom,transparent,black_28px)]";
-    return "[mask-image:linear-gradient(to_bottom,black_calc(100%-28px),transparent)]";
-  }
-  if (prev && next)
-    return "[mask-image:linear-gradient(to_right,transparent,black_28px,black_calc(100%-28px),transparent)]";
-  if (prev) return "[mask-image:linear-gradient(to_right,transparent,black_28px)]";
-  return "[mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)]";
-});
-
-/** 箭头每次滚动可视区的八成，留两成重叠让人对得上滚动前后的位置 */
+/** 每次滚动可视区的八成，保留相邻标签作为位置参照。 */
 function scrollByStep(direction: 1 | -1) {
   const wrapper = wrapperRef.value;
   if (!wrapper) return;
-  const vertical = isVertical.value;
-  const delta = direction * (vertical ? wrapper.clientHeight : wrapper.clientWidth) * 0.8;
-  wrapper.scrollBy(vertical ? { top: delta, behavior: "smooth" } : { left: delta, behavior: "smooth" });
+  const distance = direction * (isVertical.value ? wrapper.clientHeight : wrapper.clientWidth) * 0.8;
+  const behavior = prefersReducedMotion() ? "instant" : "smooth";
+  wrapper.scrollBy(isVertical.value ? { top: distance, behavior } : { left: distance, behavior });
 }
 
-/** 下拉选标只列被滚出可视区域的标签：看得见的标签直接点头部就行，列全量反而要在长列表里找 */
-const dropdownPanes = computed(() => {
-  const hidden = new Set(hiddenKeys.value);
-  return panes.value.filter(pane => hidden.has(pane.key));
-});
+const dropdownPanes = computed(() => ({
+  start: panes.value.filter(pane => hiddenKeys.value.start.includes(pane.key)),
+  end: panes.value.filter(pane => hiddenKeys.value.end.includes(pane.key)),
+}));
+const dropdownOpen = shallowRef<OverflowSide | null>(null);
+let dropdownTimer: ReturnType<typeof setTimeout> | undefined;
 
-/** 下拉选标的展开状态；点面板外任意处收起 */
-const dropdownOpen = shallowRef(false);
-const dropdownRef = useTemplateRef<HTMLElement>('dropdownRef');
-onClickOutside(dropdownRef, () => {
-  dropdownOpen.value = false;
-});
+function closeDropdown() {
+  clearTimeout(dropdownTimer);
+  dropdownOpen.value = null;
+}
+
+function openDropdown(side: OverflowSide) {
+  clearTimeout(dropdownTimer);
+  if (!dropdownPanes.value[side].length) return;
+  dropdownOpen.value = side;
+}
+
+/** 延迟收起，让指针能跨过按钮与面板之间的间距。 */
+function leaveDropdown(event: MouseEvent) {
+  const target = event.currentTarget;
+  if (target instanceof HTMLElement && target.contains(document.activeElement)) return;
+  dropdownTimer = setTimeout(closeDropdown, 120);
+}
+
+function blurDropdown(event: FocusEvent) {
+  const target = event.currentTarget;
+  if (target instanceof HTMLElement && event.relatedTarget instanceof Node && target.contains(event.relatedTarget)) return;
+  closeDropdown();
+}
+
+onClickOutside(navRef, closeDropdown);
 
 function handleDropdownPick(pane: TabPaneMeta) {
   if (pane.disabled) return;
-  dropdownOpen.value = false;
+  closeDropdown();
   emit("tabClick", pane.key);
-  switchTo(pane.key);
+  if (pane.key === currentKey.value) void refresh();
+  else switchTo(pane.key);
 }
 
 const uiOverrides = computed(() => {
@@ -521,7 +524,7 @@ function handleDragEnd() {
   dragMoved = false;
 }
 
-/** 指示器位置由测量标题得到，写成行内样式避免为每个位置生成一套类名 */
+/** 指示条默认跟随标题，横向 stretch 时占满标签；位置写成行内样式，避免逐个生成类名 */
 const indicatorStyle = shallowRef<Record<string, string>>({ opacity: "0" });
 let indicatorCurrent: { start: number; size: number; vertical: boolean } | undefined;
 let indicatorTarget: typeof indicatorCurrent;
@@ -567,7 +570,9 @@ function updateIndicator() {
     return;
   }
   const listRect = list.getBoundingClientRect();
-  const rect = title.getBoundingClientRect();
+  const rect = props.stretch && !isVertical.value && tab
+    ? tab.getBoundingClientRect()
+    : title.getBoundingClientRect();
   const next = {
     start: isVertical.value ? rect.top - listRect.top : rect.left - listRect.left,
     size: isVertical.value ? rect.height : rect.width,
@@ -653,12 +658,12 @@ function scrollActiveIntoView() {
     return;
   }
 
-  const listRect = list.getBoundingClientRect();
+  const wrapperRect = wrapper.getBoundingClientRect();
   const rect = tab.getBoundingClientRect();
-  const start = vertical ? rect.top - listRect.top : rect.left - listRect.left;
   const size = vertical ? rect.height : rect.width;
   const view = vertical ? wrapper.clientHeight : wrapper.clientWidth;
   const current = vertical ? wrapper.scrollTop : wrapper.scrollLeft;
+  const start = current + (vertical ? rect.top - wrapperRect.top - wrapper.clientTop : rect.left - wrapperRect.left - wrapper.clientLeft);
 
   let next = current;
   if (props.scrollPosition === "start") next = start;
@@ -668,9 +673,12 @@ function scrollActiveIntoView() {
   else if (start < current) next = start;
   else if (start + size > current + view) next = start + size - view;
 
-  next = Math.max(0, next);
+  const maximum = Math.max(0, (vertical ? wrapper.scrollHeight : wrapper.scrollWidth) - view);
+  next = Math.min(maximum, Math.max(0, next));
   if (next === current) return;
-  wrapper.scrollTo(vertical ? { top: next, behavior: "smooth" } : { left: next, behavior: "smooth" });
+  // 省略号按侧显隐会改变视口尺寸，直接定位后在本轮刷新中校正，避免滚动动画与布局互相追赶。
+  const behavior = props.overflow === "dropdown" || prefersReducedMotion() ? "instant" : "smooth";
+  wrapper.scrollTo(vertical ? { top: next, behavior } : { left: next, behavior });
 }
 
 /**
@@ -702,8 +710,18 @@ function observeTabs() {
 async function refresh() {
   await nextTick();
   observeTabs();
-  updateOverlays();
-  scrollActiveIntoView();
+  // 两侧省略号各可能改变一次布局，按最终可视区校正落点，不为隐藏按钮保留空白。
+  for (let pass = 0; pass < 3; pass++) {
+    updateOverlays();
+    await nextTick();
+    const wrapper = wrapperRef.value;
+    const size = isVertical.value ? wrapper?.clientHeight : wrapper?.clientWidth;
+    scrollActiveIntoView();
+    if (props.overflow !== "dropdown") break;
+    updateOverflowState();
+    await nextTick();
+    if (size === (isVertical.value ? wrapper?.clientHeight : wrapper?.clientWidth)) break;
+  }
 }
 
 function switchTo(key: TabKey) {
@@ -715,6 +733,7 @@ function switchTo(key: TabKey) {
 
 function handleTabClick(pane: TabPaneMeta) {
   if (pane.disabled) return;
+  closeDropdown();
   emit("tabClick", pane.key);
   switchTo(pane.key);
 }
@@ -798,7 +817,10 @@ watch(
 );
 
 // overflow 也在列：运行时切到 dropdown 时隐藏标签清单还没算过，要补一次测量
-watch([currentKey, () => panes.value, () => props.type, () => props.size, () => props.overflow, resolvedPosition], refresh);
+watch([currentKey, () => panes.value, () => props.type, () => props.size, () => props.stretch, () => props.overflow, () => props.scrollPosition, resolvedPosition], refresh);
+watch([showDropdown, dropdownPanes], () => {
+  if (!showDropdown.value || (dropdownOpen.value && !dropdownPanes.value[dropdownOpen.value].length)) closeDropdown();
+});
 
 watch(
   () => panes.value.length,
@@ -835,6 +857,7 @@ onUpdated(() => {
   if (indicatorCurrent) applyIndicator(indicatorCurrent, false);
 });
 onBeforeUnmount(() => {
+  closeDropdown();
   releaseStage();
   indicatorRun++;
   indicatorPlayback?.stop();
@@ -862,23 +885,50 @@ defineExpose({
 
 <template>
   <div v-bind="$attrs" :class="ui.root" :data-position="resolvedPosition">
-    <div :class="ui.nav">
-      <!-- 头部起始侧的额外内容：水平方向靠左、垂直方向靠顶，排在箭头与标签列之前 -->
+    <div ref="navRef" :class="ui.nav" @keydown.esc.stop.prevent="closeDropdown">
+      <!-- 头部起始侧的额外内容：水平方向靠左、垂直方向靠顶，排在省略号与标签列之前 -->
       <div v-if="$slots['left-extra']" :class="ui.leftExtra">
         <slot name="left-extra" />
       </div>
 
-      <!-- 向前箭头。只在 overflow="arrows" 且标签真正溢出时渲染，滚到起点后置灰 -->
       <button
-        v-if="showArrows" type="button" :class="ui.navButton" :disabled="!canScrollPrev"
-        aria-label="向前滚动标签" @click="scrollByStep(-1)"
+        v-if="showScrollButtons" type="button" :class="ui.navButton" data-tabs-scroll="start"
+        :disabled="!canScrollPrev" aria-label="向前滚动标签" @click="scrollByStep(-1)"
       >
         <Icon :name="isVertical ? 'lucide:chevron-up' : 'lucide:chevron-left'" class="size-[1.2em]" />
       </button>
 
-      <!-- 溢出导航模式下 mask 让两端的标签渐隐成透明，滚过哪端哪端才开孔（见 scrollMaskClass） -->
+      <!-- 对应一侧没有隐藏标签时，连容器与间距一起移除。 -->
       <div
-        ref="wrapperRef" :class="[ui.navWrapper, scrollMaskClass]"
+        v-if="showDropdown && dropdownPanes.start.length" :class="ui.dropdown" data-tabs-overflow="start"
+        @mouseenter="openDropdown('start')" @mouseleave="leaveDropdown"
+        @focusin="openDropdown('start')" @focusout="blurDropdown"
+      >
+        <button
+          type="button" :class="ui.navButton"
+          :aria-label="isVertical ? '展开上方隐藏标签' : '展开左侧隐藏标签'" aria-haspopup="listbox"
+          :aria-expanded="dropdownOpen === 'start'" @click="openDropdown('start')"
+        >
+          <Icon name="lucide:ellipsis" class="size-[1.2em]" />
+        </button>
+        <div
+          v-if="dropdownOpen === 'start' && dropdownPanes.start.length" role="listbox"
+          :aria-label="isVertical ? '上方隐藏标签' : '左侧隐藏标签'"
+          :class="[ui.dropdownPanel, isVertical ? 'top-0' : 'left-0']"
+        >
+          <button
+            v-for="pane in dropdownPanes.start" :key="pane.key" type="button" role="option"
+            :aria-selected="pane.key === currentKey" :disabled="pane.disabled" :class="dropdownItemClass(pane)"
+            @click="handleDropdownPick(pane)"
+          >
+            <component :is="pane.titleSlot" v-if="pane.titleSlot" />
+            <template v-else>{{ pane.title }}</template>
+          </button>
+        </div>
+      </div>
+
+      <div
+        ref="wrapperRef" :class="ui.navWrapper"
         @scroll.passive="updateOverflowState"
       >
         <!--
@@ -924,29 +974,32 @@ defineExpose({
         </div>
       </div>
 
-      <!-- 向后箭头。贴在滚动容器之后，滚到终点后置灰 -->
       <button
-        v-if="showArrows" type="button" :class="ui.navButton" :disabled="!canScrollNext"
-        aria-label="向后滚动标签" @click="scrollByStep(1)"
+        v-if="showScrollButtons" type="button" :class="ui.navButton" data-tabs-scroll="end"
+        :disabled="!canScrollNext" aria-label="向后滚动标签" @click="scrollByStep(1)"
       >
         <Icon :name="isVertical ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="size-[1.2em]" />
       </button>
 
-      <!-- 下拉选标。开关与面板包在同一个定位锚点里，点面板外任意处收起 -->
-      <div v-if="showDropdown" ref="dropdownRef" :class="ui.dropdown">
+      <div
+        v-if="showDropdown && dropdownPanes.end.length" :class="ui.dropdown" data-tabs-overflow="end"
+        @mouseenter="openDropdown('end')" @mouseleave="leaveDropdown"
+        @focusin="openDropdown('end')" @focusout="blurDropdown"
+      >
         <button
-          type="button" :class="ui.navButton" aria-label="展开标签列表" aria-haspopup="listbox"
-          :aria-expanded="dropdownOpen" @click="dropdownOpen = !dropdownOpen"
+          type="button" :class="ui.navButton"
+          :aria-label="isVertical ? '展开下方隐藏标签' : '展开右侧隐藏标签'" aria-haspopup="listbox"
+          :aria-expanded="dropdownOpen === 'end'" @click="openDropdown('end')"
         >
-          <Icon
-            name="lucide:chevron-down"
-            class="size-[1.2em] transition-transform duration-200 motion-reduce:transition-none"
-            :class="dropdownOpen && 'rotate-180'"
-          />
+          <Icon name="lucide:ellipsis" class="size-[1.2em]" />
         </button>
-        <div v-if="dropdownOpen" role="listbox" :class="ui.dropdownPanel">
+        <div
+          v-if="dropdownOpen === 'end' && dropdownPanes.end.length" role="listbox"
+          :aria-label="isVertical ? '下方隐藏标签' : '右侧隐藏标签'"
+          :class="[ui.dropdownPanel, isVertical ? 'bottom-0' : 'right-0']"
+        >
           <button
-            v-for="pane in dropdownPanes" :key="pane.key" type="button" role="option"
+            v-for="pane in dropdownPanes.end" :key="pane.key" type="button" role="option"
             :aria-selected="pane.key === currentKey" :disabled="pane.disabled" :class="dropdownItemClass(pane)"
             @click="handleDropdownPick(pane)"
           >

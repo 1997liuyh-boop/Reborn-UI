@@ -5,7 +5,7 @@ import type { DatePickerCell, DatePickerType, ViewType } from "../reborn-date-pi
 import type { DatePickerPanelProps } from "../reborn-date-picker-panel/RebornDatePickerPanel.vue";
 import type { SelectTriggerProps } from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import type { datePickerColors, DatePickerFieldUI, datePickerSizes, datePickerVariants } from "./reborn-date-picker.config";
-import { computed, onBeforeUpdate, shallowRef, watch } from "vue";
+import { computed, nextTick, onBeforeUpdate, shallowRef, watch } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornBadge from "../reborn-badge/RebornBadge.vue";
@@ -17,6 +17,7 @@ import { splitTriggerUi } from "../reborn-select-trigger/reborn-select-trigger.c
 import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
 import theme from "./reborn-date-picker.config";
+import { isPickerInputBlocked, normalizePickerDates, parsePickerInput, pickerInputFormat } from "./reborn-date-picker.input";
 
 /**
  * 日期选择器属性定义。
@@ -45,8 +46,10 @@ export interface DatePickerProps {
   activeType?: DatePickerPanelProps["activeType"];
   /** 绑定值格式（dayjs 令牌）；为空时绑定值为 Date 对象 */
   valueFormat?: string;
-  /** 面板左侧的快捷选项 */
+  /** 日期面板侧栏中的快捷选项 */
   shortcuts?: DatePickerPanelProps["shortcuts"];
+  /** 快捷选项侧栏位置，默认在日期面板左侧 */
+  shortcutPosition?: DatePickerPanelProps["shortcutPosition"];
   /** 日期视图左侧显示 ISO 周数（week / weekrange 类型不生效） */
   showWeekNumber?: boolean;
   /** 范围选择时取消两个面板之间的联动，左右面板各自翻页 */
@@ -55,6 +58,8 @@ export interface DatePickerProps {
   singlePanel?: boolean;
   /** 面板底部显示「今天」栏：点击选中当前时间所在的日 / 周 / 月 / 季度 / 年，文案随类型变为今天、此刻、本周、本月、本季度、今年 */
   showToday?: boolean;
+  /** 是否高亮今天 / 本月 / 本季度 / 今年，默认关闭，不影响已选样式 */
+  highlightToday?: boolean;
   /**
    * 未选值时面板打开所展示的日期，只决定面板定位到哪个月 / 年，不写入绑定值；缺省时展示当天。
    * 范围类型可传数组：第一项定位左面板，开启 unlinkPanels 时第二项定位右面板。字符串按 valueFormat 解析，数字视为时间戳
@@ -152,10 +157,12 @@ const props = withDefaults(defineProps<DatePickerProps>(), {
   activeType: "fill",
   valueFormat: "",
   shortcuts: () => [],
+  shortcutPosition: "left",
   showWeekNumber: false,
   unlinkPanels: false,
   singlePanel: false,
   showToday: false,
+  highlightToday: false,
   format: "",
   rangeSeparator: "至",
   collapseTags: false,
@@ -241,8 +248,14 @@ const isOpen = shallowRef(false);
  * 否则外部会收到 ["2024-01-01", ""] 这种不完整的值。提交时机见 onPanelUpdate / onPanelChange。
  */
 const draft = shallowRef<any>(model.value);
+/** 悬停只改展示，输入草稿只在确认后写回绑定值。 */
+const preview = shallowRef<Date | [Date, Date | null] | null>(null);
+const inputDraft = shallowRef<[string, string] | null>(null);
+const inputDirty = shallowRef(false);
+const panel = shallowRef<InstanceType<typeof RebornDatePickerPanel> | null>(null);
 watch(model, (v) => {
   draft.value = v;
+  resetInput();
 });
 
 /* ---------------- 类型判定（与面板内部的划分一致） ---------------- */
@@ -261,6 +274,8 @@ const isWeek = computed(() => props.type === "week");
 const hasTime = computed(() => ["datetime", "datetimerange"].includes(props.type));
 /** 绑定值是否为数组 */
 const isArrayValue = computed(() => isMultiple.value || isDual.value || isWeek.value);
+/** 所有类型使用各自粒度的标准输入格式。 */
+const inputFormat = computed(() => pickerInputFormat(props.type));
 
 /* ---------------- 展示文本 ---------------- */
 
@@ -303,8 +318,16 @@ function formatItem(v: any): string {
 
 /** 范围类型（含 week）的起止两段文本 */
 const rangeTexts = computed<[string, string]>(() => {
-  const v = Array.isArray(model.value) ? model.value : [];
+  const source = preview.value ?? model.value;
+  const v = Array.isArray(source) ? source : [];
   return [formatItem(v[0]), formatItem(v[1])];
+});
+const isPreviewing = computed(() => preview.value !== null && !inputDirty.value);
+const inputTexts = computed<[string, string]>(() => {
+  if (inputDraft.value && !isPreviewing.value) return inputDraft.value;
+  if (isMultiple.value) return [isPreviewing.value ? formatItem(preview.value) : "", ""];
+  if (isWeek.value) return [rangeTexts.value.some(Boolean) ? rangeTexts.value.join(` ${props.rangeSeparator} `) : "", ""];
+  return isDual.value ? rangeTexts.value : [formatItem(preview.value ?? model.value), ""];
 });
 
 /** 多选类型的标签列表，index 用于按位移除（同一日期不会重复出现，但 key 仍带上 index 兜底） */
@@ -324,7 +347,7 @@ const displayText = computed(() => {
     const [s, e] = rangeTexts.value;
     return s || e ? `${s} ${props.rangeSeparator} ${e}` : "";
   }
-  return formatItem(model.value);
+  return formatItem(preview.value ?? model.value);
 });
 
 /** 值是否非空：数组要求至少一个元素有值，单值排除 null / undefined / 空串 */
@@ -368,7 +391,7 @@ const splitUi = computed(() => splitTriggerUi(props.triggerUi));
  */
 const overlayUi = computed(() => ({
   ...splitUi.value.overlay,
-  dropdown: cn("w-max min-w-0", splitUi.value.overlay.dropdown),
+  dropdown: cn("w-max min-w-0 border-0 shadow-[0_2px_13px_0_rgba(0,0,0,0.13)]", splitUi.value.overlay.dropdown),
 }));
 const fieldUi = computed(() => splitUi.value.field as DatePickerFieldUI);
 /** 是否渲染前缀区：#prefix 插槽或 prefixIcon 任一存在 */
@@ -404,6 +427,8 @@ const ui = computed(() => {
       styles.trigger({ class: cn(opts?.class, field.trigger) }),
     triggerText: (opts?: { class?: any }) =>
       styles.triggerText({ class: cn(opts?.class, field.triggerText) }),
+    input: (opts?: { class?: any }) =>
+      styles.input({ class: cn(opts?.class, field.input) }),
     triggerIconWrapper: (opts?: { class?: any }) =>
       styles.triggerIconWrapper({ class: cn(opts?.class, field.triggerIconWrapper) }),
     placeholder: (opts?: { class?: any }) =>
@@ -459,10 +484,141 @@ function isSameValue(a: any, b: any): boolean {
 
 /** 把值写回 v-model 并抛出 change */
 function commit(val: any) {
+  resetInput();
   model.value = val;
   emit("change", val);
   validate("change");
 }
+
+/** 恢复已提交值，避免悬停或未完成输入残留到下一次展开。 */
+function resetInput() {
+  preview.value = null;
+  inputDraft.value = null;
+  inputDirty.value = false;
+}
+
+/** 编辑时使用该类型的标准格式，多选输入用于追加而非替换标签。 */
+function beginInput() {
+  if (isDisabled.value || inputDraft.value) return;
+  preview.value = null;
+  if (isMultiple.value) {
+    inputDraft.value = ["", ""];
+    return;
+  }
+  const values = (isDual.value || isWeek.value) && Array.isArray(model.value) ? model.value : [model.value];
+  const text = (v: unknown) => {
+    const date = parseValue(v);
+    return date ? dayjs(date).format(inputFormat.value) : "";
+  };
+  inputDraft.value = [text(values[0]), text(values[1])];
+}
+
+async function onInput(index: 0 | 1, event: Event) {
+  if (isDisabled.value) return;
+  beginInput();
+  const texts: [string, string] = [...inputDraft.value!];
+  texts[index] = (event.target as HTMLInputElement).value;
+  inputDraft.value = texts;
+  inputDirty.value = true;
+  preview.value = null;
+  isOpen.value = true;
+
+  // 多选只定位视图，不提前勾选候选，避免改用面板点击时反向取消。
+  const dates = inputDates(texts);
+  const date = isMultiple.value ? dates.at(-1) : dates[index];
+  if (!date || dates.some((date, i) => date && isInputBlocked(date, i, dates))) return;
+  if (!isMultiple.value) {
+    const normalized = dates.every(Boolean) ? normalizePickerDates(dates as Date[], props.type) : dates;
+    const values = normalized.map(date => date ? formatValue(date) : null);
+    draft.value = isDual.value || isWeek.value ? values : values[0];
+  }
+  await nextTick();
+  if (inputDraft.value !== texts) return;
+  if (isMultiple.value || (isDual.value && (props.singlePanel || !dates[0]))) panel.value?.focusDate(date);
+}
+
+function inputDates(texts: [string, string]): (Date | null)[] {
+  const values = isMultiple.value ? texts[0].split(/[,，;；、]/).map(text => text.trim()) : texts.slice(0, isDual.value ? 2 : 1);
+  return values.map(text => parsePickerInput(text, props.type));
+}
+
+function formatValue(date: Date): Date | string {
+  return props.valueFormat ? dayjs(date).format(props.valueFormat) : date;
+}
+
+/** 日期时间范围先确定先后关系，再按起止角色询问时间禁用规则。 */
+function isInputBlocked(date: Date, index: number, dates: (Date | null)[]): boolean {
+  const other = isDual.value ? dates[index === 0 ? 1 : 0] ?? null : null;
+  const role = other ? (date.getTime() < other.getTime() || (date.getTime() === other.getTime() && index === 0) ? "start" : "end") : index === 0 ? "start" : "end";
+  return isPickerInputBlocked(date, props.type, props, role, other);
+}
+
+/** Enter 或失焦时提交；禁用日期清空，格式错误及不完整输入恢复原值。 */
+function submitInput() {
+  if (isDisabled.value || !inputDirty.value || !inputDraft.value) {
+    resetInput();
+    return;
+  }
+  const dates = inputDates(inputDraft.value);
+  if (dates.some((date, i) => date && isInputBlocked(date, i, dates))) {
+    if (isMultiple.value) resetInput();
+    else if (hasValue(model.value)) clear();
+    else resetInput();
+    return;
+  }
+  if (dates.some(date => !date)) {
+    draft.value = model.value;
+    resetInput();
+    return;
+  }
+  const values = normalizePickerDates(dates as Date[], props.type).map(formatValue);
+  // 按选择粒度去重，同时保留已有标签的顺序与绑定值类型。
+  let value: any = isDual.value || isWeek.value ? values : values[0];
+  if (isMultiple.value) {
+    const source: any[] = Array.isArray(model.value) ? model.value : [];
+    const unique = new Map<string, any>();
+    for (const item of [...source, ...values]) {
+      const date = parseValue(item);
+      const key = date ? dayjs(date).format(inputFormat.value) : String(item);
+      if (!unique.has(key)) unique.set(key, item);
+    }
+    value = [...unique.values()];
+  }
+  if (!isSameValue(value, model.value)) commit(value);
+  else resetInput();
+}
+
+function onInputBlur(event: FocusEvent) {
+  const field = (event.target as HTMLElement).closest("[data-date-picker-field]");
+  if (event.relatedTarget instanceof Node && field?.contains(event.relatedTarget)) return;
+  submitInput();
+  validate("blur");
+}
+
+function onInputKeydown(event: KeyboardEvent) {
+  if (event.key === "Enter" && !event.isComposing) {
+    event.preventDefault();
+    event.stopPropagation();
+    submitInput();
+    isOpen.value = false;
+  } else if (event.key === "Escape") {
+    event.preventDefault();
+    event.stopPropagation();
+    resetInput();
+    isOpen.value = false;
+  }
+}
+
+function onPanelHover(value: Date | [Date, Date | null] | null) {
+  if (!inputDirty.value) preview.value = value;
+}
+
+watch(isDisabled, (disabled) => {
+  if (disabled) {
+    isOpen.value = false;
+    resetInput();
+  }
+});
 
 /**
  * 面板值变化（对应面板的 update:modelValue）。
@@ -472,6 +628,7 @@ function commit(val: any) {
  * - 其余类型：只记草稿，等面板抛 change 再提交
  */
 function onPanelUpdate(val: any) {
+  resetInput();
   draft.value = val;
   if (isMultiple.value) {
     commit(val);
@@ -512,7 +669,9 @@ function removeTag(index: number, e: Event) {
 
 // 展开时用当前绑定值重置草稿，丢弃上一次没有选完的范围半成品
 watch(isOpen, (open) => {
-  if (open) draft.value = model.value;
+  if (open) {
+    if (!inputDirty.value) draft.value = model.value;
+  } else resetInput();
   emit("visible-change", open);
 });
 
@@ -529,7 +688,10 @@ function toggle() {
  */
 function clear(e?: Event) {
   e?.stopPropagation();
+  if (isDisabled.value) return;
+  resetInput();
   const newValue = isArrayValue.value ? [] : null;
+  draft.value = newValue;
   model.value = newValue;
   emit("clear");
   emit("change", newValue);
@@ -545,6 +707,7 @@ function onOutsideClose(event?: Event) {
   const target = event?.target;
   if (target instanceof Element && target.closest(`.${DATE_PANEL_NESTED_OVERLAY_CLASS}`)) return;
   if (isOpen.value) {
+    submitInput();
     isOpen.value = false;
     validate("blur");
   }
@@ -587,7 +750,7 @@ defineExpose({
     @close="onOutsideClose"
   >
     <template #trigger>
-      <div :class="ui.trigger()" :data-state="isOpen ? 'open' : 'closed'" @click="toggle">
+      <div :class="ui.trigger()" data-date-picker-field :data-state="isOpen ? 'open' : 'closed'" @click="toggle">
         <slot
           v-if="$slots.cover"
           name="cover"
@@ -604,7 +767,7 @@ defineExpose({
           </span>
           <slot :display-text="displayText" :placeholder="placeholderText" :is-open="isOpen" :ui="ui">
             <!-- 多选类型：标签列表 -->
-            <div v-if="isMultiple && tags.length" :class="ui.tagList()">
+            <div v-if="isMultiple" :class="ui.tagList()">
               <RebornBadge
                 v-for="item in visibleTags"
                 :key="`${item.index}-${item.label}`"
@@ -648,19 +811,64 @@ defineExpose({
                   label: ui.tagLabel(),
                 }"
               />
+              <input
+                :value="inputTexts[0]"
+                :disabled="isDisabled"
+                :placeholder="tags.length ? undefined : placeholderText"
+                :aria-label="placeholderText"
+                :class="ui.input({ class: ['min-w-24', isPreviewing ? 'text-gray-5' : ''] })"
+                autocomplete="off"
+                @click.stop="isOpen = true"
+                @focus="beginInput"
+                @input="onInput(0, $event)"
+                @blur="onInputBlur"
+                @keydown="onInputKeydown"
+              >
             </div>
             <!-- 双面板范围类型：开始 / 结束两栏，未选的一栏显示对应占位 -->
             <div v-else-if="isDual" :class="ui.rangeWrapper()">
-              <span :class="ui.rangeText({ class: rangeTexts[0] ? undefined : ui.placeholder() })">
-                {{ rangeTexts[0] || startPlaceholderText }}
-              </span>
+              <input
+                :value="inputTexts[0]"
+                :disabled="isDisabled"
+                :placeholder="startPlaceholderText"
+                :aria-label="startPlaceholderText"
+                :class="ui.input({ class: ['text-center', isPreviewing ? 'text-gray-5' : ''] })"
+                autocomplete="off"
+                @click.stop="isOpen = true"
+                @focus="beginInput"
+                @input="onInput(0, $event)"
+                @blur="onInputBlur"
+                @keydown="onInputKeydown"
+              >
               <span :class="ui.rangeSeparator()">{{ rangeSeparator }}</span>
-              <span :class="ui.rangeText({ class: rangeTexts[1] ? undefined : ui.placeholder() })">
-                {{ rangeTexts[1] || endPlaceholderText }}
-              </span>
+              <input
+                :value="inputTexts[1]"
+                :disabled="isDisabled"
+                :placeholder="endPlaceholderText"
+                :aria-label="endPlaceholderText"
+                :class="ui.input({ class: ['text-center', isPreviewing ? 'text-gray-5' : ''] })"
+                autocomplete="off"
+                @click.stop="isOpen = true"
+                @focus="beginInput"
+                @input="onInput(1, $event)"
+                @blur="onInputBlur"
+                @keydown="onInputKeydown"
+              >
             </div>
-            <span v-else-if="displayText" :class="ui.triggerText()">{{ displayText }}</span>
-            <span v-else :class="ui.placeholder()">{{ placeholderText }}</span>
+            <input
+              v-else
+              :value="inputTexts[0]"
+              :disabled="isDisabled"
+              :placeholder="placeholderText"
+              :aria-label="placeholderText"
+              :class="ui.input({ class: isPreviewing ? 'text-gray-5' : undefined })"
+              autocomplete="off"
+              @click.stop="isOpen = true"
+              @focus="beginInput"
+              @input="onInput(0, $event)"
+              @blur="onInputBlur"
+              @keydown="onInputKeydown"
+            >
           </slot>
           <div v-if="showArrow || showClearButton || loading" :class="ui.triggerIconWrapper()">
             <RebornLoading
@@ -687,8 +895,10 @@ defineExpose({
       <div v-if="$slots.header" :class="ui.dropdownHeader()">
         <slot name="header" />
       </div>
-      <div :class="ui.panel()">
+      <!-- 面板操作接管选择，避免输入框失焦先提交旧草稿，再被点击日期重复覆盖。 -->
+      <div :class="ui.panel()" @mousedown.capture="resetInput">
         <RebornDatePickerPanel
+          ref="panel"
           :model-value="draft"
           :type="type"
           :start="start"
@@ -701,10 +911,12 @@ defineExpose({
           :active-type="activeType"
           :value-format="valueFormat"
           :shortcuts="shortcuts"
+          :shortcut-position="shortcutPosition"
           :show-week-number="showWeekNumber"
           :unlink-panels="unlinkPanels"
           :single-panel="singlePanel"
           :show-today="showToday"
+          :highlight-today="highlightToday"
           :default-value="defaultValue"
           :size="fieldGroupSize || size"
           :color="color"
@@ -712,6 +924,7 @@ defineExpose({
           :ui="panelUi"
           @update:model-value="onPanelUpdate"
           @change="onPanelChange"
+          @hover-change="onPanelHover"
           @calendar-change="emit('calendar-change', $event)"
           @panel-change="(date, mode, view) => emit('panel-change', date, mode, view)"
         >

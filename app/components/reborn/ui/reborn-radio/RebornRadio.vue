@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
-import type { RadioColor, RadioType, RadioVariant } from "./reborn-radio.config";
+import type { RadioAppearance, RadioColor, RadioType, RadioVariant } from "./reborn-radio.config";
 import { computed, inject } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornButton from "../reborn-button/RebornButton.vue";
-import theme from "./reborn-radio.config";
+import theme, { resolveRadioAppearance, resolveRadioVariant } from "./reborn-radio.config";
 import { radioGroupContextKey } from "./reborn-radio.context";
 
 defineOptions({ inheritAttrs: false });
@@ -33,15 +33,17 @@ const b = tv(theme);
 export interface RadioProps {
   /** 选项的 value，与绑定值严格相等时呈选中态 */
   value?: string | number | boolean;
-  /** 单选的类型：radio 圆点 / button 分段按钮 / pure-button 实体按钮拼接；组内使用时以 Group 下发为准 */
+  /** @deprecated 请改用 variant 设置形态 */
   type?: RadioType;
   /** 语义色；不传时取 Group 下发值，默认 primary */
   color?: RadioColor;
-  /** 样式变体：filled 实底（语义色背景 + 白色前景）/ outlined 描边（默认）；不传时取 Group 下发值 */
-  variant?: RadioVariant;
+  /** 单选形态：radio / button / pure-button；组内以 Group 为准，旧 filled/outlined 仅保留兼容 */
+  variant?: RadioVariant | RadioAppearance;
+  /** 选中态填充方式：outlined（默认）/ filled */
+  appearance?: RadioAppearance;
   /** 是否禁用 */
   disabled?: boolean;
-  /** pure-button 类型下透传给 RebornButton 的参数（variant 只作用于未选中态，选中态固定 filled） */
+  /** 拼接按钮透传参数；variant/color 同时覆盖选中与未选中两态 */
   buttonProps?: ButtonProps;
   /** 追加到根节点的自定义类名 */
   class?: any;
@@ -66,23 +68,24 @@ const isChecked = computed(() => {
 });
 
 const computedDisabled = computed(() => (radioGroup ? radioGroup.disabled.value || props.disabled : props.disabled));
-const computedType = computed<RadioType>(() => radioGroup?.type?.value ?? props.type ?? "radio");
+const computedVariant = computed<RadioVariant>(() => radioGroup?.variant.value ?? resolveRadioVariant(props.variant, props.type));
 const computedSize = computed(() => radioGroup?.size?.value ?? "md");
 /** 语义色：自身 props 优先，便于组内做单项覆盖 */
 const computedColor = computed<RadioColor>(() => props.color ?? radioGroup?.color?.value ?? "primary");
-/** 样式变体：自身 props 优先，默认 outlined（各类型的当前默认外观） */
-const computedVariant = computed<RadioVariant>(() => props.variant ?? radioGroup?.variant?.value ?? "outlined");
+/** 填充方式允许单项覆盖，旧 variant="filled/outlined" 也参与回退 */
+const computedAppearance = computed<RadioAppearance>(() => resolveRadioAppearance(props.appearance, props.variant) ?? radioGroup?.appearance.value ?? "outlined");
+const isPureButton = computed(() => computedVariant.value === "pure-button");
 const isError = computed(() => (radioGroup ? !!radioGroup.isError?.value : false));
 
-/** pure-button 类型下合并 Group 下发与自身的按钮透传参数（自身优先） */
+/** 拼接按钮合并 Group 下发与自身的透传参数（自身优先） */
 const mergedButtonProps = computed<ButtonProps>(() => ({
   ...(radioGroup?.buttonProps?.value ?? {}),
   ...(props.buttonProps ?? {}),
 }));
 
 /**
- * pure-button 未选中态的外观覆盖：gray-4 边框 + gray-9 文字；
- * 禁用时 gray-2 底 + gray-5 文字。选中态交给 variant × color，不加干预。
+ * 拼接按钮未选中态使用灰色描边，禁用时使用灰底灰字；
+ * 选中态由 appearance 与 color 决定。
  */
 const pureButtonClass = computed(() => {
   if (isChecked.value) return "";
@@ -91,14 +94,17 @@ const pureButtonClass = computed(() => {
   return "border-gray-4 text-gray-9";
 });
 
+/** 按钮透传优先，其次根据选中态与填充方式决定外观 */
+const buttonVariant = computed(() => mergedButtonProps.value.variant ?? (isChecked.value ? computedAppearance.value : "outlined"));
+
 const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
   const styles = b({
-    type: computedType.value,
+    variant: computedVariant.value,
     size: computedSize.value,
     color: computedColor.value,
-    variant: computedVariant.value,
+    appearance: computedAppearance.value,
     checked: isChecked.value,
     disabled: computedDisabled.value,
     error: isError.value,
@@ -134,6 +140,7 @@ function onTap(ev: Event) {
     :data-disabled="computedDisabled"
     :data-color="computedColor"
     :data-variant="computedVariant"
+    :data-appearance="computedAppearance"
     @click="onTap"
   >
     <!-- radio 插槽：完全接管单选框的渲染 -->
@@ -142,14 +149,13 @@ function onTap(ev: Event) {
       :checked="isChecked"
       :disabled="computedDisabled"
     >
-      <!-- 实体按钮拼接风格：复用 RebornButton。选中态外观随 variant（filled 实底白字 / outlined 语义色描边+文字），
-           未选中态 gray-4 边框 + gray-9 文字，禁用未选中为 gray-2 底 + gray-5 文字 -->
+      <!-- 拼接按钮复用 RebornButton，选中态随 appearance 与 color 变化 -->
       <RebornButton
-        v-if="computedType === 'pure-button'"
+        v-if="isPureButton"
         v-bind="mergedButtonProps"
         :size="computedSize"
         :color="isChecked ? (mergedButtonProps.color ?? computedColor) : (mergedButtonProps.color ?? 'neutral')"
-        :variant="isChecked ? (mergedButtonProps.variant ?? computedVariant) : (mergedButtonProps.variant ?? 'outlined')"
+        :variant="buttonVariant"
         :disabled="computedDisabled || mergedButtonProps.disabled"
         :class="pureButtonClass"
       >

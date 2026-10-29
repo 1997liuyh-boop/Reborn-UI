@@ -14,7 +14,7 @@ badge: Update
 
 时间选择器用于精确到秒的单点时间录入，支持手动输入、点击选项、滚轮与键盘调整；当前仅提供 Web 实现。
 
-`variant` 控制触发器的四种形态，与 `reborn-select` 共用 FieldTrigger；`panelVariant` 独立控制中心区域的填充或上下描边。`format` 控制显示列，`size` 控制触发器尺寸，`color` 控制语义配色。面板统一使用 14px 字号和 29px 行高盒子，显示五个完整选项及上下各半项。
+`variant` 控制触发器的四种形态，与 `reborn-select` 共用 FieldTrigger；`interaction` 默认滚动选中并居中，可切换为点击选中并置顶。`panelVariant` 控制滚动模式中心区域的填充或上下描边。`format` 控制显示列，`size` 控制触发器尺寸，`color` 控制语义配色。面板使用 14px 字号、29px 选项和 174px 视口，时间列首尾不循环。
 
 `disabledHours` / `disabledMinutes` / `disabledSeconds` 约束输入与选择；`isRange` 和毫秒格式兼容既有场景。`triggerUi`、`ui`、`panelUi` 分别覆盖共享触发器、选择器和面板，`footer` 插槽可替换底部操作。
 
@@ -43,6 +43,10 @@ badge: Update
 | `allowInput=true`  | 支持文本输入及面板选择 | 高频录入     |
 | `allowInput=false` | 只读输入框，仅面板选取 | 避免手写格式 |
 | `clearable=true`   | 非空时显示清空按钮     | 可选时间字段 |
+| `followSystemTime=false` | 空值面板从 `00:00:00` 开始，默认配置 | 从零设置时间 |
+| `followSystemTime=true` | 空值面板从当前系统时间开始 | 以当前时刻为起点 |
+
+`followSystemTime` 只控制空值时面板的初始选择，已有绑定值优先。打开面板不会自动填入表单，选择或确认后才写回。通过 `:follow-system-time="true"` 开启，也适用于 `isRange` 和独立 `RebornTimePanel`。
 
 ```vue
 <script setup lang="ts">
@@ -133,9 +137,16 @@ const error = ref("");
 </template>
 ```
 
-### 中心聚焦变体
+### 交互与面板
 
-选项用 `RebornScrollbar` 滚动，停止后吸附；选中项保持常规字重，悬停背景为 `gray-2`。
+`interaction` 决定滚动是否提交以及选中项停靠位置；两种模式均保留键盘与箭头步进，首尾不会循环。
+
+| interaction | 选择与定位 | 典型用途 |
+| ----------- | ---------- | -------- |
+| `scroll` | 默认；滚动停止后选中并居中，也支持点击 | 滚轮调整时间 |
+| `click` | 滚动只浏览，点击才选中并置顶 | 点选明确的时、分、秒 |
+
+点击模式的选中背景使用对应 `color` 色板第 1 阶，未选项悬停背景为 `gray-2`，选中项悬停保持高亮。视口底部留白使末项也能置顶。滚动模式中心区域通过 `panelVariant` 控制：
 
 | panelVariant | 中心区域                                           | 典型用途     |
 | ------------ | -------------------------------------------------- | ------------ |
@@ -144,19 +155,10 @@ const error = ref("");
 
 ```vue
 <template>
-  <RebornTimePicker
-    v-model="time"
-    panel-variant="filled"
-  />
-  <RebornTimePicker
-    v-model="time"
-    panel-variant="outlined"
-  />
-  <!-- 内联面板使用 variant 控制同一中心样式 -->
-  <RebornTimePanel
-    v-model="time"
-    variant="outlined"
-  />
+  <!-- 省略 interaction 时使用默认滚动居中模式 -->
+  <RebornTimePicker v-model="time" panel-variant="outlined" />
+  <RebornTimePicker v-model="time" interaction="click" />
+  <RebornTimePanel v-model="time" interaction="click" />
 </template>
 ```
 
@@ -315,7 +317,8 @@ const disabledMinutes = (hour: number) => (hour === 12 ? [0, 1, 2] : []);
 | ---------------------- | -------------------------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
 | `modelValue`           | `string \| string[]`                                                                   | `''`               | 单点字符串或范围数组                                                                                      |
 | `variant`              | `'outlined' \| 'filled' \| 'borderless' \| 'underlined'`                               | `'outlined'`       | 触发器形态                                                                                                |
-| `panelVariant`         | `'filled' \| 'outlined'`                                                               | `'filled'`         | 中心选中形态                                                                                              |
+| `panelVariant`         | `'filled' \| 'outlined'`                                                               | `'filled'`         | 滚动模式的中心选中形态；点击模式使用选项背景高亮 |
+| `interaction`          | `'scroll' \| 'click'` | `'scroll'` | scroll 滚动选中并居中；click 滚动只浏览、点击选中并置顶；两者首尾均不循环 |
 | `allowInput`           | `boolean`                                                                              | `true`             | 仅单点模式支持手动输入                                                                                    |
 | `icon`                 | `string`                                                                               | `'lucide:clock-3'` | 尾部图标                                                                                                  |
 | `closeOn`              | `'click' \| 'mousedown'`                                                               | `'mousedown'`      | 与 reborn-select 一致；mousedown 在外部按下、滚轮或页面滚动时关闭，内部滚动不关闭；click 在外部点击后关闭 |
@@ -326,6 +329,7 @@ const disabledMinutes = (hour: number) => (hour === 12 ? [0, 1, 2] : []);
 | `disabled`             | `boolean`                                                                              | `false`            | 禁用全部交互                                                                                              |
 | `clearable`            | `boolean`                                                                              | `true`             | 是否显示清空按钮                                                                                          |
 | `isRange`              | `boolean`                                                                              | `false`            | 范围选择                                                                                                  |
+| `followSystemTime`     | `boolean`                                                                              | `false`            | 空值时以当前系统时间初始化面板；为 false 时从零点开始，已有绑定值优先，初始化遵循禁用规则 |
 | `showFooter`           | `boolean`                                                                              | `true`             | 显示底部操作区，包含自定义 footer 插槽                                                                    |
 | `arrowControl`         | `boolean`                                                                              | `false`            | 显示上下步进按钮                                                                                          |
 | `format`               | `string`                                                                               | `'HH:mm:ss'`       | 时间格式与可见列                                                                                          |
@@ -388,16 +392,18 @@ const disabledMinutes = (hour: number) => (hour === 12 ? [0, 1, 2] : []);
 | `columns`        | panelUi      | 列容器，divide-x divide-gray-2 分隔                                            |
 | `column`         | panelUi      | 单列与键盘焦点区域                                                             |
 | `arrowButton`    | panelUi      | arrowControl 开启后的上下按钮                                                  |
-| `list`           | panelUi      | RebornScrollbar 视口，高 174px，五整项与上下各半项                             |
+| `list`           | panelUi      | RebornScrollbar 视口高 174px；滚动模式居中显示，点击模式可显示六个完整选项 |
+| `listPaddingStart` | panelUi | 滚动模式顶部居中留白；点击模式隐藏 |
+| `listPaddingEnd` | panelUi | 底部留白，使末项可居中或置顶 |
 | `item`           | panelUi      | 选项，px-5 py-1 text-base text-gray-9；字号 14px、局部行高 150%，总高 29px     |
-| `itemActive`     | panelUi      | 选中项 font-normal，不加粗                                                     |
+| `itemActive`     | panelUi      | 选中项不加粗；点击模式使用对应色板第 1 阶背景 |
 | `itemDisabled`   | panelUi      | 禁用选项灰色，不响应选择                                                       |
 | `itemIdle`       | panelUi      | 未选项 font-normal；悬停背景在 item 中设置为 gray-2                            |
-| `indicator`      | panelUi      | 中心高 29px 的填充或上下描边                                                   |
+| `indicator`      | panelUi      | 滚动模式中心高 29px 的填充或上下描边；点击模式不渲染 |
 | `mask`           | panelUi      | 兼容覆盖层，默认透明且不拦截交互                                               |
 | `footer`         | panelUi      | 底部操作容器，上下 py-2（8px），替换插槽后仍生效；showFooter 为 false 时不渲染 |
 
-如覆盖行高，应同时调整 `list` 高度与 `indicator` 高度，避免中心视觉与选中项错位。
+如覆盖行高，应同时调整 `list`、`indicator` 和首尾留白高度，避免停靠位置错位。
 
 ### CSS 变量
 
@@ -405,24 +411,24 @@ const disabledMinutes = (hour: number) => (hour === 12 ? [0, 1, 2] : []);
 
 | 变量                       | 默认行为                                              | 说明                                       |
 | -------------------------- | ----------------------------------------------------- | ------------------------------------------ |
-| `--time-color-1`           | 按 `color` 指向对应色板的第 1 阶，neutral 使用 gray-2 | filled 中心背景                            |
+| `--time-color-1`           | 按 `color` 指向对应色板第 1 阶；neutral 在滚动模式使用 gray-2，点击模式使用 gray-1 | 中心填充与点击选中背景 |
 | `--text-base--line-height` | 时间项局部设为 `1.5`                                  | 保持 14px 字号的 150% 行高，不改变全局令牌 |
 
 ### 独立面板
 
-`RebornTimePanel` 接收 `modelValue`、`format`、`isRange`、`arrowControl`、`showFooter`、`size`、`color`、`disabled`、四个禁用回调、`class`、`ui`；中心形态通过 `variant` 设置。底部插槽参数与选择器一致。
+`RebornTimePanel` 接收 `modelValue`、`format`、`isRange`、`followSystemTime`、`interaction`、`arrowControl`、`showFooter`、`size`、`color`、`disabled`、四个禁用回调、`class`、`ui`；滚动模式的中心形态通过 `variant` 设置。底部插槽参数与选择器一致。
 
 面板事件为 `update:modelValue`、`change`、`clear`、`confirm`；实例暴露 `syncColumns()`、`clear()`、`confirm()`。面板在隐藏容器中挂载后，容器显示时可调用 `syncColumns()` 重新定位滚动列。选择器已在浮层进入完成后自动调用。
 
-空值时面板挂载前（包括服务端渲染与水合的首帧）选中 `00:00:00`（经禁用规则校正），挂载后再切到当前时刻，服务端与客户端的首帧选中项因此一致；选择器里的面板只在展开时挂载，不受影响。
+空值时面板默认选中 `00:00:00`（经禁用规则校正）。开启 `followSystemTime` 后，在客户端挂载时读取当前系统时间；服务端渲染与水合首帧仍以零点作为基准，保证两端一致。选择器里的面板在展开时挂载，因此空值每次展开都会取当时的系统时间。
 
 ## 注意事项
 
-- **打开不写值。** 空值打开时只以当前时刻初始化局部选择；选择选项、确认或点击「此刻」后才写入绑定值。
-- **选项变动即时提交。** 「确定」用于结束选择而不是事务提交；关闭面板或按 Escape 不撤销已经点击或滚动提交的值，只丢弃未提交的输入草稿。
+- **空值按 `followSystemTime` 初始化。** 默认 `false` 时，单点和范围面板从 `00:00:00` 开始；`true` 时从当前系统时间开始，清空后沿用相同策略。初始时间会按禁用规则校正，已有绑定值优先。打开面板不写入绑定值，选择选项、确认或点击「此刻」后才写入。
+- **选项变动即时提交。** 默认滚动模式在滚动停止后提交；点击模式的滚动只用于浏览，点击才提交。「确定」用于结束选择而不是事务提交，关闭或按 Escape 不撤销已经提交的值。
 - **输入严格匹配格式。** `HH:mm:ss` 需要补齐两位数；`24:00:00`、超范围分秒和被禁用的时间均触发 `invalid`，外部关闭会恢复已提交值。
 - **「此刻」遵循限制。** 当前时间不可选时按列校正到可用项，没有可用组合则不确认、不写入；外部传入的不合法值不会在挂载时被自动改写。
-- **毫秒列的渲染量大。** 为了循环滚动，每列都渲染三份选项，毫秒列单列就有 3000 个节点，范围模式再翻倍；每次选择都要比对这些节点。只在确实需要毫秒精度时使用 `SSS` 格式。
+- **时间列首尾不循环。** 滚动、方向键和箭头步进到达边界后停住，禁用项会被跳过。每列只渲染一组选项，毫秒列有 1000 项，范围模式翻倍；仅在确实需要时使用 `SSS`。
 - **禁用回调请传稳定的函数。** 回调换成新函数时面板会按新规则重新校正当前选择；父级写内联箭头函数时每次重渲染都会触发一次校正，结果不变但多一次计算。
 - **时间不是跨日时长。** 小时为 0–23、分秒为 0–59；范围自动排序，不用于表达跨午夜的倒序区间。
 - **单点输入与范围模式不同。** `allowInput` 仅对默认单点触发器生效；`isRange=true` 或自定义触发器时通过面板选择。

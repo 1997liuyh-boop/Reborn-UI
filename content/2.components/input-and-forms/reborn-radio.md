@@ -1,6 +1,6 @@
 ---
 title: Radio 单选框
-description: 用于在一组互斥选项中选择单项的单选框组件，支持圆点与按钮两种类型。
+description: 互斥单选：支持圆点、分段按钮与实体按钮拼接三种形态，提供七种语义色与两种选中填充方式。
 category: 表单与输入
 platform: both
 tags: [css, tailwind, radio, uniapp]
@@ -12,19 +12,17 @@ badge: New
 
 ## 简介
 
-Radio 是单选框组件：每个选项通过 `value` 声明自己的值，选中态由绑定值与 `value` 严格相等决定。推荐用 `RebornRadioGroup` 包裹，由 Group 的 `v-model` 统一管理选中值，并下发 `type` / `size` / `color` / `variant` / `disabled`；也支持通过 `options` 快捷渲染选项列表。
+Radio 用于在互斥选项中选择一项，Web 与 UniApp 两端均提供 `RebornRadio` 与 `RebornRadioGroup`，选中态由绑定值与 `value` 严格相等决定。
 
-同一组件提供三种外观：`radio` 圆点、`button` 分段按钮、`pure-button` 实体按钮拼接（复用 `RebornButton`），切换外观只改 `type`，绑定值与事件不变。
+Web 端通过 `variant` 选择 `radio` 圆点、`button` 分段按钮或 `pure-button` 实体按钮拼接；`appearance` 控制 `outlined/filled` 选中外观，`color` 控制语义色。实体按钮需要实底选中态时使用 `variant="pure-button"` 与 `appearance="filled"`。
 
-::tip
-**本组件两端 API 对齐。** Web 端与 UniApp 端的 Props、Emits（含参数）、插槽名与作用域参数、`ui` 键位、默认值均一致，下方 API 表格无需分端查看。唯一的调用差异是自定义类名的属性名（Web `class` / UniApp `custom-class`），另有若干平台实现差异集中在「两端差异对照」一节。
-::
+`size` 控制尺寸，`direction` 控制方向，`options/fieldNames` 支持数据驱动，插槽支持自定义文案与整体渲染。UniApp 仍使用 `type` 选择形态、`variant` 选择 `outlined/filled`，本次新增 API 仅适用于 Web。
 
 ### 何时使用
 
-- 表单中性别、支付方式等互斥选项的单选，选项数量少、需要一眼看全时用默认 `type="radio"`。
-- 视图/模式切换等分段选择，用 `type="button"` 分段按钮，选项紧凑排成一条。
-- 需要实体按钮观感的单选，用 `type="pure-button"`，每项复用 `RebornButton` 拼接渲染。
+- 表单中性别、支付方式等互斥选项的单选，选项数量少、需要一眼看全时用默认 `variant="radio"`。
+- 视图/模式切换等分段选择，用 `variant="button"` 分段按钮，选项紧凑排成一条。
+- 需要实体按钮观感的单选，用 `variant="pure-button"`，每项复用 `RebornButton` 拼接渲染。
 - 选项来自接口数据时用 `options` 直接渲染，省去手写 `v-for`。
 
 ### 何时不使用
@@ -60,17 +58,17 @@ const fruit = ref("apple");
 </template>
 ```
 
-### 类型与尺寸
+### 形态与尺寸
 
-`type="button"` 呈现分段按钮风格；`size` 支持 `sm` / `md` / `lg`。`radio` 类型下 `size` 决定圆点直径，`button` 与 `pure-button` 类型下取 `RebornButton` 同款高度：Web 使用 `h-6` / `h-8` / `h-10`，UniApp 使用独立 rpx 令牌，见下方「设计令牌」。
+`variant="button"` 呈现分段按钮风格；`size` 支持 `sm` / `md` / `lg`。`radio` 类型下 `size` 决定圆点直径，`button` 与 `pure-button` 类型下取 `RebornButton` 同款高度：Web 使用 `h-6` / `h-8` / `h-10`，UniApp 使用独立 rpx 令牌，见下方「设计令牌」。
 
-Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容器上的一块滑块绘制，切换时与 `RebornTabs` 胶囊型标签的底板同一套液体形变：先朝新选项拉长（110ms），再收拢到新选项并轻微回弹（150ms）。拉长时前缘先抵达新选项，`filled` 的白字从一开始就有底衬着，不会有一段悬在灰底上看不清；拉伸长度封顶在起止两项宽度之和的 1.1 倍，选项很多时跨越切换也只是一段定长的滑块移过去，不会铺满整排。滑块按选中项自身的 `variant` / `color` 取底色，选中项被禁用时一起半透明；系统开启「减少动态效果」时直接切换。单独使用的 `RebornRadio` 没有组容器，仍由自身绘制选中底色。UniApp 端直接切换，见「两端差异对照」。
+Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容器上的一块滑块绘制，切换时与 `RebornTabs` 胶囊型标签的底板同一套液体形变：先朝新选项拉长（110ms），再收拢到新选项并轻微回弹（150ms）。拉长时前缘先抵达新选项，`filled` 的白字从一开始就有底衬着，不会有一段悬在灰底上看不清；拉伸长度封顶在起止两项宽度之和的 1.1 倍，选项很多时跨越切换也只是一段定长的滑块移过去，不会铺满整排。滑块按选中项自身的 `appearance` / `color` 取底色，选中项被禁用时一起半透明；系统开启「减少动态效果」时直接切换。单独使用的 `RebornRadio` 没有组容器，仍由自身绘制选中底色。UniApp 端直接切换，见「两端差异对照」。
 
 ```vue
 <template>
   <RebornRadioGroup
     v-model="mode"
-    type="button"
+    variant="button"
     size="lg"
   >
     <RebornRadio value="day">日视图</RebornRadio>
@@ -82,13 +80,13 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 
 ### 实体按钮拼接：pure-button
 
-`type="pure-button"` 复用 `RebornButton` 渲染每个选项：首尾圆角、中间直角、相邻边框折叠拼接（`direction="vertical"` 时为首个顶部圆角、最后一个底部圆角，成员等宽拉伸）。未选中态为 `gray-4` 边框 + 次级灰阶文字，选中态外观随 `variant` × `color`（见下方「变体：outlined 与 filled」）。`button-props` 可统一透传按钮参数；其中的 `variant` / `color` 一旦传入，会同时覆盖选中与未选中两态，选中项就不再随组的 `variant` / `color` 变化，只想改边框线型等细节时不要带这两个键。`button-props` 的可用键取决于该端 `RebornButton` 的参数，下例的 `borderStyle` 只有 Web 端有，UniApp 端的 `RebornButton` 没有这个参数。
+`variant="pure-button"` 复用 `RebornButton` 渲染每个选项：首尾圆角、中间直角、相邻边框折叠拼接（`direction="vertical"` 时为首个顶部圆角、最后一个底部圆角，成员等宽拉伸）。未选中态为 `gray-4` 边框 + 次级灰阶文字，选中态外观随 `appearance` × `color`（见下方「选中填充：outlined 与 filled」）。`button-props` 可统一透传按钮参数；其中的 `variant` / `color` 一旦传入，会同时覆盖选中与未选中两态，选中项就不再随组的 `appearance` / `color` 变化，只想改边框线型等细节时不要带这两个键。`button-props` 的可用键取决于该端 `RebornButton` 的参数，下例的 `borderStyle` 只有 Web 端有，UniApp 端的 `RebornButton` 没有这个参数。
 
 ```vue
 <template>
   <RebornRadioGroup
     v-model="align"
-    type="pure-button"
+    variant="pure-button"
     color="success"
     :button-props="{ borderStyle: 'dashed' }"
     :options="['左对齐', '居中', '右对齐']"
@@ -100,9 +98,9 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 `pure-button` 的首尾圆角与相邻边框折叠依赖组容器的结构性伪类（`:first-child` / `:last-child` / `:not(:first-child)`）。个别不支持结构性伪类的小程序端会降级为各自独立的按钮外观，拼接效果失效但功能不受影响。
 ::
 
-### 变体：outlined 与 filled
+### 选中填充：outlined 与 filled
 
-`variant` 支持 `outlined`（默认）/ `filled`，作用于选中态外观：
+`appearance` 支持 `outlined`（默认）/ `filled`，作用于选中态外观：
 
 - `radio` 圆点：`outlined` 为透明底 + 语义色外圈与圆点；`filled` 为语义色实底外圈 + 白色中心圆点。
 - `button` 分段按钮：`outlined` 为浮起高亮语义色文字；`filled` 为语义色实底 + 白色字体。
@@ -112,7 +110,7 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 <template>
   <RebornRadioGroup
     v-model="v"
-    variant="filled"
+    appearance="filled"
     :options="fruits"
   />
 </template>
@@ -212,9 +210,31 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 
 ## API
 
-以下 API **两端通用**，Web 端与 UniApp 端签名一致，无需分端查看。表格中标注了自定义类名属性名的两端写法差异。
+两端形态与填充方式的参数名不同，Props 分端列出；事件与插槽仍两端通用。Web 的旧 `type` 与 `variant="filled/outlined"` 仅为兼容入口，新用法请使用 `variant` 与 `appearance`。
 
 ### Radio Props
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+#### Web 端全部属性
+
+| 属性名                  | 类型                                                                                   | 默认值       | 描述                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------- | ------------ | -------------------------------------------------------------------------------- |
+| `modelValue`            | `string \| number \| boolean`                                                          | -            | 绑定值（`v-model`），与 `value` 严格相等时呈选中态。                             |
+| `value`                 | `string \| number \| boolean`                                                          | `true`       | 选项的 value。                                                                   |
+| `type` | `"radio" \| "button" \| "pure-button"` | - | 已弃用，兼容旧形态参数；新代码使用 `variant`。 |
+| `color`                 | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`  | 语义色；不传时取 Group 下发值，组内可用于单项覆盖。                              |
+| `variant` | `"radio" \| "button" \| "pure-button" \| "filled" \| "outlined"` | -（组内跟随 Group，独立使用为 `radio`） | 形态变体；旧 `filled/outlined` 仅兼容填充方式，新形态优先于旧 `type`。 |
+| `appearance` | `"outlined" \| "filled"` | -（跟随 Group，最终回退 `outlined`） | 选中填充方式，单项可覆盖 Group。 |
+| `disabled`              | `boolean`                                                                              | `false`      | 是否禁用。                                                                       |
+| `buttonProps`           | `ButtonProps`                                                                          | -            | 拼接按钮下透传给 `RebornButton` 的参数，与 Group 下发值合并且自身优先；其中 `variant` / `color` 会同时覆盖选中与未选中两态。 |
+| `class` | `any`                                                                                  | -            | 追加到根节点的自定义类名。     |
+| `ui`                    | `{ root?, icon?, dot?, label? }`                                                       | -            | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                     |
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+#### UniApp 端全部属性
 
 | 属性名                  | 类型                                                                                   | 默认值       | 描述                                                                             |
 | ----------------------- | -------------------------------------------------------------------------------------- | ------------ | -------------------------------------------------------------------------------- |
@@ -225,8 +245,11 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 | `variant`               | `"filled" \| "outlined"`                                                               | `"outlined"` | 样式变体，作用于选中态外观；不传时取 Group 下发值。                              |
 | `disabled`              | `boolean`                                                                              | `false`      | 是否禁用。                                                                       |
 | `buttonProps`           | `ButtonProps`                                                                          | -            | `pure-button` 类型下透传给 `RebornButton` 的参数，与 Group 下发值合并且自身优先；其中 `variant` / `color` 会同时覆盖选中与未选中两态。 |
-| `class` / `customClass` | `any`                                                                                  | -            | 追加到根节点的自定义类名。**Web 端为 `class`，UniApp 端为 `custom-class`。**     |
+| `customClass` | `any`                                                                                  | -            | 追加到根节点的自定义类名。     |
 | `ui`                    | `{ root?, icon?, dot?, label? }`                                                       | -            | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                     |
+:::
+
+::
 
 ### Radio Emits
 
@@ -244,6 +267,31 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 
 ### RadioGroup Props
 
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+#### Web 端全部属性
+
+| 属性名                  | 类型                                                                                   | 默认值         | 描述                                                                                  |
+| ----------------------- | -------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------- |
+| `modelValue`            | `string \| number \| boolean`                                                          | -              | 绑定值（`v-model`）。                                                                 |
+| `defaultValue`          | `string \| number \| boolean`                                                          | `""`           | 默认值：未绑定 `v-model` 时作为初始值；绑定值被父级置回 `undefined` 时也回到该值。    |
+| `type` | `"radio" \| "button" \| "pure-button"` | - | 已弃用，兼容旧形态参数；新代码使用 `variant`。 |
+| `color`                 | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`    | 语义色，作用于选中态。                                                                |
+| `variant` | `"radio" \| "button" \| "pure-button" \| "filled" \| "outlined"` | `"radio"` | 形态变体；旧 `filled/outlined` 仅兼容填充方式，新形态优先于旧 `type`。 |
+| `appearance` | `"outlined" \| "filled"` | `"outlined"` | 选中填充方式，单项可覆盖 Group。 |
+| `size`                  | `"sm" \| "md" \| "lg"`                                                                 | `"md"`         | 单选框组的尺寸；处于 Form / FormItem 内时以表单下发的尺寸为准。                       |
+| `options`               | `Array<string \| number \| RadioOption \| Record<string, any>>`                        | -              | 选项列表；传入后组件内部渲染，可省略默认插槽。字段名与默认不一致时配合 `fieldNames`。 |
+| `fieldNames`            | `RadioFieldNames`                                                                      | -              | `options` 对象项的字段别名，按给出的字段名取 `label` / `value` / `disabled`。         |
+| `direction`             | `"horizontal" \| "vertical"`                                                           | `"horizontal"` | 单选框组的方向。                                                                      |
+| `disabled`              | `boolean`                                                                              | `false`        | 是否禁用整组。                                                                        |
+| `buttonProps`           | `ButtonProps`                                                                          | -              | 拼接按钮下统一透传给每个 `RebornButton` 的参数。                            |
+| `class` | `any`                                                                                  | -              | 追加到根节点的自定义类名。          |
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+#### UniApp 端全部属性
+
 | 属性名                  | 类型                                                                                   | 默认值         | 描述                                                                                  |
 | ----------------------- | -------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------- |
 | `modelValue`            | `string \| number \| boolean`                                                          | -              | 绑定值（`v-model`）。                                                                 |
@@ -257,7 +305,10 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 | `direction`             | `"horizontal" \| "vertical"`                                                           | `"horizontal"` | 单选框组的方向。                                                                      |
 | `disabled`              | `boolean`                                                                              | `false`        | 是否禁用整组。                                                                        |
 | `buttonProps`           | `ButtonProps`                                                                          | -              | `pure-button` 类型下统一透传给每个 `RebornButton` 的参数。                            |
-| `class` / `customClass` | `any`                                                                                  | -              | 追加到根节点的自定义类名。**Web 端为 `class`，UniApp 端为 `custom-class`。**          |
+| `customClass` | `any`                                                                                  | -              | 追加到根节点的自定义类名。          |
+:::
+
+::
 
 ### RadioGroup Emits
 
@@ -299,10 +350,10 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 
 | 键名    | 说明 |
 | ------- | ---- |
-| `root`  | 单个选项的根节点（点击区），默认 `reborn-radio inline-flex items-center transition-colors`，Web 端另有 `cursor-pointer select-none` 与供悬停联动的 `group/radio`，禁用时换成 `cursor-not-allowed opacity-50` 且不再有悬停变色。始终渲染，填了 `radio` 插槽也生效。Web 端 `type="button"` 在组内使用时，选中底色与阴影画在组容器的滑块上，`root` 只保留选中文字色。 |
-| `icon`  | 圆形图标外圈，默认 `relative box-border inline-flex shrink-0 rounded-full border border-solid`，直径随 `size`。仅 `type="radio"` 时可见（`button` 类型下被 `hidden` 隐藏）；`type="pure-button"` 或填了 `radio` 插槽时不渲染，此键失效。 |
+| `root`  | 单个选项的根节点（点击区），默认 `reborn-radio inline-flex items-center transition-colors`，Web 端另有 `cursor-pointer select-none` 与供悬停联动的 `group/radio`，禁用时换成 `cursor-not-allowed opacity-50` 且不再有悬停变色。始终渲染，填了 `radio` 插槽也生效。Web 端 `variant="button"` 在组内使用时，选中底色与阴影画在组容器的滑块上，`root` 只保留选中文字色。 |
+| `icon`  | 圆形图标外圈，默认 `relative box-border inline-flex shrink-0 rounded-full border border-solid`，直径随 `size`。仅圆点形态时可见（Web `variant="radio"`，UniApp `type="radio"`）（`button` 类型下被 `hidden` 隐藏）；拼接按钮或填了 `radio` 插槽时不渲染，此键失效。 |
 | `dot`   | 外圈内的选中态实心圆点，默认 `absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full`，直径随 `size`。渲染与失效条件同 `icon`。 |
-| `label` | 选项文案容器，默认 `transition-colors` 加随 `size` 的字号令牌（UniApp 端另有 `leading-[1.5]`），`radio` 类型下文字为 `text-gray-8`。仅在默认插槽有内容时渲染；`type="pure-button"` 下文案交给 `RebornButton`，填了 `radio` 插槽时也不渲染，两种情况此键都失效。 |
+| `label` | 选项文案容器，默认 `transition-colors` 加随 `size` 的字号令牌（UniApp 端另有 `leading-[1.5]`），`radio` 类型下文字为 `text-gray-8`。仅在默认插槽有内容时渲染；拼接按钮下文案交给 `RebornButton`，填了 `radio` 插槽时也不渲染，两种情况此键都失效。 |
 
 ```vue
 <template>
@@ -319,7 +370,7 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 
 ### 设计令牌
 
-API 通用，但尺寸体系两端不同：Web 常规尺寸使用 Tailwind 原生刻度、字号保留固定 px；UniApp 尺寸使用 rpx。下表 Web 的尺寸 px 值为默认根字号 16px 时的参考值。
+尺寸体系两端不同：Web 常规尺寸使用 Tailwind 原生刻度、字号保留固定 px；UniApp 尺寸使用 rpx。下表 Web 的尺寸 px 值为默认根字号 16px 时的参考值。
 
 ::tabs{sync="platform"}
 
@@ -345,10 +396,11 @@ API 通用，但尺寸体系两端不同：Web 常规尺寸使用 Tailwind 原�
 
 ## 两端差异对照
 
-API 层面两端一致，以下为平台实现层面的差异：
+以下汇总参数命名与平台实现差异：
 
 | 维度                     | Web                                                             | UniApp                                                  |
 | ------------------------ | --------------------------------------------------------------- | ------------------------------------------------------- |
+| 形态与填充参数 | `variant` + `appearance`，旧参数兼容 | `type` + `variant` |
 | 自定义类名属性           | `class`                                                         | `custom-class`                                          |
 | 渲染节点                 | `div` / `span`                                                  | `view` / `text`                                         |
 | 事件绑定                 | `@click`                                                        | `@tap`                                                  |
@@ -364,9 +416,9 @@ API 层面两端一致，以下为平台实现层面的差异：
 ## 注意事项
 
 - **选中态是严格相等判断。** 绑定值与 `value` 类型不一致（如字符串 `"1"` 与数字 `1`）会导致无法选中；点击已选中项不会再次触发事件（单选框不能取消选中）。
-- **组内使用时不要再给单个 Radio 绑 `v-model`。** 绑定值由 Group 的 `v-model` 统一管理，`type` / `size` / `disabled` 也由 Group 下发；单项只需在需要覆盖时传自身的 `color` / `variant`。
+- **组内使用时不要再给单个 Radio 绑 `v-model`。** 绑定值由 Group 的 `v-model` 统一管理，`variant` / `size` / `disabled` 也由 Group 下发；单项只需在需要覆盖时传自身的 `color` / `appearance`。
 - **`options` 与默认插槽二选一**：传了 `options` 时默认插槽不渲染。
-- **`buttonProps` 里不要随手带 `variant` / `color`。** `pure-button` 的按钮颜色与变体按「`buttonProps` 优先，其次组的 `variant` × `color`」取值，选中与未选中两态共用这条规则；传了这两个键，选中项就固定成传入的外观，不再随组的 `variant` / `color` 切换。首尾圆角由组容器按 `size` 取 `RebornButton` 同款圆角令牌恢复。
-- **组内的 `type` 以 Group 为准。** 单个 `RebornRadio` 在组内写的 `type` 会被 Group 下发值覆盖（Group 默认 `radio`），`size` 也只取 Group 的值；只有 `color` / `variant` 是自身优先。
+- **`buttonProps` 里不要随手带 `variant` / `color`。** `pure-button` 的按钮颜色与填充方式按「`buttonProps` 优先，其次组的 `appearance` × `color`」取值，选中与未选中两态共用这条规则；传了这两个键，选中项就固定成传入的外观，不再随组的 `appearance` / `color` 切换。首尾圆角由组容器按 `size` 取 `RebornButton` 同款圆角令牌恢复。
+- **组内形态以 Group 为准。** Web 的 `variant`、UniApp 的 `type` 由 Group 统一设置；颜色与填充方式允许单项覆盖。
 - **`pure-button` 的拼接效果依赖结构性伪类**，在不支持 `:first-child` / `:last-child` 的小程序端会降级为独立按钮外观。
 - **`default-value` 是绑定值为 `undefined` 时的回落值。** 非受控用法下用户选过之后，组件自己持有选中值，再改 `default-value` 不会生效，最新值请通过 `change` 事件读取；受控用法下父级把绑定值重置为 `undefined`（如表单重置到未赋值），组件回到 `default-value`，而不是停在上一次选中的项。

@@ -51,8 +51,8 @@ export default {
     ellipsis: 'reborn-pagination-ellipsis inline-flex items-center justify-center text-gray-5',
     prev: 'reborn-pagination-prev',
     next: 'reborn-pagination-next',
-    jumper: 'reborn-pagination-jumper inline-flex items-center gap-[16rpx] text-gray-5',
-    total: 'reborn-pagination-total text-gray-5',
+    jumper: 'reborn-pagination-jumper inline-flex items-center gap-[16rpx] text-gray-8',
+    total: 'reborn-pagination-total text-gray-8',
     sizes: 'reborn-pagination-sizes',
     simple: 'reborn-pagination-simple inline-flex items-center gap-[16rpx] text-gray-5',
     input: 'shrink-0',
@@ -83,7 +83,7 @@ export default {
     },
     active: {
       true: { button: 'font-medium' },
-      false: { button: 'text-gray-5' },
+      false: { button: 'text-gray-9' },
     },
     background: {
       true: {},

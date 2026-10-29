@@ -24,6 +24,7 @@ export interface UnitCell {
 interface Props {
   kind: 'year' | 'month' | 'quarter';
   cells: UnitCell[];
+  highlightToday?: boolean;
   ui: Record<keyof typeof theme.slots, (options?: { class?: ClassValue }) => string>;
 }
 
@@ -49,7 +50,7 @@ function itemClass(cell: UnitCell) {
   const state = cell.selected ? ui.dayActive() : cell.inRange ? ui.yearMonthInRange() : '';
   const capStart = cell.cap === 'start' ? ui.yearMonthRangeStart() : '';
   const capEnd = cell.cap === 'end' ? ui.yearMonthRangeEnd() : '';
-  const today = cell.isToday && !cell.selected ? ui.dayToday() : '';
+  const today = props.highlightToday && cell.isToday && !cell.disabled && !cell.selected ? ui.dayToday() : '';
   const disabled = cell.disabled ? ui.dayDisabled() : '';
   const tail = props.kind === 'year' ? [today, disabled, cell.outside ? ui.yearMonthOutside() : ''] : [disabled, today];
   return ui.yearMonthItem({ class: [state, capStart, capEnd, ...tail] });

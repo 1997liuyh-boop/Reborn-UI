@@ -14,7 +14,7 @@ badge: New
 
 `RebornSteps` 与 `RebornStep` 展示有序流程的阶段及当前进度，适合注册、下单或审批页面；目前仅提供 Web 实现。
 
-`active` 决定当前步骤，单步 `progress` 表示该阶段的完成百分比，父级 `overallProgress` 自动折算整体完成量；`processStatus` 与 `finishStatus` 决定当前和前序步骤的状态。`direction` 决定横纵排列，`type` 决定数字或点状节点，`lineType` 独立决定实线、虚线或箭头连接。
+`active` 决定当前步骤，单步 `progress` 表示该阶段的完成百分比，父级 `overallProgress` 自动折算整体完成量；`processStatus` 与 `finishStatus` 决定当前和前序步骤的状态。`direction` 决定横纵排列，`type` 决定数字、点状节点或无标记文本，`lineType` 独立决定实线、虚线或箭头连接。
 
 `size` 调整节点与文字尺寸，`width` 控制步骤条整体宽度，`space` 调整步骤间距，`placement` 选择标题与描述相对节点的上、下、左、右位置，`alignCenter` 控制横向上、下方内容的居中对齐，`simple` 控制描述显示。单步 `status`、`color`、`icon`、`placement` 可覆盖继承结果，节点、标题、描述和连接器插槽可放入业务内容；流程通过外部状态推进，`change` 回报下标变化。
 
@@ -459,7 +459,7 @@ const active = ref(0);
 | `alignCenter`     | `boolean`                                                                              | `false`        | 横向 `top` / `bottom` 的节点与文字在每步宽度内居中；未设置位置时回退为 `bottom`，纵向不生效。 |
 | `simple`          | `boolean`                                                                              | `false`        | 隐藏全部步骤的描述文字与描述插槽。                                                  |
 | `size`            | `'sm' \| 'md' \| 'lg'`                                                                 | `'md'`         | 节点、标题与描述的尺寸档位。                                                        |
-| `type`            | `'default' \| 'dot'`                                                                   | `'default'`    | 数字节点或点状节点，与连接线类型独立。                                              |
+| `type`            | `'default' \| 'dot' \| 'text'`                                                          | `'default'`    | 数字、点状或无标记文本；文本类型的当前标题与描述使用步骤主题色，与连接线类型独立。    |
 | `lineType`        | `'solid' \| 'dashed' \| 'arrow'`                                                       | `'solid'`      | 实线、原生 CSS 虚线或箭头连接。                                                     |
 | `color`           | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'`    | 子项未设置颜色时继承的主题色。                                                      |
 | `ui`              | `StepsUI`                                                                              | `{}`           | 根节点与所有子项的样式覆盖。                                                        |
@@ -491,7 +491,7 @@ const active = ref(0);
 | 插槽名        | 作用域参数 | 描述                                                                                     |
 | ------------- | ---------- | ---------------------------------------------------------------------------------------- |
 | `default`     | -          | `RebornSteps` 的步骤内容，约定传入 `RebornStep` 或其异步包装；支持 Fragment 与 `v-for`。 |
-| `icon`        | `{ index: number; status: StepsStatus; current: boolean; progress: number \| undefined }` | `RebornStep` 的节点内容，优先于 `icon`；`type="dot"` 时不渲染，可通过 `ui.marker` 改节点外形。 |
+| `icon`        | `{ index: number; status: StepsStatus; current: boolean; progress: number \| undefined }` | `RebornStep` 的节点内容，优先于 `icon`；`type="dot"` 或 `type="text"` 时不渲染，可通过 `ui.marker` 改节点外形。 |
 | `title`       | `{ index: number; status: StepsStatus; current: boolean; progress: number \| undefined }` | `RebornStep` 的标题，优先于标题文字。 |
 | `description` | `{ index: number; status: StepsStatus; current: boolean; progress: number \| undefined }` | `RebornStep` 的描述，优先于描述文字；`simple` 时不渲染。 |
 | `connector` | `{ index: number; status: StepsStatus; current: boolean; progress: number \| undefined; completed: boolean; direction: 'horizontal' \| 'vertical'; lineType: 'solid' \| 'dashed' \| 'arrow' }` | 替换当前步骤到下一步的连接器内容，保留外层位置与尺寸；末步不渲染。 |
@@ -553,7 +553,8 @@ const active = ref(0);
 - **`active` 从 0 开始**。等于步骤数量时所有步骤使用 `finishStatus`；业务层应自行限制可用范围。
 - **整体进度决定展示下标，单步进度优先决定圆环**。设置 `overallProgress` 后按步骤数量等分计算展示状态；当前步骤显式设置 `progress` 时覆盖折算百分比，不影响折算下标。整体进度不会回写 `active` 或额外触发 `change`，需要改回手动流程时移除该参数。
 - **进度传给 `RebornStep`，圆环仅展示当前处理中步骤**。每步独立接收 `progress`，达到 100% 不会推进下标；当前步通过 `status` 或 `processStatus` 改为其他状态时圆环隐藏，业务应根据任务结果更新状态。
-- **箭头属于连接方式**。使用 `line-type="arrow"`，`type` 仅接受 `default` 与 `dot`；虚线采用原生 CSS `border-style: dashed`，短段长度和分布由浏览器决定。
+- **箭头属于连接方式**。使用 `line-type="arrow"`，`type` 接受 `default`、`dot` 与 `text`；虚线采用原生 CSS `border-style: dashed`，短段长度和分布由浏览器决定。
+- **文本类型不渲染节点**。设置 `type="text"` 后不显示数字、图标插槽或进度圆环，标题和描述仍保留；当前步骤的文字随 `color` 使用主题色，错误和成功状态使用对应语义色。
 - **步骤不提供点击切换能力**。`RebornStep` 只展示阶段，使用外部按钮或业务状态更新 `active`。
 - **子项状态优先于自动推导**。显式 `status` 不随当前下标变化，错误与成功状态还会覆盖 `color`，避免语义与配色冲突。
 - **`simple` 会隐藏描述插槽**。描述节点不参与渲染，需要始终展示说明时请保持 `simple` 为 `false`。

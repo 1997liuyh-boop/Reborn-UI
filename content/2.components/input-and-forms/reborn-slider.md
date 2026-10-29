@@ -14,9 +14,9 @@ badge: New
 
 Slider 用于在 `min` / `max` 连续区间内拖动取值，Web 与 UniApp 两端同名同构。
 
-它的取值体系由三层构成：`step` 决定**取值粒度**（数字步长逐格对齐，`"mark"` 则把取值钉死在刻度上）；`range` 决定**节点数量**（单值一个滑块，范围模式为一组有序节点，`editable` 下节点还可以增删）；`marks` / `showStops` 在轨道上补充**视觉参照**（具名刻度与等距间断点）。在此之上，`vertical` / `reverse` 控制方向，`tooltip` 控制拖拽气泡，`draggableTrack` 允许把整段选区当作一个整体拖动。
+它的取值体系由三层构成：`step` 决定**取值粒度**（数字步长逐格对齐，`"mark"` 则把取值钉死在刻度上）；`range` 决定**节点数量**（单值一个滑块，范围模式为一组有序节点，`editable` 下节点还可以增删）；`marks` / `showStops` 在轨道上补充**视觉参照**（具名刻度与等距间断点）。在此之上，`vertical` / `reverse` 控制方向，`tooltip` 控制数值气泡，`draggableTrack` 允许把整段选区当作一个整体拖动。
 
-滑块视觉为「语义色外圆 + 中性色中心圆」的双层结构：外圆取 `color` 语义色（各色板第 6 阶），中心圆取 `gray-1` 随主题反色；按住拖拽时叠加 20% 透明度的同色色晕。范围模式下激活滑块（默认最右侧、此后跟随最近一次按下）比未激活的大一号，视觉焦点始终落在正要操作的那只上。
+滑块视觉为「语义色外圆 + 中性色中心圆」的双层结构，中心圆取 `gray-1` 随主题反色。Web 端默认直径 12px、彩色边框 2px，悬停、按压或键盘聚焦时等比放大至 4/3（默认视觉直径 16px）、彩色边框视觉厚度为 3px，并显示 4px 的对应色板第 6 阶、20% 透明度圆环；范围模式的激活下标只标记最近操作的节点。UniApp 端仍按 `size` 与激活节点控制尺寸。
 
 ### 何时使用
 
@@ -58,7 +58,7 @@ const volume = ref(40);
 
 ### 语义色：color
 
-`color` 决定进度条与滑块外圆的颜色（各色板第 6 阶），按压色晕取同色 20% 透明度，间断点与刻度点边框取同色板第 3 阶，因此换色时整条滑轨的视觉层级不变。
+`color` 决定进度条与滑块外圆的语义色。Web 的交互圆环取对应色板第 6 阶的 20% 透明色，例如 `ring-brand-6/20`；透明度仅作用于圆环。UniApp 按压色晕取同色 20% 透明度；间断点与刻度点边框取同色板第 3 阶。
 
 ```vue
 <template>
@@ -79,7 +79,7 @@ const volume = ref(40);
 
 ### 范围选择：range 与 v-model:values
 
-开启 `range` 后改用 `v-model:values` 绑定数组，组件会自动保证节点升序。默认**最右侧**滑块为激活态（大一号），此后跟随用户最近一次按下的滑块；拖拽越过相邻节点时激活下标自动换位，不会出现「拖着拖着换了一只滑块」的错位感。
+开启 `range` 后改用 `v-model:values` 绑定数组，组件会自动保证节点升序。默认**最右侧**滑块为激活节点，此后跟随用户最近一次按下的滑块；拖拽越过相邻节点时激活下标自动换位，不会出现「拖着拖着换了一只滑块」的错位感。
 
 ```vue
 <script setup lang="ts">
@@ -117,7 +117,7 @@ const marks = {
 
 ### 气泡格式化：tooltip.formatter
 
-拖拽时默认在滑块上方（垂直模式为右侧）显示带箭头的数值气泡。`tooltip.formatter` 接收当前值并返回展示内容，适合补单位或换算显示。
+默认在滑块上方（垂直模式为右侧）显示带箭头的数值气泡，Web 端悬停或拖拽时显示，UniApp 端拖拽时显示。Web 气泡底色与箭头取 `gray-9`，整体使用 `opacity-80`；气泡独立于滑块的缩放节点，悬停、拖拽和键盘聚焦时文字与箭头尺寸保持不变。`tooltip.formatter` 接收当前值并返回展示内容，适合补单位或换算显示。
 
 ```vue
 <template>
@@ -127,7 +127,7 @@ const marks = {
 
 ### 气泡显隐：tooltip.open
 
-缺省只在拖拽时显示气泡；`tooltip.open` 传 `true` 常显、`false` 强制隐藏；`formatter: null` 效果等同隐藏。
+Web 端缺省在悬停或拖拽滑块时显示气泡，UniApp 端在拖拽时显示；`tooltip.open` 传 `true` 常显、`false` 强制隐藏；`formatter: null` 效果等同隐藏。Web 常显气泡在静止时，箭头尖端离滑块本体约 3px；交互时随本体放大与圆环调整距离，文字和箭头尺寸保持不变。
 
 ```vue
 <template>
@@ -241,6 +241,8 @@ Web 端额外支持键盘：点击抓取或 Tab 聚焦节点后，按 `Delete` /
 
 `value` 插槽替换末尾数值显示；`thumb` 插槽只替换滑块中心圆，单值与范围模式两端都可用。作用域参数平铺为 `{ value, index, active, disabled }`，外层滑块始终由组件负责定位与气泡，Web 端也保留聚焦与键盘步进。外形与底色通过 `ui.thumb` 覆盖，尺寸类按各端的 px / rpx 规则书写。
 
+Web 的交互反馈仅对滑块本体使用 `scale`，不会改写 `ui.thumb` 的宽高。例如 `h-5 w-[30px]` 在悬停或按压时保持 3:2 的长宽比；气泡独立渲染并保持原尺寸，禁用时保留自定义尺寸且不放大。
+
 ```vue
 <template>
   <RebornSlider v-model="volume" :ui="{ thumb: 'bg-warning' }">
@@ -282,13 +284,13 @@ Web 端滑块在端点不会溢出；UniApp 端保持纯百分比定位，端点
 | `reverse` | `boolean` | `false` | 反向：水平从右向左递增，垂直从上向下递增。 |
 | `vertical` | `boolean` | `false` | 垂直模式，滑轨长度由 `height` 给出。 |
 | `height` | `string \| number` | `200px` | 垂直模式的滑轨长度，数字按 px 处理。 |
-| `tooltip` | `{ open?: boolean; formatter?: ((v: number) => string \| number) \| null }` | `-` | 数值气泡：缺省拖拽时显示，`open` 强制常显/隐藏，`formatter` 格式化内容（传 `null` 等同隐藏）。 |
+| `tooltip` | `{ open?: boolean; formatter?: ((v: number) => string \| number) \| null }` | `-` | 数值气泡：缺省悬停或拖拽时显示，`open` 强制常显/隐藏，`formatter` 格式化内容（传 `null` 等同隐藏）。 |
 | `prefixIcon` | `string` | `-` | 滑轨起始端图标，传 `Icon` 组件名（如 `lucide:volume`）。 |
 | `suffixIcon` | `string` | `-` | 滑轨末尾端图标，取值形式同 `prefixIcon`。 |
 | `showValue` | `boolean` | `false` | 是否显示当前值。 |
 | `range` | `boolean` | `false` | 是否启用范围模式。 |
-| `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸（影响滑块直径与文字，轨道粗细固定 4px）。在表单中未传时继承表单 `size`。 |
-| `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 颜色主题：进度条与滑块外圆取第 6 阶，色晕取 20% 透明度，轨道节点边框取第 3 阶。 |
+| `size` | `"sm" \| "md" \| "lg"` | `"md"` | 文字与图标尺寸，未传时继承表单 `size`；滑块默认 12px，悬停、按压或键盘聚焦时等比放大至 4/3，轨道固定 4px。 |
+| `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 颜色主题：进度条与滑块外圆取语义色，交互圆环取对应色板第 6 阶的 20% 透明色，轨道节点边框取第 3 阶。 |
 | `class` | `any` | `-` | 追加到根节点（`wrapper`）的自定义类名。 |
 | `ui` | `object` | `-` | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 :::
@@ -365,9 +367,10 @@ Web 端滑块在端点不会溢出；UniApp 端保持纯百分比定位，端点
 | `stopDot` | 间断点 | `absolute top-1/2 … size-[8px] rounded-full bg-gray-1 border-[1.5px]` | 仅 `showStops` 且 `step` 为数字、间断点数量在 1–100 之间时渲染 |
 | `markDot` | 刻度点 | 同 `stopDot` | 仅 `marks` 含合法 key 时渲染 |
 | `markLabel` | 刻度文字 | `absolute top-full mt-[8px] -translate-x-1/2 text-sm text-gray-6 whitespace-nowrap cursor-pointer select-none` | 同 `markDot` |
-| `thumb` | 滑块本体（语义色外圆） | `absolute top-1/2 … rounded-full flex items-center justify-center z-[1] outline-none` + `bg-<color> ring-<color>/20` | 始终渲染；使用 `#thumb` 插槽时仍是插槽内容的外层，外形与底色在这里改 |
+| `thumbWrapper` | 滑块与气泡的定位容器 | `absolute top-1/2 -translate-x-1/2 -translate-y-1/2 inline-flex z-[1]` | 始终渲染；负责位置与层级，不参与缩放，宽高由滑块本体撑开 |
+| `thumb` | 滑块本体（语义色外圆） | `relative size-3 rounded-full flex items-center justify-center outline-none` + `bg-<color>` 与对应色板第 6 阶、20% 透明度圆环 | 始终渲染；使用 `#thumb` 插槽时仍是插槽内容的外层，外形、底色与缩放在这里改 |
 | `thumbDot` | 滑块中心圆 | `rounded-full bg-gray-1` | 使用 `#thumb` 插槽时不渲染 |
-| `tooltip` | 数值气泡 | `absolute z-[3] rounded-sm bg-gray-9 px-2 py-1 text-sm text-gray-1 whitespace-nowrap shadow-md` | 仅拖拽中或 `tooltip.open` 为 `true` 时渲染；`open: false` 或 `formatter: null` 时不渲染 |
+| `tooltip` | 数值气泡 | `absolute z-[3] rounded-sm bg-gray-9 px-2 py-1 text-sm text-gray-1 opacity-80 whitespace-nowrap shadow-md` | 悬停、拖拽中或 `tooltip.open` 为 `true` 时渲染；`open: false` 或 `formatter: null` 时不渲染 |
 | `suffix` | 末尾端图标容器 | `shrink-0 inline-flex items-center text-gray-6 ml-[8px]` | 仅设置 `suffixIcon` 且未使用 `#suffix` 插槽时渲染 |
 | `value` | 末尾数值文本 | `text-center w-[50px] text-gray-8 ml-[8px]` | 仅 `showValue` 且未使用 `#value` 插槽时渲染 |
 :::
@@ -413,7 +416,7 @@ Web 端滑块在端点不会溢出；UniApp 端保持纯百分比定位，端点
 | --- | --- | --- |
 | 自定义类名 | `class` | `customClass` |
 | 图标 prop 取值 | `Icon` 组件名（`lucide:volume`） | iconify 类名（`i-lucide-volume`） |
-| 滑块尺寸单位 | px（激活 16 / 14 / 12px） | rpx 随屏宽缩放（激活 32 / 28 / 24rpx） |
+| 滑块尺寸单位 | 默认 12px，悬停、按压或键盘聚焦时 16px | rpx 随屏宽缩放（激活 32 / 28 / 24rpx） |
 | 轨道粗细 | 固定 4px，可用 `ui.track` 覆盖 | `trackHeight` prop，默认 4px，内联样式优先于 `ui.track` |
 | 交互带两端内边距 | 有，滑块在端点不溢出 | 无，端点处滑块溢出半个直径，定位为纯百分比 |
 | 命中滑块判定半径 | 12px | 16px |
@@ -427,10 +430,10 @@ Web 端滑块在端点不会溢出；UniApp 端保持纯百分比定位，端点
 
 - 单值模式用 `v-model`；范围模式必须同时设置 `range` 并改用 `v-model:values` 绑定数组，两者不可混用。
 - 事件时序对齐 Ant Design：`change` 实时、`changeComplete` 收尾。提交服务端请监听 `changeComplete`，避免拖拽过程刷请求。
-- 范围模式默认最右侧滑块为激活态（大一号），跟随最近一次按下切换；拖拽越过相邻节点时激活下标自动换位。
+- 范围模式默认最右侧滑块为激活节点，跟随最近一次按下切换；拖拽越过相邻节点时激活下标自动换位。
 - `disabled` 数组下标对应**排序后**的节点位置，`editable` 增删节点会使后续下标偏移，两者组合使用需业务侧自行维护。
 - `step="mark"` 时取值吸附刻度、Web 端方向键在相邻刻度间跳转；`draggableTrack` 在该模式下不可用（平移量无法保证所有节点同时落在刻度上）。
 - **`thumb` 插槽两端只替换中心圆，外形改 `ui.thumb`。** 外层定位与气泡由组件保留，Web 端的聚焦和方向键也不受影响；范围模式每个滑块均能定制。
-- 色晕（按压态 ring）不占布局空间，组件高度只由滑块外径决定；有 `marks` 时组件会自动为刻度文字留出下方（垂直模式为右侧）空间。
+- **Web 的圆环不占布局空间。** 交互带按最大滑块外径 16px 预留空间，悬停或按压时不会改变组件高度；有 `marks` 时组件会自动为刻度文字留出下方（垂直模式为右侧）空间。
 - UniApp 端触摸开始前会通过 `createSelectorQuery` 测量轨道位置，滑块所在容器若有进入动画，请保证动画结束后再交互，否则首次取值可能偏移。
 - UniApp 端交互带没有两端内边距，端点处滑块会向外溢出半个直径；贴边布局时请给外层留出左右余量。

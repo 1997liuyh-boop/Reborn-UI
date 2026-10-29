@@ -2,6 +2,7 @@
 import type { ClassValue } from "clsx";
 import type { ComponentPublicInstance } from "vue";
 import type {
+  timePanelInteractions,
   timePickerColors,
   timePickerSizes,
   TimeRangeRole,
@@ -32,6 +33,8 @@ const props = withDefaults(defineProps<TimePanelProps>(), {
   disabled: false,
   format: "HH:mm:ss",
   isRange: false,
+  followSystemTime: false,
+  interaction: "scroll",
   arrowControl: false,
   showFooter: true,
   size: "md",
@@ -81,6 +84,10 @@ export interface TimePanelProps {
   disabled?: boolean;
   format?: string;
   isRange?: boolean;
+  /** 空值时是否以当前系统时间初始化；已有绑定值优先 */
+  followSystemTime?: boolean;
+  /** scroll：滚动停止后选中并居中；click：仅点击选中并置顶 */
+  interaction?: (typeof timePanelInteractions)[number];
   arrowControl?: boolean;
   /** 是否显示底部操作区，包含自定义 footer 插槽 */
   showFooter?: boolean;
@@ -103,6 +110,8 @@ export interface TimePanelProps {
     column: ClassValue;
     arrowButton: ClassValue;
     list: ClassValue;
+    listPaddingStart: ClassValue;
+    listPaddingEnd: ClassValue;
     item: ClassValue;
     itemActive: ClassValue;
     itemDisabled: ClassValue;
@@ -181,6 +190,7 @@ const ui = computed(() => {
     color: props.color,
     arrowControl: props.arrowControl,
     variant: props.variant,
+    interaction: props.interaction,
     disabled: props.disabled,
   });
 
@@ -203,6 +213,10 @@ const ui = computed(() => {
       styles.arrowButton({ class: cn(opts?.class, uiOverrides.value.arrowButton) }),
     list: (opts?: { class?: any }) =>
       styles.list({ class: cn(opts?.class, uiOverrides.value.list) }),
+    listPaddingStart: (opts?: { class?: any }) =>
+      styles.listPaddingStart({ class: cn(opts?.class, uiOverrides.value.listPaddingStart) }),
+    listPaddingEnd: (opts?: { class?: any }) =>
+      styles.listPaddingEnd({ class: cn(opts?.class, uiOverrides.value.listPaddingEnd) }),
     item: (opts?: { class?: any }) =>
       styles.item({ class: cn(opts?.class, uiOverrides.value.item) }),
     itemActive: (opts?: { class?: any }) =>
@@ -222,7 +236,7 @@ const ui = computed(() => {
 
 /**
  * 选项三种状态的完整类名：渲染时按状态直接取字符串，不再逐项调用 tv 槽位与 cn。
- * 毫秒格式单列就有 3000 个选项，逐项合并类名是面板重渲染的主要开销
+ * 毫秒格式单列有 1000 个选项，逐项合并类名是面板重渲染的主要开销
  */
 const itemClasses = computed(() => ({
   disabled: ui.value.item({ class: ui.value.itemDisabled() }),
@@ -309,14 +323,14 @@ function pickNearest(candidates: number[], current: number, direction: 1 | -1 = 
   if (candidates.includes(current)) return current;
 
   if (direction === 1) {
-    return (candidates.find((candidate) => candidate >= current) ?? candidates[0]) as number;
+    return (candidates.find((candidate) => candidate >= current) ?? candidates.at(-1)) as number;
   }
 
   for (let index = candidates.length - 1; index >= 0; index--) {
     if ((candidates[index] as number) <= current) return candidates[index] as number;
   }
 
-  return candidates[candidates.length - 1] as number;
+  return candidates[0] as number;
 }
 
 function sanitizeState(role: TimeRangeRole, incomingState: TimeState, direction: 1 | -1 = 1) {
@@ -391,14 +405,27 @@ function cycleValue(role: TimeRangeRole, unit: TimeUnit, step: 1 | -1) {
   const nextIndex =
     currentIndex === -1
       ? fallbackIndex
-      : (currentIndex + step + candidates.length) % candidates.length;
+      : Math.max(0, Math.min(currentIndex + step, candidates.length - 1));
+
+  if (currentIndex === nextIndex) return;
 
   state[unit] = candidates[nextIndex] as number;
   updateState(role, state, step);
 }
 
+/** 有限选项到达首尾时禁用对应箭头，不绕回另一端。 */
+function canStep(role: TimeRangeRole, unit: TimeUnit, step: 1 | -1) {
+  const current = getState(role)[unit];
+  return [...(availableValues.value[role]?.[unit] ?? [])]
+    .some(value => step === 1 ? value > current : value < current);
+}
+
 function setValue(role: TimeRangeRole, unit: TimeUnit, value: number) {
   if (props.disabled || isDisabledValue(role, unit, value)) return;
+  const key = columnKey(role, unit);
+  const timer = scrollTimers.get(key);
+  if (timer) clearTimeout(timer);
+  scrollTimers.delete(key);
   const state = cloneState(getState(role));
   state[unit] = value;
   updateState(role, state, 1);
@@ -442,7 +469,6 @@ function scrollColumnToActive(role: TimeRangeRole, unit: TimeUnit) {
     getState(role)[unit],
     unitMax[unit] + 1,
     item.offsetHeight,
-    column.clientHeight,
   );
   if (scrollTimers.has(key)) return;
   scrollTargets.set(key, target);
@@ -450,7 +476,7 @@ function scrollColumnToActive(role: TimeRangeRole, unit: TimeUnit) {
   scrollbar?.setScrollTop(target, { animated: false, silent: true });
 }
 
-/** 原生滚动、触摸与拖动滚动条统一在停止后提交，再对齐中间组。 */
+/** 默认模式在滚动停止后提交，再对齐居中区域；首尾不会循环。 */
 function settleScroll(role: TimeRangeRole, unit: TimeUnit) {
   const key = columnKey(role, unit);
   const timer = scrollTimers.get(key);
@@ -464,7 +490,6 @@ function settleScroll(role: TimeRangeRole, unit: TimeUnit) {
     column.scrollTop,
     unitMax[unit] + 1,
     item.offsetHeight,
-    column.clientHeight,
   );
   updateState(role, state);
   scrollColumnToActive(role, unit);
@@ -473,7 +498,7 @@ function settleScroll(role: TimeRangeRole, unit: TimeUnit) {
 function handleScroll(role: TimeRangeRole, unit: TimeUnit) {
   const key = columnKey(role, unit);
   const column = columnRefs.get(key)?.wrapRef;
-  if (!column || props.disabled) return;
+  if (!column || props.disabled || props.interaction === "click") return;
   const target = scrollTargets.get(key);
   if (target !== undefined && Math.abs(column.scrollTop - target) < 1) return;
   const timer = scrollTimers.get(key);
@@ -531,22 +556,13 @@ function getCurrentTimeState(): TimeState {
   };
 }
 
-/**
- * 空值时的初始选择：挂载前（含 SSR 与水合首帧）用确定的 00:00:00.000，
- * 两端渲染出的选中项一致；挂载后再切到「此刻」。禁用规则由 sanitizeState 统一校正
- */
 let isMounted = false;
-function getEmptyDefaultState(): TimeState {
-  return isMounted ? getCurrentTimeState() : { hour: 0, minute: 0, second: 0, millisecond: 0 };
-}
-
-function isEmptyModel() {
-  const value = props.modelValue;
-  return Array.isArray(value) ? !value[0] : !value;
-}
 
 function initFromModel() {
-  const defaultState = getEmptyDefaultState();
+  // 系统时间只在挂载后读取，保证服务端与水合首帧一致；初始化不写入绑定值。
+  const defaultState: TimeState = props.followSystemTime && isMounted
+    ? getCurrentTimeState()
+    : { hour: 0, minute: 0, second: 0, millisecond: 0 };
 
   if (props.isRange && Array.isArray(props.modelValue)) {
     const start = sanitizeState("start", parseTime(props.modelValue[0]) ?? defaultState);
@@ -564,9 +580,9 @@ function initFromModel() {
   syncColumns();
 }
 
-// 绑定值、格式或模式变化时按绑定值重新初始化
+// 绑定值、格式、模式或空值初始化策略变化时重新定位。
 watch(
-  [() => props.modelValue, () => props.format, () => props.isRange],
+  [() => props.modelValue, () => props.format, () => props.isRange, () => props.followSystemTime],
   initFromModel,
   { immediate: true, deep: true },
 );
@@ -591,11 +607,15 @@ watch(
 );
 
 watch([startState, endState, () => props.arrowControl], syncColumns);
+watch(() => props.interaction, () => {
+  cancelScrollTimers();
+  scrollTargets.clear();
+  syncColumns();
+});
 
 onMounted(() => {
   isMounted = true;
-  // 空值时首帧是 00:00:00，挂载后切到「此刻」（只改局部选择，不写绑定值）
-  if (isEmptyModel()) initFromModel();
+  if (props.followSystemTime) initFromModel();
 });
 onBeforeUnmount(cancelScrollTimers);
 defineExpose({ syncColumns, clear, confirm });
@@ -627,36 +647,37 @@ defineExpose({ syncColumns, clear, confirm });
               :aria-label="(isRange ? (role === 'start' ? '开始' : '结束') : '') + unitLabels[unit]"
               :aria-disabled="disabled"
               :tabindex="disabled ? -1 : 0"
-              :aria-activedescendant="`${panelId}-${role}-${unit}-${unitMax[unit] + 1 + getState(role)[unit]}`"
+              :aria-activedescendant="`${panelId}-${role}-${unit}-${getState(role)[unit]}`"
               @keydown="onColumnKeydown(role, unit, $event)"
             >
               <button
                 v-if="arrowControl"
                 type="button"
                 :class="ui.arrowButton()"
-                :disabled="disabled"
+                :disabled="disabled || !canStep(role, unit, -1)"
                 :aria-label="`上一${unitLabels[unit]}`"
                 @click="cycleValue(role, unit, -1)"
               >
                 ⌃
               </button>
               <div class="relative">
-                <div :class="ui.indicator()" />
+                <div v-if="interaction === 'scroll'" :class="ui.indicator()" />
                 <RebornScrollbar
                   :ref="(el) => setColumnRef(role, unit, el)"
                   :class="ui.list()"
                   :horizontal="false"
                   :size="4"
-                  :inset="0"
                   :scroll-duration="0"
                   @scroll="handleScroll(role, unit)"
                 >
+                  <div aria-hidden="true" :class="ui.listPaddingStart()" />
                   <TimePanelOptions
                     :panel-id="panelId" :role="role" :unit="unit" :max="unitMax[unit]"
                     :value="getState(role)[unit]" :available="availableValues[role][unit] ?? new Set()"
                     :disabled="disabled" :classes="itemClasses"
                     @select="value => setValue(role, unit, value)"
                   />
+                  <div aria-hidden="true" :class="ui.listPaddingEnd()" />
                 </RebornScrollbar>
                 <div :class="ui.mask()" />
               </div>
@@ -664,7 +685,7 @@ defineExpose({ syncColumns, clear, confirm });
                 v-if="arrowControl"
                 type="button"
                 :class="ui.arrowButton()"
-                :disabled="disabled"
+                :disabled="disabled || !canStep(role, unit, 1)"
                 :aria-label="`下一${unitLabels[unit]}`"
                 @click="cycleValue(role, unit, 1)"
               >

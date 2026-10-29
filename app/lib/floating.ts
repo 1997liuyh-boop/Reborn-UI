@@ -241,3 +241,48 @@ export function getArrowCenter(options: {
 
   return Math.min(Math.max(ideal, limit), panelExtent - limit);
 }
+
+/** 按顶层逗号拆分多层阴影，颜色函数括号里的逗号不拆 */
+function splitShadowLayers(shadow: string): string[] {
+  const layers: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < shadow.length; i++) {
+    const char = shadow[i];
+    if (char === '(') depth++;
+    else if (char === ')') depth--;
+    else if (char === ',' && depth === 0) {
+      layers.push(shadow.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  layers.push(shadow.slice(start).trim());
+  return layers.filter(Boolean);
+}
+
+/**
+ * 把面板的 box-shadow 换算到旋转 45° 的箭头坐标系，供箭头自身或投影底片使用。
+ *
+ * box-shadow 的偏移量位于元素自身坐标系、会跟着 rotate(45deg) 一起转，
+ * 所以每层偏移先反向旋转 45°，转回去后与面板阴影同向；模糊不受旋转影响。
+ * 负扩散（如 shadow-lg 的 -3px / -4px）是为了收窄大面板两侧的阴影，用在 12px 的箭头上会把阴影缩得几乎看不见，
+ * 箭头尖下面仍是一块白，与面板阴影接不上，因此扩散只保留非负值。
+ * 入参取自 getComputedStyle，内阴影与全透明的占位层（Tailwind 的 ring / inset 变量）直接跳过。
+ */
+export function getArrowShadow(panelShadow: string): string {
+  if (!panelShadow || panelShadow === 'none') return 'none';
+  const layers: string[] = [];
+  for (const layer of splitShadowLayers(panelShadow)) {
+    if (/\binset\b/.test(layer)) continue;
+    const color = layer.match(/[a-z-]+\([^)]*\)|#[\da-f]{3,8}\b|\btransparent\b/i)?.[0] ?? '';
+    // rgba(…, 0)、rgb(… / 0) 与 transparent 都是看不见的占位层
+    if (/transparent|[,/]\s*0\s*\)$/i.test(color)) continue;
+    const lengths = layer.replace(color, '').match(/-?(?:\d+(?:\.\d+)?|\.\d+)px/g)?.map(Number.parseFloat) ?? [];
+    if (lengths.length < 2) continue;
+    const [x = 0, y = 0, blur = 0, spread = 0] = lengths;
+    const rx = (x + y) * Math.SQRT1_2;
+    const ry = (y - x) * Math.SQRT1_2;
+    layers.push(`${rx.toFixed(2)}px ${ry.toFixed(2)}px ${blur}px ${Math.max(spread, 0)}px ${color}`.trim());
+  }
+  return layers.length ? layers.join(', ') : 'none';
+}

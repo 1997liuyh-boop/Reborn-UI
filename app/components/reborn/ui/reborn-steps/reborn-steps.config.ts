@@ -5,7 +5,7 @@ export const stepsDirections = ['horizontal', 'vertical'] as const;
 export const stepsPlacements = ['top', 'bottom', 'left', 'right'] as const;
 export const stepsStatuses = ['wait', 'process', 'finish', 'error', 'success'] as const;
 export const stepsSizes = ['sm', 'md', 'lg'] as const;
-export const stepsTypes = ['default', 'dot'] as const;
+export const stepsTypes = ['default', 'dot', 'text'] as const;
 export const stepsLineTypes = ['solid', 'dashed', 'arrow'] as const;
 export const stepsColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const;
 export type StepsDirection = (typeof stepsDirections)[number];
@@ -100,10 +100,11 @@ export const stepsTheme = tv({
       wait: { marker: 'bg-gray-3 text-gray-7' },
       process: { marker: 'bg-(--step-color) text-gray-1', title: 'text-gray-10' },
       finish: { marker: 'bg-(--step-soft) text-(--step-color)', title: 'text-gray-10' },
-      error: { marker: 'bg-(--step-soft) text-(--step-color)', title: 'text-gray-10' },
-      success: { marker: 'bg-(--step-soft) text-(--step-color)', title: 'text-gray-10' },
+      error: { marker: 'bg-error text-gray-1', title: 'text-gray-10' },
+      success: { marker: 'bg-success text-gray-1', title: 'text-gray-10' },
     },
-    type: { default: {}, dot: {} },
+    type: { default: {}, dot: {}, text: {} },
+    current: { true: {}, false: {} },
     lineType: {
       solid: {},
       // 先清零四边宽度，再按方向绘制一侧，避免未引入 preflight 时出现浏览器默认的 3px 边框。
@@ -147,7 +148,7 @@ export const stepsTheme = tv({
     { type: 'dot' as const, size: 'md' as const, class: { marker: 'size-1.5' } },
     { type: 'dot' as const, size: 'lg' as const, class: { marker: 'size-2' } },
     { type: 'dot' as const, status: 'wait' as const, class: { marker: 'border border-gray-5 bg-transparent' } },
-    { type: 'dot' as const, status: ['process', 'finish', 'success', 'error'], class: { marker: 'bg-(--step-color)' } },
+    { type: 'dot' as const, status: ['process', 'finish'], class: { marker: 'bg-(--step-color)' } },
     { type: 'dot' as const, direction: 'horizontal' as const, placement: ['left', 'right'], class: { title: 'mt-0' } },
     { type: 'dot' as const, direction: 'horizontal' as const, placement: ['left', 'right'], size: 'sm' as const, class: { marker: 'mt-[calc((1lh_-_--spacing(1))/2)]', connector: 'mt-[calc((var(--text-base--line-height)_-_--spacing(0.5))/2)]' } },
     { type: 'dot' as const, direction: 'horizontal' as const, placement: ['left', 'right'], size: 'md' as const, class: { marker: 'mt-[calc((1lh_-_--spacing(1.5))/2)]', connector: 'mt-[calc((var(--text-lg--line-height)_-_--spacing(0.5))/2)]' } },
@@ -162,8 +163,15 @@ export const stepsTheme = tv({
     // 左侧标题按内容收紧，末项也把剩余宽度留给尾部空轨道，避免文字与节点被弹性标题列拉开。
     { direction: 'horizontal' as const, placement: 'left' as const, class: {
       item: 'grid-cols-[minmax(0,auto)_auto_minmax(0,1fr)]', marker: 'col-start-2',
-      title: 'col-start-1 ml-0 mr-2', description: 'col-start-1 col-end-2 ml-0 mr-2 pr-0',
+      title: 'col-start-1 ml-0 mr-2', description: 'col-start-1 -col-end-1 ml-0',
     } },
+    // 描述跨越整步后扣除节点与 8px 间距，与右侧布局保留相同的换行宽度。
+    { direction: 'horizontal' as const, placement: 'left' as const, size: 'sm' as const, class: { description: 'mr-8' } },
+    { direction: 'horizontal' as const, placement: 'left' as const, size: 'md' as const, class: { description: 'mr-10' } },
+    { direction: 'horizontal' as const, placement: 'left' as const, size: 'lg' as const, class: { description: 'mr-12' } },
+    { direction: 'horizontal' as const, placement: 'left' as const, type: 'dot' as const, size: 'sm' as const, class: { description: 'mr-3' } },
+    { direction: 'horizontal' as const, placement: 'left' as const, type: 'dot' as const, size: 'md' as const, class: { description: 'mr-3.5' } },
+    { direction: 'horizontal' as const, placement: 'left' as const, type: 'dot' as const, size: 'lg' as const, class: { description: 'mr-4' } },
     { direction: 'vertical' as const, placement: 'left' as const, class: {
       item: 'grid-cols-[minmax(0,1fr)_auto]', marker: 'col-start-2',
       title: 'col-start-1 ml-0 mr-2', description: 'col-start-1 ml-0 mr-2', connector: 'left-auto translate-x-1/2',
@@ -248,8 +256,14 @@ export const stepsTheme = tv({
     { direction: 'vertical' as const, placement: 'bottom' as const, class: { content: '[.reborn-steps:has(>[data-placement]:not([data-placement=right]))>li>&]:row-start-2' } },
     // 侧边圆点原本跨入下一项以贴合下移的圆点；下一项改为上下文案时，止于文案组之前。
     { direction: 'vertical' as const, placement: ['left', 'right'], type: 'dot' as const, class: { connector: '[li:has(+li:is([data-placement=top],[data-placement=bottom]))>&]:bottom-2' } },
+    // 文本类型没有节点，左右文案不再预留节点间距，连接器与标题居中。
+    { direction: 'horizontal' as const, placement: ['left', 'right'], type: 'text' as const, class: {
+      title: 'mt-0 ml-0 mr-0', description: 'ml-0 mr-0', connector: 'mt-0 self-center',
+    } },
+    // 当前步骤按实际索引着色，显式错误或成功状态仍沿用对应的语义色。
+    { type: 'text' as const, current: true, class: { title: 'text-(--step-color)', description: 'text-(--step-color)' } },
   ],
-  defaultVariants: { direction: 'horizontal', placement: 'right', size: 'md', color: 'primary', status: 'wait', type: 'default', lineType: 'solid', completed: false, alignCenter: false, simple: false, last: false, spaced: false },
+  defaultVariants: { direction: 'horizontal', placement: 'right', size: 'md', color: 'primary', status: 'wait', type: 'default', current: false, lineType: 'solid', completed: false, alignCenter: false, simple: false, last: false, spaced: false },
 });
 
 export default stepsTheme;

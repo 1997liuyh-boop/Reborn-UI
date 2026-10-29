@@ -98,6 +98,52 @@ function progressSnapshot(root: ParentNode) {
   }));
 }
 
+it('文本类型不渲染标记、图标和圆环，当前文字随索引更新并兼容外观切换', async () => {
+  let iconCalls = 0;
+  const members = ['甲', '乙', '丙'].map(title => ({
+    key: title, title, description: '详细描述描述', progress: 50,
+    slots: { icon: () => { iconCalls++; return h('span', '图标'); } },
+  }));
+  const view = await mount({ type: 'text', active: 1, color: 'secondary' }, members);
+  const currentTitles = () => Array.from(view.root.querySelectorAll('.fixture-title'))
+    .filter(element => element.classList.contains('text-(--step-color)'))
+    .map(element => element.textContent);
+  try {
+    assert.equal(view.root.querySelectorAll('.fixture-marker').length, 0);
+    assert.equal(view.root.querySelectorAll('[role="progressbar"]').length, 0);
+    assert.equal(iconCalls, 0, '文本类型不调用图标插槽');
+    assert.deepEqual(currentTitles(), ['乙']);
+    assert.equal(view.root.querySelectorAll('.fixture-description').length, 3, '文本类型保留所有描述');
+    assert.ok(view.root.querySelector('[aria-current="step"] .fixture-description')?.classList.contains('text-(--step-color)'));
+
+    view.props.active = 2;
+    await nextTick();
+    assert.deepEqual(currentTitles(), ['丙']);
+    assert.equal(snapshot(view.root)[2]!.current, 'step');
+
+    view.props.type = 'default';
+    await nextTick();
+    assert.equal(view.root.querySelectorAll('.fixture-marker').length, 3);
+    assert.equal(view.root.querySelectorAll('[role="progressbar"]').length, 1);
+    assert.ok(iconCalls > 0, '恢复默认外观后继续渲染图标插槽');
+    assert.deepEqual(currentTitles(), [], '默认类型不受文本着色规则影响');
+
+    view.props.type = 'dot';
+    await nextTick();
+    assert.equal(view.root.querySelectorAll('.fixture-marker').length, 3);
+    assert.deepEqual(currentTitles(), [], '点状类型不受文本着色规则影响');
+
+    view.props.type = 'text';
+    view.props.processStatus = 'error';
+    view.members[0]!.status = 'process';
+    await nextTick();
+    assert.equal(view.root.querySelectorAll('.fixture-marker').length, 0);
+    assert.equal(snapshot(view.root)[2]!.status, 'error');
+    assert.deepEqual(currentTitles(), ['丙'], '当前文字按实际索引着色，不依赖 process 状态');
+    assert.deepEqual(view.warnings, []);
+  } finally { view.stop(); }
+});
+
 it('默认从第一个步骤开始，活动项有语义标记，点击不修改活动索引', async () => {
   const updates: number[] = [];
   const view = await mount({ 'onUpdate:active': (value: number) => updates.push(value) });

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-26T04:26:47.109Z",
+  "generatedAt": "2026-10-29T06:58:03.012Z",
   "components": [
     {
       "id": "animate-grid",
@@ -1603,7 +1603,7 @@
     {
       "id": "reborn-radio",
       "title": "Radio 单选框",
-      "description": "用于在一组互斥选项中选择单项的单选框组件，支持圆点（radio）、分段按钮（button）与实体按钮拼接（pure-button）三种类型。",
+      "description": "互斥单选：支持圆点、分段按钮与实体按钮拼接三种形态，提供七种语义色与两种选中填充方式。",
       "category": "form",
       "tags": [
         "css",

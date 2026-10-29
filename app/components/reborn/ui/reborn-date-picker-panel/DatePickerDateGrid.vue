@@ -5,7 +5,7 @@ import type { CalDay, DatePickerCell } from './reborn-date-picker-panel.config';
 
 interface GridDay extends CalDay { active?: boolean; rangeBand?: boolean }
 
-interface Props { rows: GridDay[][]; showWeek: boolean; ui: Record<keyof typeof theme.slots, (options?: { class?: ClassValue }) => string> }
+interface Props { rows: GridDay[][]; showWeek: boolean; highlightToday?: boolean; ui: Record<keyof typeof theme.slots, (options?: { class?: ClassValue }) => string> }
 
 defineProps<Props>();
 
@@ -65,7 +65,7 @@ function cellDay(day: GridDay): DatePickerCell {
                 day.active ? ui.dayActive() : '',
                 // 补位格淡色文字：未禁用、且没有以选中态显示时才上（双面板补位格不显示选中态）
                 !day.isCurrentMonth && !day.isDisabled && !day.active ? ui.dayOutside() : '',
-                day.isToday && !day.isSelected ? ui.dayToday() : '',
+                highlightToday && day.isToday && !day.isDisabled && !day.isSelected ? ui.dayToday() : '',
                 day.rangeBand && !day.isSelected ? ui.dayInRange() : '',
               ],
             })

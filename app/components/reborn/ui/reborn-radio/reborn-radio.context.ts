@@ -1,6 +1,6 @@
 import type { ComputedRef, InjectionKey, Ref } from "vue";
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
-import type { RadioColor, RadioSize, RadioType, RadioVariant } from "./reborn-radio.config";
+import type { RadioAppearance, RadioColor, RadioSize, RadioVariant } from "./reborn-radio.config";
 
 /** RadioGroup 通过 provide 下发的上下文 */
 export interface RadioGroupContext {
@@ -10,12 +10,12 @@ export interface RadioGroupContext {
   disabled: ComputedRef<boolean>;
   /** 组级尺寸 */
   size: ComputedRef<RadioSize>;
-  /** 组级类型 */
-  type: Ref<RadioType>;
+  /** 组级形态 */
+  variant: ComputedRef<RadioVariant>;
   /** 组级语义色 */
   color: Ref<RadioColor>;
-  /** 组级样式变体 */
-  variant: Ref<RadioVariant>;
+  /** 组级填充方式 */
+  appearance: ComputedRef<RadioAppearance>;
   /** 组级下发给 pure-button 类型的 RebornButton 透传参数 */
   buttonProps: Ref<ButtonProps | undefined>;
   /** 表单校验错误态 */

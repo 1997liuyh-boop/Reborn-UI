@@ -28,7 +28,7 @@ const props = withDefaults(defineProps<RateProps>(), {
   showValue: false,
   disabled: false,
   readonly: false,
-  icon: "carbon:star",
+  icon: "carbon:star-filled",
   activeIcon: "carbon:star-filled",
   lowThreshold: 2,
   highThreshold: 4,
@@ -408,11 +408,15 @@ defineExpose({ setCurrentValue, resetCurrentValue });
 
 <template>
   <div :class="ui.wrapper({ class: props.class })" @mousemove="onMouseMove" @mouseleave="onMouseLeave">
-    <div v-for="index in count" :key="index" class="reborn-rate__star" :class="ui.star()"
-      @click="onClick($event, index)">
+    <div
+      v-for="index in count" :key="index" class="reborn-rate__star" :class="ui.star()"
+      @click="onClick($event, index)"
+    >
       <!-- 未激活图标：整颗点亮时隐藏（保留占位），半星时只露右半边；传了 voidColor 用实色，否则取文字色的 30% 不透明度 -->
-      <div :class="[ui.icon(), voidColor ? '' : 'opacity-30', isFullDisplay(index) ? 'invisible' : '']"
-        :style="voidStyle(index)">
+      <div
+        :class="[ui.icon(), voidColor ? '' : 'opacity-30', isFullDisplay(index) ? 'invisible' : '']"
+        :style="voidStyle(index)"
+      >
         <slot name="icon" :index="index" :active="false">
           <Icon :name="props.icon" class="size-full" />
         </slot>
@@ -421,8 +425,10 @@ defineExpose({ setCurrentValue, resetCurrentValue });
       <!-- 激活图标（整星 / 半星）：命中分段图标时按其类型渲染图片或图标 -->
       <div v-if="isActiveDisplay(index)" class="absolute inset-0" :class="ui.iconActive()" :style="activeStyle(index)">
         <slot name="icon" :index="index" :active="true">
-          <img v-if="activeSource?.type === 'image'" :src="activeSource.url" alt="" draggable="false"
-            class="size-full object-contain">
+          <img
+            v-if="activeSource?.type === 'image'" :src="activeSource.url" alt="" draggable="false"
+            class="size-full object-contain"
+          >
           <Icon v-else :name="activeSource?.url ?? getActiveIcon(index)" class="size-full" />
         </slot>
       </div>

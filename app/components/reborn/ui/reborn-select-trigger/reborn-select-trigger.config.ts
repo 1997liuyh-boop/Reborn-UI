@@ -110,10 +110,12 @@ export default {
          * 若这里再叠 top-full / bottom-full，两套定位会互相打架（只是恰好被内联优先级压住）。
          */
         placement: {
-            bottom: {},
-            top: {},
-            left: {},
-            right: {},
+            // 只绘制面板外侧的半边箭头及阴影，旋转前沿对角线裁剪，向内多留约 1.4px 盖住面板描边。
+            // 裁剪区域向视口外延伸，避免外侧的模糊阴影被截断。
+            bottom: { arrow: "[clip-path:polygon(-100vmax_-100vmax,calc(100vmax_+_100%_+_2px)_-100vmax,-100vmax_calc(100vmax_+_100%_+_2px))]" },
+            top: { arrow: "[clip-path:polygon(-100vmax_calc(100vmax_+_100%_-_2px),calc(100vmax_+_100%_-_2px)_-100vmax,100vmax_100vmax)]" },
+            left: { arrow: "[clip-path:polygon(-100vmax_calc(-100vmax_+_2px),100vmax_calc(100vmax_+_2px),100vmax_-100vmax)]" },
+            right: { arrow: "[clip-path:polygon(calc(-100vmax_+_2px)_-100vmax,calc(100vmax_+_2px)_100vmax,-100vmax_100vmax)]" },
         },
         /** 交叉轴对齐，仅传送模式生效（由组件内联下发），行内模式恒为 start */
         align: {

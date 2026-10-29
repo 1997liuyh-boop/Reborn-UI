@@ -26,7 +26,7 @@ export interface RebornStepsProps {
   simple?: boolean;
   /** 标记与文字尺寸 */
   size?: StepsSize;
-  /** 节点外观：圆形数字或点状标记 */
+  /** 外观类型：圆形数字、点状标记或无标记的文本步骤 */
   type?: StepsType;
   /** 连接方式：实线、原生虚线或箭头 */
   lineType?: StepsLineType;

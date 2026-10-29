@@ -217,7 +217,7 @@ const paginationDemoData: DemoTransferItem[] = Array.from({ length: 56 }, (_, i)
 
 const paginationTargetKeys = shallowRef(["emp-3", "emp-12", "emp-28", "emp-41"]);
 
-/** 虚拟滚动：3000 条只有 label 的商品数据，行高 28 加 4px 行间距正好是默认步长 32 */
+/** 虚拟滚动：3000 条只有 label 的商品数据，行高 30 加 4px 行间距正好是默认步长 34 */
 const SKU_CATEGORIES = ["数码", "家电", "服饰", "食品", "图书", "美妆"] as const;
 
 const virtualDemoData: DemoTransferItem[] = Array.from({ length: 3000 }, (_, i) => {
@@ -507,7 +507,7 @@ function getRankClass(value: unknown): string {
       </DemoBlock>
       <DemoNote tone="dimmed">
         共 {{ virtualDemoData.length }} 条，当前已选 {{ virtualTargetKeys.length }} 条，滚动时左侧列表的 DOM 里始终只有十几行。
-        <code>virtual-item-height</code> 默认 32，等于只有 label 的行高 28 加 4px 行间距；条目带 description 时要传 54，用插槽改了行高时也要同步改，否则相邻行会重叠或留出空白。头部下拉同样按虚拟列表渲染。
+        <code>virtual-item-height</code> 默认 34，等于只有 label 的行高 30 加 4px 行间距；条目带 description 时要传 56，用插槽改了行高时也要同步改，否则相邻行会重叠或留出空白。头部下拉同样按虚拟列表渲染。
       </DemoNote>
     </DemoSection>
 

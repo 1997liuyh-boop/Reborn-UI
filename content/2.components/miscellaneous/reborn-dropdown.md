@@ -140,7 +140,7 @@ function handleSelect(value: DropdownValue) {
 
 ### 页头页脚、禁用与选择后保持展开
 
-- `header` / `footer` 插槽在选项列表上下各加一个带分隔线的区域，适合放登录账户、提示文字；不提供插槽时对应节点不渲染。
+- `header` / `footer` 插槽在选项列表上下各加一个区域，适合放登录账户、提示文字；不提供插槽时对应节点不渲染。页头的内边距、字号与行距和选项一致，只把文字降为 `gray-5`、不画分隔线，读起来像一条不可点的说明行；页脚字号小一档，同样不画分隔线。
 - `disabled` 禁用整个菜单：`open()` 失效，展开中的菜单会立即收起。它不会改变触发元素的外观，触发器若是按钮，需要自己同时给按钮加 `disabled`。
 - `hide-on-select` 默认开启，选中后自动收起；关闭后可连续选择多项，适合「切换多个开关」一类的操作。
 - 选项的 `value` 支持字符串、数字或对象，`select` 原样回传。
@@ -302,15 +302,15 @@ function onVisibleChange(v: boolean) {
 | `wrapper` | 最外层锚点容器，定位与箭头以它为基准；`class` prop 也并到这里 | `inline-flex w-fit`（覆盖 SelectTrigger 锚点的 `w-full`，保证与触发元素等宽） | 始终渲染 |
 | `trigger` | 包裹默认插槽的触发外框，承载点击与悬停监听 | `inline-flex cursor-pointer` | 始终渲染；需要触发器撑满父容器时加 `w-full` |
 | `panel` | 浮层内的内容排版容器，同时承载面板的悬停监听 | `px-[4px] py-[6px]` | 展开时渲染 |
-| `header` | 页头容器 | `border-b border-gray-3 px-[10px] py-[6px] text-sm text-gray-6` | 仅提供 `header` 插槽时渲染 |
+| `header` | 页头容器 | `mb-[4px] px-[6px] py-[4px] text-base text-gray-5`，排版与 `item` 一致、无分隔线 | 仅提供 `header` 插槽时渲染 |
 | `list` | 选项列表容器（`role="menu"`），`options` 或 `content` 插槽的内容放在这里 | `max-h-60 overflow-y-auto scrollbar-hide space-y-[4px]` | 展开时渲染；最大高度与行距改这里 |
-| `item` | 单个选项，以及子菜单的入口行 | `rounded-sm px-[6px] py-[4px] text-base text-gray-6 hover:bg-gray-2`，禁用态 `data-[disabled=true]:opacity-50`、禁止光标且无悬停底色 | 每个 `RebornDoption` / `RebornDsubmenu` 渲染一个 |
+| `item` | 单个选项，以及子菜单的入口行 | `rounded-sm px-[6px] py-[4px] text-base text-gray-8 hover:bg-gray-2`，禁用态 `data-[disabled=true]:opacity-50`、禁止光标且无悬停底色 | 每个 `RebornDoption` / `RebornDsubmenu` 渲染一个 |
 | `itemIcon` | 选项左侧图标容器 | `flex size-4 shrink-0 items-center justify-center` | 仅提供 `icon` 插槽或 `options[].icon` 时渲染 |
 | `itemLabel` | 选项文字节点 | `flex-1 truncate` | 始终随选项渲染 |
 | `submenuIcon` | 子菜单入口行右侧的展开箭头 | `ml-auto size-4 shrink-0 text-gray-5` | 仅 `RebornDsubmenu` 入口行渲染 |
-| `group` | 选项组容器（`role="group"`） | `space-y-[4px]` | 每个 `RebornDgroup` 渲染一个 |
+| `group` | 选项组容器（`role="group"`） | `space-y-[4px]`，相邻分组之间通过 `::before` 绘制 1px 的 `bg-gray-2` 分割线，左右各缩进 8px（`mx-2`） | 每个 `RebornDgroup` 渲染一个 |
 | `groupTitle` | 选项组标题 | `px-[6px] py-[4px] text-sm text-gray-5` | 仅传 `title` 或提供 `title` 插槽时渲染 |
-| `footer` | 页脚容器 | `border-t border-gray-3 px-[10px] py-[6px] text-sm text-gray-6` | 仅提供 `footer` 插槽时渲染 |
+| `footer` | 页脚容器 | `px-[10px] py-[6px] text-sm text-gray-6`，无分隔线 | 仅提供 `footer` 插槽时渲染 |
 
 ```vue
 <template>

@@ -54,10 +54,12 @@ const ui = computed(() => ({ ...fallbackUi, ...toValue(parent?.ui) }));
   <!--
     子菜单就是一个嵌套的 Dropdown：入口行作为它的触发器铺满整行，面板默认从右上角弹出。
     悬停链路维持、子面板内点击不算外部、选中向上冒泡，均由 RebornDropdown 的嵌套逻辑处理。
+    外层用块级 flex 覆盖 Dropdown 默认的 inline-flex：行内的入口在父面板求内容宽度时会并排算进同一行，
+    面板被撑成各入口宽度之和，实际排版时各入口又各占一行，右侧留出大片空白。
   -->
   <RebornDropdown
     :trigger="trigger" :placement="placement" :disabled="disabled" :popup-offset="SUBMENU_POPUP_OFFSET"
-    class="w-full" :ui="{ trigger: 'w-full' }"
+    class="flex w-full" :ui="{ trigger: 'w-full' }"
   >
     <div :class="ui.item({ class: props.class })" :data-disabled="disabled" role="menuitem" aria-haspopup="menu">
       <span v-if="slots.icon" :class="ui.itemIcon()">

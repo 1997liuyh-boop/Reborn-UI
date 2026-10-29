@@ -5,7 +5,8 @@
     "选中父级即代表选中整组子级：multiple 开启联动复选（默认），子级全选则父级勾选、部分选中则父级半选。",
     "父子节点含义各自独立、需要分别选取：multiple 之外再开 checkStrictly，各节点独立勾选。",
     "与普通下拉框并排展示：size / color / variant 直接复用 reborn-select 主题，外观一致。",
-    "子级数据按需获取：loadData 异步补充，调用方写回 treeData。"
+    "子级数据按需获取：loadData 异步补充，调用方写回 treeData。",
+    "按节点标识或显示名称查找：allowSearch 开启 key 与标题搜索，fieldNames 映射后端字段，searchData 支持异步搜索。"
   ],
   "whenNotToUse": [
     "选项没有层级关系，改用 reborn-select。",
@@ -14,7 +15,8 @@
   ],
   "pitfalls": [
     "联动模式（multiple 且未开 checkStrictly）的绑定值包含全部勾选节点：父级全选时父级 key 与子级 key 同时回写；搜索时勾选父级，被隐藏的后代也一并勾选；disabled / disableCheckbox 节点不参与联动。程序赋值只归一显示、不回写 v-model，用户下次操作时才写回完整集合。",
-    "搜索不修改原始数据或清除隐藏的已选值：匹配用 fieldNames.title 映射后的标题；关闭时清理关键词并恢复原展开状态。",
+    "搜索默认关闭，需显式设置 allowSearch；本地搜索同时匹配 fieldNames.key 与 fieldNames.title 映射后的标识和标题，忽略大小写，支持数字 key。关闭时清理关键词并恢复原展开状态。",
+    "searchData 与 loadData 一样返回 Promise 并由调用方写回 treeData；searchData 接收去除首尾空白的关键词和 { signal }，服务端结果不再本地筛选。手动清空输入会传入空字符串；关闭或多选勾选后清理输入不额外请求、不还原调用方数据。旧请求的 signal 会取消，写回前必须检查 signal.aborted。替换结果集时需自行保留已选节点数据，否则标签按未知 key 回显。失败显示提示，再次输入可重试。",
     "节点 key 必须全树唯一且类型稳定：数字 0 与字符串 '0' 是不同值；异步数据未到达时暂用 key 回显，数据更新后自动显示标题。",
     "禁用节点（disabled / disableCheckbox）不能通过标签单独移除；组件未禁用时清空按钮仍可重置整个字段。",
     "虚拟滚动依赖树的固定行高：item 插槽避免多行内容，否则滚动切片错位；需要可变高度时关闭 virtual。",

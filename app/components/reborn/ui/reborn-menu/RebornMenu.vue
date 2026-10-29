@@ -20,6 +20,7 @@ import {
   onMounted,
   provide,
   readonly,
+  shallowRef,
   Text,
   useSlots,
   useTemplateRef,
@@ -350,14 +351,24 @@ const menuStyle = computed(() => ({
   color: props.textColor,
 }));
 
+/** 根节点左右边框与内边距之和（像素），挂载后由 measureRootInsetX 量出 */
+const rootInsetX = shallowRef(0);
+
 /**
  * 折叠态的根容器宽度。
  * ⚠️ 根因：折叠宽度写在主题变体里会被使用者的 class 压掉——tv 把 props.class 拼在最后，
  * twMerge 后者胜，demo 里的 `w-full max-w-xs` 会直接吃掉 w-16，
  * 结果只有内层 ul 缩到 64px，外层白底面板仍是原宽，看着像没折叠。
  * ✅ 修复：折叠宽度改用内联样式下发，优先级高于任何 class。
+ * ⚠️ 根因：4rem 落在 border-box 上，根节点带边框或内边距（如 `border`）时内容区不足 64px，
+ * 内层 ul 却仍是 w-16 的 64px 窄轨（图标居中的几何全按它推算），窄轨连同选中项背景从右侧边框冒出去。
+ * ✅ 修复：宽度取 64px 窄轨再加上根节点自身的左右边框与内边距，窄轨完整落在内容区里。
+ * 不改用 content-box：它与 border-box 在过渡第 0 帧瞬切，外框会先跳出「边框 + 内边距」那么宽再收。
  */
-const rootStyle = computed(() => (props.collapse ? { width: "4rem" } : {}));
+const rootStyle = computed(() => {
+  if (!props.collapse) return {};
+  return { width: rootInsetX.value ? `calc(4rem + ${rootInsetX.value}px)` : "4rem" };
+});
 
 // --- 核心交互逻辑 ---
 
@@ -619,6 +630,22 @@ const showEllipsis = computed(() => ellipsisEnabled.value && sliceIndex.value >=
 /** 菜单根元素引用，用于判断点击是否在菜单内部 */
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 
+/** 量出根节点左右边框与内边距之和，供折叠宽度补偿（见 rootStyle） */
+function measureRootInsetX() {
+  const el = rootRef.value;
+  if (!el) return;
+  const style = getComputedStyle(el);
+  rootInsetX.value = [style.borderLeftWidth, style.borderRightWidth, style.paddingLeft, style.paddingRight]
+    .reduce((sum, value) => sum + (Number.parseFloat(value) || 0), 0);
+}
+
+// 边框与内边距来自 class 与 ui.root，二者变了要重量；折叠切换时也量一次，兼顾随折叠态换类名的用法
+watch(
+  [() => props.class, () => overrides.value.root, () => props.collapse],
+  measureRootInsetX,
+  { flush: "post" },
+);
+
 /** 点击菜单外部时关闭所有展开的子菜单 */
 function handleClickOutside(event: MouseEvent) {
   if (!props.closeOnClickOutside) return;
@@ -692,6 +719,7 @@ watch(
 
 onMounted(() => {
   document.addEventListener("click", handleClickOutside, true);
+  measureRootInsetX();
   void scrollActiveIntoView(true);
 
 

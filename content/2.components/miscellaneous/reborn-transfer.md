@@ -50,16 +50,18 @@ Transfer 是仅 Web 的双列表选择器，通过键集合在源列表与目标
 
 ### 高度跟随父元素
 
-不传 `height` 时根节点跟随父容器高度；示例为组件指定高度。
+不传 `width` 时，两侧面板均分父容器的可用宽度；传入 `width` 可固定每个面板的宽度，数字按 px 处理，也支持 `18rem`、`40%` 等 CSS 长度。`height` 控制整体高度，不传时跟随父容器。
 
 | 配置 | 典型用途 |
 | --- | --- |
+| `width` | 固定每个面板宽度 |
 | `height` | 确定列表可滚动空间 |
 
 ```vue
 <template>
   <RebornTransfer
     :data-source="[{ key: 'a', label: '选项甲' }, { key: 'b', label: '选项乙' }]"
+    :width="240"
     :height="320"
     class="w-full"
   />
@@ -221,6 +223,7 @@ Transfer 是仅 Web 的双列表选择器，通过键集合在源列表与目标
 | `dataSource` | `TransferDataRecord[]`                                                                 | `[]`                     | 数据源，包含所有可选条目；字段名可通过 `field-names` 映射                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `fieldNames` | `TransferFieldNames`                                                                   | `{}`                     | 数据源字段别名，见下方 [字段映射](#字段映射)                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `defaultTargetKeys` | `string[]`                                                                             | `[]`                     | 默认已在目标列表的 key；**在首次拿到非空 `dataSource` 时初始化一次**（`dataSource` 异步加载也能生效），且会过滤掉 `dataSource` 中不存在的 key。当未绑定 `v-model` 或目标列表为空时生效                                                                                                                                                                                                                                                                                                                                                                                     |
+| `defaultSelectedKeys` | `string[]` | `[]` | 首次取得非空数据时默认勾选的 key，自动分配到左右面板；忽略不存在或禁用的节点，后续变化不重新初始化。 |
 | `titles` | `[string, string]`                                                                     | `['源列表', '目标列表']` | 两个面板的标题，索引 0 为源列表，1 为目标列表                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | `operationButtons` | `TransferOperationButtons`                                                             | `-`                      | 中间三个操作按钮的图标、文案与无障碍配置，见下方 [操作按钮配置](#操作按钮配置)；要换掉整个按钮用 `operation` 插槽                                                                                                                                                                                                                                                                                                                                                                                             |
 | `disabled` | `boolean`                                                                              | `false`                  | 是否禁用整体穿梭框（包括所有勾选与移动操作）                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -235,9 +238,9 @@ Transfer 是仅 Web 的双列表选择器，通过键集合在源列表与目标
 | `showUndo` | `boolean`                                                                              | `false`                  | 是否显示中间撤回按钮（撤销上一次穿梭操作）                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `pagination` | `boolean \| TransferPaginationConfig`                                                  | `false`                  | 是否开启列表分页；传 `true` 默认每页 10 条；传对象时可配置 `pageSize`（`number`，默认 `10`）指定每页条数                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `virtualScroll` | `boolean`                                                                              | `false`                  | 是否开启虚拟滚动：列表只渲染可视区附近的条目，滚动时按位置替换，适合上千条又不想分页的数据；头部下拉同样按虚拟列表渲染。开启后每行高度固定为 `virtual-item-height` 减去 4px 行间距，面板需要确定的高度（传 `height` 或由父元素给出）；与 `pagination` 同时开启时只作用于当前页                                                                                                                                                                                                                                |
-| `virtualItemHeight` | `number`                                                                               | `32`                     | 虚拟滚动的行步长（px），即行高加 4px 行间距。默认值对应只有 label 的条目（行高 28）；带 description 的条目行高 50，应传 `54`；用插槽改了条目内容时须与实际高度一致，否则相邻行会重叠或留出空白                                                                                                                                                                                                                                                                                                                |
+| `virtualItemHeight` | `number` | `34` | 虚拟滚动的行步长（px），即行高加 4px 行间距。默认对应只有 label 的条目（行高 30px）；带 description 的条目行高 52px，应传 `56`。自定义条目内容后须与实际行高一致。 |
 | `virtualBuffer` | `number`                                                                               | `4`                      | 虚拟滚动在可视区上下各多渲染的条数，快速滚动时减少空白                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `width` | `string \| number`                                                                     | `-`                      | 组件整体宽度，支持数字（px）或 CSS 长度，如 `640`、`'100%'`                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `width` | `string \| number` | `-` | 单个面板的宽度，两侧相同；数字按 px 处理，也支持 CSS 长度，如 `240`、`'18rem'`、`'40%'`。不传时按父容器宽度均分。 |
 | `height` | `string \| number`                                                                     | `-`                      | 组件整体高度。不传时根节点撑满父元素（`h-full`）：父元素给定高度，列表在面板内滚动，头部、搜索框与底部栏不随列表滚动；父元素高度为 auto，列表随条目增高                                                                                                                                                                                                                                                                                                                                                       |
 | `class` | `any`                                                                                  | `-`                      | 根节点自定义类名                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `ui` | `Record<string, string>`                                                               | `{}`                     | 为组件内部各区域追加自定义 class，见下方 [自定义样式](#自定义样式ui-属性)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -259,6 +262,7 @@ Transfer 是仅 Web 的双列表选择器，通过键集合在源列表与目标
 | `extra`              | `{ direction: 'left' \| 'right', title: string }`                            | 头部右侧区域，默认是面板标题                                                                                                                                                               |
 | `default`            | [`TransferItemSlotProps`](#transferitemslotprops-包含)                       | 条目的文案区域；条目前的复选框、单向模式右侧的撤回按钮仍由组件渲染。未提供条目插槽时，勾选一条只重新渲染这一行；提供 `default` 或 `item` 插槽后，插槽可能读取组件外的状态，组件改为每次整列重新渲染，上千条数据时请配合 `virtual-scroll` 或 `pagination`                                                                                                                         |
 | `item`               | `{ item: TransferDataRecord }`                                               | 旧版条目插槽，保留兼容；与 `default` 同时提供时 `default` 优先                                                                                                                             |
+| `list` | `{ direction, items, selectedKeys, disabled, onSelectionChange }` | 替换当前页列表，适合表格穿梭；将行勾选 key 传给 `onSelectionChange`，搜索、穿梭和分页仍由组件管理。 |
 | `footer`             | `{ direction: 'left' \| 'right', total: number, checkedCount: number }`      | 面板底部区域，渲染在分页栏下方；提供后未开分页也会显示底部栏                                                                                                                               |
 | `operation`          | [`TransferOperationButtonSlotProps`](#transferoperationbuttonslotprops-包含) | 整个替换中间的操作按钮，每个可见按钮调用一次，用 `action` 区分                                                                                                                             |
 | `operation-to-right` | [`TransferOperationSlotProps`](#transferoperationslotprops-包含)             | 只替换「移至右侧」按钮的内部内容，外壳仍是 `RebornButton`                                                                                                                                  |
@@ -384,6 +388,8 @@ Transfer 是仅 Web 的双列表选择器，通过键集合在源列表与目标
 | `headerSelectControls` | 头部左侧一行：`title` 插槽（默认全选复选框）+ 下拉                                        |
 | `headerSelectMenu`     | 下拉外层（传给 `RebornSelect` 的 class，包住触发器），默认收成内容宽度                    |
 | `headerSelectTrigger`  | 下拉触发器（`RebornSelect` 的 `triggerUi.trigger`），内含计数文案与下拉箭头               |
+| `headerSelectIconWrapper` | 下拉箭头容器，默认 `size-4`（16px） |
+| `headerSelectArrow` | 下拉箭头，默认 `text-lg text-gray-8`（16px） |
 | `headerSelectDropdown` | 下拉浮层（`RebornSelect` 的 `triggerUi.dropdown`，挂到 body 下），默认给出最小与最大宽度  |
 | `headerSelectItem`     | 单个选项（`RebornSelect` 的 `ui.option`），对应一个条目；默认留空，沿用下拉选择的选项样式 |
 
@@ -409,10 +415,10 @@ Transfer 是仅 Web 的双列表选择器，通过键集合在源列表与目标
 | `checkAll`     | 头部全选复选框的方框，覆盖到 `RebornCheckbox` 的 `control`           |
 | `itemCheck`    | 每一行复选框的方框，覆盖到 `RebornCheckbox` 的 `control`             |
 | `item`         | 单行列表项（含 hover 背景，单向模式右侧行也用它）                    |
-| `itemSelected` | 勾选后的条目底色，色值随 `color` 变化                                |
+| `itemSelected` | 勾选后的条目底色与 4px 圆角，色值随 `color` 变化                                |
 | `itemContent`  | 条目内容区域（包住复选框与文字）                                     |
-| `itemLabel`    | 主标题                                                               |
-| `itemDesc`     | 副标题/描述                                                          |
+| `itemLabel`    | 主标题，14px（`text-base`）、`text-gray-8`                                                               |
+| `itemDesc`     | 副标题/描述，12px（`text-sm`）、`text-gray-7`，与标题相隔 2px                                                          |
 | `itemUndoBtn`  | 单向模式下右侧行尾的「撤回」按钮，只出现在开启单向模式后移入的条目上 |
 | `itemUndoIcon` | 撤回按钮内的图标                                                     |
 
@@ -430,7 +436,7 @@ Transfer 是仅 Web 的双列表选择器，通过键集合在源列表与目标
 
 - **Web 端**：
   - 内嵌 `RebornInput`（搜索）、`RebornScrollbar`（列表滚动）、`RebornCheckbox`、`RebornButton`（操作按钮）、`RebornPagination` 与 `RebornSelect`（头部下拉，`borderless` 形态的多选，浮层挂到 body 下，不会被面板的 `overflow-hidden` 裁切）。
-  - 不提供尺寸档位：文字统一用 `text-sm`，搜索框与按钮取各自的 `sm` 档，高度交给父元素或 `height`。
+  - 不提供尺寸档位：计数与条目标题用 `text-base`，描述用 `text-sm`，搜索框与按钮取各自的 `sm` 档；`width` 控制单个面板，整体宽度由父元素或根节点样式设置。
 - **UniApp 端**：暂未提供对应组件，后续对齐时将保持 `v-model`（目标 key 列表）与 `change` / `selectChange` 事件语义一致。
 
 ## 注意事项

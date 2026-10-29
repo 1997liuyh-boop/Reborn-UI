@@ -14,7 +14,7 @@ export interface RebornStepProps {
   description?: string;
   /** 标题与描述相对节点的位置；优先于父级 placement 与默认位置 */
   placement?: StepsPlacement;
-  /** 自定义图标名称或组件，icon 插槽优先；点状类型不显示图标 */
+  /** 自定义图标名称或组件，icon 插槽优先；点状和文本类型不显示图标 */
   icon?: string | Component;
   /** 空值时由父级 active、processStatus、finishStatus 推导 */
   status?: StepsStatus | '';
@@ -103,7 +103,7 @@ const layoutStyle = computed<CSSProperties | undefined>(() => {
 });
 const styles = computed(() => stepsTheme({
   direction: direction.value, size: context?.size.value ?? 'md', color: color.value, status: status.value,
-  type: type.value, lineType: lineType.value, completed: completed.value,
+  type: type.value, current: current.value, lineType: lineType.value, completed: completed.value,
   placement: placement.value, alignCenter: context?.alignCenter.value ?? false, simple: simple.value, last: last.value,
   spaced: !!context?.space.value,
 }));
@@ -116,7 +116,7 @@ function ui(key: keyof StepsUI) {
 
 <template>
   <li :class="ui('item')" :style="layoutStyle" :data-step-index="index" :data-status="status" :data-placement="placement" :aria-current="current ? 'step' : undefined">
-    <span :class="ui('marker')" :aria-hidden="showProgress ? undefined : true">
+    <span v-if="type !== 'text'" :class="ui('marker')" :aria-hidden="showProgress ? undefined : true">
       <svg v-if="showProgress" :class="ui('progressRing')" role="progressbar" :aria-label="progressLabel" :aria-valuenow="progressValue" :aria-valuemin="0" :aria-valuemax="100">
         <circle :class="ui('progressTrack')" cx="50%" cy="50%" r="calc(50% - var(--spacing) / 4)" />
         <circle v-if="progressValue" :class="ui('progressIndicator')" cx="50%" cy="50%" r="calc(50% - var(--spacing) / 4)" pathLength="100" :stroke-dasharray="`${progressValue} 100`" stroke-linecap="round" />

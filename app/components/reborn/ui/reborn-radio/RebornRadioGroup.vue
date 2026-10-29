@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
-import type { RadioColor, RadioDirection, RadioFieldNames, RadioOption, RadioSize, RadioType, RadioVariant } from "./reborn-radio.config";
+import type { RadioAppearance, RadioColor, RadioDirection, RadioFieldNames, RadioOption, RadioSize, RadioType, RadioVariant } from "./reborn-radio.config";
 import { useMutationObserver, useResizeObserver } from "@vueuse/core";
 import { computed, nextTick, onMounted, provide, shallowRef, toRef, useTemplateRef, watch } from "vue";
+import { useFormInject } from "~/composables/useFieldGroup";
 import { useLiquidSlider } from "~/composables/useLiquidSlider";
 import { tv } from "~/lib/tv";
-import theme from "./reborn-radio.config";
+import theme, { resolveRadioAppearance, resolveRadioVariant } from "./reborn-radio.config";
 import { radioGroupContextKey } from "./reborn-radio.context";
 import RebornRadio from "./RebornRadio.vue";
 
 const props = withDefaults(defineProps<RadioGroupProps>(), {
   defaultValue: "",
-  type: "radio",
   color: "primary",
-  variant: "outlined",
   direction: "horizontal",
   disabled: false,
 });
@@ -37,12 +36,14 @@ const b = tv(theme);
 export interface RadioGroupProps {
   /** 默认值（非受控状态，未绑定 v-model 时生效） */
   defaultValue?: string | number | boolean;
-  /** 单选框组的类型：radio 圆点 / button 分段按钮 / pure-button 实体按钮拼接 */
+  /** @deprecated 请改用 variant 设置形态 */
   type?: RadioType;
   /** 语义色，作用于选中态 */
   color?: RadioColor;
-  /** 样式变体：filled 实底（语义色背景 + 白色前景）/ outlined 描边（默认，各类型的当前外观） */
-  variant?: RadioVariant;
+  /** 单选形态：radio（默认）/ button / pure-button；旧 filled/outlined 仅保留兼容 */
+  variant?: RadioVariant | RadioAppearance;
+  /** 选中态填充方式：outlined（默认）/ filled */
+  appearance?: RadioAppearance;
   /** 单选框组的尺寸 */
   size?: RadioSize;
   /** 选项列表；传入后组件内部渲染选项，可省略默认插槽。字段名与默认不一致时配合 fieldNames 使用 */
@@ -53,7 +54,7 @@ export interface RadioGroupProps {
   direction?: RadioDirection;
   /** 是否禁用 */
   disabled?: boolean;
-  /** pure-button 类型下统一透传给每个 RebornButton 的参数（variant 只作用于未选中态） */
+  /** 拼接按钮透传参数；variant/color 同时覆盖选中与未选中两态 */
   buttonProps?: ButtonProps;
   /** 追加到根节点的自定义类名 */
   class?: any;
@@ -82,6 +83,8 @@ const currentValue = computed(() => (model.value !== undefined ? model.value : p
 const computedSize = computed<RadioSize>(() => fieldGroupSize.value || props.size || "md");
 
 const computedDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
+const computedVariant = computed(() => resolveRadioVariant(props.variant, props.type));
+const computedAppearance = computed(() => resolveRadioAppearance(props.appearance, props.variant) ?? "outlined");
 
 /** 归一化为 RadioOption：简写项以自身作文案与值，对象项按 fieldNames 取字段，原有字段随展开保留 */
 const normalizedOptions = computed<RadioOption[]>(() => {
@@ -105,7 +108,7 @@ const updateValue = (value: string | number | boolean, _ev: Event) => {
 
 const groupRef = useTemplateRef<HTMLElement>("groupRef");
 const sliderRef = useTemplateRef<HTMLElement>("sliderRef");
-const isButton = computed(() => props.type === "button");
+const isButton = computed(() => computedVariant.value === "button");
 /**
  * 选中底色是否已交给滑块。挂载并量好位置后才置 true：
  * 服务端渲染与首帧仍由选中项自己画底色，滑块就位的同一帧再交接，页面不会先闪一下未选中的样子
@@ -113,8 +116,8 @@ const isButton = computed(() => props.type === "button");
 const sliderReady = shallowRef(false);
 /** 滑块的落位与液体形变交给 useLiquidSlider，与 RebornTabs 胶囊型底板共用一套节奏 */
 const { style: sliderStyle, move: moveSlider, hide: hideSlider } = useLiquidSlider(sliderRef);
-/** 滑块底色跟随选中项自身的 variant / color（组内单项可以覆盖），禁用时一起淡化 */
-const sliderTone = shallowRef<{ color?: RadioColor; variant?: RadioVariant; disabled: boolean }>({ disabled: false });
+/** 滑块底色跟随选中项自身的 appearance / color，禁用时一起淡化 */
+const sliderTone = shallowRef<{ color?: RadioColor; appearance?: RadioAppearance; disabled: boolean }>({ disabled: false });
 /** 上一次量到的选中项；只有它换了才算一次切换 */
 let lastChecked: HTMLElement | null = null;
 
@@ -136,7 +139,7 @@ function updateSlider() {
   const rect = item.getBoundingClientRect();
   sliderTone.value = {
     color: item.dataset.color as RadioColor | undefined,
-    variant: item.dataset.variant as RadioVariant | undefined,
+    appearance: item.dataset.appearance as RadioAppearance | undefined,
     disabled: item.dataset.disabled === "true",
   };
   moveSlider(
@@ -160,7 +163,7 @@ useMutationObserver(sliderTarget, updateSlider, {
   childList: true,
   characterData: true,
   attributes: true,
-  attributeFilter: ["data-checked", "data-color", "data-variant", "data-disabled"],
+  attributeFilter: ["data-checked", "data-color", "data-appearance", "data-disabled"],
 });
 useResizeObserver(sliderTarget, updateSlider);
 onMounted(updateSlider);
@@ -177,9 +180,9 @@ provide(radioGroupContextKey, {
   modelValue: currentValue,
   disabled: computedDisabled,
   size: computedSize,
-  type: toRef(props, "type"),
   color: toRef(props, "color"),
-  variant: toRef(props, "variant"),
+  variant: computedVariant,
+  appearance: computedAppearance,
   buttonProps: toRef(props, "buttonProps"),
   isError,
   sliderReady: computed(() => isButton.value && sliderReady.value),
@@ -193,7 +196,7 @@ function optionKeyOf(value: string | number | boolean) {
 
 const groupClass = computed(() =>
   b({
-    type: props.type,
+    variant: computedVariant.value,
     direction: props.direction,
     size: computedSize.value,
   }).group({ class: props.class }),
@@ -201,9 +204,9 @@ const groupClass = computed(() =>
 
 const sliderClass = computed(() =>
   b({
-    type: "button",
+    variant: "button",
     color: sliderTone.value.color ?? props.color,
-    variant: sliderTone.value.variant ?? props.variant,
+    appearance: sliderTone.value.appearance ?? computedAppearance.value,
     disabled: sliderTone.value.disabled,
   }).slider(),
 );

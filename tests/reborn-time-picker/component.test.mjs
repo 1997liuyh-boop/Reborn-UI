@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-import { after, it } from "node:test";
+import { after, it, mock } from "node:test";
 /* eslint test/no-import-node-test: off -- 使用 Node 内置测试运行器 */
 import { runInThisContext } from "node:vm";
 import { compileScript, parse } from "@vue/compiler-sfc";
@@ -67,9 +67,26 @@ it("空值打开不回写，点击选项后提交，确定关闭", async () => {
   const p = mount(); await open(p);
   assert.equal(p.model.value, ""); assert.deepEqual(p.events.change, []);
   p.container.querySelector('[aria-label="时"] [data-value="10"]').click(); await nextTick();
-  assert.match(p.model.value, /^10:\d{2}:\d{2}$/);
+  assert.equal(p.model.value, "10:00:00");
   button(p,"确定").click(); await nextTick();
   assert.equal(p.container.querySelector('[role="dialog"]'), null); assert.equal(p.events.confirm.length, 1);
+});
+it("跟随系统时间透传至单点和范围面板，初始化经过禁用校正，确认后才写回", async () => {
+  mock.timers.enable({ apis: ["Date"], now: new Date(2026, 0, 1, 9, 30, 45) });
+  try {
+    for (const isRange of [false, true]) {
+      const p = mount({ followSystemTime: true, isRange, disabledSeconds: () => [45] }, isRange ? [] : "");
+      p.container.firstElementChild.firstElementChild.click(); await nextTick(); await nextTick();
+      const selected = [...p.container.querySelectorAll('[role="listbox"]')]
+        .map(column => column.querySelector('[aria-selected="true"]').getAttribute("data-value"));
+      assert.deepEqual(selected, isRange ? ["9", "30", "46", "9", "30", "46"] : ["9", "30", "46"]);
+      assert.deepEqual(p.model.value, isRange ? [] : "");
+      assert.deepEqual(p.events.change, []);
+      button(p, "确定").click(); await nextTick();
+      assert.deepEqual(p.model.value, isRange ? ["09:30:46", "09:30:46"] : "09:30:46");
+      assert.equal(p.events.change.length, 1);
+    }
+  } finally { mock.timers.reset(); }
 });
 it("六种精度只渲染对应时间列，支持严格输入及外部更新", async () => {
   for (const [format,value,count] of [["HH:mm:ss","10:20:30",3],["HH","10",1],["mm","20",1],["ss","30",1],["HH:mm","10:20",2],["mm:ss","20:30",2]]) {

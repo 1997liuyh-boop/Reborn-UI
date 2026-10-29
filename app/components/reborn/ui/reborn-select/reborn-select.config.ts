@@ -223,37 +223,37 @@ export default {
         },
         /**
          * 配色。同时决定两件事：
-         * 1. 触发器聚焦态 / 展开态的描边色（group-focus 依赖浮层容器上的 group + tabindex）；
+         * 1. 触发器悬停使用色板第 6 阶，聚焦 / 展开沿用语义色（group-focus 依赖外层 group + tabindex）；
          * 2. 选项选中态：底色取色阶第 2 阶、文字取第 6 阶（设计稿的 tag 填充 / default 规则）。
          * 色阶 token 自身已随主题切换，不可再写 dark: 前缀，否则深色模式二次翻转。
          */
         color: {
             primary: {
-                trigger: "group-focus:border-primary data-[state=open]:border-primary",
+                trigger: "hover:border-brand-6 group-focus:border-primary data-[state=open]:border-primary",
                 optionActive: "bg-brand-1 text-primary",
             },
             secondary: {
-                trigger: "group-focus:border-secondary data-[state=open]:border-secondary",
+                trigger: "hover:border-secondary-6 group-focus:border-secondary data-[state=open]:border-secondary",
                 optionActive: "bg-secondary-1 text-secondary-6",
             },
             success: {
-                trigger: "group-focus:border-success data-[state=open]:border-success",
+                trigger: "hover:border-green-6 group-focus:border-success data-[state=open]:border-success",
                 optionActive: "bg-green-1 text-green-6",
             },
             info: {
-                trigger: "group-focus:border-info data-[state=open]:border-info",
+                trigger: "hover:border-blue-6 group-focus:border-info data-[state=open]:border-info",
                 optionActive: "bg-blue-1 text-blue-6",
             },
             warning: {
-                trigger: "group-focus:border-warning data-[state=open]:border-warning",
+                trigger: "hover:border-orange-6 group-focus:border-warning data-[state=open]:border-warning",
                 optionActive: "bg-orange-1 text-orange-6",
             },
             error: {
-                trigger: "group-focus:border-error data-[state=open]:border-error",
+                trigger: "hover:border-red-6 group-focus:border-error data-[state=open]:border-error",
                 optionActive: "bg-red-1 text-red-6",
             },
             neutral: {
-                trigger: "group-focus:border-neutral data-[state=open]:border-neutral",
+                trigger: "hover:border-gray-6 group-focus:border-neutral data-[state=open]:border-neutral",
                 optionActive: "bg-gray-1 text-gray-6",
             },
         },
@@ -274,7 +274,7 @@ export default {
         disabled: {
             true: {
                 // 禁用时保留触发器命中以显示禁止光标，仅屏蔽子元素的鼠标交互。
-                trigger: "cursor-not-allowed border-gray-4 bg-gray-2 [&_*]:pointer-events-none",
+                trigger: "cursor-not-allowed border-gray-4 bg-gray-2 hover:border-gray-4 [&_*]:pointer-events-none",
                 triggerText: "text-gray-5",
                 arrow: "text-gray-5",
                 tag: "text-gray-5",
@@ -283,7 +283,7 @@ export default {
         },
         error: {
             true: {
-                trigger: "border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
+                trigger: "border-red-5 hover:border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
             },
         },
         /**

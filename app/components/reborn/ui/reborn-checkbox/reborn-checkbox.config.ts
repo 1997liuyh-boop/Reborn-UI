@@ -16,7 +16,9 @@ export const CHECKBOX_GROUP_KEY: InjectionKey<CheckboxGroupContext> = Symbol('Re
 
 const size = ["sm", "md", "lg"] as const;
 const color = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
-const variant = ["filled", "outlined"] as const;
+const variant = ["filled", "outlined", "shadow"] as const;
+/** 描边与阴影变体共享选中、半选的配色规则。 */
+const outlinedVariants = ["outlined", "shadow"] as const;
 const direction = ["horizontal", "vertical"] as const;
 
 export {
@@ -69,7 +71,7 @@ export default {
     control:
       "flex items-center justify-center rounded-sm border border-gray-4 bg-white text-white transition-colors ring-1 ring-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 peer-checked:[&>*:not([data-dot])]:opacity-100 peer-checked:[&>*:not([data-dot])]:scale-100 data-[indeterminate=true]:[&>*:not([data-dot])]:opacity-100 data-[indeterminate=true]:[&>*:not([data-dot])]:scale-100",
     icon: "size-4 opacity-0 scale-75 transition-all",
-    // outlined 变体的半选方块：与勾选框同尺寸同圆角，再整体缩到 50%。
+    // outlined / shadow 变体的半选方块：与勾选框同尺寸同圆角，再整体缩到 50%。
     // 这样圆角随之等比减半，形状与外框一致；transform 以中心为原点，也不会像
     // size-1/2 那样因为 18px 的一半是奇数而出现半像素偏移导致视觉不居中。
     // 只在半选时挂载，故不写 opacity-0 这类入场过渡（永远看不到）。
@@ -91,20 +93,22 @@ export default {
         label: "text-[length:var(--text-size-28)]",
       },
     },
-    /** 配色本身不带样式，实际类名由 color × variant 的复合变体给出 */
+    /** 阴影环取对应色板第 1 阶，选中配色由 color × variant 的复合变体给出。 */
     color: {
-      primary: {},
-      secondary: {},
-      success: {},
-      info: {},
-      warning: {},
-      error: {},
-      neutral: {},
+      primary: { control: "[--checkbox-color:var(--color-primary)] [--checkbox-ring-color:var(--color-brand-1)]" },
+      secondary: { control: "[--checkbox-color:var(--color-secondary)] [--checkbox-ring-color:var(--color-secondary-1)]" },
+      success: { control: "[--checkbox-color:var(--color-success)] [--checkbox-ring-color:var(--color-green-1)]" },
+      info: { control: "[--checkbox-color:var(--color-info)] [--checkbox-ring-color:var(--color-blue-1)]" },
+      warning: { control: "[--checkbox-color:var(--color-warning)] [--checkbox-ring-color:var(--color-orange-1)]" },
+      error: { control: "[--checkbox-color:var(--color-error)] [--checkbox-ring-color:var(--color-red-1)]" },
+      neutral: { control: "[--checkbox-color:var(--color-neutral)] [--checkbox-ring-color:var(--color-gray-1)]" },
     },
     /** 形态本身不带配色，同样交给复合变体 */
     variant: {
       filled: {},
       outlined: {},
+      // ring 不占布局空间，保持 outlined 的勾选框与标签高度。
+      shadow: { control: "ring-2 ring-(--checkbox-ring-color)" },
     },
     error: {
       true: {
@@ -127,6 +131,12 @@ export default {
   },
   compoundVariants: [
     {
+      variant: "shadow" as (typeof variant)[number],
+      disabled: false,
+      // 阴影半选态的边框跟随语义色；禁用时仍使用原有灰色边框。
+      class: { control: "data-[indeterminate=true]:border-(--checkbox-color)" },
+    },
+    {
       color: "primary" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
       disabled: false,
@@ -138,7 +148,7 @@ export default {
     },
     {
       color: "primary" as (typeof color)[number],
-      variant: "outlined" as (typeof variant)[number],
+      variant: outlinedVariants,
       disabled: false,
       class: {
         control: "peer-checked:border-primary",
@@ -158,7 +168,7 @@ export default {
     },
     {
       color: "secondary" as (typeof color)[number],
-      variant: "outlined" as (typeof variant)[number],
+      variant: outlinedVariants,
       disabled: false,
       class: {
         control: "peer-checked:border-secondary",
@@ -178,7 +188,7 @@ export default {
     },
     {
       color: "success" as (typeof color)[number],
-      variant: "outlined" as (typeof variant)[number],
+      variant: outlinedVariants,
       disabled: false,
       class: {
         control: "peer-checked:border-success",
@@ -198,7 +208,7 @@ export default {
     },
     {
       color: "info" as (typeof color)[number],
-      variant: "outlined" as (typeof variant)[number],
+      variant: outlinedVariants,
       disabled: false,
       class: {
         control: "peer-checked:border-info",
@@ -218,7 +228,7 @@ export default {
     },
     {
       color: "warning" as (typeof color)[number],
-      variant: "outlined" as (typeof variant)[number],
+      variant: outlinedVariants,
       disabled: false,
       class: {
         control: "peer-checked:border-warning",
@@ -238,7 +248,7 @@ export default {
     },
     {
       color: "error" as (typeof color)[number],
-      variant: "outlined" as (typeof variant)[number],
+      variant: outlinedVariants,
       disabled: false,
       class: {
         control: "peer-checked:border-error",
@@ -258,7 +268,7 @@ export default {
     },
     {
       color: "neutral" as (typeof color)[number],
-      variant: "outlined" as (typeof variant)[number],
+      variant: outlinedVariants,
       disabled: false,
       class: {
         control: "peer-checked:border-neutral",

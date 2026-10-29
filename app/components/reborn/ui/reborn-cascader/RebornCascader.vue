@@ -562,11 +562,15 @@ const splitUi = computed(() => splitTriggerUi(props.triggerUi));
  * 浮层宽度跟着面板走。
  * RebornSelectTrigger 默认给浮层兜了 min-width: 触发器宽度——那是为「下拉列表与选择框等宽」准备的，
  * 级联的宽度由列数决定：表单里的触发器往往占满整行，不解除这条下限，
- * 三列面板右边会拖出一大片空浮层。调用方自己写的 dropdown 覆盖仍排在最后，优先级不变。
+ * 三列面板右边会拖出一大片空浮层。空态没有列宽可用，改为与触发器等宽；
+ * 行内浮层未设置宽度变量时回退为容器宽度。调用方的 dropdown 覆盖仍排在最后。
  */
+const isEmptyPanel = computed(() => !props.loading && (
+  isSearchMode.value ? searchResults.value.length === 0 : tree.value.flat.length === 0
+));
 const overlayUi = computed(() => ({
   ...splitUi.value.overlay,
-  dropdown: cn("min-w-0", splitUi.value.overlay.dropdown),
+  dropdown: cn("min-w-0", isEmptyPanel.value && "w-[var(--rb-trigger-width,100%)]", splitUi.value.overlay.dropdown),
 }));
 const fieldUi = computed(() => splitUi.value.field as CascaderFieldUI);
 const uiOverrides = computed(() => props.ui || {});

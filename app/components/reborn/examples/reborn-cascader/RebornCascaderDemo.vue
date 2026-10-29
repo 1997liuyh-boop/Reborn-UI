@@ -420,7 +420,11 @@ function onChange(value: any) {
           allow-search
           allow-clear
           placeholder="输入区县名试试"
-        />
+        >
+          <template #empty>
+            <span class="max-w-full break-words px-3 text-center">未找到匹配地区，请更换关键词</span>
+          </template>
+        </RebornCascader>
         <RebornCascader
           v-model="searchLabelOnlyValue"
           :options="options"
@@ -428,7 +432,7 @@ function onChange(value: any) {
           search-option-only-label
           placeholder="搜索结果只显示该级文本"
         />
-        <DemoNote tone="dimmed">当前关键词：{{ keyword || "（空）" }}</DemoNote>
+        <DemoNote tone="dimmed">当前关键词：{{ keyword || "（空）" }}；无匹配结果时通过 <code>empty</code> 插槽自定义提示，面板与触发器等宽。</DemoNote>
       </DemoBlock>
     </DemoSection>
 

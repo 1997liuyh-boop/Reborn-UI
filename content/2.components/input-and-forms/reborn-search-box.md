@@ -113,7 +113,7 @@ const keyword = ref({ inputValue: "", selectValue: "" });
 
 ### 形状与输入框属性透传
 
-`shape` 取 `circle`（默认，胶囊）或 `square`（不分尺寸统一 `rounded-md`）；底色卡片上半圆角随之与输入框对齐，下拉面板只保留下半圆角。`inputAttrs` 整体 v-bind 到内部 `RebornInput`，但 `variant` 恒为 `borderless` 不可覆盖，`size` / `color` / `placeholder` 等显式 prop 优先级更高。
+`shape` 默认取 `square`（不分尺寸统一 `rounded-md`），也可取 `circle`（胶囊）；底色卡片上半圆角随之与输入框对齐，下拉面板只保留下半圆角。`inputAttrs` 整体 v-bind 到内部 `RebornInput`，但 `variant` 恒为 `borderless` 不可覆盖，`size` / `color` / `placeholder` 等显式 prop 优先级更高。
 
 | `shape` | 外观 | 典型用途 |
 | --- | --- | --- |
@@ -163,7 +163,7 @@ const keyword = ref({ inputValue: "", selectValue: "" });
 | `placeholder` | `string` | `"请输入搜索内容"` | 占位文本。 |
 | `size` | `"sm" \| "md" \| "lg"` | `"sm"` | 尺寸大小；高度由内部 `RebornInput` 承担，本组件另按尺寸给出输入框区的水平内边距。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 主题颜色，作用于聚焦描边（取对应色族 5 阶）。 |
-| `shape` | `"circle" \| "square"` | `"circle"` | 外形轮廓，与 `RebornInput` 的同名 API 对齐：circle 胶囊 / square 统一取 `rounded-md` 令牌（不分尺寸）；底色卡片圆角随之与输入框对齐，下拉面板只保留下半圆角。 |
+| `shape` | `"circle" \| "square"` | `"square"` | 外形轮廓，与 `RebornInput` 的同名 API 对齐：circle 胶囊 / square 统一取 `rounded-md` 令牌（不分尺寸）；底色卡片圆角随之与输入框对齐，下拉面板只保留下半圆角。 |
 | `showDropdown` | `boolean` | `true` | 聚焦时是否展开下拉面板（面板内容完全由 `dropdown` 插槽提供）；置为 `false` 时会强制收起已展开的面板。 |
 | `history` | `string[]` | `undefined` | 历史记录双向绑定；绑定后完全由父级持有，组件不读写本地存储。不传（值为 `undefined`）时组件按 `historyKey` 自行持有历史。 |
 | `historyKey` | `string` | `"reborn-search-history"` | 未绑定 `history` 时的本地存储键，用不同键隔离多个搜索框。 |

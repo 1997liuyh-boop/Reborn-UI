@@ -18,9 +18,9 @@
     "不传 filterOption 时搜索按 label 做包含匹配（英文不区分大小写），description 等字段不参与；需要按其他字段搜索时传 (inputValue, item) => boolean，item 是原始数据对象，配置了 fieldNames 时按原始字段名取值。",
     "variant=\"borderless\" 不渲染面板头部，此时 titles、headerSelect 以及 title / extra 插槽都不生效，只能逐项勾选。",
     "color 决定复选框勾选色、选中条目底色、头部下拉已选选项颜色以及操作按钮颜色，操作按钮禁用时固定为 neutral；内部复选框已与表单上下文隔离，不触发表单校验、不继承表单尺寸与禁用。",
-    "没有 size 属性：根节点 h-full 撑满父元素高度，父元素高度为 auto 时列表随条目增高不会滚动；条目多时给父元素设高度或传 height（数字按 px）。",
+    "没有 size 属性：width 控制单个面板宽度（数字按 px，也支持 CSS 长度），未传时两侧按父容器宽度均分；根节点 h-full 撑满父元素高度，父元素高度为 auto 时列表随条目增高不会滚动；条目多时给父元素设高度或传 height（数字按 px）。",
     "自定义条目用 default 插槽（作用域 item / direction / checked / disabled），只替换文案区域，复选框仍由组件渲染；旧 item 插槽保留，二者同时提供时 default 优先。",
-    "virtualScroll 开启后每行高度固定为 virtualItemHeight 减 4px 行间距：默认 32 只适合只有 label 的条目（行高 28），带 description 的条目要传 54，用插槽改了条目内容时按实际行高加 4 传入，否则相邻行重叠或留白；面板需要确定的高度（传 height 或父元素给高度）；搜索与翻页会把列表滚回顶部；头部下拉同样按虚拟列表渲染。",
+    "virtualScroll 开启后每行高度固定为 virtualItemHeight 减 4px 行间距：默认 34 只适合只有 label 的条目（行高 30px），带 description 的条目要传 56，用插槽改了条目内容时按实际行高加 4 传入，否则相邻行重叠或留白；面板需要确定的高度（传 height 或父元素给高度）；搜索与翻页会把列表滚回顶部；头部下拉同样按虚拟列表渲染。",
     "operation 插槽替换整个操作按钮，每个按钮调用一次，用作用域里的 action（toRight / toLeft / undo）区分而不是 key；只改按钮内部内容、保留 RebornButton 外壳时用 operation-to-right / operation-to-left / operation-undo。",
     "ui.searchInput 作为 class 传给 RebornInput，落在带边框的输入外壳上而不是根节点；要调搜索区内边距改 ui.panelSearch。"
   ]

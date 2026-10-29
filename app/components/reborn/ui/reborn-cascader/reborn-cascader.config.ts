@@ -201,6 +201,11 @@ export default {
   },
   variants: {
     ...selectVariantMap,
+    /** 多选标签左侧留 4px，右侧沿用尺寸档位，与单选的尾部图标对齐。 */
+    multiple: {
+      true: { trigger: "pl-1!" },
+      false: {},
+    },
     /**
      * 尺寸档位。触发器与标签沿用 reborn-select 的三档，
      * 级联额外按档位给列宽下限：档位越大，列越宽，避免 lg 下文字贴着分割线。

@@ -27,7 +27,7 @@ export const inputTheme = {
         },
     },
     defaultVariants: {
-        shape: "circle",
+        shape: "square",
     },
 } as const;
 
@@ -185,7 +185,7 @@ export default {
 
     defaultVariants: {
         size: "md" as const,
-        shape: "circle" as const,
+        shape: "square" as const,
         color: "primary" as const,
         expanded: false,
         focused: false,

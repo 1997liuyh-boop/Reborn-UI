@@ -94,20 +94,21 @@ export default {
   slots: {
     wrapper: "bg-gray-1 transition-all overflow-hidden",
     container: "flex h-full",
-    shortcuts: `border-r border-gray-2 p-4 flex flex-col gap-4 overflow-y-auto ${scrollbarHide}`,
+    /** 快捷栏内边距与选项间距均为 8px，位置变体负责内侧分隔线。 */
+    shortcuts: `shrink-0 space-y-2 overflow-y-auto p-2 ${scrollbarHide}`,
     shortcut:
-      "min-w-15 text-sm text-gray-6 hover:bg-gray-2 hover:text-primary cursor-pointer transition-colors whitespace-nowrap",
+      "block h-6 w-26 cursor-pointer truncate bg-gray-2 px-3 py-0 text-center text-sm text-gray-8",
     /** 头部导航行：与网格共用左右 5 个间距刻度，上 4、下 3；默认根字号下为 20 / 16 / 12px */
     header: "flex items-center justify-between px-5 pt-4 pb-3",
     /** 翻页按钮组：同侧按钮间隔 2 个刻度，默认根字号下为 8px */
     navGroup: "flex items-center gap-2",
     navBtn:
-      "flex items-center rounded-md hover:bg-gray-2 transition-colors cursor-pointer text-gray-6",
+      "flex items-center rounded-md transition-colors cursor-pointer text-gray-8 hover:text-gray-9",
     navBtnHidden: "opacity-0 pointer-events-none",
     /** 翻页按钮不可用（取消联动时两侧面板已相邻，再翻就会交叉） */
-    navBtnDisabled: "opacity-40 cursor-not-allowed hover:bg-transparent",
+    navBtnDisabled: "opacity-40 cursor-not-allowed hover:text-gray-8",
     /** 标题：14px / 500 字重 / 标题色 */
-    title: "text-base font-medium text-gray-10 cursor-pointer hover:text-primary transition-colors",
+    title: "text-base font-medium text-gray-8 cursor-pointer hover:text-gray-9 transition-colors",
     /** 星期表头：与日期网格共用单元格尺寸和左右内边距，上下间距随同一刻度缩放 */
     weekdays: "grid grid-cols-7 justify-items-center text-sm text-gray-6 px-5 pt-2 pb-3",
     weekday: "size-7.5 flex items-center justify-center",
@@ -205,6 +206,10 @@ export default {
     footerDisabled: "text-gray-5 cursor-not-allowed hover:opacity-100",
   },
   variants: {
+    shortcutPosition: {
+      left: { shortcuts: "border-r border-gray-2" },
+      right: { container: "flex-row-reverse", shortcuts: "border-l border-gray-2" },
+    },
     border: {
       true: { wrapper: "border border-gray-2 rounded-xl shadow-sm" },
       false: { wrapper: "" },
@@ -217,7 +222,7 @@ export default {
      */
     disabled: {
       true: {
-        navBtn: "cursor-not-allowed hover:bg-transparent",
+        navBtn: "cursor-not-allowed hover:text-gray-8",
         icon: "opacity-40",
         shortcut: "text-gray-5 cursor-not-allowed hover:bg-transparent hover:text-gray-5",
         // 日期 / 时间输入框：灰底 + gray-4 描边 + gray-5 文字。描边沿用 ring 而非 border，
@@ -353,17 +358,16 @@ export default {
       },
     },
     color: {
-      primary: { dayToday: "text-primary", title: "hover:text-primary", footer: "text-primary" },
+      primary: { dayToday: "text-primary", footer: "text-primary" },
       secondary: {
         dayToday: "text-secondary",
-        title: "hover:text-secondary",
         footer: "text-secondary",
       },
-      success: { dayToday: "text-success", title: "hover:text-success", footer: "text-success" },
-      info: { dayToday: "text-info", title: "hover:text-info", footer: "text-info" },
-      warning: { dayToday: "text-warning", title: "hover:text-warning", footer: "text-warning" },
-      error: { dayToday: "text-error", title: "hover:text-error", footer: "text-error" },
-      neutral: { dayToday: "text-gray-6", title: "hover:text-gray-6", footer: "text-gray-6" },
+      success: { dayToday: "text-success", footer: "text-success" },
+      info: { dayToday: "text-info", footer: "text-info" },
+      warning: { dayToday: "text-warning", footer: "text-warning" },
+      error: { dayToday: "text-error", footer: "text-error" },
+      neutral: { dayToday: "text-gray-6", footer: "text-gray-6" },
     },
   },
   /**
@@ -630,7 +634,7 @@ export default {
     { weekNumber: true, size: "md", class: { days: "min-w-94" } },
     { weekNumber: true, size: "lg", class: { days: "min-w-102" } },
     // ---- 整面板禁用 ----
-    // 放在最后：color 变体给标题上了 hover:text-xxx，复合变体在其后合并，才能把悬停色压回 gray-4
+    // 禁用时标题保持 gray-4，不响应悬停加深；今天栏同步收起主题色强调
     {
       disabled: true,
       class: {
@@ -643,6 +647,7 @@ export default {
     },
   ] as any,
   defaultVariants: {
+    shortcutPosition: "left" as "left" | "right",
     size: "md" as (typeof sizes)[number],
     color: "primary" as (typeof colors)[number],
     width: "auto" as "auto" | "full",

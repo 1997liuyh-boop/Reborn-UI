@@ -49,9 +49,11 @@ for (const [name, props] of [
   ['没有字数上限', { maxlength: undefined }],
   ['单行输入框', { type: 'text' }],
 ] as const) {
-  it(`${name} 不启用布局修复`, async () => {
+  it(`${name} 不启用手柄布局`, async () => {
     const html = await render(props)
-    assert.doesNotMatch(html, /px-0!|pb-6|right-6/)
+    assert.doesNotMatch(html, /px-0!|right-6/)
+    // 非拖拽文本域由外框预留统计区域，原生输入元素不需要手柄内边距。
+    assert.doesNotMatch(html, /<textarea[^>]*class="[^"]*pb-6/)
   })
 }
 it('旧 as 属性和自动高度模式同样支持可拖拽统计布局', async () => {

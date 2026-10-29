@@ -30,10 +30,12 @@ export interface DatePickerPlaygroundConfig {
   portal: boolean;
   /** 是否显示快捷项；实际传给组件的列表见 shortcuts 属性 */
   shortcuts: boolean;
+  shortcutPosition: "left" | "right";
   showWeekNumber: boolean;
   unlinkPanels: boolean;
   singlePanel: boolean;
   showToday: boolean;
+  highlightToday: boolean;
 }
 
 interface Props {
@@ -78,10 +80,12 @@ const playgroundHandlers = createHandlers(logPlayground);
       :close-on="config.closeOn"
       :portal="config.portal"
       :shortcuts="shortcuts"
+      :shortcut-position="config.shortcutPosition"
       :show-week-number="config.showWeekNumber"
       :unlink-panels="config.unlinkPanels"
       :single-panel="config.singlePanel"
       :show-today="config.showToday"
+      :highlight-today="config.highlightToday"
       @change="playgroundHandlers.onChange"
       @visible-change="playgroundHandlers.onVisibleChange"
       @calendar-change="playgroundHandlers.onCalendarChange"

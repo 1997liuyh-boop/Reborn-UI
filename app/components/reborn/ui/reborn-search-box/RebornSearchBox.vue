@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<SearchBoxProps>(), {
   placeholder: "请输入搜索内容",
   size: "sm",
   color: "primary",
-  shape: "circle",
+  shape: "square",
   showDropdown: true,
   historyKey: "reborn-search-history",
   ui: () => ({}),
@@ -331,13 +331,15 @@ function onDropdownMousedown(event: MouseEvent) {
 <template>
   <div ref="wrapperRef" :class="ui.wrapper()">
     <!-- 展开状态下的底色卡片 (绝对定位，圆角由 shape 变体控制并与输入框对齐) -->
-    <div :class="ui.backdropCard()" :style="{
-      height: `${controlHeight + 12}px`,
-      borderBottom: 'none',
-      opacity: isExpanded ? 1 : 0,
-      transform: isExpanded ? 'scaleY(1)' : 'scaleY(0.95)',
-      transformOrigin: 'top center',
-    }" />
+    <div
+      :class="ui.backdropCard()" :style="{
+        height: `${controlHeight + 12}px`,
+        borderBottom: 'none',
+        opacity: isExpanded ? 1 : 0,
+        transform: isExpanded ? 'scaleY(1)' : 'scaleY(0.95)',
+        transformOrigin: 'top center',
+      }"
+    />
 
     <!--
       控件行：外层边框所在的一层，把外置的 leading / trailing 插槽一并囊括在内；
@@ -362,10 +364,12 @@ function onDropdownMousedown(event: MouseEvent) {
       -->
       <div :class="ui.inputWrapper()">
         <!-- internalInputAttrs 先绑定（variant 恒为 borderless）、显式 prop 后绑定优先级更高 -->
-        <RebornInput ref="inputRef" v-bind="internalInputAttrs" :model-value="model.inputValue" shape="square"
+        <RebornInput
+          ref="inputRef" v-bind="internalInputAttrs" :model-value="model.inputValue" shape="square"
           :placeholder="placeholder" clearable :separator="false" :size="size" :color="color" :ui="internalInputUi"
           @click="onInputClick" @update:model-value="handleInputValueChange" @focus="onFocus" @blur="onBlur"
-          @keydown.enter="handleSearch">
+          @keydown.enter="handleSearch"
+        >
           <!-- 内置前置插槽：转发到 RebornInput 的 #prefix，落在输入框内部、随输入框一起进入激活态 -->
           <template v-if="$slots['input-leading']" #prefix="inputScope">
             <slot name="input-leading" :ui="ui" :input-ui="inputScope.ui" :search="handleSearch" />
@@ -388,25 +392,31 @@ function onDropdownMousedown(event: MouseEvent) {
     </div>
 
     <!-- 动态下拉面板（内容完全由 dropdown 插槽提供） -->
-    <div :class="ui.dropdownOuter()" :style="{
-      height: isExpanded ? `${dropdownHeight}px` : '0px',
-      top: `${controlHeight / 2}px`,
-      pointerEvents: isExpanded ? 'auto' : 'none',
-    }">
-      <div ref="contentRef" :class="ui.dropdown()" :style="{
-        paddingTop: `${controlHeight / 2 + 24}px`,
-        opacity: isExpanded ? 1 : 0,
-        transform: isExpanded ? 'translateY(0)' : 'translateY(-8px)',
-        transitionDelay: isExpanded ? '100ms' : '0ms',
-      }" @mousedown="onDropdownMousedown">
+    <div
+      :class="ui.dropdownOuter()" :style="{
+        height: isExpanded ? `${dropdownHeight}px` : '0px',
+        top: `${controlHeight / 2}px`,
+        pointerEvents: isExpanded ? 'auto' : 'none',
+      }"
+    >
+      <div
+        ref="contentRef" :class="ui.dropdown()" :style="{
+          paddingTop: `${controlHeight / 2 + 24}px`,
+          opacity: isExpanded ? 1 : 0,
+          transform: isExpanded ? 'translateY(0)' : 'translateY(-8px)',
+          transitionDelay: isExpanded ? '100ms' : '0ms',
+        }" @mousedown="onDropdownMousedown"
+      >
         <!--
           面板内容完全由 dropdown 插槽提供，组件不渲染任何默认内容。
           作用域透出：ui（结构层样式键，面板内容的装饰样式由插槽内容自行提供）、
           history（历史记录列表）与历史/推荐相关的操作方法。
         -->
-        <slot name="dropdown" :ui="ui" :history="history" :select-history="selectHistory"
+        <slot
+          name="dropdown" :ui="ui" :history="history" :select-history="selectHistory"
           :remove-history-item="handleRemoveHistoryItem" :clear-history="handleClearHistory"
-          :select-recommend="selectRecommend" />
+          :select-recommend="selectRecommend"
+        />
       </div>
     </div>
   </div>

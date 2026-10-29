@@ -48,8 +48,8 @@ async function buildFixture() {
         const options=[{label:'新建文件',value:'new'},{label:'编辑内容',value:'edit'},{label:'分享链接',value:'share'}];
         const box=(el)=>{const r=el.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom};};
         const panelEl=()=>document.querySelector('[role=menu]')?.closest('.rb-transition')??null;
-        // 凡是计算后变换为 45° 旋转的节点都算箭头，不依赖类名：伪元素之外任何画成菱形的节点都会被数进来
-        const isDiamond=(el)=>{const m=getComputedStyle(el).transform.match(/^matrix\\(([^)]+)\\)$/);if(!m)return false;
+        // 箭头和它的投影必须由同一个节点绘制，透明的旋转投影底片也计数，防止阴影轮廓再次叠层
+        const isDiamond=(el)=>{const s=getComputedStyle(el);const m=s.transform.match(/^matrix\\(([^)]+)\\)$/);if(!m)return false;
           const [a,b]=m[1].split(',').map(Number);return Math.abs(Math.abs(a)-Math.SQRT1_2)<1e-3&&Math.abs(Math.abs(b)-Math.SQRT1_2)<1e-3;};
         const snapshot=()=>{const panel=panelEl();return {
           noted:!!document.querySelector('#note'),trigger:box(document.querySelector('#trigger')),
@@ -177,6 +177,36 @@ it('12 个方向都只有一个箭头，尖端不压到触发器且骑在面板�
       await closeSettled(page);
       const closed = await snapshot(page);
       assert.equal(closed.arrows.length, 0, `${placement}：收起后箭头应移除`);
+    }
+  });
+});
+
+it('向上展开的箭头与面板连成一体，阴影不渗入面板内部', { skip: !existsSync(executablePath) }, async () => {
+  await withDropdown(async (page) => {
+    for (const placement of ['top', 'top-start', 'top-end']) {
+      await configure(page, { placement });
+      await openSettled(page);
+      const shot = await snapshot(page);
+      assert.ok(shot.panel);
+      const arrow = shot.arrows[0]!;
+      const x = (arrow.left + arrow.right) / 2;
+      const y = shot.panel.bottom;
+      // 内侧两点避开文字和描边；外侧一点落在箭头实心区域，防止裁剪方向写反后箭头消失。
+      const points = [{ x: x - 12, y: y - 4 }, { x: x + 12, y: y - 4 }, { x, y: y + 4 }];
+      const screenshot = await page.screenshot();
+      const colors = await page.evaluate(async ({ url, points }) => {
+        const image = new Image();
+        image.src = url;
+        await image.decode();
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const context = canvas.getContext('2d')!;
+        context.drawImage(image, 0, 0);
+        return points.map(point => Array.from(context.getImageData(Math.round(point.x), Math.round(point.y), 1, 1).data));
+      }, { url: `data:image/png;base64,${screenshot.toString('base64')}`, points });
+      assert.deepEqual(colors, points.map(() => [255, 255, 255, 255]), `${placement}：箭头应保留实心底色，内侧不能叠入阴影`);
+      await closeSettled(page);
     }
   });
 });

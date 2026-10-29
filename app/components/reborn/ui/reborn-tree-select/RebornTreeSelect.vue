@@ -6,7 +6,7 @@ import type { TreeCheckedKeys, TreeDataNode, TreeEntity, TreeKey } from "../rebo
 import type { RebornTreeProps } from "../reborn-tree/RebornTree.vue";
 import type { TreeConductResult } from "../reborn-tree/useTree";
 import type { treeSelectColors, treeSelectSizes, TreeSelectUI, TreeSelectValue, treeSelectVariants } from "./reborn-tree-select.config";
-import { computed, nextTick, shallowRef, useId, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onScopeDispose, shallowRef, useId, useTemplateRef, watch } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -17,6 +17,11 @@ import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
 import RebornTree from "../reborn-tree/RebornTree.vue";
 import { buildTreeEntities, conductCheck, conductUncheck } from "../reborn-tree/useTree";
 import theme from "./reborn-tree-select.config";
+
+export interface TreeSelectSearchContext {
+  /** 关键词变化、关闭面板或卸载时取消；写回 treeData 前检查，避免旧请求覆盖新结果 */
+  signal: AbortSignal;
+}
 
 export interface TreeSelectProps {
   /** 层级数据，节点 key 必须在整棵树内唯一 */
@@ -33,8 +38,10 @@ export interface TreeSelectProps {
   collapseTagsTooltip?: boolean;
   /** 折叠前保留的标签数量，最少为 0 */
   maxCollapseTags?: number;
-  /** 在触发器内搜索节点标题，保留命中节点的祖先路径 */
+  /** 在触发器内搜索节点 key 与标题，按 fieldNames 映射字段，默认关闭 */
   allowSearch?: boolean;
+  /** 异步搜索，调用方更新 treeData；与 loadData 一样等待 Promise，结果不再做本地筛选 */
+  searchData?: (value: string, context: TreeSelectSearchContext) => Promise<unknown>;
   /** 空值时的提示文字 */
   placeholder?: string;
   /** 禁用选择与清空，并继承表单禁用状态 */
@@ -113,6 +120,9 @@ const { disabled: isDisabled, size: fieldSize, isError, validate } = useFormInje
 const isOpen = shallowRef(false);
 const treeId = useId();
 const searchValue = shallowRef("");
+const searchLoading = shallowRef(false);
+const searchFailed = shallowRef(false);
+let searchController: AbortController | undefined;
 const searchInput = useTemplateRef<HTMLInputElement>("searchInput");
 const isSearching = computed(() => props.allowSearch && isOpen.value);
 const keyword = computed(() => props.allowSearch ? searchValue.value.trim().toLowerCase() : "");
@@ -123,7 +133,7 @@ const fields = computed(() => ({
   key: props.fieldNames?.key ?? "key",
   children: props.fieldNames?.children ?? "children",
 }));
-/** 搜索只裁剪展示数据，节点索引与已选值始终基于完整数据。 */
+/** 本地搜索只裁剪展示数据，节点索引与已选值始终基于调用方的数据。 */
 const filteredTree = computed(() => {
   const keys = new Set<TreeKey>();
   const ancestors: TreeKey[] = [];
@@ -133,7 +143,8 @@ const filteredTree = computed(() => {
     return nodes.flatMap((node) => {
       const source = node[childrenField];
       const children = Array.isArray(source) ? filter(source) : [];
-      if (!String(node[titleField] ?? "").toLowerCase().includes(keyword.value) && !children.length) return [];
+      const matches = [node[keyField], node[titleField]].some(value => String(value ?? "").toLowerCase().includes(keyword.value));
+      if (!props.searchData && !matches && !children.length) return [];
       const key = node[keyField] as TreeKey;
       keys.add(key);
       if (children.length) ancestors.push(key);
@@ -155,6 +166,8 @@ const trigger = useTemplateRef<InstanceType<typeof RebornSelectTrigger>>("trigge
 const b = tv(theme);
 const splitUi = computed(() => splitTriggerUi(props.triggerUi));
 const fieldUi = computed(() => splitUi.value.field as SelectFieldUI);
+/** 基于完整数据建立实体索引：搜索只裁剪展示，联动始终按整棵树推导。 */
+const entities = computed(() => buildTreeEntities(props.treeData, fields.value));
 /**
  * 包一层加载函数，在选择器这一侧记录已加载的 key：加载期间收起下拉会卸载内部树，
  * 树自身的回写会被丢弃，只有这里的记录能保证同一节点不会重复请求。
@@ -163,14 +176,13 @@ const treeLoadData = computed<RebornTreeProps["loadData"]>(() => {
   const loadData = props.loadData;
   if (!loadData) return undefined;
   return async (node) => {
-    await loadData(node);
     const key = node[fields.value.key] as TreeKey;
+    // 搜索展示的节点是裁剪副本，懒加载仍传入源节点，保证回填子级写入 treeData。
+    await loadData(entities.value.map.get(key)?.node ?? node);
     const current = loadedKeys.value ?? [];
     if (!current.includes(key)) loadedKeys.value = [...current, key];
   };
 });
-/** 基于完整数据建立实体索引：搜索只裁剪展示，联动始终按整棵树推导。 */
-const entities = computed(() => buildTreeEntities(props.treeData, fields.value));
 const isConduct = computed(() => props.multiple && !props.checkStrictly);
 /** 禁用或禁止勾选的节点阻断联动；组件整体禁用只拦截操作，不改变已选值的推导结果。 */
 function isConductBlocked(entity: TreeEntity) {
@@ -281,11 +293,43 @@ function onPanelKeydown(event: KeyboardEvent) {
   trigger.value?.$el.focus();
 }
 watch(isDisabled, (disabled) => { if (disabled) isOpen.value = false; });
-/** 输入仅触发搜索事件，不改动选中值。 */
+/** 取消旧搜索，同时结束旧请求的展示状态；回调通过 signal 阻止过期结果写回。 */
+function cancelSearch() {
+  searchController?.abort();
+  searchController = undefined;
+  searchLoading.value = false;
+  searchFailed.value = false;
+}
+/** 与节点加载一样由调用方写回数据，组件负责加载状态和异常收尾。 */
+async function runSearch(value: string) {
+  cancelSearch();
+  const searchData = props.searchData;
+  if (!searchData) return;
+  const controller = new AbortController();
+  searchController = controller;
+  searchLoading.value = true;
+  try {
+    await searchData(value.trim(), { signal: controller.signal });
+  } catch {
+    if (!controller.signal.aborted) searchFailed.value = true;
+  } finally {
+    // 旧请求晚完成时不能清掉新请求的加载状态。
+    if (searchController === controller) {
+      searchController = undefined;
+      searchLoading.value = false;
+    }
+  }
+}
+/** 输入触发搜索事件与可选的异步加载，不改动选中值；空关键词也通知回调以恢复初始数据。 */
 function onSearchInput(event: Event) {
+  if (!isSearching.value || isDisabled.value) return;
   searchValue.value = (event.target as HTMLInputElement).value;
   emit("search", searchValue.value);
+  void runSearch(searchValue.value);
 }
+watch([isSearching, () => props.searchData], cancelSearch, { flush: "sync" });
+watch(searchValue, (value) => { if (!value) cancelSearch(); }, { flush: "sync" });
+onScopeDispose(cancelSearch);
 watch(isOpen, (open) => emit("visibleChange", open));
 watch(isSearching, async (searching) => {
   if (searching) {
@@ -348,9 +392,15 @@ watch(isSearching, async (searching) => {
     </template>
     <template #content>
       <!-- 仅树自身滚动，避免选择器列表与虚拟树形成双滚动容器。 -->
-      <div :class="ui.dropdown({ class: cn('max-h-none overflow-visible', props.ui?.dropdown) })" @keydown="onPanelKeydown">
+      <div :class="ui.dropdown({ class: cn('max-h-none overflow-visible', props.ui?.dropdown) })" :aria-busy="searchLoading" @keydown="onPanelKeydown">
+        <div v-if="searchLoading || searchFailed" :id="treeId" :class="ui.empty({ class: cn(props.ui?.empty) })" role="status">
+          <span class="flex items-center justify-center gap-2">
+            <Icon v-if="searchLoading" name="lucide:loader-circle" class="size-4 animate-spin" />
+            {{ searchLoading ? "搜索中…" : "搜索失败，请重新输入" }}
+          </span>
+        </div>
         <RebornTree
-          v-if="filteredTree.data.length" :id="treeId" :key="keyword" v-model:expanded-keys="displayedExpandedKeys"
+          v-else-if="filteredTree.data.length" :id="treeId" :key="keyword" v-model:expanded-keys="displayedExpandedKeys"
           :tree-data="filteredTree.data" :field-names="fields" :selected-keys="treeSelectedKeys"
           :checked-keys="treeCheckedKeys" :checkable="multiple" check-strictly
           :selectable="!multiple" block-node :disabled="isDisabled" :color="color"

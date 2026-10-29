@@ -60,6 +60,7 @@ const defaultState: PlaygroundState = {
   unlinkPanels: false,
   singlePanel: false,
   showToday: false,
+  highlightToday: false,
 };
 
 /** 演练场其余参数：控制面板整体替换对象，绑定值由预览区经 v-model:value 写回 */
@@ -102,6 +103,7 @@ const controls = [
       },
       { label: "显示快捷选项", key: "shortcuts", component: "checkbox" as const, defaultValue: true },
       { label: "底部显示「今天」栏", key: "showToday", component: "checkbox" as const, defaultValue: false },
+      { label: "高亮今天（默认关闭）", key: "highlightToday", component: "checkbox" as const, defaultValue: false },
       { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
     ],
   },
@@ -194,6 +196,7 @@ const panelCode = computed(() => {
     `:unlink-panels="${s.unlinkPanels}"`,
     `:single-panel="${s.singlePanel}"`,
     `:show-today="${s.showToday}"`,
+    `:highlight-today="${s.highlightToday}"`,
   ];
 
   return `<RebornDatePickerPanel\n  ${props.join("\n  ")}\n/>`;

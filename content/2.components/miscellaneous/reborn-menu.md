@@ -188,7 +188,7 @@ const isCollapse = ref(false);
 
 `collapse` 切换时，根容器宽度与条目内容同步过渡（`300ms`，`ease-in-out`）。整套动画的目标是**单向收起**——文字只朝图标那一侧退，左内边距与图标列左边缘全程不动，不会出现「两端往中间挤」的观感：
 
-- **宽度**：折叠宽度以内联样式 `width: 4rem` 下发到 `root`，优先级高于任何 `class`。垂直模式下 `root` 展开态为 `w-full`——宽度插值需要两端都是确定值，`auto → 64px` 不会产生动画。
+- **宽度**：折叠宽度以内联样式下发到 `root`，优先级高于任何 `class`。取值是 `64px` 轨道再加上 `root` 自身的左右边框与内边距（挂载后量出），没有边框与内边距时就是 `4rem`。`root` 是 `border-box`，若只给 `4rem`，带 `border` 的菜单内容区只剩 `62px`，`64px` 的轨道连同选中项背景会从右侧边框冒出去。垂直模式下 `root` 展开态为 `w-full`——宽度插值需要两端都是确定值，`auto → 64px` 不会产生动画。
 - **文字 / 尾注 / 箭头**：折叠态用 `w-0 + opacity-0 + overflow-hidden` 收起，而**不是** `display: none`（`display` 不可过渡，会让文字瞬间消失、宽度动画看起来像卡帧）。
 - **对齐与内边距不参与动画**：折叠态沿用展开态的 `px-4` 与 `items-start` 对齐，**不切 `justify-center`**。`justify-content` 不可过渡，在第 0 帧就会把「图标 + 文字」整组钉到行中线上，之后随容器变窄来回摆动。
 - **图标列定宽**：`menuItemIcon` 是一列固定宽度的盒子，展开态 `w-5`（20px）、折叠态 `w-8`（32px = 轨道 `64px` 减去左右各 `16px` 内边距），图形本身（16px 或 20px）由盒子自身的 `justify-center` 居中。折叠完成时图标正好落在轨道正中。这与 Element Plus 给菜单图标定死 24px 列宽是同一套做法；`min-width` 不能替代 `width`——实际宽度取 `max(图形宽, min-width)`，前段纹丝不动、后段才追上，会与同时收缩的间隙错开相位而产生回摆。
@@ -866,7 +866,7 @@ interface MenuDividerType {
 
 | 键名                   | 对应节点与默认关键类名                                                                                                                                                                                                                                                                                                           |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `root`                 | 菜单最外层容器 `<div>`。默认 `relative shadow-sm bg-gray-1 transition-[width] duration-300 ease-in-out`，整块菜单的底色、圆角、内边距、阴影改这里；`class` prop 也并到该节点。**折叠态宽度由内联样式 `width: 4rem` 下发，不走这里**（见「折叠动画」）；传了 `backgroundColor` 时内联底色会盖过这里的 `bg-*`。                 |
+| `root`                 | 菜单最外层容器 `<div>`。默认 `relative shadow-sm bg-gray-1 transition-[width] duration-300 ease-in-out`，整块菜单的底色、圆角、内边距、阴影改这里；`class` prop 也并到该节点。**折叠态宽度由内联样式下发（`64px` 轨道加上这里的左右边框与内边距），不走这里**（见「折叠动画」）；传了 `backgroundColor` 时内联底色会盖过这里的 `bg-*`。                 |
 | `menu`                 | 顶层 `<ul>`。默认 `flex transition-all duration-300 ease-in-out`，主轴方向由 `mode` 决定；条目间距也在这里（水平 `gap-x-4` = 16px，垂直 `gap-y-1` = 4px）。                                                                                                                                                                      |
 | `menuItem`             | 单个菜单项（`RebornMenuItem` 的 `<li>`，以及 `RebornSubMenu` 内部那一行标题）。默认 `group relative flex cursor-pointer select-none items-center transition-all duration-200 ease-in-out`，行高、hover 底色、圆角改这里。`group` 供水平一级菜单的 hover 高亮反查父级状态，覆盖时请保留。                                          |
 | `menuItemContent`      | 菜单项内部的横向排布容器。默认 `flex w-full items-center gap-2 transition-all duration-300 ease-in-out`，折叠态 `gap-2` 收到 `gap-0`；图标与文字的间距改这里。                                                                                                                                                                  |

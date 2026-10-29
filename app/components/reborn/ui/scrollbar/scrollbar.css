@@ -19,8 +19,8 @@
  *   --reborn-scrollbar-size          滚动条粗细，默认 6px
  *   --reborn-scrollbar-radius        thumb 圆角，默认胶囊形
  *   --reborn-scrollbar-gap           滚动条与容器边缘的间距，默认 2px
- *   --reborn-scrollbar-inset         轨道两端的圆角安全内缩，默认由组件按容器
- *                                    border-radius 自动计算，无圆角时为 0
+ *   --reborn-scrollbar-inset         轨道两端的内缩，默认由组件取 gap 与按容器
+ *                                    border-radius 推算值中的较大者，无圆角时等于 gap
  *   --reborn-scrollbar-track         轨道颜色，默认透明（track 属性即写入该变量）
  *   --reborn-scrollbar-thumb         thumb 颜色
  *   --reborn-scrollbar-thumb-hover   thumb 悬停颜色
@@ -109,8 +109,8 @@
     pointer-events: auto;
   }
 
-  /* 两端内缩 --reborn-scrollbar-inset：容器带圆角且 overflow: hidden 时，
-     贴边的轨道会让 thumb 滚到两端时被圆角弧线削掉一角 */
+  /* 两端内缩 --reborn-scrollbar-inset：至少与贴边一侧的 gap 相同，轨道四周都不贴边；
+     容器带圆角且 overflow: hidden 时还要更大，否则 thumb 滚到两端会被圆角弧线削掉一角 */
   .reborn-scrollbar__bar--vertical {
     top: var(--reborn-scrollbar-inset);
     bottom: var(--reborn-scrollbar-inset);

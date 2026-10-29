@@ -30,6 +30,7 @@ export interface DatePickerPanelPlaygroundConfig {
   unlinkPanels: boolean;
   singlePanel: boolean;
   showToday: boolean;
+  highlightToday: boolean;
 }
 
 interface Props {
@@ -100,6 +101,7 @@ function onPlaygroundChange(next: unknown) {
       :unlink-panels="config.unlinkPanels"
       :single-panel="config.singlePanel"
       :show-today="config.showToday"
+      :highlight-today="config.highlightToday"
       @calendar-change="onPlaygroundCalendarChange"
       @panel-change="onPlaygroundPanelChange"
       @change="onPlaygroundChange"

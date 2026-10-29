@@ -214,6 +214,9 @@ const {
 
 const size = toRef(props, "size");
 
+/** 是否渲染增减按钮：controls 与 hideButton 任一否决即隐藏 */
+const showControls = computed(() => props.controls && !props.hideButton);
+
 const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
@@ -223,7 +226,7 @@ const ui = computed(() => {
     shape: props.shape,
     variant: props.variant,
     align: props.align,
-    controlsPosition: props.controlsPosition,
+    controlsPosition: showControls.value ? props.controlsPosition : undefined,
     fieldGroup: orientation.value,
     error: isError.value,
   });
@@ -337,8 +340,6 @@ const displayValue = computed(() => {
   return props.formatter ? props.formatter(text) : text;
 });
 
-/** 是否渲染增减按钮：controls 与 hideButton 任一否决即隐藏 */
-const showControls = computed(() => props.controls && !props.hideButton);
 /** 按钮是否上下堆叠（controls-position="left" / "right"） */
 const isControlsStacked = computed(() => props.controlsPosition === "left" || props.controlsPosition === "right");
 
@@ -496,8 +497,10 @@ defineExpose({
 
 <template>
   <!-- class 走 prop、style 落在根节点（wrapper），其余透传属性落在原生 input -->
-  <div :class="ui.wrapper({ class: props.class })" :style="rootStyle()" :data-disabled="isDisabled"
-    :data-readonly="props.readonly" @click="inputRef?.focus()">
+  <div
+    :class="ui.wrapper({ class: props.class })" :style="rootStyle()" :data-disabled="isDisabled"
+    :data-readonly="props.readonly" @click="inputRef?.focus()"
+  >
     <!-- 左右分列布局：减按钮在最左 -->
     <template v-if="showControls && !isControlsStacked">
       <button type="button" tabindex="-1" :class="ui.button()" :disabled="isDecreaseDisabled" @click.stop="stepBy(-1)">
@@ -515,12 +518,14 @@ defineExpose({
       <slot name="prefix" />
     </span>
 
-    <input :id="props.id" ref="inputRef" v-bind="inputAttrs()" type="text" role="spinbutton" :inputmode="props.inputmode"
+    <input
+      :id="props.id" ref="inputRef" v-bind="inputAttrs()" type="text" role="spinbutton" :inputmode="props.inputmode"
       :name="props.name" :aria-label="props.ariaLabel" :tabindex="props.tabindex" :placeholder="props.placeholder"
       :value="displayValue" :disabled="isDisabled" :readonly="props.readonly" :aria-valuenow="model ?? undefined"
       :aria-valuemin="props.min" :aria-valuemax="props.max" :class="ui.input()" @input="handleInput"
       @focus="handleFocus" @blur="handleBlur" @keydown.enter="handleEnter" @keydown.up="handleArrow(1, $event)"
-      @keydown.down="handleArrow(-1, $event)" @wheel="handleWheel">
+      @keydown.down="handleArrow(-1, $event)" @wheel="handleWheel"
+    >
 
     <span v-if="$slots.suffix" :class="ui.suffix()" @click.stop>
       <slot name="suffix" />
@@ -541,16 +546,20 @@ defineExpose({
 
     <!-- controls-position="left" / "right"：加减按钮上下堆叠，绝对定位悬浮于对应侧，悬停/聚焦时滑入 -->
     <span v-else-if="showControls" :class="ui.stack()">
-      <button type="button" tabindex="-1" :class="ui.stackButton()" :disabled="isIncreaseDisabled"
-        @click.stop="stepBy(1)">
+      <button
+        type="button" tabindex="-1" :class="ui.stackButton()" :disabled="isIncreaseDisabled"
+        @click.stop="stepBy(1)"
+      >
         <slot name="plus" :icon-class="ui.icon()">
           <slot name="increment" :icon-class="ui.icon()">
             <Icon name="lucide:chevron-up" :class="ui.icon()" />
           </slot>
         </slot>
       </button>
-      <button type="button" tabindex="-1" :class="ui.stackButton()" :disabled="isDecreaseDisabled"
-        @click.stop="stepBy(-1)">
+      <button
+        type="button" tabindex="-1" :class="ui.stackButton()" :disabled="isDecreaseDisabled"
+        @click.stop="stepBy(-1)"
+      >
         <slot name="minus" :icon-class="ui.icon()">
           <slot name="decrement" :icon-class="ui.icon()">
             <Icon name="lucide:chevron-down" :class="ui.icon()" />

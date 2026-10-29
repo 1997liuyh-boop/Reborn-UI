@@ -20,7 +20,7 @@ TreeSelect 把层级节点选择收进表单输入框，仅支持 Web，UniApp �
 
 `color` 决定选择框与树的语义色，`variant` 决定描边、填充、无边框或下划线形态，`size` 决定选择框尺寸；三者直接复用 `reborn-select` 的主题。下拉内容由 `reborn-tree` 渲染，不另写一套树节点。
 
-`multiple` 开启复选并默认父子联动，`checkStrictly` 改为逐节点独立勾选，`clearable` 提供清空，`collapseTags` / `collapseTagsTooltip` / `maxCollapseTags` 控制标签折叠，`allowSearch` 按标题搜索；`closeOn` 与 `portal` 控制浮层行为；`fieldNames` 适配标题、唯一标识与子节点字段（绑定值按 `fieldNames.key` 识别节点），`loadData` 支持异步补充子节点并由 `loadedKeys` 记录已加载节点，`height` 与 `virtual` 控制树滚动区，`item` / `empty` 插槽定制内容。
+`multiple` 开启复选并默认父子联动，`checkStrictly` 改为逐节点独立勾选，`clearable` 提供清空，`collapseTags` / `collapseTagsTooltip` / `maxCollapseTags` 控制标签折叠，`allowSearch` 默认关闭，开启后按 key 与标题搜索，`searchData` 提供异步搜索；`closeOn` 与 `portal` 控制浮层行为；`fieldNames` 适配标题、唯一标识与子节点字段（绑定值按 `fieldNames.key` 识别节点），`loadData` 支持异步补充子节点并由 `loadedKeys` 记录已加载节点，`height` 与 `virtual` 控制树滚动区，`item` / `empty` 插槽定制内容。
 
 ### 何时使用
 
@@ -176,7 +176,7 @@ const strictValues = ref<(string | number)[]>(["team"]);
 
 ### 搜索节点
 
-`allowSearch` 在展开后将选择框切换为搜索输入框，按标题进行忽略大小写的包含匹配，保留命中节点和祖先并展开路径。
+`allowSearch` 默认 `false`，开启后在展开时将选择框切换为搜索输入框，同时对 key 和显示标题进行忽略大小写的包含匹配，保留命中节点和祖先并展开路径。`fieldNames.key` 映射标识字段，`fieldNames.title` 映射显示标题（例如后端的 `label` 字段）；数值 key 也支持搜索。
 
 ```vue
 <template>
@@ -190,6 +190,29 @@ const strictValues = ref<(string | number)[]>(["team"]);
   />
 </template>
 ```
+
+### 异步搜索
+
+`allowSearch` 配合 `searchData` 使用。与 `loadData` 一样，回调返回 Promise，并由调用方更新响应式 `treeData`；组件管理加载和失败提示，直接展示服务端结果，不再本地筛选。两者可同时配置：搜索替换结果集，展开节点时由 `loadData` 补充子级。
+
+```vue
+<script setup lang="ts">
+import type { TreeSelectSearchContext } from '~/components/reborn/ui/reborn-tree-select';
+
+const treeData = ref([]);
+async function searchData(keyword: string, { signal }: TreeSelectSearchContext) {
+  const response = await fetch(`/api/teams?keyword=${encodeURIComponent(keyword)}`, { signal });
+  if (!response.ok) throw new Error('搜索失败');
+  const nodes = await response.json();
+  if (!signal.aborted) treeData.value = nodes;
+}
+</script>
+<template>
+  <RebornTreeSelect :tree-data="treeData" allow-search :search-data="searchData" />
+</template>
+```
+
+用户输入时才调用回调，传入去除首尾空白但保留大小写的关键词；手动清空时也会传入空字符串，接口可据此恢复根节点。仅配置 `searchData` 不会开启搜索。关键词变化、关闭面板、禁用搜索或卸载时会取消旧 `signal`；回调需把它传给请求，并在写回数据前检查 `signal.aborted`。关闭时清理输入，不额外请求或还原调用方的数据。
 
 ### 浮层行为
 
@@ -238,12 +261,12 @@ const strictValues = ref<(string | number)[]>(["team"]);
 
 ```vue
 <script setup lang="ts">
-const regions = [{ code: '330000', title: '浙江省', children: [{ code: '330100', title: '杭州市' }] }];
+const regions = [{ code: '330000', label: '浙江省', children: [{ code: '330100', label: '杭州市' }] }];
 const region = ref('330100');
 </script>
 
 <template>
-  <RebornTreeSelect v-model="region" :tree-data="regions" :field-names="{ key: 'code' }" />
+  <RebornTreeSelect v-model="region" :tree-data="regions" :field-names="{ key: 'code', title: 'label' }" allow-search />
 </template>
 ```
 
@@ -284,7 +307,8 @@ async function loadData(node: TreeDataNode) {
 | `collapseTags`        | `boolean`                                                                              | `false`    | 〔选择框〕多选标签超出数量时合并为 +N                                            |
 | `collapseTagsTooltip` | `boolean`                                                                              | `false`    | 〔选择框〕悬浮显示隐藏标签，需开启 collapseTags                                  |
 | `maxCollapseTags`     | `number`                                                                               | `1`        | 〔选择框〕折叠前保留数量，负数按 0 处理                                          |
-| `allowSearch`         | `boolean`                                                                              | `false`    | 〔选择框〕在选择框内搜索节点标题，保留祖先路径                                   |
+| `allowSearch`         | `boolean`                                                                              | `false`    | 〔选择框〕搜索 key 与显示标题，按 fieldNames 映射字段，保留祖先路径              |
+| `searchData`          | `(value: string, context: TreeSelectSearchContext) => Promise<unknown>`                  | -          | 〔选择框〕异步搜索，需开启 allowSearch；调用方写回 treeData，context.signal 用于取消旧请求 |
 | `placeholder`         | `string`                                                                               | `请选择`   | 〔选择框〕空值提示与默认无障碍名称                                               |
 | `disabled`            | `boolean`                                                                              | `false`    | 〔共用〕禁用选择框与树的全部操作，继承表单禁用状态                               |
 | `clearable`           | `boolean`                                                                              | `false`    | 〔选择框〕悬停显示清空按钮                                                       |
@@ -365,7 +389,8 @@ async function loadData(node: TreeDataNode) {
 
 ## 注意事项
 
-- **搜索不修改原始数据或清除隐藏的已选值**。匹配使用 `fieldNames.title` 映射后的标题；无匹配显示空态。多选勾选后清空关键词便于连续搜索，关闭时也会清理关键词并恢复原展开状态。
+- **本地搜索不修改原始数据或清除隐藏的已选值**。匹配使用 `fieldNames.key` 与 `fieldNames.title` 映射后的字段；无匹配显示空态。多选勾选后清空关键词便于连续搜索，关闭时也会清理关键词并恢复原展开状态。
+- **异步搜索与节点加载都由调用方管理数据**。`searchData` 与 `loadData` 均等待 Promise，由回调写回 `treeData`；搜索结果不再本地过滤。`searchData` 的第二个参数包含取消信号 `signal`，旧请求完成前需检查取消状态，防止覆盖新结果。替换结果集时需自行保留已选节点数据，否则标签按未知 key 回显；同时使用懒加载并需要重载同一 key 时清空 `loadedKeys`。回调拒绝时显示失败提示，再次输入可重试。
 - **折叠提示依赖折叠开关**。`collapseTagsTooltip` 仅在多选、开启 `collapseTags` 且确有隐藏标签时生效。
 - **联动模式的绑定值包含全部勾选节点**。父级全选时父级 key 与各子级 key 同时回写；搜索时勾选父级，被搜索隐藏的后代也会一并勾选。程序赋值只按联动规则归一显示（补齐后代、推导半选），不会回写 `v-model`，用户下一次勾选或移除标签时才写回归一后的完整集合。需要原样取值时开启 `checkStrictly`。
 - **节点 key 必须全树唯一且类型稳定**。数字 `0` 与字符串 `'0'` 是不同值；异步数据尚未到达时暂用 key 回显，数据更新后自动显示标题。

@@ -33,6 +33,7 @@ const props = withDefaults(defineProps<InputProps>(), {
   password: false,
   rows: 2,
   autosize: false,
+  maxHeight: 248,
   autocomplete: "off",
   autofocus: false,
   validateEvent: true,
@@ -163,6 +164,8 @@ export interface InputProps {
   rows?: number;
   /** textarea 高度是否自适应；可传 { minRows, maxRows } 限定范围 */
   autosize?: boolean | InputAutosize;
+  /** 自动增高的主体高度上限，单位 px；手动缩放后改用用户设定的高度 */
+  maxHeight?: number;
   /** 控制 textarea 是否能被用户缩放（CSS resize） */
   resize?: (typeof inputResizes)[number];
   /** 原生 autocomplete */
@@ -280,6 +283,8 @@ const ui = computed(() => {
     shape: props.shape,
     fieldGroup: orientation.value,
     multiline: isMultiline.value,
+    wordLimitPosition: props.wordLimitPosition,
+    multilineWithCount: isMultiline.value && showLimit.value && props.wordLimitPosition === "inside",
     resizeWithCount: isMultiline.value && showLimit.value && props.wordLimitPosition === "inside"
       && !!props.resize && props.resize !== "none",
     error: isError.value,
@@ -342,33 +347,64 @@ const nativeType = computed(() => {
 
 /** autosize 计算出的 textarea 内联样式 */
 const textareaStyle = shallowRef<Record<string, string>>({});
+let sizedTextarea: HTMLTextAreaElement | null = null;
+let appliedTextareaHeight = "";
+let manualTextareaHeight: number | undefined;
+
+/** 在 Vue 回写样式前记录原生手柄改动的高度。 */
+function captureTextareaResize() {
+  const el = inputRef.value;
+  if (!isMultiline.value || !props.autosize || !el || sizedTextarea !== el
+    || !appliedTextareaHeight || el.style.height === appliedTextareaHeight) return;
+  const style = window.getComputedStyle(el);
+  if (style.resize === "vertical" || style.resize === "both") {
+    manualTextareaHeight = el.getBoundingClientRect().height;
+    appliedTextareaHeight = el.style.height;
+    textareaStyle.value = { height: appliedTextareaHeight };
+  }
+}
 
 /**
  * 重新计算 textarea 高度：先归零再取 scrollHeight，
- * autosize 传对象时按行高换算 minRows / maxRows 边界。
+ * 自动增高限制主体总高度；原生拖拽会修改内联高度，后续输入以手动高度为上限。
  */
 function resizeTextarea() {
   const el = inputRef.value as HTMLTextAreaElement | null;
   if (!isMultiline.value || !props.autosize || !el) return;
 
+  if (sizedTextarea !== el) {
+    sizedTextarea = el;
+    appliedTextareaHeight = "";
+    manualTextareaHeight = undefined;
+  }
+  captureTextareaResize();
   const style = window.getComputedStyle(el);
   const lineHeight = Number.parseFloat(style.lineHeight) || 20;
-  const extra
-    = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom)
-    + Number.parseFloat(style.borderTopWidth) + Number.parseFloat(style.borderBottomWidth);
+  const padding = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
+  const border = Number.parseFloat(style.borderTopWidth) + Number.parseFloat(style.borderBottomWidth);
+  const extra = padding + border;
+  const wrapperStyle = window.getComputedStyle(el.parentElement!);
+  const wrapperExtra = Number.parseFloat(wrapperStyle.paddingTop) + Number.parseFloat(wrapperStyle.paddingBottom)
+    + Number.parseFloat(wrapperStyle.borderTopWidth) + Number.parseFloat(wrapperStyle.borderBottomWidth);
+  let maxHeight = manualTextareaHeight ?? Math.max(0, props.maxHeight - wrapperExtra);
 
   // 先重置高度，否则 scrollHeight 只增不减
-  textareaStyle.value = { height: "auto" };
   el.style.height = "auto";
 
-  let height = el.scrollHeight;
+  let height = el.scrollHeight + border;
   if (typeof props.autosize === "object") {
     const { minRows, maxRows } = props.autosize;
     if (minRows) height = Math.max(height, minRows * lineHeight + extra);
-    if (maxRows) height = Math.min(height, maxRows * lineHeight + extra);
+    if (maxRows && manualTextareaHeight === undefined) {
+      maxHeight = Math.min(maxHeight, maxRows * lineHeight + extra);
+    }
   }
-  textareaStyle.value = { height: `${height}px` };
-  el.style.height = `${height}px`;
+  height = Math.min(height, maxHeight);
+  // 按边框盒统一计算，兼容未启用全局盒模型重置的页面。
+  const cssHeight = Math.max(0, height - (style.boxSizing === "border-box" ? 0 : extra));
+  el.style.height = `${cssHeight}px`;
+  appliedTextareaHeight = el.style.height;
+  textareaStyle.value = { height: appliedTextareaHeight };
 }
 
 /** input / textarea 元素的最终内联样式 */
@@ -498,9 +534,21 @@ watch(model, (value) => {
   localValue.value = value ?? "";
 });
 
-// 内容变化后重算 textarea 高度
-watch(inputValue, () => nextTick(resizeTextarea));
-watch(() => props.autosize, () => nextTick(resizeTextarea));
+// 等待文本与布局更新后测量，切换统计位置、尺寸或原生元素时也同步高度。
+watch([
+  inputValue,
+  inputRef,
+  showLimit,
+  () => props.autosize,
+  () => props.maxHeight,
+  () => props.rows,
+  () => props.resize,
+  () => props.wordLimitPosition,
+  () => fieldGroupSize.value || size.value,
+], () => {
+  captureTextareaResize();
+  nextTick(resizeTextarea);
+});
 
 onMounted(() => {
   if (props.autofocus) inputRef.value?.focus();
@@ -543,8 +591,10 @@ defineExpose({
         <slot name="prepend" />
       </div>
 
-      <div :class="ui.wrapper()" :data-disabled="isDisabled" :data-filled="isFilled" @click="inputRef?.focus()"
-        @mouseenter="emit('mouseenter', $event)" @mouseleave="emit('mouseleave', $event)">
+      <div
+        :class="ui.wrapper()" :data-disabled="isDisabled" :data-filled="isFilled" @click="inputRef?.focus()"
+        @mouseenter="emit('mouseenter', $event)" @mouseleave="emit('mouseleave', $event)"
+      >
         <!-- 前缀：#prefix 插槽优先，其次 prefix-icon -->
         <span v-if="($slots.prefix || prefixIcon) && !isMultiline" :class="ui.prefix({ class: 'mr-1' })" @click.stop>
           <slot name="prefix" :ui="ui">
@@ -552,7 +602,8 @@ defineExpose({
           </slot>
         </span>
 
-        <component :is="isMultiline ? 'textarea' : 'input'" :id="props.id" ref="inputRef" v-bind="inputAttrs()"
+        <component
+          :is="isMultiline ? 'textarea' : 'input'" :id="props.id" ref="inputRef" v-bind="inputAttrs()"
           :type="nativeType" :rows="isMultiline ? props.rows : undefined" :disabled="isDisabled"
           :readonly="props.readonly" :placeholder="props.placeholder" :value="displayValue" :maxlength="nativeMaxlength"
           :minlength="nativeMinlength" :autocomplete="props.autocomplete" :name="props.name" :form="props.form"
@@ -560,7 +611,8 @@ defineExpose({
           :aria-label="props.ariaLabel || props.label" :tabindex="props.tabindex" :inputmode="nativeInputmode"
           :style="mergedInputStyle" :class="ui.input()" @input="handleInput" @focus="onFocus" @blur="onBlur"
           @keydown="onKeydown" @compositionstart="onCompositionStart" @compositionupdate="onCompositionUpdate"
-          @compositionend="onCompositionEnd" />
+          @compositionend="onCompositionEnd" @pointerup="captureTextareaResize"
+        />
 
         <!-- textarea 的字数统计悬浮在右下角 -->
         <span v-if="isMultiline && showLimit && wordLimitPosition === 'inside'" :class="ui.count()">
@@ -574,8 +626,10 @@ defineExpose({
             </div>
           </Transition>
 
-          <div v-if="separator && showClear && (isPasswordMode || $slots.suffix || suffixIcon)"
-            :class="ui.separator()" />
+          <div
+            v-if="separator && showClear && (isPasswordMode || $slots.suffix || suffixIcon)"
+            :class="ui.separator()"
+          />
 
           <!-- 密码明文/密文切换；#password-icon 作用域插槽可自定义图标 -->
           <div v-if="isPasswordMode" :class="ui.password()" @click.stop="togglePassword">
@@ -589,8 +643,10 @@ defineExpose({
             {{ currentCount }} / {{ props.maxlength }}
           </span>
 
-          <div v-if="separator && ($slots.suffix || suffixIcon) && (!showClear || isPasswordMode)"
-            :class="ui.separator()" />
+          <div
+            v-if="separator && ($slots.suffix || suffixIcon) && (!showClear || isPasswordMode)"
+            :class="ui.separator()"
+          />
 
           <!-- 后缀：#suffix 插槽优先，其次 suffix-icon -->
           <div v-if="$slots.suffix || suffixIcon" :class="ui.suffix()">
@@ -608,8 +664,8 @@ defineExpose({
     </div>
 
     <!-- 外置字数统计：输入框下方右对齐 -->
-    <span v-if="showLimit && wordLimitPosition === 'outside'" :class="ui.count({ class: 'self-end' })">
-      {{ currentCount }} / {{ props.maxlength }}
+    <span v-if="showLimit && wordLimitPosition === 'outside'" :class="ui.count()">
+      <span>{{ currentCount }}</span> / {{ props.maxlength }}
     </span>
   </div>
 </template>

@@ -64,7 +64,7 @@ it("六种时间格式严格校验，隐藏单位归零", async () => {
   ]);
 });
 
-it("循环滚动的居中偏移可准确还原时分秒值", async () => {
+it("有限列表的滚动偏移可还原时分秒值，超出边界时停在首尾", async () => {
   const module =
     await import("../../app/components/reborn/ui/reborn-time-picker/time-picker.utils").catch(
       () => null,
@@ -72,9 +72,11 @@ it("循环滚动的居中偏移可准确还原时分秒值", async () => {
   assert.ok(module, "需要可测试的滚动定位逻辑");
   for (const count of [24, 60, 1000]) {
     for (const value of [0, 1, count - 1]) {
-      const top = module.getCenteredScrollTop(value, count, 29, 174);
-      assert.equal(module.getScrollValue(top, count, 29, 174), value);
+      const top = module.getCenteredScrollTop(value, count, 29);
+      assert.equal(module.getScrollValue(top, count, 29), value);
     }
+    assert.equal(module.getScrollValue(-100, count, 29), 0);
+    assert.equal(module.getScrollValue(count * 29, count, 29), count - 1);
   }
 });
 

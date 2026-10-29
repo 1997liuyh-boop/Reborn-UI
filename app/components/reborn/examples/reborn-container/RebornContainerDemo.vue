@@ -121,8 +121,7 @@ const containerCode = computed(() => {
           </div>
         </RebornContainer>
         <DemoNote tone="dimmed">
-          演示区比 <code>--ui-container</code> 窄，因此这里看到的是撑满整行；缩放浏览器窗口跨过 sm / lg 断点时，
-          虚线与浅色块之间的留白会依次变为 16 / 24 / 32px。
+          演示区比 <code>--ui-container</code> 窄，因此这里看到的是撑满整行；缩放浏览器窗口跨过 sm / lg 断点时，虚线与浅色块之间的留白会依次变为 16 / 24 / 32px。
         </DemoNote>
       </DemoBlock>
     </DemoSection>

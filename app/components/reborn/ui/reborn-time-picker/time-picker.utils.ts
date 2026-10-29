@@ -45,22 +45,19 @@ export function formatTimeValue(state: TimeState, format: string): string {
     .format(format);
 }
 
-/** 三组相同选项中，始终将已选值定位到中间组，边界也能显示半项。 */
+/** 单组选项配合首尾留白定位，边界停留在首项或末项，不再循环。 */
 export function getCenteredScrollTop(
   value: number,
   count: number,
   rowHeight: number,
-  height: number,
 ): number {
-  return (count + value) * rowHeight - (height - rowHeight) / 2;
+  return Math.max(0, Math.min(value, count - 1)) * rowHeight;
 }
 
 export function getScrollValue(
   scrollTop: number,
   count: number,
   rowHeight: number,
-  height: number,
 ): number {
-  const index = Math.round((scrollTop + (height - rowHeight) / 2) / rowHeight);
-  return ((index % count) + count) % count;
+  return Math.max(0, Math.min(Math.round(scrollTop / rowHeight), count - 1));
 }

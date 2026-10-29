@@ -61,7 +61,7 @@ export default {
      * 字号取七级令牌 text-sm（12px）。原先的 text-xs 是 Tailwind 原生值，字号同为 12px，
      * 换令牌后只有行高从 16px 回到 20px。
      */
-    count: "pointer-events-none text-sm text-gray-5 tabular-nums",
+    count: "pointer-events-none text-sm text-gray-5 tabular-nums leading-1",
   },
   variants: {
     /**
@@ -143,49 +143,49 @@ export default {
       }
     },
     /**
-     * 配色。聚焦态的 border 供 outlined / filled 使用，border 供 underlined 使用；
-     * 分割线聚焦时同步变色。
+     * 悬停与聚焦描边取 color-6，聚焦外圈取 color-1；分割线沿用语义色。
+     * 2px 外圈使用 ring，不参与盒模型，单行与多行输入的高度都保持不变。
      */
     color: {
       primary: {
-        wrapper: "focus-within:border-primary focus-within:border-primary",
+        wrapper: "hover:border-brand-6 focus-within:border-brand-6 focus-within:ring-brand-1",
         separator: "group-focus-within/input:bg-primary",
         input: "caret-primary",
       },
       secondary: {
-        wrapper: "focus-within:border-secondary focus-within:border-secondary",
+        wrapper: "hover:border-secondary-6 focus-within:border-secondary-6 focus-within:ring-secondary-1",
         separator: "group-focus-within/input:bg-secondary",
         input: "caret-secondary",
       },
       success: {
-        wrapper: "focus-within:border-success focus-within:border-success",
+        wrapper: "hover:border-green-6 focus-within:border-green-6 focus-within:ring-green-1",
         separator: "group-focus-within/input:bg-success",
         input: "caret-success",
       },
       info: {
-        wrapper: "focus-within:border-info focus-within:border-info",
+        wrapper: "hover:border-blue-6 focus-within:border-blue-6 focus-within:ring-blue-1",
         separator: "group-focus-within/input:bg-info",
         input: "caret-info",
       },
       warning: {
-        wrapper: "focus-within:border-warning focus-within:border-warning",
+        wrapper: "hover:border-orange-6 focus-within:border-orange-6 focus-within:ring-orange-1",
         separator: "group-focus-within/input:bg-warning",
         input: "caret-warning",
       },
       error: {
-        wrapper: "focus-within:border-error focus-within:border-error",
+        wrapper: "hover:border-red-6 focus-within:border-red-6 focus-within:ring-red-1",
         separator: "group-focus-within/input:bg-error",
         input: "caret-error",
       },
       neutral: {
-        wrapper: "focus-within:border-neutral focus-within:border-neutral",
+        wrapper: "hover:border-gray-6 focus-within:border-gray-6 focus-within:ring-gray-1",
         separator: "group-focus-within/input:bg-neutral",
         input: "caret-neutral",
       },
     },
     error: {
       true: {
-        wrapper: "border-red-5 border-red-5 focus-within:border-red-5 focus-within:border-red-5",
+        wrapper: "border-red-5 hover:border-red-5 focus-within:border-red-5 focus-within:ring-red-1",
         input: "text-red-5 placeholder:text-red-5/50",
       },
     },
@@ -203,12 +203,25 @@ export default {
         count: "absolute bottom-1 right-2",
       },
     },
+    /** 内置统计占据底部独立区域，避免固定行数与自动高度模式的末行文字被覆盖。 */
+    multilineWithCount: {
+      true: {
+        wrapper: "pb-6",
+      },
+    },
     /** 原生手柄被外层内边距挤入统计区：改由文本域承接内边距，并为统计预留底部与右侧空间。 */
     resizeWithCount: {
       true: {
         wrapper: "px-0! py-0",
         input: "py-2 pb-6",
         count: "right-6",
+      },
+    },
+    /** 外置统计回到文档流，统一 14px；仅当前字数加深颜色，分隔符与上限沿用灰色。 */
+    wordLimitPosition: {
+      outside: {
+        root: "gap-0.5",
+        count: "static self-end text-base [&>span]:text-gray-8",
       },
     },
     fieldGroup: {
@@ -231,6 +244,8 @@ export default {
     },
   },
   compoundVariants: [
+    // 只给描边与填充形态增加聚焦外圈，保持无边框和下划线形态的轮廓。
+    { variant: ["outlined", "filled"], disabled: false, class: { wrapper: "focus-within:ring-2" } },
     { resizeWithCount: true, size: "sm", class: { input: "px-2.5" } },
     { resizeWithCount: true, size: "md", class: { input: "px-3" } },
     { resizeWithCount: true, size: "lg", class: { input: "px-4" } },
@@ -247,6 +262,8 @@ export default {
     { variant: "underlined", class: { wrapper: "rounded-none!", prepend: "rounded-none!", append: "rounded-none!" } },
     // borderless 形态没有描边宽度，错误态需要补一圈，否则完全不可见
     { variant: "borderless", error: true, class: { wrapper: "border-1 border-red-5" } },
+    // 禁用态优先于悬停与聚焦配色，尾部插槽获得焦点也不会出现聚焦外圈。
+    { disabled: true, class: { wrapper: "hover:border-gray-4 focus-within:border-gray-4 focus-within:ring-0" } },
   ] as any,
   defaultVariants: {
     size: "md",
@@ -254,5 +271,6 @@ export default {
     variant: "filled",
     shape: "square",
     error: false,
+    disabled: false,
   },
 } as const;

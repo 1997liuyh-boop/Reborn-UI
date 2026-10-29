@@ -8,15 +8,15 @@ import RebornScrollbar from '~/components/reborn/ui/scrollbar/RebornScrollbar.vu
  * 滚动容器本身就是被演示的对象，按示例规范它是画布内唯一允许的那层浅填充；
  * 该层内部不得再出现任何填充盒，内容一律靠分隔线与留白区分。
  */
-const panelClass = 'bg-elevated rounded-2xl'
+const panelClass = 'bg-elevated'
 
 // ============ Playground 配置项 ============
 
 /** 三档预设尺寸 */
 const sizeOptions = [
-  { label: '4px（极细）', value: '4' },
-  { label: '6px（默认）', value: '6' },
-  { label: '8px（加粗）', value: '8' },
+  { label: 'sm', value: '4' },
+  { label: 'md', value: '6' },
+  { label: 'lg', value: '8' },
 ]
 
 /** 容器圆角档位，用于验证轨道两端的圆角安全内缩 */
@@ -30,7 +30,7 @@ const radiusOptions = [
 /** 内缩策略：auto 自动推算，其余为固定像素值 */
 const insetOptions = [
   { label: 'auto（跟随圆角）', value: 'auto' },
-  { label: '0（关闭内缩）', value: '0' },
+  { label: '0（两端贴边）', value: '0' },
   { label: '固定 16px', value: '16' },
 ]
 
@@ -43,6 +43,7 @@ const defaultState = {
   hoverColor: '#a1a1aa',
   always: true,
   hideDelay: 800,
+  bounce: true,
 }
 
 const state = shallowRef({ ...defaultState })
@@ -82,6 +83,7 @@ const controls = [
     children: [
       { label: '常驻显示 always', key: 'always', component: 'checkbox' as const, defaultValue: true },
       { label: '隐藏延迟 hideDelay', key: 'hideDelay', component: 'slider' as const, defaultValue: 800, props: { min: 0, max: 3000, step: 100 } },
+      { label: '边缘回弹 bounce', key: 'bounce', component: 'checkbox' as const, defaultValue: true },
     ],
   },
 ]
@@ -94,6 +96,7 @@ const code = computed(() => {
   else lines.push(`  :hide-delay="${s.hideDelay}"`)
   if (s.insetMode !== 'auto') lines.push(`  :inset="${s.insetMode}"`)
   if (s.track) lines.push('  track')
+  if (!s.bounce) lines.push('  :bounce="false"')
   lines.push(
     '  :horizontal="false"',
     `  class="h-64 w-72 ${s.radius}"`,
@@ -183,14 +186,29 @@ const rails = Array.from({ length: 12 }, (_, i) => ({
   desc: chapterNames[i % 10],
 }))
 
-// ============ 圆角自适应：读取组件实际写入的内缩值 ============
+// ============ 边缘回弹：位置回显 ============
+
+const bounceRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('bounceRef')
+/** 左侧容器当前停靠的位置，回弹不改变滚动量，到底后这里仍显示「底部」 */
+const bouncePosition = shallowRef('顶部')
+
+function onBounceScroll(payload: { scrollTop: number; scrollLeft: number }) {
+  const wrap = bounceRef.value?.wrapRef
+  const max = wrap ? wrap.scrollHeight - wrap.clientHeight : 0
+  if (payload.scrollTop <= 1) bouncePosition.value = '顶部'
+  else if (payload.scrollTop >= max - 1) bouncePosition.value = '底部'
+  else bouncePosition.value = `中间 · scrollTop ${Math.round(payload.scrollTop)}`
+}
+
+// ============ 边距与圆角自适应：读取组件实际写入的内缩值 ============
 
 const insetAutoRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('insetAutoRef')
 const insetOffRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('insetOffRef')
 const insetFixedRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('insetFixedRef')
+const insetSquareRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('insetSquareRef')
 const playgroundRef = useTemplateRef<InstanceType<typeof RebornScrollbar>>('playgroundRef')
 
-const insetValues = shallowRef({ auto: '—', off: '—', fixed: '—', playground: '—' })
+const insetValues = shallowRef({ auto: '—', square: '—', off: '—', fixed: '—', playground: '—' })
 
 /** 组件把内缩量写在根元素的 --reborn-scrollbar-inset 上，从计算样式读回即可 */
 function readInset(instance: InstanceType<typeof RebornScrollbar> | null) {
@@ -202,6 +220,7 @@ function readInset(instance: InstanceType<typeof RebornScrollbar> | null) {
 function measureInsets() {
   insetValues.value = {
     auto: readInset(insetAutoRef.value),
+    square: readInset(insetSquareRef.value),
     off: readInset(insetOffRef.value),
     fixed: readInset(insetFixedRef.value),
     playground: readInset(playgroundRef.value),
@@ -326,10 +345,11 @@ onBeforeUnmount(() => {
 <template>
   <!-- min-w-0：作为网格项时其自动最小宽度会被内部宽表格撑开，导致整页横向溢出 -->
   <div class="flex w-full min-w-0 flex-col">
-
     <!-- 交互演练场：Playground 自带标题栏，不再外套 DemoSection -->
-    <Playground v-model="state" :controls="controls" component-name="RebornScrollbar" :code="code" title="交互演练场"
-      description="尺寸、轨道、圆角内缩、常驻与隐藏延迟均可现场切换；把鼠标移到滚动条上查看悬停色，按住可拖拽，点击轨道空白处可跳转。">
+    <Playground
+      v-model="state" :controls="controls" component-name="RebornScrollbar" :code="code" title="交互演练场"
+      description="尺寸、轨道、圆角内缩、常驻与隐藏延迟均可现场切换；把鼠标移到滚动条上查看悬停色，按住可拖拽，点击轨道空白处可跳转。"
+    >
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
           <template #leading>
@@ -340,9 +360,11 @@ onBeforeUnmount(() => {
       </template>
 
       <DemoBlock layout="stack" align="center" class="gap-4">
-        <RebornScrollbar ref="playgroundRef" :size="state.size" :always="state.always" :hide-delay="state.hideDelay"
-          :inset="insetProp" :track="state.track" :horizontal="false" :style="thumbStyle" class="bg-elevated h-64 w-72"
-          :class="state.radius">
+        <RebornScrollbar
+          ref="playgroundRef" :size="state.size" :always="state.always" :hide-delay="state.hideDelay"
+          :inset="insetProp" :track="state.track" :bounce="state.bounce" :horizontal="false" :style="thumbStyle"
+          class="bg-elevated h-64 w-72" :class="state.radius"
+        >
           <ul class="divide-default divide-y">
             <li v-for="item in notices" :key="item.title" class="flex gap-3 px-4 py-3">
               <Icon :name="item.icon" class="text-primary mt-0.5 size-4 shrink-0" />
@@ -363,8 +385,10 @@ onBeforeUnmount(() => {
       </DemoBlock>
     </Playground>
 
-    <DemoSection title="显隐时机"
-      description="默认仅在悬停、滚动或拖拽时淡入，停止滚动 hideDelay 毫秒后淡出；always 为 true 则常驻显示。把鼠标移入 / 移出三个容器即可对比。">
+    <DemoSection
+      title="显隐时机"
+      description="默认仅在悬停、滚动或拖拽时淡入，停止滚动 hideDelay 毫秒后淡出；always 为 true 则常驻显示。把鼠标移入 / 移出三个容器即可对比。"
+    >
       <DemoBlock layout="grid" :columns="3" align="start">
         <DemoItem label="自动隐藏（默认）">
           <RebornScrollbar :horizontal="false" :class="panelClass" class="h-48">
@@ -404,19 +428,75 @@ onBeforeUnmount(() => {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="圆角自适应">
+    <DemoSection title="边缘回弹">
       <template #description>
-        容器带圆角时 <code>overflow: hidden</code> 会用弧线裁剪贴边的轨道两端，thumb 滚到端点会被削角。
-        <code>inset</code> 默认 <code>"auto"</code>，按容器实际 <code>border-radius</code> 自动推算内缩；
-        也可传固定像素值，或传 <code>0</code> 完全关闭。公式为
-        <code>inset = ceil(R − √(R² − (R − gap)²))</code>，把滚动条拖到两端即可验证。
+        滚轮把内容送到顶部 / 底部，或已在边缘还继续朝外滚时，滚动层朝越界方向位移 2px 后收回，一次滚轮手势只弹一次；
+        <code>bounce</code>
+        设为
+        <code>false</code>
+        关闭。拖拽滑块、点击轨道、命令式滚动与触屏都不回弹。
       </template>
-      <DemoBlock layout="grid" :columns="3" align="start">
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem :note="`当前停在：${bouncePosition}`">
+          <template #label>
+            默认开启 · <code>bounce</code>
+          </template>
+          <RebornScrollbar
+            ref="bounceRef" always :horizontal="false" :class="panelClass" class="h-48"
+            @scroll="onBounceScroll"
+          >
+            <ol class="px-4 py-3">
+              <li v-for="item in releases" :key="item.version" class="text-muted py-1.5 text-xs">
+                {{ item.version }} · {{ item.text }}
+              </li>
+            </ol>
+          </RebornScrollbar>
+        </DemoItem>
+
+        <DemoItem>
+          <template #label>
+            关闭回弹 · <code>:bounce="false"</code>
+          </template>
+          <RebornScrollbar always :bounce="false" :horizontal="false" :class="panelClass" class="h-48">
+            <ol class="px-4 py-3">
+              <li v-for="item in releases" :key="item.version" class="text-muted py-1.5 text-xs">
+                {{ item.version }} · {{ item.text }}
+              </li>
+            </ol>
+          </RebornScrollbar>
+        </DemoItem>
+      </DemoBlock>
+      <DemoNote>
+        位移加在滚动层上，不改变滚动量：停在底部时回弹结束仍然贴底，<code>scroll</code> 事件也不会因回弹多派发一次。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="边距与圆角自适应">
+      <template #description>
+        轨道贴边一侧留 <code>--reborn-scrollbar-gap</code>（默认 2px），两端默认留出同样的距离，四周都不贴边。
+        容器带圆角时 <code>overflow: hidden</code> 还会用弧线裁剪轨道两端，thumb 滚到端点会被削角，所以
+        <code>inset</code> 默认 <code>"auto"</code> 取 <code>max(gap, ceil(R − √(R² − (R − gap)²)))</code>；
+        也可传固定像素值，或传 <code>0</code> 让两端贴边。把滚动条拖到两端即可验证。
+      </template>
+      <DemoBlock layout="grid" :columns="4" align="start">
         <DemoItem :note="`实际内缩 ${insetValues.auto}`">
           <template #label>
             auto · 24px 圆角 · <code>:inset="auto"</code>
           </template>
-          <RebornScrollbar ref="insetAutoRef" always :horizontal="false" class="bg-elevated rounded-3xl h-48">
+          <RebornScrollbar ref="insetAutoRef" always :horizontal="false" class="bg-elevated h-48">
+            <ol class="px-5 py-3">
+              <li v-for="item in releases" :key="item.version" class="text-muted py-1.5 text-xs">
+                {{ item.version }} · {{ item.text }}
+              </li>
+            </ol>
+          </RebornScrollbar>
+        </DemoItem>
+
+        <DemoItem :note="`实际内缩 ${insetValues.square} · 无圆角时等于 gap`">
+          <template #label>
+            auto · 直角
+          </template>
+          <RebornScrollbar ref="insetSquareRef" always :horizontal="false" class="bg-elevated h-48 rounded-none">
             <ol class="px-5 py-3">
               <li v-for="item in releases" :key="item.version" class="text-muted py-1.5 text-xs">
                 {{ item.version }} · {{ item.text }}
@@ -427,10 +507,9 @@ onBeforeUnmount(() => {
 
         <DemoItem :note="`实际内缩 ${insetValues.off} · thumb 滚到两端会被弧线削角`">
           <template #label>
-            关闭内缩 · <code>:inset="0"</code>
+            两端贴边 · <code>:inset="0"</code>
           </template>
-          <RebornScrollbar ref="insetOffRef" :inset="0" always :horizontal="false"
-            class="bg-elevated rounded-3xl h-48">
+          <RebornScrollbar ref="insetOffRef" :inset="0" always :horizontal="false" class="bg-elevated rounded-3xl h-48">
             <ol class="px-5 py-3">
               <li v-for="item in releases" :key="item.version" class="text-muted py-1.5 text-xs">
                 {{ item.version }} · {{ item.text }}
@@ -439,12 +518,14 @@ onBeforeUnmount(() => {
           </RebornScrollbar>
         </DemoItem>
 
-        <DemoItem :note="`实际内缩 ${insetValues.fixed} · 直角容器手动留白`">
+        <DemoItem :note="`实际内缩 ${insetValues.fixed} · 手动加大两端留白`">
           <template #label>
             固定内缩 · <code>:inset="16"</code>
           </template>
-          <RebornScrollbar ref="insetFixedRef" :inset="16" always :horizontal="false"
-            class="bg-elevated h-48 rounded-none">
+          <RebornScrollbar
+            ref="insetFixedRef" :inset="16" always :horizontal="false"
+            class="bg-elevated h-48 rounded-none"
+          >
             <ol class="px-5 py-3">
               <li v-for="item in releases" :key="item.version" class="text-muted py-1.5 text-xs">
                 {{ item.version }} · {{ item.text }}
@@ -455,8 +536,10 @@ onBeforeUnmount(() => {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="轨道与配色"
-      description="track 默认关闭（轨道全透明，纯悬浮感）；传 true 使用内置浅灰凹槽并自动适配暗色；传颜色字符串则按该色显形。thumb 颜色与圆角继续由 --reborn-scrollbar-* 变量定制。">
+    <DemoSection
+      title="轨道与配色"
+      description="track 默认关闭（轨道全透明，纯悬浮感）；传 true 使用内置浅灰凹槽并自动适配暗色；传颜色字符串则按该色显形。thumb 颜色与圆角继续由 --reborn-scrollbar-* 变量定制。"
+    >
       <DemoBlock layout="grid" :columns="4" align="start">
         <DemoItem label="无轨道（默认）">
           <RebornScrollbar always :horizontal="false" :class="panelClass" class="h-44">
@@ -485,9 +568,11 @@ onBeforeUnmount(() => {
           <template #label>
             翠绿凹槽 · <code>:track="色值"</code>
           </template>
-          <RebornScrollbar always :horizontal="false" :size="8" track="rgb(16 185 129 / 0.14)"
+          <RebornScrollbar
+            always :horizontal="false" :size="8" track="rgb(16 185 129 / 0.14)"
             :style="{ '--reborn-scrollbar-thumb': '#10b981', '--reborn-scrollbar-thumb-hover': '#34d399' }"
-            :class="panelClass" class="h-44">
+            :class="panelClass" class="h-44"
+          >
             <ul class="px-4 py-3">
               <li v-for="token in tokens" :key="token" class="text-muted py-1 font-mono text-xs">
                 {{ token }}
@@ -500,11 +585,13 @@ onBeforeUnmount(() => {
           <template #label>
             靛蓝直角 · <code>CSS 变量</code>
           </template>
-          <RebornScrollbar always :horizontal="false" :size="8" :style="{
-            '--reborn-scrollbar-thumb': '#6366f1',
-            '--reborn-scrollbar-thumb-hover': '#818cf8',
-            '--reborn-scrollbar-radius': '2px',
-          }" :class="panelClass" class="h-44">
+          <RebornScrollbar
+            always :horizontal="false" :size="8" :style="{
+              '--reborn-scrollbar-thumb': '#6366f1',
+              '--reborn-scrollbar-thumb-hover': '#818cf8',
+              '--reborn-scrollbar-radius': '2px',
+            }" :class="panelClass" class="h-44"
+          >
             <ul class="px-4 py-3">
               <li v-for="token in tokens" :key="token" class="text-muted py-1 font-mono text-xs">
                 {{ token }}
@@ -515,8 +602,10 @@ onBeforeUnmount(() => {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="尺寸档位"
-      description="4 / 6 / 8 三档由 --reborn-scrollbar-size 变量驱动，也可直接传任意像素值或带单位的值（如 &quot;0.5rem&quot;）。">
+    <DemoSection
+      title="尺寸档位"
+      description="4 / 6 / 8 三档由 --reborn-scrollbar-size 变量驱动，也可直接传任意像素值或带单位的值（如 &quot;0.5rem&quot;）。"
+    >
       <DemoBlock layout="grid" :columns="3" align="start">
         <DemoItem v-for="size in ['4', '6', '8']" :key="size" :label="`:size=&quot;${size}&quot;`" mono>
           <RebornScrollbar :size="size" always :horizontal="false" :class="panelClass" class="h-44">
@@ -542,13 +631,17 @@ onBeforeUnmount(() => {
         <!-- 时长档位 -->
         <div class="flex flex-wrap items-center gap-2">
           <span class="text-muted text-xs font-medium">动画时长</span>
-          <RebornButton v-for="option in durationOptions" :key="option.value" size="sm" color="primary"
-            :variant="duration === option.value ? 'filled' : 'outlined'" @click="duration = option.value">
+          <RebornButton
+            v-for="option in durationOptions" :key="option.value" size="sm" color="primary"
+            :variant="duration === option.value ? 'filled' : 'outlined'" @click="duration = option.value"
+          >
             {{ option.label }}
           </RebornButton>
           <span class="text-primary ml-auto flex items-center gap-1.5 font-mono text-xs font-medium">
-            <Icon :name="scrollBusy ? 'lucide:loader-circle' : 'lucide:check'" class="size-3.5"
-              :class="{ 'animate-spin': scrollBusy }" />
+            <Icon
+              :name="scrollBusy ? 'lucide:loader-circle' : 'lucide:check'" class="size-3.5"
+              :class="{ 'animate-spin': scrollBusy }"
+            />
             scrollTop {{ jumpScrollTop }}px · {{ jumpProgress }}%
           </span>
         </div>
@@ -560,19 +653,25 @@ onBeforeUnmount(() => {
               纵向定位 <code>setScrollTop</code> · {{ duration }}ms
             </template>
             <div class="flex flex-wrap gap-2">
-              <RebornButton v-for="action in jumpActions" :key="action.label" size="sm" variant="outlined"
-                color="neutral" @click="action.handler()">
+              <RebornButton
+                v-for="action in jumpActions" :key="action.label" size="sm" variant="outlined"
+                color="neutral" @click="action.handler()"
+              >
                 <template #leading>
                   <Icon :name="action.icon" class="size-3.5" />
                 </template>
                 {{ action.label }}
               </RebornButton>
             </div>
-            <RebornScrollbar ref="jumpRef" always :horizontal="false" :class="panelClass" class="h-56"
-              @scroll="onJumpScroll">
+            <RebornScrollbar
+              ref="jumpRef" always :horizontal="false" :class="panelClass" class="h-56"
+              @scroll="onJumpScroll"
+            >
               <ul class="divide-default divide-y">
-                <li v-for="chapter in chapters" :key="chapter.index" :data-chapter="chapter.index"
-                  class="text-default px-5 py-3 text-sm">
+                <li
+                  v-for="chapter in chapters" :key="chapter.index" :data-chapter="chapter.index"
+                  class="text-default px-5 py-3 text-sm"
+                >
                   {{ chapter.title }}
                 </li>
               </ul>
@@ -605,8 +704,10 @@ onBeforeUnmount(() => {
             <RebornScrollbar ref="railRef" always :class="panelClass" class="h-56">
               <div class="flex h-full items-center gap-3 p-4">
                 <!-- 轨道卡片只描边不填充，避免在演示容器内再叠一层表面 -->
-                <div v-for="rail in rails" :key="rail.index"
-                  class="border-default rounded-lg flex h-full w-52 shrink-0 flex-col justify-between border p-4">
+                <div
+                  v-for="rail in rails" :key="rail.index"
+                  class="border-default rounded-lg flex h-full w-52 shrink-0 flex-col justify-between border p-4"
+                >
                   <span class="text-dimmed font-mono text-xs">{{ rail.title }}</span>
                   <div class="flex flex-col gap-1">
                     <span class="text-default text-sm font-medium">{{ rail.desc }}</span>
@@ -620,8 +721,7 @@ onBeforeUnmount(() => {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="双向滚动"
-      description="horizontal 默认开启，内容横向溢出时底部会出现横向滚动条；两条滚动条都支持拖拽与点击轨道跳转。设为 false 则横向内容被裁剪。">
+    <DemoSection title="双向滚动" description="horizontal 默认开启，内容横向溢出时底部会出现横向滚动条；两条滚动条都支持拖拽与点击轨道跳转。设为 false 则横向内容被裁剪。">
       <DemoBlock layout="stack">
         <RebornScrollbar always :class="panelClass" class="h-64">
           <!-- 显式最小宽度，保证任何视口下都有横向溢出，横向滚动条必定出现 -->
@@ -629,7 +729,10 @@ onBeforeUnmount(() => {
             <!-- 表头需遮挡下方滚过的行，沿用与容器同色的底，视觉上仍是同一层表面 -->
             <thead class="bg-elevated sticky top-0">
               <tr>
-                <th v-for="col in orderColumns" :key="col" class="text-default px-5 py-3 font-semibold whitespace-nowrap">
+                <th
+                  v-for="col in orderColumns" :key="col"
+                  class="text-default px-5 py-3 font-semibold whitespace-nowrap"
+                >
                   {{ col }}
                 </th>
               </tr>
@@ -637,8 +740,10 @@ onBeforeUnmount(() => {
             <tbody class="divide-default divide-y">
               <tr v-for="row in orderRows" :key="row[0]">
                 <td v-for="(cell, ci) in row" :key="ci" class="text-muted px-5 py-3 whitespace-nowrap">
-                  <span v-if="ci === 3" class="rounded-md px-2 py-0.5 text-[11px] font-medium"
-                    :class="statusTone[cell] ?? 'bg-neutral/10 text-muted'">
+                  <span
+                    v-if="ci === 3" class="rounded-md px-2 py-0.5 text-[11px] font-medium"
+                    :class="statusTone[cell] ?? 'bg-neutral/10 text-muted'"
+                  >
                     {{ cell }}
                   </span>
                   <span v-else :class="ci === 0 ? 'text-default font-mono' : ''">{{ cell }}</span>
@@ -650,8 +755,10 @@ onBeforeUnmount(() => {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="不占布局宽度"
-      description="滚动条浮层绝对定位、不参与文档流，内容可视宽度恒等于容器宽度；右侧是同样内容的原生 overflow-auto 容器，滚动条会实打实吃掉一段宽度并挤压内容。">
+    <DemoSection
+      title="不占布局宽度"
+      description="滚动条浮层绝对定位、不参与文档流，内容可视宽度恒等于容器宽度；右侧是同样内容的原生 overflow-auto 容器，滚动条会实打实吃掉一段宽度并挤压内容。"
+    >
       <DemoBlock layout="stack">
         <DemoBlock layout="grid" :columns="2" align="start">
           <DemoItem :note="`容器 ${widthResult.overlayOuter}px → 内容可视 ${widthResult.overlayInner}px`">
@@ -682,8 +789,10 @@ onBeforeUnmount(() => {
         </DemoBlock>
 
         <div class="flex items-start gap-2.5">
-          <Icon :name="nativeCost > 0 ? 'lucide:circle-check' : 'lucide:info'"
-            class="mt-0.5 size-4 shrink-0" :class="nativeCost > 0 ? 'text-success' : 'text-dimmed'" />
+          <Icon
+            :name="nativeCost > 0 ? 'lucide:circle-check' : 'lucide:info'" class="mt-0.5 size-4 shrink-0"
+            :class="nativeCost > 0 ? 'text-success' : 'text-dimmed'"
+          />
           <DemoNote>
             {{ nativeCost > 0
               ? `浮层式内容可视宽度与容器完全一致；原生滚动条额外占用了 ${nativeCost}px，切换有 / 无滚动条时会引起布局抖动。`
@@ -692,6 +801,5 @@ onBeforeUnmount(() => {
         </div>
       </DemoBlock>
     </DemoSection>
-
   </div>
 </template>

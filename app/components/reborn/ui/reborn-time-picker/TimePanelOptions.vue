@@ -15,9 +15,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits<{ select: [value: number] }>();
 // 每列独立维护选项缓存，避免多层循环共用同一个 v-memo 编译位置。
-const options = computed(() => Array.from({ length: (props.max + 1) * 3 }, (_, index) => ({
-  index, value: index % (props.max + 1),
-})));
+const options = computed(() => Array.from({ length: props.max + 1 }, (_, value) => value));
 /** 规则禁用：只看禁用规则，决定选项的禁用样式 */
 function isRuleDisabled(value: number) { return !props.available.has(value); }
 /** 交互禁用：整面板禁用也算在内，决定 aria-disabled 与能否点选 */
@@ -31,17 +29,16 @@ function itemClass(value: number) {
 <template>
   <div
     v-for="option in options"
-    :id="`${props.panelId}-${props.role}-${props.unit}-${option.index}`"
-    :key="option.index"
-    v-memo="[props.value === option.value, isRuleDisabled(option.value), props.disabled, props.classes]"
+    :id="`${props.panelId}-${props.role}-${props.unit}-${option}`"
+    :key="option"
+    v-memo="[props.value === option, isRuleDisabled(option), props.disabled, props.classes]"
     role="option"
-    :data-value="option.value"
-    :aria-hidden="option.index < props.max + 1 || option.index >= (props.max + 1) * 2"
-    :aria-selected="props.value === option.value"
-    :aria-disabled="isDisabled(option.value)"
-    :class="itemClass(option.value)"
-    @click="emit('select', option.value)"
+    :data-value="option"
+    :aria-selected="props.value === option"
+    :aria-disabled="isDisabled(option)"
+    :class="itemClass(option)"
+    @click="emit('select', option)"
   >
-    {{ String(option.value).padStart(props.unit === 'millisecond' ? 3 : 2, '0') }}
+    {{ String(option).padStart(props.unit === 'millisecond' ? 3 : 2, '0') }}
   </div>
 </template>

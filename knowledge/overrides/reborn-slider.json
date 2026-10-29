@@ -13,6 +13,8 @@
     "web 与 uniapp 双端均可用。",
     "单值模式用 v-model，范围模式必须同时设置 range=true 并改用 v-model:values 绑定数组。",
     "除 update:modelValue / update:values 外还提供 change 与 changing 两个事件，回调值为数值或数组。",
-    "两端 thumb 插槽仅替换中心圆，单值与范围模式均支持平铺 { value, index, active, disabled }；外层定位与气泡由组件维护，外形通过 ui.thumb 覆盖，Web 还保留聚焦与键盘。"
+    "两端 thumb 插槽仅替换中心圆，单值与范围模式均支持平铺 { value, index, active, disabled }；外层定位与气泡由组件维护，外形通过 ui.thumb 覆盖，Web 还保留聚焦与键盘。",
+    "Web 滑块默认 12px、彩色边框 2px，悬停、按压或键盘聚焦时通过 scale 等比放大至 4/3（默认视觉直径 16px），彩色边框视觉厚度为 3px，不改写 ui.thumb 自定义宽高，并显示 4px 对应色板第 6 阶的 20% 透明色圆环；透明度仅作用于圆环。交互带按 16px 预留空间，悬停不改变绑定值或激活节点。",
+    "Web 数值气泡与滑块本体在 thumbWrapper 中并列渲染，仅本体缩放，气泡文字与箭头尺寸保持不变；底色与箭头取 gray-9，整体 opacity-80。常显气泡在静止时，箭头尖端离本体约 3px，交互时按本体放大与圆环调整距离。默认在悬停或拖拽当前滑块时显示，禁用节点不响应悬停；tooltip.open 可强制显隐，formatter=null 始终隐藏。UniApp 端仍在拖拽时显示。"
   ]
 }

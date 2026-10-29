@@ -25,7 +25,7 @@ export default {
      * 背景与边框不在此声明，全部交给 variant 形态变体，避免相互覆盖。
      */
     wrapper:
-      "group/number relative flex w-full items-center box-border overflow-hidden text-gray-8 transition-colors data-[disabled=true]:cursor-not-allowed data-[disabled=true]:text-gray-5",
+      "group/number relative flex w-full items-center box-border overflow-hidden text-gray-8 transition-[color,background-color,border-color,outline-color,padding] duration-200 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:text-gray-5",
     /** 左右分列布局下的增减按钮：宽度与控件高度使用同档刻度，保持正方形 */
     button:
       "flex h-full shrink-0 items-center justify-center border-none bg-transparent p-0 text-gray-6 transition-colors disabled:cursor-not-allowed disabled:text-gray-5",
@@ -34,7 +34,7 @@ export default {
      * 绝对定位悬浮在输入框对应侧之上（不占布局空间，避免居中文本被挤偏），
      * 宽度取 --stack-w（由 size 变体写入，与输入框高度同值），
      * 默认平移出容器且透明（被 wrapper 的 overflow-hidden 裁掉），
-     * 悬停或聚焦时滑回原位显示，同时输入框在对应侧让出同宽内边距，文本不会被按钮盖住；
+     * 悬停或聚焦时滑回原位显示，根容器在对应侧让出同宽内边距，输入与前后缀一起避让；
      * 背景继承 wrapper。平移方向、落位侧与分割线侧边由 controlsPosition 变体决定。
      */
     stack:
@@ -191,15 +191,13 @@ export default {
     controlsPosition: {
       left: {
         stack: "start-0 -translate-x-full border-e border-gray-4",
-        // 按钮滑入时输入框在左侧让出同宽内边距，避免文本被按钮盖住
-        input:
-          "group-hover/number:ps-(--stack-w) group-focus-within/number:ps-(--stack-w)",
+        // 统一为输入与前缀让位，避免只调整输入框时仍盖住前缀插槽
+        wrapper: "hover:ps-(--stack-w) focus-within:ps-(--stack-w)",
       },
       right: {
         stack: "end-0 translate-x-full border-s border-gray-4",
-        // 按钮滑入时输入框在右侧让出同宽内边距，避免文本被按钮盖住
-        input:
-          "group-hover/number:pe-(--stack-w) group-focus-within/number:pe-(--stack-w)",
+        // 统一为输入与后缀让位，避免只调整输入框时仍盖住后缀插槽
+        wrapper: "hover:pe-(--stack-w) focus-within:pe-(--stack-w)",
       },
     },
     error: {

@@ -1,23 +1,33 @@
 <script setup lang="ts">
 import type { RadioFieldNames } from "~/components/reborn/ui/reborn-radio/reborn-radio.config";
 import type { RadioGroupProps } from "~/components/reborn/ui/reborn-radio/RebornRadioGroup.vue";
-import { DemoBlock, DemoNote, DemoSection, Playground } from '#components';
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
 import { computed, ref, shallowRef } from 'vue';
-import { radioColors, radioSizes } from "~/components/reborn/ui/reborn-radio/reborn-radio.config";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
+import { radioAppearances, radioColors, radioSizes, radioVariants } from "~/components/reborn/ui/reborn-radio/reborn-radio.config";
 import RebornRadio from "~/components/reborn/ui/reborn-radio/RebornRadio.vue";
 import RebornRadioGroup from "~/components/reborn/ui/reborn-radio/RebornRadioGroup.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
+/** 演练场默认配置 */
+const defaultState: Record<string, any> = {
   value: "apple",
-  type: "radio",
-  variant: "outlined",
+  variant: "radio",
+  appearance: "outlined",
   size: "md",
   color: "primary",
   direction: "horizontal",
   disabled: false,
-});
+};
+const state = ref({ ...defaultState });
+
+/** 重置配置及当前选中项 */
+function resetState() {
+  state.value = { ...defaultState };
+}
+
+const variantLabels = { radio: "圆点", button: "分段按钮", "pure-button": "实体按钮拼接" };
 
 /** 演练场控制面板配置 */
 const controls = [
@@ -25,28 +35,21 @@ const controls = [
     title: "基础配置",
     children: [
       {
-        label: "类型",
-        key: "type",
+        label: "形态变体",
+        key: "variant",
         component: "select" as const,
         defaultValue: "radio",
         props: {
-          options: [
-            { label: "Radio 圆点", value: "radio" },
-            { label: "Button 分段按钮", value: "button" },
-            { label: "PureButton 实体按钮", value: "pure-button" },
-          ],
+          options: radioVariants.map(value => ({ label: variantLabels[value], value })),
         },
       },
       {
-        label: "样式变体",
-        key: "variant",
+        label: "选中填充方式",
+        key: "appearance",
         component: "select" as const,
         defaultValue: "outlined",
         props: {
-          options: [
-            { label: "Outlined 描边", value: "outlined" },
-            { label: "Filled 实底", value: "filled" },
-          ],
+          options: radioAppearances.map(value => ({ label: value === "outlined" ? "描边" : "实底", value })),
         },
       },
       {
@@ -92,14 +95,12 @@ const controls = [
 /** 演练场右上角展示的等价代码 */
 const radioCode = computed(() => {
   const s = state.value;
-  const props: string[] = ['v-model="value"', ':options="fruits"'];
-
-  if (s.type !== "radio") props.push(`type="${s.type}"`);
-  if (s.variant !== "outlined") props.push(`variant="${s.variant}"`);
-  if (s.color !== "primary") props.push(`color="${s.color}"`);
-  if (s.size !== "md") props.push(`size="${s.size}"`);
-  if (s.direction !== "horizontal") props.push(`direction="${s.direction}"`);
-  if (s.disabled) props.push("disabled");
+  const props = [
+    'v-model="value"', ':options="fruits"', `variant="${s.variant}"`,
+    `appearance="${s.appearance}"`,
+    `color="${s.color}"`, `size="${s.size}"`,
+    `direction="${s.direction}"`, `:disabled="${s.disabled}"`,
+  ];
 
   return `<RebornRadioGroup\n  ${props.join("\n  ")}\n/>`;
 });
@@ -161,10 +162,21 @@ const plans = [
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" :code="radioCode" component-name="RebornRadioGroup" title="交互演练场"
-      description="切换类型、语义色、尺寸与方向，实时预览单选框组的选中态表现。">
-      <RebornRadioGroup v-model="state.value" :options="fruits" :type="state.type" :variant="state.variant"
-        :size="state.size" :color="state.color" :direction="state.direction" :disabled="state.disabled" />
+    <Playground
+      v-model="state" :controls="controls" :code="radioCode" component-name="RebornRadioGroup" title="交互演练场"
+      description="切换形态、语义色、尺寸与方向，实时预览单选框组的选中态表现。"
+    >
+      <template #tag>
+        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+          <template #leading><Icon name="lucide:rotate-ccw" size="12" /></template>
+          重置配置
+        </RebornButton>
+      </template>
+      <RebornRadioGroup
+        v-model="state.value" :options="fruits" :variant="state.variant" :appearance="state.appearance"
+        :size="state.size" :color="state.color" :direction="state.direction" :disabled="state.disabled"
+      />
+      <DemoNote tone="dimmed">当前值：<code>{{ state.value }}</code></DemoNote>
     </Playground>
 
     <DemoSection title="基础用法" description="多个 RebornRadio 放入 RebornRadioGroup，由 Group 的 v-model 统一管理选中值；选项文案写在默认插槽中。">
@@ -180,11 +192,13 @@ const plans = [
       </DemoNote>
     </DemoSection>
 
-    <DemoSection title="类型与尺寸">
-      <template #description><code>type="button"</code> 呈现分段按钮；<code>size</code> 由 Group 统一下发，分段按钮高度取 RebornButton
-        同款高度令牌。</template>
+    <DemoSection title="形态与尺寸">
+      <template #description>
+        <code>variant="button"</code> 呈现分段按钮；<code>size</code> 由 Group 统一下发，分段按钮高度取 RebornButton
+        同款高度令牌。
+      </template>
       <DemoBlock layout="stack" class="gap-4">
-        <RebornRadioGroup v-for="s in radioSizes" :key="s" v-model="selectedMode" type="button" :size="s">
+        <RebornRadioGroup v-for="s in radioSizes" :key="s" v-model="selectedMode" variant="button" :size="s">
           <RebornRadio value="day">日视图</RebornRadio>
           <RebornRadio value="week">周视图</RebornRadio>
           <RebornRadio value="month">月视图</RebornRadio>
@@ -193,30 +207,37 @@ const plans = [
     </DemoSection>
 
     <DemoSection title="实体按钮拼接：pure-button">
-      <template #description><code>type="pure-button"</code> 每项复用 RebornButton，首尾圆角、相邻边框折叠；<code>button-props</code>
-        统一透传按钮参数。</template>
+      <template #description>
+        <code>variant="pure-button"</code> 每项复用 RebornButton，首尾圆角、相邻边框折叠；<code>button-props</code>
+        统一透传按钮参数。
+      </template>
       <DemoBlock layout="stack" class="gap-4">
-        <RebornRadioGroup v-model="selectedAlign" type="pure-button" color="success" :options="alignOptions" />
-        <RebornRadioGroup v-model="selectedAlign" type="pure-button" color="success"
-          :button-props="dashedButtonProps" :options="alignOptions" />
+        <RebornRadioGroup v-model="selectedAlign" variant="pure-button" color="success" :options="alignOptions" />
+        <RebornRadioGroup
+          v-model="selectedAlign" variant="pure-button" color="success"
+          :button-props="dashedButtonProps" :options="alignOptions"
+        />
       </DemoBlock>
       <DemoNote tone="dimmed">
         当前值：<span class="text-primary font-mono font-medium">{{ selectedAlign }}</span>
       </DemoNote>
     </DemoSection>
 
-    <DemoSection title="变体：outlined 与 filled">
-      <template #description><code>variant</code> 只改变选中态外观：outlined 为语义色描边与前景，filled 为语义色实底加白色前景。</template>
+    <DemoSection title="选中填充：outlined 与 filled">
+      <template #description><code>appearance</code> 只改变选中态外观：outlined 为语义色描边与前景，filled 为语义色实底加白色前景。</template>
       <DemoBlock layout="stack" class="gap-4">
-        <RebornRadioGroup v-model="selectedVariant" variant="outlined" :options="fruits" />
-        <RebornRadioGroup v-model="selectedVariant" variant="filled" :options="fruits" />
-        <RebornRadioGroup v-model="selectedVariant" type="button" variant="filled" :options="fruits" />
+        <RebornRadioGroup v-model="selectedVariant" appearance="outlined" :options="fruits" />
+        <RebornRadioGroup v-model="selectedVariant" appearance="filled" :options="fruits" />
+        <RebornRadioGroup v-model="selectedVariant" variant="button" appearance="filled" :options="fruits" />
+        <RebornRadioGroup v-model="selectedVariant" variant="pure-button" appearance="filled" :options="fruits" />
       </DemoBlock>
     </DemoSection>
 
     <DemoSection title="语义色与单项覆盖">
-      <template #description><code>color</code> 覆盖全部语义色板，选中态的圆点与高亮随之变化；组内单个 Radio 也可用自身 <code>color</code>
-        覆盖。</template>
+      <template #description>
+        <code>color</code> 覆盖全部语义色板，选中态的圆点与高亮随之变化；组内单个 Radio 也可用自身 <code>color</code>
+        覆盖。
+      </template>
       <DemoBlock layout="row" align="center">
         <RebornRadioGroup v-model="selectedColor">
           <RebornRadio v-for="c in radioColors" :key="c" :value="c" :color="c">
@@ -227,9 +248,11 @@ const plans = [
     </DemoSection>
 
     <DemoSection title="数据驱动：options、fieldNames 与 label 插槽">
-      <template #description><code>options</code> 接受 string | number | RadioOption 混合数组，对象形式可携带
+      <template #description>
+        <code>options</code> 接受 string | number | RadioOption 混合数组，对象形式可携带
         <code>disabled</code>；<code>label</code> 插槽可统一定制选项文案。数据字段名对不上时用 <code>field-names</code> 指定 label / value /
-        disabled 各取哪个字段，其余字段原样留在插槽的 <code>data</code> 上。</template>
+        disabled 各取哪个字段，其余字段原样留在插槽的 <code>data</code> 上。
+      </template>
       <DemoBlock layout="row" class="gap-4">
         <RebornRadioGroup v-model="selectedCity" :options="cityOptions" />
         <RebornRadioGroup v-model="selectedPay" :options="payOptions">
@@ -238,8 +261,10 @@ const plans = [
           </template>
         </RebornRadioGroup>
         <!-- 数据源是 code / name / closed，fee 不参与映射，照样能在插槽里读到 -->
-        <RebornRadioGroup v-model="selectedShipping" :options="shippingOptions"
-          :field-names="shippingFieldNames">
+        <RebornRadioGroup
+          v-model="selectedShipping" :options="shippingOptions"
+          :field-names="shippingFieldNames"
+        >
           <template #label="{ data }">
             {{ data.label }}<span class="text-dimmed ml-1 text-xs">¥{{ data.fee }}</span>
           </template>
@@ -251,11 +276,15 @@ const plans = [
     </DemoSection>
 
     <DemoSection title="方向与非受控">
-      <template #description><code>direction="vertical"</code> 纵向排列；不绑 v-model 时用 <code>default-value</code> 给初始值，通过
-        <code>change</code> 事件读取最新值。</template>
+      <template #description>
+        <code>direction="vertical"</code> 纵向排列；不绑 v-model 时用 <code>default-value</code> 给初始值，通过
+        <code>change</code> 事件读取最新值。
+      </template>
       <DemoBlock layout="row" align="center">
-        <RebornRadioGroup default-value="banana" direction="vertical" :options="fruits"
-          @change="onUncontrolledChange" />
+        <RebornRadioGroup
+          default-value="banana" direction="vertical" :options="fruits"
+          @change="onUncontrolledChange"
+        />
       </DemoBlock>
       <DemoNote tone="dimmed">
         change 事件最新值：<span class="text-primary font-mono font-medium">{{ uncontrolledValue }}</span>
@@ -263,14 +292,18 @@ const plans = [
     </DemoSection>
 
     <DemoSection title="自定义渲染：radio 插槽">
-      <template #description><code>radio</code> 插槽（作用域含 checked / disabled）完全接管单选框的渲染，例如做成卡片式选择；此时 ui 的 icon / dot /
-        label 键不再生效。</template>
+      <template #description>
+        <code>radio</code> 插槽（作用域含 checked / disabled）完全接管单选框的渲染，例如做成卡片式选择；此时 ui 的 icon / dot /
+        label 键不再生效。
+      </template>
       <DemoBlock layout="row" align="center">
         <RebornRadioGroup v-model="selectedPlan">
           <RebornRadio v-for="plan in plans" :key="plan.value" :value="plan.value">
             <template #radio="{ checked }">
-              <div class="w-[140px] rounded-md border border-solid px-4 py-3 transition-colors"
-                :class="checked ? 'border-primary bg-primary/5' : 'border-gray-3'">
+              <div
+                class="w-[140px] rounded-md border border-solid px-4 py-3 transition-colors"
+                :class="checked ? 'border-primary bg-primary/5' : 'border-gray-3'"
+              >
                 <div class="text-base font-medium" :class="checked ? 'text-primary' : 'text-gray-8'">
                   {{ plan.label }}
                 </div>

@@ -47,7 +47,7 @@ const controls = [
         key: "variant",
         component: "select" as const,
         defaultValue: "filled",
-        props: { options: checkboxVariants.map((v) => ({ label: v, value: v })) },
+        props: { options: checkboxVariants.map((v) => ({ label: v === "shadow" ? "阴影（整圈）" : v, value: v })) },
       },
       {
         label: "半选状态",
@@ -142,12 +142,16 @@ const tags = shallowRef<string[]>(["Vue"]);
 const roundedValue = shallowRef(true);
 const iconValue = shallowRef(true);
 
-/** 样式变体矩阵：两种变体各演示未选、选中、半选三态 */
+/** 样式变体矩阵：三种变体各演示未选、选中、半选三态 */
 const variantMatrix = [
   { variant: "filled" as const, note: "默认值。选中与半选都填充配色，图标为白色。" },
   {
     variant: "outlined" as const,
     note: "选中不填充背景，只把边框与图标染成配色；半选时边框保持灰色，中间是同色实心小方块。",
+  },
+  {
+    variant: "shadow" as const,
+    note: "增加 2px 的整圈同色第 1 阶阴影环，不改变组件高度；选中与半选时边框都跟随配色，半选中央仍显示实心小方块。",
   },
 ];
 const variantUnchecked = shallowRef(false);
@@ -191,7 +195,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
 
     <DemoSection
       title="颜色与变体"
-      description="variant 控制选中态的表现形式：filled 填充配色，outlined 只染边框与图标；color 切换语义色。半选样式跟随变体，无需额外配置。"
+      description="variant 控制外观：filled 填充配色，outlined 只染边框与图标，shadow 在描边基础上增加 2px 整圈阴影；color 切换语义色。"
     >
       <DemoBlock layout="grid" align="start">
         <div v-for="item in variantMatrix" :key="item.variant" class="flex flex-col gap-3">

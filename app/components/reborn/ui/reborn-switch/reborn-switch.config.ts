@@ -15,7 +15,7 @@ export default {
     input: "peer sr-only",
     track:
       "relative inline-flex items-center rounded-full transition-colors ring-1 ring-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 peer-disabled:cursor-not-allowed data-[loading=true]:cursor-wait data-[loading=true]:opacity-80",
-    // 参考 Ant Design 的位置过渡；左右边界始终留白 2px，不叠加横向位移和负边距。
+    // 胶囊和圆角型两端留白 2px；细线型由组合变体贴齐轨道边缘，不叠加横向位移和负边距。
     thumb:
       "absolute left-[2px] right-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] top-[2px] w-auto flex items-center justify-center rounded-full bg-white shadow transition-[left,right] duration-200 ease-[ease-in-out] motion-reduce:transition-none",
     /**
@@ -37,7 +37,7 @@ export default {
   },
   variants: {
     /**
-     * 尺寸规格：滑块四周留白固定 2px（基础槽的 left-[2px] / top-[2px]），
+     * 尺寸规格：胶囊和圆角型滑块四周留白固定 2px（基础槽的 left-[2px] / top-[2px]），
      * 选中位移 = 轨道宽 − 滑块直径 − 4px 留白。
      */
     // 按压只向轨道内侧加宽，松开后恢复；禁用、加载和减弱动效时不拉伸。
@@ -78,7 +78,7 @@ export default {
     },
     /**
      * 形态：circle 胶囊圆形（默认，基础槽即是）；round 轨道与滑块换小圆角方形；
-     * line 轨道压成细线（高度见 compoundVariants）、滑块居中骑在线上，位移逻辑不变。
+     * line 轨道压成细线（高度见 compoundVariants）、滑块居中骑在线上，两态分别贴齐轨道端点。
      */
     type: {
       circle: {},
@@ -153,10 +153,19 @@ export default {
     { autoWidth: true, size: "sm" as (typeof size)[number], class: { track: "w-auto min-w-7" } },
     { autoWidth: true, size: "md" as (typeof size)[number], class: { track: "w-auto min-w-11" } },
     { autoWidth: true, size: "lg" as (typeof size)[number], class: { track: "w-auto min-w-15" } },
-    // line 型轨道高度：约为滑块直径的一半，宽度与位移沿用 size 档
+    // line 型轨道高度：约为滑块直径的一半，宽度沿用 size 档
     { type: "line" as (typeof type)[number], size: "sm" as (typeof size)[number], class: { track: "h-2" } },
     { type: "line" as (typeof type)[number], size: "md" as (typeof size)[number], class: { track: "h-3" } },
     { type: "line" as (typeof type)[number], size: "lg" as (typeof size)[number], class: { track: "h-4" } },
+    // 细线型移除两端内缩，按压拉伸也固定外侧边缘，只向轨道内侧展开。
+    {
+      type: "line" as (typeof type)[number], active: false,
+      class: { thumb: "left-0 right-[max(0px,calc(100%_-_var(--re-switch-thumb-size)))] motion-safe:group-[:active:not([data-disabled=true])]/switch:right-[max(0px,calc(100%_-_var(--re-switch-thumb-size)*1.3))]" },
+    },
+    {
+      type: "line" as (typeof type)[number], active: true,
+      class: { thumb: "left-[max(0px,calc(100%_-_var(--re-switch-thumb-size)))] right-0 motion-safe:group-[:active:not([data-disabled=true])]/switch:left-[max(0px,calc(100%_-_var(--re-switch-thumb-size)*1.3))]" },
+    },
     // inline-prompt 文本字号随尺寸收缩（sm 轨道仅 16px 高）。
     // 8px / 10px 低于 7 级字号令牌的下限（--text-sm 12px），只能写字面量；lg 档 12px 用 text-sm。
     // 行高由基础槽的 leading-none 统一接管，令牌自带的 20px 行高在这里会撑破轨道。

@@ -69,6 +69,8 @@ const keyword = ref("");
 :::tabs-item{label="Web" icon="tabler:world"}
 默认 `size="md"`、`variant="outlined"`。字号 sm/md 14px、lg 16px；`square` 圆角按尺寸取令牌 4 / 6 / 8 **px**。
 
+悬停时边框使用 `color` 对应色板的第 6 阶；`outlined` / `filled` 聚焦时增加第 1 阶颜色的 2px 外圈。外圈使用阴影描边，不参与盒模型，单行和多行输入的高度保持不变。禁用态保留灰色边框，校验错误态保留错误配色。
+
 ```vue
 <template>
   <RebornInput v-model="value" size="lg" variant="outlined" color="primary" placeholder="描边形态 + 主题色聚焦" />
@@ -147,6 +149,8 @@ const keyword = ref("");
 
 `show-word-limit` 配合 `maxlength` 显示字数统计（仅 `type` 为 text / textarea 时生效），`word-limit-position` 可选 `inside`（默认）/ `outside`；多行模式下 `inside` 的统计落在文本域右下角。两端通用，差异集中在 `maxlength` 的默认值与 Web 端独有的 `count-graphemes`。
 
+Web 的 `outside` 统计在输入框下方右对齐，与输入框间隔 2px（`gap-0.5`，默认根字号下）；字号统一为 14px（`text-base`）：当前字数使用 `text-gray-8`，分隔符 `/` 与字数上限使用 `text-gray-5`。`inside` 保持 12px（`text-sm`）与 `text-gray-5`。
+
 ```vue
 <template>
   <!-- Web 默认不限长；UniApp 默认 140，设为 -1 不限制 -->
@@ -201,10 +205,13 @@ const keyword = ref("");
 :::tabs-item{label="Web" icon="tabler:world"}
 行数由 `rows` 控制（旧属性 `as="textarea"` 仍兼容）；`autosize` 让高度随内容自适应，可传 `{ minRows, maxRows }` 限定范围；`resize` 控制是否允许用户拖拽缩放。
 
+自动增高的主体高度默认最多 248px，可用 `max-height` 调整；高度包含边框与内边距，不包含外置字数统计，超出内容在文本域内滚动。手动竖向缩放不受 `max-height` 和 `maxRows` 限制，后续自动增高改用手动高度作为上限；删除内容时仍会回缩。
+
 ```vue
 <template>
   <RebornInput v-model="remark" type="textarea" :rows="3" placeholder="备注" />
   <RebornInput v-model="remark" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="高度自适应" />
+  <RebornInput v-model="remark" type="textarea" autosize resize="vertical" :max-height="248" placeholder="可手动调整上限" />
   <RebornInput v-model="remark" type="textarea" resize="none" placeholder="禁止缩放" />
 </template>
 ```
@@ -263,7 +270,8 @@ const keyword = ref("");
 | `prefixIcon` | `string` | - | 快捷前缀图标名（`#prefix` 插槽优先）。 |
 | `suffixIcon` | `string` | - | 快捷后缀图标名（`#suffix` 插槽优先）。 |
 | `rows` | `number` | `2` | textarea 行数，仅多行模式有效。 |
-| `autosize` | `boolean \| { minRows?: number, maxRows?: number }` | `false` | textarea 高度自适应，可传对象限定行数范围。 |
+| `autosize` | `boolean \| { minRows?: number, maxRows?: number }` | `false` | textarea 高度自适应，可传对象限定行数范围；自动增高同时受 `maxHeight` 限制，手动竖向缩放后采用手动高度上限。 |
+| `maxHeight` | `number` | `248` | 自动增高的主体高度上限，单位 px，含边框与内边距，不含外置统计；仅开启 `autosize` 的多行模式生效，手动竖向缩放后采用手动高度。 |
 | `resize` | `'none' \| 'both' \| 'horizontal' \| 'vertical'` | - | 控制 textarea 是否能被用户拖拽缩放（CSS resize）。 |
 | `autocomplete` | `string` | `'off'` | 原生 autocomplete。 |
 | `name` | `string` | - | 原生 name。 |
@@ -327,7 +335,7 @@ Web 端额外支持 `v-model` 修饰符：`.trim` 失焦后去除首尾空格、
 | `customClass` | `any` | - | 追加到根节点的自定义类名（对应 Web 端 `class`，但落点是 `root` 而非 `wrapper`）。 |
 | `ui` | `InputUI` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
-UniApp 端没有原生表单属性（`name` / `form` / `max` / `min` / `step` / `autocomplete` / `minlength` / `tabindex` / `inputmode` / `id`）、无障碍属性（`ariaLabel` / `label`）、`resize`、`countGraphemes`、`inputStyle`、`validateEvent` 与 `as`。
+UniApp 端没有原生表单属性（`name` / `form` / `max` / `min` / `step` / `autocomplete` / `minlength` / `tabindex` / `inputmode` / `id`）、无障碍属性（`ariaLabel` / `label`）、`resize`、`maxHeight`、`countGraphemes`、`inputStyle`、`validateEvent` 与 `as`。
 :::
 
 ::
@@ -430,7 +438,7 @@ UniApp 端只暴露这四项：没有原生元素引用（小程序无 DOM），
 :::tabs-item{label="Web" icon="tabler:world"}
 | 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
 | --- | --- | --- | --- |
-| `root` | 最外层容器 | `flex w-full min-w-0 flex-col gap-1` | 始终渲染；`outside` 位置的字数统计也在这一层。 |
+| `root` | 最外层容器 | `flex w-full min-w-0 flex-col gap-1`，`outside` 时为 `gap-0.5` | 始终渲染；`outside` 位置的字数统计也在这一层。 |
 | `group` | 输入组（prepend + 输入框 + append） | `flex w-full min-w-0 grow items-stretch`，尺寸档追加 `h-6` / `h-8` / `h-10` | 始终渲染；多行模式高度改为 `h-auto!`。 |
 | `prepend` | 前置连体块 | `flex shrink-0 items-center bg-gray-2 text-gray-8 border border-gray-4 border-r-0` | 仅传了 `#prepend` 且单行时渲染；默认无内边距；禁用时追加 `cursor-not-allowed text-gray-5`。 |
 | `append` | 后置连体块 | `flex shrink-0 items-center bg-gray-2 text-gray-8 border-gray-4 border-l-0` | 仅传了 `#append` 且单行时渲染；默认无内边距；禁用时追加 `cursor-not-allowed text-gray-5`。 |

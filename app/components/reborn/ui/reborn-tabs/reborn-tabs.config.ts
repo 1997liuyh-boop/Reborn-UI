@@ -7,7 +7,7 @@ const tabsSizes = ["sm", "md", "lg"] as const;
 const tabsPositions = ["top", "bottom", "left", "right"] as const;
 const tabsDirections = ["horizontal", "vertical"] as const;
 const tabsTriggers = ["click", "hover"] as const;
-const tabsOverflows = ["scroll", "arrows", "dropdown"] as const;
+const tabsOverflows = ["scroll", "dropdown"] as const;
 const tabsColors = [
   "primary",
   "secondary",
@@ -30,7 +30,7 @@ export type TabsPosition = (typeof tabsPositions)[number];
 export type TabsDirection = (typeof tabsDirections)[number];
 /** 标签切换的触发方式 */
 export type TabsTrigger = (typeof tabsTriggers)[number];
-/** 标签超出容器时的导航方式：scroll 仅滚动 / arrows 两端箭头分步滚动 / dropdown 末尾下拉选标 */
+/** 标签超出容器时的导航方式：scroll 两侧箭头滚动 / dropdown 两侧省略号悬停下拉 */
 export type TabsOverflow = (typeof tabsOverflows)[number];
 /** 选项卡主题色 */
 export type TabsColor = (typeof tabsColors)[number];
@@ -118,20 +118,20 @@ const theme = tv({
     // flex-1（basis 0）不能去掉：换成 basis auto 后它的 max-content 会把 nav 乃至组件根节点的
     // 内在宽度撑成标签总宽，宽度没约束死的祖先布局会被整体顶破。
     // 增加按钮要紧贴标签列，靠的是把按钮挪进滚动内容里（见模板的 scrollBody 层），不是收缩这层。
-    // 溢出导航模式下组件还会在这层追加 mask-image，让两端的标签渐隐（见 RebornTabs.vue 的 scrollMaskClass）
     navWrapper: "relative min-w-0 flex-1 overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
     // 滚动内容内层：标签列与增加按钮的并排容器，按钮因此紧贴末尾标签（间距 8px 与 nav 的 gap-2 一致）；
     // 代价是标签溢出时按钮跟着滚动，与 uniapp 端行为一致
     scrollBody: "flex",
     // isolate 把下面这套 z-index 关在标签列内部，选中底板与标题的层叠不会外溢到页面其他元素
     list: "relative isolate flex w-max",
-    // gap 是标题与关闭图标之间的间距，固定 8px，不随 size 变化
-    tab: "group/tab flex shrink-0 cursor-pointer select-none items-center gap-2 whitespace-nowrap transition-colors duration-200 motion-reduce:transition-none",
+    // gap 是标题与关闭图标之间的间距，固定 8px，不随 size 变化。
+    // 显式清除原生按钮的水平内边距，未引入 Preflight 时也保持一致；盒子型变体另行设置。
+    tab: "group/tab flex shrink-0 cursor-pointer select-none items-center gap-2 whitespace-nowrap px-0 transition-colors duration-200 motion-reduce:transition-none",
     // z-[1] 让标题浮在选中底板之上：底板滑过相邻标签时不会把它们的文字盖住
     tabTitle: "relative z-[1] truncate",
     tabClose:
       "relative z-[1] -mr-1 inline-flex shrink-0 items-center justify-center rounded-sm text-gray-6 transition-colors hover:bg-gray-2 hover:text-gray-9 motion-reduce:transition-none",
-    // 指示器位置由组件测量标题后写入行内样式，这里只负责形态与过渡；底色由 color 变体给
+    // 指示条位置由组件测量标题（横向 stretch 时测量整个标签）后写入行内样式；底色由 color 变体给
     indicator:
       "pointer-events-none absolute rounded-full transition-all duration-300 ease-out motion-reduce:transition-none",
     // 三种卡片类型的选中底板：位置与尺寸由组件测量选中标签后写入行内样式，这里只负责形态与过渡。
@@ -142,12 +142,11 @@ const theme = tv({
     // 增加按钮整体复用未选中标签的盒子样式（见 RebornTabs.vue 的 addButtonClass），
     // 这里只补图标按钮特有的部分：去掉标题用的水平内边距、改为居中摆放图标
     addButton: "justify-center px-0",
-    // 溢出导航按钮（箭头 / 下拉开关）：不复用标签盒子，是一枚固定尺寸的幽灵图标按钮，
-    // 仅在标签真正溢出时渲染，禁用态（已滚到端点）压掉悬浮反馈
+    // 滚动箭头与省略号按钮，箭头在滚到对应边界时禁用。
     navButton:
       "flex size-6 shrink-0 cursor-pointer select-none items-center justify-center rounded-md text-gray-6 transition-colors duration-200 hover:bg-gray-2 hover:text-gray-9 disabled:cursor-not-allowed disabled:text-gray-4 disabled:hover:bg-transparent motion-reduce:transition-none",
     // 下拉选标的定位锚点：面板相对开关按钮摆放，展开方向见 position 变体
-    dropdown: "relative flex shrink-0 items-center",
+    dropdown: "relative flex size-6 shrink-0 items-center justify-center self-center",
     // 投影取 reborn-context-menu 同款：菜单类面板的统一投影，比 shadow-lg 更看得出悬浮感
     dropdownPanel:
       "absolute z-10 flex max-h-64 min-w-32 flex-col overflow-auto rounded-lg border border-gray-3 bg-gray-1 p-1 shadow-[0_2px_16px_0_rgba(1,27,70,0.1)]",
@@ -175,7 +174,7 @@ const theme = tv({
         list: "flex-row items-end",
         indicator: "bottom-0 h-0.5",
         content: "pt-4",
-        dropdownPanel: "right-0 top-full mt-2",
+        dropdownPanel: "top-full mt-2",
       },
       bottom: {
         root: "flex-col-reverse",
@@ -185,7 +184,7 @@ const theme = tv({
         list: "flex-row items-start",
         indicator: "top-0 h-0.5",
         content: "pb-4",
-        dropdownPanel: "bottom-full right-0 mb-2",
+        dropdownPanel: "bottom-full mb-2",
       },
       left: {
         root: "flex-row",
@@ -195,7 +194,7 @@ const theme = tv({
         list: "w-full flex-col items-stretch",
         indicator: "right-0 w-0.5",
         content: "pl-4",
-        dropdownPanel: "left-0 top-full mt-2",
+        dropdownPanel: "left-full ml-2",
       },
       right: {
         root: "flex-row-reverse",
@@ -205,7 +204,7 @@ const theme = tv({
         list: "w-full flex-col items-stretch",
         indicator: "left-0 w-0.5",
         content: "pr-4",
-        dropdownPanel: "right-0 top-full mt-2",
+        dropdownPanel: "right-full mr-2",
       },
     },
     type: {
@@ -411,20 +410,19 @@ const theme = tv({
       // 文字色由下面的 color × active 组合统一给，这里只加粗
       class: { tab: "font-bold" },
     },
-    // card 的底板与标签一样不画边框，只靠 gray-1 亮块区分选中；card-gutter 保留 gray-3 边框撑出卡片轮廓
-    { type: "card", class: { tabSlider: "bg-gray-1" } },
+    // card 的选中底板使用 gray-2 边框；card-gutter 保留 gray-3 边框撑出卡片轮廓
+    { type: "card", class: { tabSlider: "border border-gray-2 bg-gray-1" } },
     { type: "card-gutter", class: { tabSlider: "border border-gray-3 bg-gray-1" } },
     // card-fill 不用边框也不用分隔线区分头部与内容：未选中只是文字，底板铺与内容区同一档的
     // gray-2 底色，两块背景直接连成一片，所以内容区也要跟着铺 gray-2
     { type: "card-fill", class: { tabSlider: "bg-gray-1", content: "bg-gray-1 p-4" } },
-    // card-gutter 的底板去掉贴着内容那一侧的边框，让自身底色吃掉 nav 内阴影画的那条线，与内容连成一体
-    //（card 已无边框，底板的不透明底色本身就盖住了那条线）。
+    // 两种卡片底板都去掉贴着内容那一侧的边框，让自身底色盖住 nav 内阴影，与内容连成一体。
     // 这里不能改用负外边距外移：标签列是 items-end 对齐，负外边距会把选中项整体压低 1px，
     // 相邻标签的顶边就会高出一截，且外移的部分也会被滚动容器裁掉
-    { type: "card-gutter", position: "top", class: { tabSlider: "border-b-0" } },
-    { type: "card-gutter", position: "bottom", class: { tabSlider: "border-t-0" } },
-    { type: "card-gutter", position: "left", class: { tabSlider: "border-r-0" } },
-    { type: "card-gutter", position: "right", class: { tabSlider: "border-l-0" } },
+    { type: ["card", "card-gutter"], position: "top", class: { tabSlider: "border-b-0" } },
+    { type: ["card", "card-gutter"], position: "bottom", class: { tabSlider: "border-t-0" } },
+    { type: ["card", "card-gutter"], position: "left", class: { tabSlider: "border-r-0" } },
+    { type: ["card", "card-gutter"], position: "right", class: { tabSlider: "border-l-0" } },
     // 圆角只开在背离内容的那一侧，贴着内容的两个角保持直角才能与内容区无缝拼接。
     // card-gutter 每张卡片形态一致，底板照搬标签的圆角即可
     { type: "card-gutter", class: { tabSlider: "rounded-t-md" } },

@@ -10,12 +10,12 @@ export { colors as datePickerColors, sizes as datePickerSizes, variants as dateP
 
 /**
  * 触发器盒子可覆盖的样式键，通过 triggerUi 传入。
- * 键名与 RebornSelect 的 SelectFieldUI 一一对应（去掉了日期选择用不到的 searchInput），
- * 另加范围类型专有的 rangeWrapper / rangeText / rangeSeparator，以及前缀区的 prefix / prefixIcon。
+ * 沿用选择器的触发器键，另加日期输入框 input、范围布局和前缀区。
  */
 export type DatePickerFieldUI = Partial<{
     trigger: ClassValue;
     triggerText: ClassValue;
+    input: ClassValue;
     triggerIconWrapper: ClassValue;
     placeholder: ClassValue;
     clearBtn: ClassValue;
@@ -46,6 +46,8 @@ export default {
             "group/field box-border flex w-full cursor-pointer items-center justify-between gap-2 rounded-md text-base transition-colors select-none outline-none",
         /** 已选中的文本：填充色 gray-9 */
         triggerText: "truncate text-gray-9",
+        /** 输入框沿用触发器字号，无独立描边；悬停候选值由预览态改为 gray-5。 */
+        input: "min-w-0 w-0 flex-1 bg-transparent p-0 text-inherit text-gray-9 outline-none placeholder:text-gray-5 disabled:cursor-not-allowed disabled:text-gray-5",
         /** 尾部图标区：relative 为清空按钮的绝对覆盖提供定位参照 */
         triggerIconWrapper: "relative flex shrink-0 items-center justify-center",
         /** 占位文本：gray-5 */
@@ -191,17 +193,17 @@ export default {
             false: {},
         },
         /**
-         * 配色：决定触发器聚焦态 / 展开态的描边色，同时下发给日期面板决定选中色。
+         * 配色：悬停描边取色板第 6 阶，聚焦 / 展开沿用语义色，同时下发给日期面板决定选中色。
          * 色阶 token 自身已随主题切换，不可再写 dark: 前缀。
          */
         color: {
-            primary: { trigger: "group-focus:border-primary data-[state=open]:border-primary" },
-            secondary: { trigger: "group-focus:border-secondary data-[state=open]:border-secondary" },
-            success: { trigger: "group-focus:border-success data-[state=open]:border-success" },
-            info: { trigger: "group-focus:border-info data-[state=open]:border-info" },
-            warning: { trigger: "group-focus:border-warning data-[state=open]:border-warning" },
-            error: { trigger: "group-focus:border-error data-[state=open]:border-error" },
-            neutral: { trigger: "group-focus:border-neutral data-[state=open]:border-neutral" },
+            primary: { trigger: "hover:border-brand-6 focus-within:border-primary group-focus:border-primary data-[state=open]:border-primary" },
+            secondary: { trigger: "hover:border-secondary-6 focus-within:border-secondary group-focus:border-secondary data-[state=open]:border-secondary" },
+            success: { trigger: "hover:border-green-6 focus-within:border-success group-focus:border-success data-[state=open]:border-success" },
+            info: { trigger: "hover:border-blue-6 focus-within:border-info group-focus:border-info data-[state=open]:border-info" },
+            warning: { trigger: "hover:border-orange-6 focus-within:border-warning group-focus:border-warning data-[state=open]:border-warning" },
+            error: { trigger: "hover:border-red-6 focus-within:border-error group-focus:border-error data-[state=open]:border-error" },
+            neutral: { trigger: "hover:border-gray-6 focus-within:border-neutral group-focus:border-neutral data-[state=open]:border-neutral" },
         },
         open: {
             true: { arrow: "rotate-180" },
@@ -231,7 +233,7 @@ export default {
         disabled: {
             true: {
                 // 禁用时保留触发器命中以显示禁止光标，仅屏蔽子元素的鼠标交互
-                trigger: "cursor-not-allowed border-gray-4 bg-gray-2 [&_*]:pointer-events-none",
+                trigger: "cursor-not-allowed border-gray-4 bg-gray-2 hover:border-gray-4 focus-within:border-gray-4 [&_*]:pointer-events-none",
                 triggerText: "text-gray-5",
                 rangeText: "text-gray-5",
                 arrow: "text-gray-5",
@@ -247,7 +249,7 @@ export default {
         },
         error: {
             true: {
-                trigger: "border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
+                trigger: "border-red-5 hover:border-red-5 focus-within:border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
             },
         },
     },

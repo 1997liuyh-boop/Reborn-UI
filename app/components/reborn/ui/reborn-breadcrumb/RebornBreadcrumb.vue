@@ -73,6 +73,9 @@ function countItems(nodes: VNodeArrayChildren): number {
  * 方案：容器在渲染期展开插槽，按插槽顺序给条目编号、算出折叠结果，克隆节点把结果写进条目的内部 prop，
  * 并把省略号直接插在首个条目之后。DOM 顺序即视觉顺序，服务端首屏就是折叠后的结果。
  * 片段与注释占位（v-if 为假）原样保留，v-if 切换时同级节点的位置不会漂移。渲染期只读不写响应式状态。
+ * 模板里传给它的插槽内不能写注释：本组件调用插槽时不带 _push，服务端走的是 SSR 编译产物的 vnode 回退分支，
+ * 该分支不保留 v-if / v-else 分支前的模板注释；开发模式下客户端却会把注释编进分支（分支变成「注释 + 内容」的片段），
+ * 两边节点结构对不上，水合时报 Hydration node mismatch。说明性注释统一写在 <BreadcrumbTrail> 外面。
  */
 const BreadcrumbTrail = (_props: unknown, { slots: own }: { slots: Slots }) => {
     let nodes = own.default?.() ?? []
@@ -165,8 +168,8 @@ provide(BREADCRUMB_INJECTION_KEY, context)
 
 <template>
   <nav :class="ui.root()" aria-label="Breadcrumb">
+    <!-- routes 模式由组件渲染条目，否则渲染使用者书写的条目；省略号由 BreadcrumbTrail 插到首个条目之后。插槽内不写注释，原因见 BreadcrumbTrail -->
     <BreadcrumbTrail>
-      <!-- routes 模式：条目由组件渲染，item-render 插槽可接管单项内容 -->
       <template v-if="props.routes?.length">
         <RebornBreadcrumbItem
           v-for="(route, index) in props.routes"
@@ -184,11 +187,8 @@ provide(BREADCRUMB_INJECTION_KEY, context)
           </template>
         </RebornBreadcrumbItem>
       </template>
-
-      <!-- 默认插槽模式：使用者自行书写 RebornBreadcrumbItem -->
       <slot v-else />
 
-      <!-- 折叠省略号：由 BreadcrumbTrail 插到首个条目之后，仅 max-count 触发折叠时渲染 -->
       <template #more>
         <div :class="ui.item()">
           <span :class="ui.more()">

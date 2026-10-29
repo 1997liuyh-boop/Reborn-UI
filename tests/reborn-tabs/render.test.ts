@@ -277,3 +277,201 @@ it('根节点是单个元素：$el 指向根元素，透传属性落在根上', 
     assert.equal(container.children.length, 1);
   } finally { app.unmount(); }
 });
+
+/** 用真实组件配合可控几何尺寸，验证滚动、隐藏项归属与定位，而不是依赖 jsdom 的零尺寸布局。 */
+async function mountOverflowTabs(options: { active?: string; position?: 'auto' | 'start' | 'center' | 'end'; vertical?: boolean } = {}) {
+  const prototype = dom.window.HTMLElement.prototype;
+  const properties = ['clientWidth', 'clientHeight', 'scrollWidth', 'scrollHeight', 'clientLeft', 'clientTop', 'offsetWidth', 'offsetHeight', 'getBoundingClientRect', 'scrollTo', 'scrollBy'] as const;
+  const descriptors = properties.map(key => [key, Object.getOwnPropertyDescriptor(prototype, key)] as const);
+  const contentSize = ref(820);
+  const active = ref(options.active ?? '0');
+  const position = ref(options.position ?? 'auto');
+  const overflow = ref<'scroll' | 'dropdown'>('dropdown');
+  const tabsRef = ref<{ refresh: () => Promise<void> }>();
+  const vertical = options.vertical ?? false;
+  const isViewport = (element: Element) => element.classList.contains('test-viewport');
+  for (const key of properties.slice(0, 8)) {
+    Object.defineProperty(prototype, key, { configurable: true, get() {
+      if (key === 'clientLeft' || key === 'clientTop') return 0;
+      if (key === 'offsetWidth' || key === 'offsetHeight') return this.matches('[data-tabs-overflow], [data-tabs-scroll]') ? 24 : 0;
+      if (!isViewport(this)) return 0;
+      return key.startsWith('scroll') ? contentSize.value : 348 - (this.parentElement?.querySelectorAll('[data-tabs-overflow], [data-tabs-scroll]').length ?? 0) * 24;
+    } });
+  }
+  prototype.getBoundingClientRect = function () {
+    const tab = this.closest('[role="tab"]');
+    const wrapper = tab?.closest('.test-viewport');
+    const index = Number(tab?.textContent?.replace('标签 ', '') ?? 0);
+    const offset = wrapper ? 20 + index * 100 - (vertical ? wrapper.scrollTop : wrapper.scrollLeft) : 0;
+    const left = 100 + (vertical ? 0 : offset);
+    const top = 50 + (vertical ? offset : 0);
+    const width = tab && !vertical ? 80 : isViewport(this) ? this.clientWidth : 300;
+    const height = tab && vertical ? 80 : isViewport(this) ? this.clientHeight : 300;
+    return { x: left, y: top, left, top, right: left + width, bottom: top + height, width, height, toJSON: () => ({}) };
+  };
+  prototype.scrollTo = function (value) {
+    if (typeof value !== 'object') return;
+    if (value.left !== undefined) this.scrollLeft = value.left;
+    if (value.top !== undefined) this.scrollTop = value.top;
+    this.dispatchEvent(new dom.window.Event('scroll'));
+  };
+  prototype.scrollBy = function (value) {
+    if (typeof value !== 'object') return;
+    const maximum = this.scrollWidth - this.clientWidth;
+    this.scrollTo({ left: Math.min(maximum, Math.max(0, this.scrollLeft + (value.left ?? 0))) });
+  };
+  const container = document.createElement('div');
+  document.body.append(container);
+  const app = createApp({ render: () => h(Tabs, {
+    ref: tabsRef, type: 'text', position: vertical ? 'left' : 'top',
+    activeKey: active.value, 'onUpdate:activeKey': (key: string) => { active.value = key; },
+    scrollPosition: position.value, overflow: overflow.value, ui: { navWrapper: 'test-viewport' },
+  }, () => Array.from({ length: 8 }, (_, index) => h(Pane, { paneKey: String(index), title: `标签 ${index}`, disabled: index === 6 }))) });
+  app.component('Icon', { render: () => h('i') });
+  app.mount(container);
+  await wait();
+  const wrapper = container.querySelector<HTMLElement>('.test-viewport')!;
+  return {
+    container, wrapper, active, position, overflow, contentSize,
+    refresh: () => tabsRef.value!.refresh(),
+    cleanup() {
+      app.unmount();
+      container.remove();
+      for (const [key, descriptor] of descriptors) {
+        if (descriptor) Object.defineProperty(prototype, key, descriptor);
+        else Reflect.deleteProperty(prototype, key);
+      }
+    },
+  };
+}
+
+it('省略号按左右隐藏项分别展开，支持悬停、选中、禁用与 Escape 关闭', async () => {
+  const demo = await mountOverflowTabs();
+  const button = (side: string) => demo.container.querySelector<HTMLButtonElement>(`[aria-label="展开${side}侧隐藏标签"]`);
+  const items = () => [...demo.container.querySelectorAll('[role="option"]')].map(item => item.textContent);
+  try {
+    assert.equal(button('左'), null);
+    assert.equal(demo.container.querySelector('[data-tabs-overflow="start"]'), null, '起点移除整个左侧容器，不保留空占位');
+    assert.ok(button('右'));
+    demo.container.querySelector('[data-tabs-overflow="end"]')!.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
+    await wait();
+    assert.deepEqual(items(), ['标签 3', '标签 4', '标签 5', '标签 6', '标签 7']);
+    assert.equal(demo.container.querySelector<HTMLButtonElement>('[role="option"]:disabled')?.textContent, '标签 6');
+    demo.wrapper.scrollLeft = 250;
+    demo.wrapper.dispatchEvent(new dom.window.Event('scroll'));
+    await wait();
+    assert.ok(button('左'));
+    demo.container.querySelector('[data-tabs-overflow="start"]')!.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
+    await wait();
+    assert.deepEqual(items(), ['标签 0', '标签 1', '标签 2']);
+    assert.equal(demo.container.querySelectorAll('[role="listbox"]').length, 1);
+    demo.container.querySelector<HTMLButtonElement>('[role="option"]')!.click();
+    await wait();
+    assert.equal(demo.active.value, '0');
+    assert.equal(demo.wrapper.scrollLeft, 20);
+    assert.equal(demo.container.querySelector('[role="listbox"]'), null);
+    demo.wrapper.scrollLeft = 520;
+    demo.wrapper.dispatchEvent(new dom.window.Event('scroll'));
+    await wait();
+    assert.ok(button('左'));
+    assert.equal(button('右'), null);
+    assert.equal(demo.container.querySelector('[data-tabs-overflow="end"]'), null, '终点移除整个右侧容器');
+    button('左')!.focus();
+    await wait();
+    assert.ok(demo.container.querySelector('[role="listbox"]'));
+    button('左')!.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await wait();
+    assert.equal(demo.container.querySelector('[role="listbox"]'), null);
+  } finally { demo.cleanup(); }
+});
+
+it('悬停从省略号移入面板不会误关闭，离开和点击外部会关闭', async () => {
+  const demo = await mountOverflowTabs();
+  const control = demo.container.querySelector('[data-tabs-overflow="end"]')!;
+  try {
+    control.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
+    await wait();
+    control.dispatchEvent(new dom.window.MouseEvent('mouseleave'));
+    control.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
+    await wait(150);
+    assert.ok(demo.container.querySelector('[role="listbox"]'));
+    control.dispatchEvent(new dom.window.MouseEvent('mouseleave'));
+    await wait(150);
+    assert.equal(demo.container.querySelector('[role="listbox"]'), null);
+    control.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
+    await wait();
+    document.body.dispatchEvent(new dom.window.MouseEvent('pointerdown', { bubbles: true }));
+    document.body.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true, detail: 1 }));
+    await wait();
+    assert.equal(demo.container.querySelector('[role="listbox"]'), null);
+  } finally { demo.cleanup(); }
+});
+
+it('scroll-position 切换参数立即定位，包含内容偏移并限制在首尾边界，横纵方向一致', async () => {
+  for (const vertical of [false, true]) {
+    const demo = await mountOverflowTabs({ active: '4', position: 'start', vertical });
+    const offset = () => vertical ? demo.wrapper.scrollTop : demo.wrapper.scrollLeft;
+    try {
+      assert.equal(offset(), 420);
+      demo.position.value = 'center';
+      await wait();
+      assert.equal(offset(), 310);
+      demo.position.value = 'end';
+      await wait();
+      assert.equal(offset(), 200);
+      demo.active.value = '0';
+      await wait();
+      assert.equal(offset(), 0);
+      demo.position.value = 'center';
+      demo.active.value = '7';
+      await wait();
+      assert.equal(offset(), 820 - (vertical ? demo.wrapper.clientHeight : demo.wrapper.clientWidth));
+      assert.equal(demo.container.querySelector('[data-tabs-overflow="end"]'), null);
+    } finally { demo.cleanup(); }
+  }
+});
+
+it('滑动模式不显示省略号，内容可完整展示时移除导航按钮', async () => {
+  const demo = await mountOverflowTabs();
+  try {
+    assert.equal(demo.container.querySelectorAll('[data-tabs-overflow]').length, 1);
+    demo.overflow.value = 'scroll';
+    await wait();
+    assert.equal(demo.container.querySelector('[data-tabs-overflow]'), null);
+    demo.overflow.value = 'dropdown';
+    await wait();
+    // 内容能放进移除导航按钮后的头部总空间，应退出溢出状态。
+    demo.contentSize.value = 320;
+    await demo.refresh();
+    await wait();
+    assert.equal(demo.container.querySelector('[data-tabs-overflow]'), null);
+  } finally { demo.cleanup(); }
+});
+
+it('scroll 模式两侧箭头可以点击滚动，到达边界禁用，未溢出时不占位', async () => {
+  const demo = await mountOverflowTabs();
+  try {
+    demo.overflow.value = 'scroll';
+    await wait();
+    const previous = demo.container.querySelector<HTMLButtonElement>('[aria-label="向前滚动标签"]')!;
+    const next = demo.container.querySelector<HTMLButtonElement>('[aria-label="向后滚动标签"]')!;
+    assert.ok(previous && next, '溢出时同时显示两侧箭头');
+    assert.equal(previous.disabled, true);
+    assert.equal(next.disabled, false);
+    next.click();
+    await wait();
+    assert.equal(demo.wrapper.scrollLeft, 240);
+    assert.equal(previous.disabled, false);
+    next.click();
+    next.click();
+    await wait();
+    assert.equal(next.disabled, true);
+    const end = demo.wrapper.scrollLeft;
+    previous.click();
+    await wait();
+    assert.ok(demo.wrapper.scrollLeft < end);
+    demo.contentSize.value = 250;
+    await demo.refresh();
+    assert.equal(demo.container.querySelector('[data-tabs-scroll]'), null);
+  } finally { demo.cleanup(); }
+});

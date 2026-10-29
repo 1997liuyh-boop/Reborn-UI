@@ -3,6 +3,7 @@ import type { SelectTriggerAlign, SelectTriggerSide, selectTriggerSizes, SelectT
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from "vue";
 import { useFloatingDismiss } from "~/composables/useFloatingDismiss";
 import { useFloatingHost } from "~/composables/useFloatingHost";
+import { getArrowShadow } from "~/lib/floating";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
@@ -300,10 +301,7 @@ function syncArrow(rect: DOMRect, scrollX: number, scrollY: number) {
   arrowPoint.value = { x, y };
 }
 
-/**
- * 箭头样式：以中心点定位并旋转 45°，只保留朝外两条边的描边，
- * 探进浮层内的那一半用同底色盖住浮层描边，看起来与面板连成一体。
- */
+/** 箭头只保留朝外两条边的描边。 */
 const ARROW_BORDER_WIDTH: Record<ResolvedSide, string> = {
   bottom: "1px 0 0 1px",
   top: "0 1px 1px 0",
@@ -311,11 +309,16 @@ const ARROW_BORDER_WIDTH: Record<ResolvedSide, string> = {
   right: "0 0 1px 1px",
 };
 
+/** 浮层实际的 box-shadow，展开时读取一次，随 ui.dropdown 覆盖的阴影走。 */
+const panelShadow = shallowRef("none");
+
+/** 箭头的底色、描边与投影由同一节点绘制，避免独立投影底片叠出双层轮廓。 */
 const arrowStyle = computed<Record<string, string>>(() => ({
   left: `${arrowPoint.value.x}px`,
   top: `${arrowPoint.value.y}px`,
   transform: "translate(-50%, -50%) rotate(45deg)",
   borderWidth: ARROW_BORDER_WIDTH[resolvedSide.value],
+  boxShadow: getArrowShadow(panelShadow.value),
 }));
 
 /** 滚动补位合批到下一帧，避免一次滚动手势内多次强制同步布局 */
@@ -470,6 +473,9 @@ function onBeforeEnter(el?: Element) {
  */
 function onEnter() {
   syncFloating();
+  // 浮层到 enter 才插入文档，before-enter 时读不到计算样式；阴影随 ui.dropdown 覆盖走，每次展开重读
+  const panel = floatingEl();
+  if (props.arrow && panel) panelShadow.value = getComputedStyle(panel).boxShadow;
   emit("enter");
   nextTick(() => {
     alignActive();

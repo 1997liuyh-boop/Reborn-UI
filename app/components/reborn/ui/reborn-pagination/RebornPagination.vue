@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { paginationSizes, PaginationUI } from "./reborn-pagination.config";
+import type { PaginationColor, paginationSizes, PaginationUI } from "./reborn-pagination.config";
 /**
  * RebornPagination 分页组件 (Web 版)
  * 支持布局组合、简洁模式、页码折叠与完整插槽定制。
@@ -15,6 +15,7 @@ const props = withDefaults(defineProps<PaginationProps>(), {
   layout: "prev, pager, next",
   pageSizes: () => [10, 20, 50, 100],
   size: "md",
+  color: "primary",
   background: false,
   disabled: false,
   hideOnSinglePage: false,
@@ -45,13 +46,15 @@ export interface PaginationProps {
   pageSizes?: number[];
   /** 尺寸：sm / md / lg */
   size?: (typeof paginationSizes)[number];
+  /** 激活页码的语义色 */
+  color?: PaginationColor;
   /** 是否为页码按钮添加背景 */
   background?: boolean;
   /** 是否禁用 */
   disabled?: boolean;
   /** 总页数不超过 1 时整组件隐藏 */
   hideOnSinglePage?: boolean;
-  /** 简洁模式：忽略 layout，只渲染上一页/当前页-总页数/下一页 */
+  /** 简洁模式：忽略 layout，显示上一页、当前页输入框、总页数和下一页 */
   simple?: boolean;
   /** 上一页按钮文字，不传显示箭头图标 */
   prevText?: string;
@@ -207,6 +210,7 @@ function setPage(page: number) {
   const current = Math.floor(Number(modelValue.value)) || 1;
   if (next === current) return;
   modelValue.value = next;
+  // eslint-disable-next-line vue/custom-event-name-casing -- 保留已有分页事件名，兼容调用方。
   emit("current-change", next);
 }
 
@@ -218,6 +222,7 @@ function clampPage() {
   const next = Math.min(Math.max(current, 1), totalPages.value);
   if (next !== current) {
     modelValue.value = next;
+    // eslint-disable-next-line vue/custom-event-name-casing -- 保留已有分页事件名，兼容调用方。
     emit("current-change", next);
   }
 }
@@ -253,9 +258,15 @@ function handleJumperConfirm(value: number | null) {
   jumperValue.value = null;
 }
 
+/** 简洁模式提交页码：清空时保留当前页，输入框始终回显实际页码 */
+function handleSimpleChange(value: number | null) {
+  if (value !== null) jumpTo(value);
+}
+
 /** 处理每页条数变化：同步 model 并触发事件，当前页的钳制交给下方唯一的钳制 watcher */
 function handleSizeChange(size: number) {
   pageSizeModel.value = size;
+  // eslint-disable-next-line vue/custom-event-name-casing -- 保留已有分页事件名，兼容调用方。
   emit("size-change", size);
 }
 
@@ -278,6 +289,7 @@ const ui = computed(() => {
   const overrides = props.ui || {};
   const base = (opts: { active?: boolean; disabled?: boolean } = {}) => ({
     size: props.size,
+    color: props.color,
     active: opts.active ?? false,
     background: props.background,
     disabled: opts.disabled ?? props.disabled,
@@ -341,7 +353,7 @@ defineExpose({
 
 <template>
   <nav v-if="!hideOnSinglePage || totalPages > 1" :class="ui.root()" aria-label="分页导航">
-    <!-- 简洁模式：只渲染 上一页 / 当前页-总页数 / 下一页 -->
+    <!-- 简洁模式：上一页、当前页输入框、斜杠、总页数、下一页 -->
     <template v-if="simple">
       <!-- 上一页 -->
       <slot name="prev" :disabled="prevDisabled" :prev="prev">
@@ -352,7 +364,17 @@ defineExpose({
       </slot>
 
       <!-- 当前页 / 总页数 -->
-      <span :class="ui.simple()">{{ currentPage }} / {{ totalPages }}</span>
+      <div :class="ui.simple()">
+        <div :class="ui.input({ disabled: pagerDisabled })">
+          <RebornInputNumber
+            :model-value="currentPage" size="sm" variant="outlined" align="center" :min="1"
+            :max="totalPages" :disabled="pagerDisabled" inputmode="numeric" aria-label="当前页" hide-button
+            @update:model-value="handleSimpleChange"
+          />
+        </div>
+        <span>/</span>
+        <span>{{ totalPages }}</span>
+      </div>
 
       <!-- 下一页 -->
       <slot name="next" :disabled="nextDisabled" :next="next">
@@ -382,9 +404,14 @@ defineExpose({
               •••
             </span>
             <!-- 页码项：可通过 #pager-item 插槽自定义 -->
-            <slot v-else name="pager-item" :page="item.page" :active="item.active" :disabled="pagerDisabled" :select="() => setPage(item.page)">
-              <button type="button" :class="ui.pagerItem({ active: item.active, disabled: pagerDisabled })"
-                :disabled="pagerDisabled" @click="setPage(item.page)">
+            <slot
+              v-else name="pager-item" :page="item.page" :active="item.active" :disabled="pagerDisabled"
+              :select="() => setPage(item.page)"
+            >
+              <button
+                type="button" :class="ui.pagerItem({ active: item.active, disabled: pagerDisabled })"
+                :disabled="pagerDisabled" @click="setPage(item.page)"
+              >
                 {{ item.page }}
               </button>
             </slot>
@@ -405,9 +432,11 @@ defineExpose({
             <span>前往</span>
 
             <div :class="ui.input({ disabled })">
-              <RebornInputNumber v-model="jumperValue" :size="size" :disabled="disabled" align="center"
+              <RebornInputNumber
+                v-model="jumperValue" :size="size" :disabled="disabled" align="center"
                 variant="outlined" :min="1" :max="totalPages" change-on-wheel hide-button
-                @change="handleJumperConfirm" />
+                @change="handleJumperConfirm"
+              />
             </div>
             <span>页</span>
           </slot>
@@ -421,8 +450,10 @@ defineExpose({
         <!-- 每页条数选择 -->
         <div v-else-if="token === 'sizes'" :class="ui.sizes()">
           <slot name="sizes" :page-size="pageSizeModel" :page-sizes="props.pageSizes" :change="handleSizeChange">
-            <RebornSelect :model-value="pageSizeModel" :options="sizeOptions" :size="props.size"
-              :disabled="props.disabled" :clearable="false" class="w-[110px]" @update:model-value="handleSizeChange" />
+            <RebornSelect
+              :model-value="pageSizeModel" :options="sizeOptions" :size="props.size"
+              :disabled="props.disabled" :clearable="false" class="w-[110px]" @update:model-value="handleSizeChange"
+            />
           </slot>
         </div>
       </template>

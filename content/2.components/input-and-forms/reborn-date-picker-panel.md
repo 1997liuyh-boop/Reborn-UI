@@ -20,7 +20,7 @@ DatePickerPanel 是直接铺在页面里的日期面板，没有输入框和弹�
 
 `type` 决定选择粒度（年 / 季度 / 月 / 周 / 日 / 日期时间），也决定是单选、多选还是范围选择。选中项的外观由 `activeType` 与 `color` 组合给出，`size` 控制格子尺寸，`width` 决定面板由内容撑开还是铺满父容器。
 
-可选范围由 `start` / `end` 划定边界，再由 `disabledMethod` 逐项排除。`shortcuts` 在左侧加快捷侧栏。范围类型默认并排两个联动面板，`unlinkPanels` 取消联动、`singlePanel` 收成一个面板；`showWeekNumber` 在日期视图左侧加一列 ISO 周数，`showToday` 在底部加一栏，一键选中当前时间所在的单位。单元格内容与翻页图标都可以用插槽替换，翻页和切换视图会抛出 `panel-change`。
+可选范围由 `start` / `end` 划定边界，再由 `disabledMethod` 逐项排除。`shortcuts` 添加快捷侧栏，`shortcutPosition` 控制位于左侧或右侧。范围类型默认并排两个联动面板，`unlinkPanels` 取消联动、`singlePanel` 收成一个面板；`showWeekNumber` 在日期视图左侧加一列 ISO 周数，`showToday` 在底部加一栏，一键选中当前时间所在的单位。单元格内容与翻页图标都可以用插槽替换，翻页和切换视图会抛出 `panel-change`。
 
 ### 何时使用
 
@@ -198,7 +198,7 @@ function disabledMethod(date: Date, unit: string) {
 
 ### 快捷选项
 
-`shortcuts` 传入非空数组时，面板左侧出现快捷侧栏。`value` 可以是 `Date`、`Date` 数组，或返回二者的函数；函数写法在点击时才计算，适合「最近 N 天」这类相对日期。
+`shortcuts` 传入非空数组时显示快捷侧栏，`shortcutPosition` 可选 `left`（默认）或 `right`。`value` 可以是 `Date`、`Date` 数组，或返回二者的函数；函数写法在点击时才计算，适合「最近 N 天」这类相对日期。
 
 ```vue
 <script setup lang="ts">
@@ -216,11 +216,14 @@ const shortcuts = [
     v-model="range"
     type="daterange"
     :shortcuts="shortcuts"
+    shortcut-position="right"
   />
 </template>
 ```
 
 ### 今天栏
+
+`highlightToday` 控制今天（或本月、本季度、今年）的文字高亮，默认 `false`；它与底部按钮 `showToday` 分别控制。传入 `<RebornDatePickerPanel highlight-today />` 开启，已选中的今天始终保留选中样式。
 
 `showToday` 在面板底部加一栏，点击选中当前时间所在的单位，文案随类型变为「今天」「本周」「本月」「本季度」「今年」，`datetime` 为「此刻」。点击后视图翻回当前年月，抛出的事件与手动点选这一格相同；文字色跟随 `color`，字号跟随 `size`。
 
@@ -318,6 +321,7 @@ const shortcuts = [
 | `calendar-change` | 范围类型每次点选日期，包括只选了起点时         | 选完起点后实时提示「请选择结束日期」   |
 | `panel-change`    | 翻页、切换年 / 月视图、从年月视图下钻          | 按面板所示月份按需加载排班、价格等数据 |
 | `clear`           | 调用暴露的 `clear()` 方法                      | 清空后重置关联筛选项                   |
+| `hover-change` | `(value: Date \| [Date, Date \| null] \| null)` | 可选单元格的候选值预览；范围未完成时终点为 `null`，离开网格、禁用或切换视图时为 `null`，不更新绑定值。 |
 
 ```vue
 <script setup lang="ts">
@@ -355,11 +359,13 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 | `disabledMinutes`      | `(hour: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                                                | -              | 返回需禁用的分钟数组，入参为当前选中的小时；范围类型可按 `role` 区分开始 / 结束时间。                                                                                                                                                                                                                             |
 | `disabledSeconds`      | `(hour: number, minute: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                                | -              | 返回需禁用的秒数组，入参为当前选中的时、分；范围类型可按 `role` 区分开始 / 结束时间。                                                                                                                                                                                                                             |
 | `disabledMilliseconds` | `(hour: number, minute: number, second: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                | -              | 返回需禁用的毫秒数组，入参为当前选中的时、分、秒；范围类型可按 `role` 区分开始 / 结束时间。                                                                                                                                                                                                                       |
-| `shortcuts`            | `{ text: string; value: any }[]`                                                                                                                                                                                      | `[]`           | 快捷选项；非空时渲染左侧快捷侧栏。`value` 为 `Date`、`Date` 数组或返回二者的函数。                                                                                                                                                                                                                                |
+| `shortcuts`            | `{ text: string; value: any }[]`                                                                                                                                                                                      | `[]`           | 快捷选项；非空时渲染快捷侧栏。`value` 为 `Date`、`Date` 数组或返回二者的函数。                                                                                                                                                                                                                                |
+| `shortcutPosition` | `'left' \| 'right'` | `'left'` | 快捷侧栏位于日期面板左侧或右侧。 |
 | `showWeekNumber`       | `boolean`                                                                                                                                                                                                             | `false`        | 日期视图左侧显示 ISO 周数；`week` / `weekrange` 类型不生效。                                                                                                                                                                                                                                                                    |
 | `unlinkPanels`         | `boolean`                                                                                                                                                                                                             | `false`        | 范围类型取消两个面板的联动，左右各自翻页，左侧始终早于右侧；`singlePanel` 时无效。                                                                                                                                                                                                                                |
 | `singlePanel`          | `boolean`                                                                                                                                                                                                             | `false`        | 范围类型只渲染一个面板；`datetimerange` 的起止时间一并放在该面板头部。                                                                                                                                                                                                                                            |
 | `showToday`            | `boolean`                                                                                                                                                                                                             | `false`        | 面板底部显示「今天」栏，点击选中当前时间所在的单位，见「今天栏」。                                                                                                                                                                                                                     |
+| `highlightToday` | `boolean` | `false` | 是否高亮今天 / 本月 / 本季度 / 今年的文字，与 `showToday` 分别控制；不影响选中样式。 |
 | `defaultValue`         | `Date \| string \| number \| (Date \| string \| number)[]`                                                                                                                                                            | -              | 未选值时面板展示的日期，不写入绑定值；不传时展示当天。字符串按 `valueFormat` 解析，数字按时间戳；数组时第一项定位左面板，`unlinkPanels` 下第二项定位右面板。见「默认展示日期」。 |
 | `size`                 | `'sm' \| 'md' \| 'lg'`                                                                                                                                                                                                | `'md'`         | 尺寸：日期格分别为 26 / 30 / 34px，字号与图标同步缩放。                                                                                                                                                                                                                                                           |
 | `color`                | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'`                                                                                                                                | `'primary'`    | 选中、范围与今日标识的语义色。                                                                                                                                                                                                                                                                                    |
@@ -409,6 +415,7 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 | 方法名  | 签名         | 描述                                                                                          |
 | ------- | ------------ | --------------------------------------------------------------------------------------------- |
 | `clear` | `() => void` | 清空选中值：范围与多选类型置为 `[]`，其余置为 `""`；原本有值时先抛 `change`，最后总会抛 `clear`。 |
+| `focusDate` | `(date: Date) => void` | 定位到日期所在月份或年份并恢复类型对应视图，不改变选中值；禁用时不响应。供外部输入同步面板位置。 |
 
 ### 自定义样式（ui）
 
@@ -420,8 +427,8 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `wrapper`    | 面板最外层容器，默认 `bg-gray-1 transition-all`，溢出由 `overflow` 变体给出（默认 `overflow-visible`），宽度由 `width` 变体给出（`auto` 为 `w-fit`、`full` 为 `w-full`）；面板底色与圆角改这里。 |
 | `container`  | 「快捷侧栏 + 内容区」的横向容器，默认 `flex h-full`。                                                                                                     |
-| `shortcuts`  | 快捷侧栏容器，默认 `border-r border-gray-2 p-4 flex flex-col gap-4 overflow-y-auto` + 隐藏滚动条。**仅 `shortcuts` 非空时渲染。**                         |
-| `shortcut`   | 单个快捷选项，默认 `min-w-15 text-sm text-gray-6 hover:bg-gray-2 hover:text-primary cursor-pointer transition-colors whitespace-nowrap`。                  |
+| `shortcuts` | 快捷侧栏容器，默认 `shrink-0 space-y-2 overflow-y-auto p-2` + 隐藏滚动条；位于左侧时加右分隔线，位于右侧时加左分隔线，颜色均为 `gray-2`。**仅 `shortcuts` 非空时渲染。** |
+| `shortcut` | 快捷按钮，默认 `block h-6 w-26 cursor-pointer truncate bg-gray-2 px-3 py-0 text-center text-sm text-gray-8`；默认根字号下宽 104px、高 24px，水平内边距 12px，字号 12px，文字居中。 |
 | `content`    | 快捷侧栏右侧的内容区，默认 `flex-1`；双面板时为 `flex flex-row divide-x divide-gray-2`。                                                                  |
 | `panelLeft`  | 主（左）面板容器，单面板时为 `w-full`，双面板时为 `flex-1`。                                                                                              |
 | `panelRight` | 右面板容器，默认 `flex-1`。**仅范围类型且未开启 `singlePanel` 时渲染。**                                                                                  |

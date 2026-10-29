@@ -16,7 +16,7 @@ Checkbox 是表单中的多选控件，Web 与 UniApp 两端同名同构。
 
 它的核心设计是**绑定模式由 `modelValue` 的类型决定**：绑定布尔值即单项开关（Web 端还可用 `trueValue` / `falseValue` 自定义写回值），绑定数组即多选（按 `value` 存取选中项）。多选场景推荐用 `RebornCheckboxGroup` 统一管理数组、下发 `size` / `color` / `variant` / `disabled`，并可通过 `options` 快捷渲染、`max` 限制可选数量。
 
-样式体系与 Button 同构：`color` 决定**语义**（7 种语义色），`variant` 决定**视觉强度**（`filled` 实底填充 / `outlined` 描边染色）；`indeterminate` 提供受控的半选状态，`checkbox` / `icon` 插槽支持从图标到整个勾选框的分层定制。
+样式体系与 Button 同构：`color` 决定**语义**（7 种语义色），`variant` 决定**视觉强度**（`filled` 实底填充 / `outlined` 描边染色，Web 端另有 `shadow` 整圈阴影）；`indeterminate` 提供受控的半选状态，`checkbox` / `icon` 插槽支持从图标到整个勾选框的分层定制。
 
 ### 何时使用
 
@@ -71,16 +71,20 @@ const agreed = ref(false);
 
 `color` 控制语义色，`variant` 控制视觉强度，两者自由组合：
 
-| 变体 | 选中态外观 | 半选态外观 |
-| --- | --- | --- |
-| `filled`（默认） | 语义色填充，白色对勾 | 语义色填充，白色横线 |
-| `outlined` | 透明底，语义色描边 + 语义色对勾 | 保持灰色描边，中央显示语义色实心小方块（`dot` 节点） |
+| 变体 | 选中态外观 | 半选态外观 | 典型用途 |
+| --- | --- | --- | --- |
+| `filled`（默认） | 语义色填充，白色对勾 | 语义色填充，白色横线 | 强调选中结果 |
+| `outlined` | 透明底，语义色描边 + 语义色对勾 | 保持灰色描边，中央显示语义色实心小方块（`dot` 节点） | 保留描边与背景 |
+| `shadow`（仅 Web） | 沿用 `outlined`，增加 2px 整圈阴影环 | 语义色描边与中央实心小方块，保留阴影环 | 用浅色环突出控件，保持原有高度 |
+
+`shadow` 的未选、选中与半选状态均显示阴影环，颜色取 `color` 对应色板第 1 阶，使用 `ring-2` 绘制，不占布局空间；禁用时沿用 `outlined` 的灰色样式。
 
 ```vue
 <template>
   <RebornCheckbox v-model="a" color="primary" label="主色填充" />
   <RebornCheckbox v-model="b" color="success" variant="outlined" label="成功色描边" />
   <RebornCheckbox v-model="c" color="error" label="危险操作" />
+  <RebornCheckbox :model-value="true" color="info" variant="shadow" label="整圈阴影（Web）" />
 </template>
 ```
 
@@ -296,7 +300,7 @@ function onCheckAll(value: boolean) {
 | `disabled` | `boolean` | `false` | 是否禁用。 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 尺寸；组内以 Group 的 `size` 为准，单独使用时的回退顺序见「注意事项」。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色；组内以 Group 的 `color` 为准。 |
-| `variant` | `'filled' \| 'outlined'` | `'filled'` | 样式变体，含义见「颜色与变体」；组内以 Group 的 `variant` 为准。 |
+| `variant` | `'filled' \| 'outlined' \| 'shadow'` | `'filled'` | 样式变体，含义见「颜色与变体」；组内以 Group 的 `variant` 为准。 |
 | `class` | `any` | - | 追加到根节点的自定义类名。 |
 | `ui` | `object` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 :::
@@ -358,7 +362,7 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
 | `disabled` | `boolean` | `false` | 是否整组禁用。 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 统一下发给子项的尺寸。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 统一下发给子项的语义色。 |
-| `variant` | `'filled' \| 'outlined'` | `'filled'` | 统一下发给子项的样式变体。 |
+| `variant` | `'filled' \| 'outlined' \| 'shadow'` | `'filled'` | 统一下发给子项的样式变体。 |
 | `class` | `any` | - | 追加到根节点的自定义类名。 |
 | `ui` | `object` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 :::
@@ -431,7 +435,7 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
 | `input` | 隐藏的原生 `input[type=checkbox]` | `peer sr-only` | 始终渲染，承担焦点、键盘切换与读屏 mixed 语义；去掉 `sr-only` 会露出原生方框，去掉 `peer` 会让选中显形与焦点环失效。 |
 | `control` | 勾选方块 | `rounded-sm border border-gray-4 bg-white`，尺寸 `size-4/5/6`，聚焦时 `ring-2 ring-primary/40`；校验失败 `border-red-5`；禁用 `bg-gray-2` | 填充 `checkbox` 插槽后不渲染。 |
 | `icon` | 对勾 / 横线图标 | `size-4 opacity-0 scale-75 transition-all`，选中或半选时由 `control` 的规则显形；禁用 `text-gray-4` | 填充 `checkbox` 或 `icon` 插槽后不渲染；`outlined` 半选时换成 `dot` 节点。 |
-| `dot` | `outlined` 半选时的实心小方块 | `size-full rounded-sm scale-50`，底色取语义色；禁用 `bg-gray-4` | 仅 `variant="outlined"` 且 `indeterminate` 时渲染；填充 `checkbox` 或 `icon` 插槽后不渲染。 |
+| `dot` | `outlined` / `shadow` 半选时的实心小方块 | `size-full rounded-sm scale-50`，底色取语义色；禁用 `bg-gray-4` | 仅 `variant="outlined"` 或 `variant="shadow"` 且 `indeterminate` 时渲染；填充 `checkbox` 或 `icon` 插槽后不渲染。 |
 | `label` | 标签文本容器 | `text-gray-9`，字号随 `size` 取 `--text-size-24/26/28` | 仅在传了 `label` 或默认插槽时渲染；组内用 `options` 时始终渲染。 |
 | `root` | `RebornCheckboxGroup` 的根 `<div>` | `reborn-checkbox-group flex flex-wrap gap-4`，`direction` 追加 `flex-row items-center` / `flex-col items-start`，带 `role="group"` | 仅写在 `RebornCheckboxGroup` 上生效，是该组件唯一的键；与 `class` 合并时 `ui.root` 在后。 |
 :::
@@ -465,10 +469,20 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
 </template>
 ```
 
+### CSS 变量
+
+Web 端定义位于 `app/components/reborn/ui/reborn-checkbox/reborn-checkbox.config.ts`。
+
+| 变量 | 默认值 | 作用 |
+| --- | --- | --- |
+| `--checkbox-color` | 当前 `color` 的语义色 | `shadow` 半选态的边框颜色。 |
+| `--checkbox-ring-color` | `color` 对应色板第 1 阶 | `shadow` 的整圈阴影环颜色；宽度为 2px，不参与布局尺寸计算。 |
+
 ## 两端差异对照
 
 | 维度 | Web | UniApp |
 | --- | --- | --- |
+| 样式变体 | `filled` / `outlined` / `shadow` | `filled` / `outlined` |
 | 自定义类名 | `class`，与 `ui.wrapper` 合并时 `ui` 优先 | `customClass`，与 `ui.wrapper` 合并时 `customClass` 优先 |
 | 自定义写回值 | `trueValue` / `falseValue` | 不支持，布尔模式固定 `true` / `false` |
 | 只读展示 | 只传 `:model-value` 不接更新事件即可：严格受控，点击只派发 `change`，显示保持父值 | `readOnly` prop；只传 `:model-value` 时点击后会接管为内部状态 |

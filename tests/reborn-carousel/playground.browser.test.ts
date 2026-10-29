@@ -419,7 +419,12 @@ it('line 为 24×2px，dot 为 6×6px 和 10×6px 描边，间距和容器内边
   await withCarousel(async (page) => {
     for (const type of ['line', 'dot']) {
       await page.evaluate(type => (window as any).carouselFixture.configure({ pagination: { type } }), type);
-      await page.waitForTimeout(350);
+      // 等待真实切换与尺寸动画完成，避免并行测试时固定等待先于绘制结束。
+      await page.waitForFunction((type) => {
+        const active = document.querySelector('[aria-current="true"]')!;
+        const rect = active.getBoundingClientRect();
+        return rect.width === (type === 'line' ? 24 : 10) && rect.height === (type === 'line' ? 2 : 6);
+      }, type);
       const dimensions = await page.getByRole('button', { name: '切换到第 1 项', exact: true }).evaluate((active) => {
         const inactive = active.nextElementSibling!;
         const style = getComputedStyle(active.parentElement!);

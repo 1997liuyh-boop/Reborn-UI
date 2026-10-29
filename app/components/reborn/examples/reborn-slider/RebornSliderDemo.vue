@@ -214,7 +214,7 @@ const customThumbUi = { thumb: "h-5 w-[30px] rounded-full bg-warning" };
 
     <DemoSection title="范围选择：range 与 v-model:values">
       <template #description>
-        <code>v-model:values</code> 绑定数组并开启 <code>range</code> 即为区间滑块；默认最右侧滑块为激活态（大一号），点击可切换激活对象。
+        <code>v-model:values</code> 绑定数组并开启 <code>range</code> 即为区间滑块；默认最右侧节点为激活节点，点击可切换，悬停或按压时滑块放大并显示圆环。
       </template>
       <DemoBlock layout="stack">
         <RebornSlider v-model:values="rangeValues" class="w-full max-w-sm" range show-value />
@@ -237,7 +237,7 @@ const customThumbUi = { thumb: "h-5 w-[30px] rounded-full bg-warning" };
 
     <DemoSection title="气泡格式化：tooltip.formatter">
       <template #description>
-        <code>tooltip.formatter</code> 接收当前值并返回展示内容，拖拽时在气泡里生效。
+        <code>tooltip.formatter</code> 接收当前值并返回展示内容，悬停或拖拽时在气泡里生效。
       </template>
       <DemoBlock layout="stack" class="gap-6">
         <RebornSlider v-model="percentValue" class="w-full max-w-sm" :tooltip="percentTooltip" />
@@ -250,7 +250,7 @@ const customThumbUi = { thumb: "h-5 w-[30px] rounded-full bg-warning" };
 
     <DemoSection title="气泡显隐：tooltip.open">
       <template #description>
-        缺省仅拖拽时显示气泡；<code>tooltip.open=true</code> 常显、<code>false</code> 强制隐藏（<code>formatter: null</code>
+        缺省悬停或拖拽时显示气泡；<code>tooltip.open=true</code> 常显、<code>false</code> 强制隐藏（<code>formatter: null</code>
         效果等同隐藏）。
       </template>
       <DemoBlock layout="stack" class="gap-8 pt-8">

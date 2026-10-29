@@ -9,7 +9,7 @@ export default {
       'flex flex-row items-center w-full box-border leading-normal rounded-ui-base rounded-lg bg-white dark:bg-gray-8 border border-solid border-gray-3 dark:border-gray-7 transition-[border-color] duration-200 px-2.5',
     content: 'flex-1 truncate text-gray-8 dark:text-gray-1',
     text: 'text-28 overflow-hidden text-ellipsis whitespace-nowrap',
-    placeholder: 'text-28 text-gray-4',
+    placeholder: 'text-28 text-gray-5',
     iconWrapper: 'flex flex-row items-center justify-center pl-2.5',
     clearIcon: 'text-gray-4 text-40',
     arrowIcon: 'text-gray-4 text-40 transition-transform duration-200 origin-center',

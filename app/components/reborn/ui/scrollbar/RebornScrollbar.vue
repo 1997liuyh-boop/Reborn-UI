@@ -12,7 +12,9 @@
  */
 import type { ScrollbarBarsState, ScrollbarBarState } from "./RebornScrollbarBars.vue";
 import { computed, onBeforeUnmount, onMounted, reactive, shallowRef, useTemplateRef, watch } from "vue";
+import { prefersReducedMotion } from "~/lib/motion";
 import RebornScrollbarBars from "./RebornScrollbarBars.vue";
+import { BOUNCE_DISTANCE, BOUNCE_DURATION, claimedWheels, WHEEL_ARRIVAL_WINDOW, WHEEL_GESTURE_GAP } from "./scrollbar-bounce";
 
 interface Props {
   /** 滚动条粗细，可传 4 / 6 / 8 档位或任意像素数值，默认继承 CSS 变量的 6px */
@@ -26,10 +28,16 @@ interface Props {
   /** 停止滚动后隐藏滚动条的延迟（ms），仅 always 为 false 时生效 */
   hideDelay?: number;
   /**
-   * 轨道两端的圆角安全内缩（px）。
-   * "auto"（默认）按容器实际 border-radius 自动推算；传数值则固定为该值，传 0 关闭内缩。
+   * 轨道两端的内缩（px）。
+   * "auto"（默认）取贴边间距 --reborn-scrollbar-gap 与按容器 border-radius 推算值中的较大者，
+   * 轨道四周都不贴边；传数值则固定为该值，传 0 让两端贴边。
    */
   inset?: number | "auto";
+  /**
+   * 滚轮滚到顶部 / 底部（横向为最左 / 最右）时是否播放 2px 的回弹反馈。
+   * 只响应滚轮与触控板；拖拽滑块、点击轨道、命令式滚动与触屏不回弹，系统开启「减少动态效果」时不播放
+   */
+  bounce?: boolean;
   /** 顶部固定内容高度（px），仅从纵向轨道与表体视窗中排除，默认 0 */
   verticalOffset?: number;
   /**
@@ -65,6 +73,7 @@ const props = withDefaults(defineProps<Props>(), {
   horizontal: true,
   hideDelay: 800,
   inset: "auto",
+  bounce: true,
   verticalOffset: 0,
   track: false,
   scrollDuration: 400,
@@ -110,6 +119,20 @@ let scrollResolve: (() => void) | null = null;
  * 由 onScroll 消费后清除。
  */
 let silentPending = false;
+/** 下一次 scroll 事件来自命令式滚动，消费方式同 silentPending；这类滚动到达边缘不回弹 */
+let programmaticPending = false;
+
+/** 某一轴当前停靠的边缘：start 为顶部 / 最左，end 为底部 / 最右，null 为中间或该轴不可滚动 */
+type ScrollEdge = "start" | "end" | null;
+/** 上一次记录的两轴边缘状态，scroll 时对比它判断是否刚刚到达边缘 */
+const edges: Record<"y" | "x", ScrollEdge> = { y: null, x: null };
+/** 最近一次 wheel 事件的时间戳，用来区分滚轮送达与拖拽、点击轨道等其它到达方式 */
+let lastWheelAt = Number.NEGATIVE_INFINITY;
+/** 本次滚轮手势里已经回弹过的边缘（如 "y-end"），手势结束或离开该边缘后清除 */
+let bouncedEdge: string | null = null;
+let wheelGestureTimer: ReturnType<typeof setTimeout> | null = null;
+/** 进行中的回弹动画；播放期间不叠加新的回弹 */
+let bounceAnimation: Animation | null = null;
 
 /** 拖拽起点：鼠标坐标与起始滚动偏移 */
 let dragStartPos = 0;
@@ -136,14 +159,15 @@ const rootStyle = computed(() => {
 });
 
 /**
- * 计算轨道两端的圆角安全内缩。
+ * 计算轨道两端的内缩。
  *
- * 容器带 border-radius 且 overflow: hidden 时，贴边的轨道会让 thumb 滚到
+ * 下限是贴边一侧的间距 gap：轨道离容器右 / 下边缘留了 gap，两端也留同样的距离，四周边距一致。
+ * 容器带 border-radius 且 overflow: hidden 时，贴边的轨道还会让 thumb 滚到
  * 顶端 / 末端时被圆角弧线削掉一角。以轨道最外侧那一列像素与弧线的交点求内缩量：
- * 设圆角半径 R、轨道离容器边缘 gap，则 inset = R - √(R² - (R - gap)²)。
- * gap ≥ R 时轨道已在直边区域，无需内缩。
+ * 设圆角半径 R、轨道离容器边缘 gap，则 R - √(R² - (R - gap)²)。
+ * gap ≥ R 时轨道已在直边区域，弧线不构成约束。最终取两者较大值。
  *
- * inset 属性传入数值时跳过自动测量，直接采用该值（0 即关闭内缩）。
+ * inset 属性传入数值时跳过自动测量，直接采用该值（0 即两端贴边）。
  */
 function measureInset() {
   if (typeof props.inset === "number") {
@@ -155,6 +179,7 @@ function measureInset() {
   if (!root || typeof window === "undefined") return;
 
   const styles = window.getComputedStyle(root);
+  const gap = Number.parseFloat(styles.getPropertyValue("--reborn-scrollbar-gap")) || 0;
   // 纵向条贴右侧、横向条贴底部，取这三个角中最大的半径以覆盖全部端点
   const radius = Math.max(
     Number.parseFloat(styles.borderTopRightRadius) || 0,
@@ -162,15 +187,10 @@ function measureInset() {
     Number.parseFloat(styles.borderBottomLeftRadius) || 0,
   );
 
-  if (radius <= 0) {
-    insetValue.value = 0;
-    return;
-  }
-
-  const gap = Number.parseFloat(styles.getPropertyValue("--reborn-scrollbar-gap")) || 0;
   const dx = Math.max(radius - gap, 0);
   // 向上取整留 1px 余量，避免亚像素下仍有轻微切边
-  insetValue.value = Math.ceil(radius - Math.sqrt(Math.max(radius * radius - dx * dx, 0)));
+  const curve = radius > 0 ? Math.ceil(radius - Math.sqrt(Math.max(radius * radius - dx * dx, 0))) : 0;
+  insetValue.value = Math.max(gap, curve);
 }
 
 /** 纵向几何统一排除固定头部；过大的偏移最多占满可用轨道 */
@@ -237,6 +257,104 @@ function update() {
 function refresh() {
   measureInset();
   update();
+  // 尺寸变化可能让位置离开或贴上边缘，只更新记录，不算「到达」
+  if (wrapRef.value) syncEdges(wrapRef.value, false);
+}
+
+/** 某一轴的最大可滚动距离；横向关闭时视为不可滚动 */
+function maxScrollOf(wrap: HTMLElement, axis: "y" | "x") {
+  if (axis === "y") return wrap.scrollHeight - wrap.clientHeight;
+  return props.horizontal ? wrap.scrollWidth - wrap.clientWidth : 0;
+}
+
+/** 读取某一轴当前停靠的边缘；容差 1px，规避缩放下的亚像素滚动位置 */
+function readEdge(wrap: HTMLElement, axis: "y" | "x"): ScrollEdge {
+  const max = maxScrollOf(wrap, axis);
+  if (max <= 1) return null;
+  const position = axis === "y" ? wrap.scrollTop : wrap.scrollLeft;
+  if (position <= 1) return "start";
+  if (position >= max - 1) return "end";
+  return null;
+}
+
+/**
+ * 更新两轴的边缘记录；allowBounce 为 true 时，刚到达边缘的轴播放回弹。
+ * 离开已回弹过的边缘后清掉手势锁，同一手势里滚回来还能再弹一次。
+ */
+function syncEdges(wrap: HTMLElement, allowBounce: boolean) {
+  for (const axis of ["y", "x"] as const) {
+    const edge = readEdge(wrap, axis);
+    const previous = edges[axis];
+    edges[axis] = edge;
+    if (bouncedEdge?.startsWith(axis) && bouncedEdge !== `${axis}-${edge}`) bouncedEdge = null;
+    if (allowBounce && edge && edge !== previous) playBounce(axis, edge);
+  }
+}
+
+/**
+ * 播放一次边缘回弹：滚动层朝越界方向位移 2px 后回到原位。
+ *
+ * 位移加在滚动层 wrap 上而不是内容层：内容层向上平移会缩小可滚动区域，
+ * 停在底部时 scrollTop 被浏览器夹回，动画结束后就不再贴底；平移滚动层本身不改变任何滚动量。
+ * 用原生 WAAPI 且不保留结束帧，播完不在滚动层上留下 transform，
+ * 内部 position: fixed 元素只在这 320ms 内以滚动层为定位参照。
+ */
+function playBounce(axis: "y" | "x", edge: "start" | "end") {
+  const wrap = wrapRef.value;
+  const key = `${axis}-${edge}`;
+  if (!wrap || !props.bounce || bouncedEdge === key) return;
+  bouncedEdge = key;
+  if (bounceAnimation || typeof wrap.animate !== "function" || prefersReducedMotion()) return;
+
+  // 到达顶部 / 最左时内容顺着来势继续往下 / 往右多走一点，底部 / 最右反之
+  const distance = edge === "start" ? BOUNCE_DISTANCE : -BOUNCE_DISTANCE;
+  const translate = (value: number) => (axis === "y" ? `translateY(${value}px)` : `translateX(${value}px)`);
+  // 缓动逐段生效：前 30% 快速冲出，后段平滑收回，不做反向过冲
+  bounceAnimation = wrap.animate(
+    [
+      { transform: translate(0), easing: "cubic-bezier(0.2, 0, 0, 1)" },
+      { transform: translate(distance), offset: 0.3, easing: "cubic-bezier(0.3, 0, 0.2, 1)" },
+      { transform: translate(0) },
+    ],
+    { duration: BOUNCE_DURATION },
+  );
+  const release = () => {
+    bounceAnimation = null;
+  };
+  bounceAnimation.onfinish = release;
+  bounceAnimation.oncancel = release;
+}
+
+/**
+ * 滚轮输入：中止命令式动画，并处理「已在边缘还继续朝外滚」的回弹。
+ * 这种情况浏览器不派发 scroll，只能在 wheel 里判断；刚滚到边缘的情况由 onScroll 处理。
+ */
+function onWheel(event: WheelEvent) {
+  stopScroll();
+  lastWheelAt = performance.now();
+  // 每个 wheel 都把手势结束往后推，惯性滚动期间同一边缘只回弹一次
+  if (wheelGestureTimer) clearTimeout(wheelGestureTimer);
+  wheelGestureTimer = setTimeout(() => {
+    wheelGestureTimer = null;
+    bouncedEdge = null;
+  }, WHEEL_GESTURE_GAP);
+
+  // Ctrl + 滚轮是缩放手势；已被内层实例认领的事件不再参与判断
+  const wrap = wrapRef.value;
+  if (!wrap || event.ctrlKey || claimedWheels.has(event)) return;
+
+  // Shift + 滚轮在部分平台只报 deltaY，浏览器按横向滚动处理
+  const shifted = event.shiftKey && event.deltaX === 0;
+  const dx = shifted ? event.deltaY : event.deltaX;
+  const dy = shifted ? 0 : event.deltaY;
+  const axis = Math.abs(dy) >= Math.abs(dx) ? "y" : "x";
+  const delta = axis === "y" ? dy : dx;
+  if (delta === 0 || maxScrollOf(wrap, axis) <= 1) return;
+
+  // 本实例在该方向上能滚动，事件归它；关闭回弹的实例同样认领，外层不会替它回弹
+  claimedWheels.add(event);
+  const edge = readEdge(wrap, axis);
+  if ((delta < 0 && edge === "start") || (delta > 0 && edge === "end")) playBounce(axis, edge);
 }
 
 /** 滚动时同步 thumb 位置，并在非常驻模式下短暂显示滚动条 */
@@ -245,6 +363,14 @@ function onScroll() {
   if (!wrap) return;
   update();
   emit("scroll", { scrollTop: wrap.scrollTop, scrollLeft: wrap.scrollLeft });
+
+  // 只有滚轮送达的边缘才回弹：拖拽滑块、点击轨道与命令式滚动都不在滚轮时间窗内或被单独排除
+  const programmatic = programmaticPending;
+  programmaticPending = false;
+  syncEdges(
+    wrap,
+    props.bounce && !programmatic && bars.dragging === null && performance.now() - lastWheelAt < WHEEL_ARRIVAL_WINDOW,
+  );
 
   // 静默滚动只同步 thumb 位置，不触发淡入
   if (silentPending) {
@@ -365,8 +491,9 @@ function cancelScrollAnimation() {
  */
 function stopScroll() {
   cancelScrollAnimation();
-  // 用户接管滚动时作废静默标记，让随后的滚动正常显示滚动条
+  // 用户接管滚动时作废静默与命令式标记，让随后的滚动正常显示滚动条、到边正常回弹
   silentPending = false;
+  programmaticPending = false;
 }
 
 /** 缓动曲线 easeInOutCubic：起步与收尾平缓、中段快，观感最接近原生平滑滚动 */
@@ -414,7 +541,10 @@ function scrollTo(position: { top?: number; left?: number }, options?: ScrollToO
     if (hasTop) wrap.scrollTop = fromTop + distanceTop * progress;
     if (hasLeft) wrap.scrollLeft = fromLeft + distanceLeft * progress;
     // 仅实际位移更新标记：无位移保留旧状态，非静默位移则恢复正常淡入。
-    if (wrap.scrollTop !== beforeTop || wrap.scrollLeft !== beforeLeft) silentPending = silent;
+    if (wrap.scrollTop !== beforeTop || wrap.scrollLeft !== beforeLeft) {
+      silentPending = silent;
+      programmaticPending = true;
+    }
   };
 
   // 减少动态效果、关闭动画、无位移或环境无 rAF 时直接落位。
@@ -475,6 +605,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (hideTimer) clearTimeout(hideTimer);
+  if (wheelGestureTimer) clearTimeout(wheelGestureTimer);
+  bounceAnimation?.cancel();
   resizeObserver?.disconnect();
   resizeObserver = null;
   // 卸载时中止滚动动画，避免 rAF 回调访问已销毁的 DOM
@@ -497,13 +629,13 @@ defineExpose({ update, refresh, scrollTo, setScrollTop, setScrollLeft, stopScrol
     @mouseleave="bars.hovering = false"
   >
     <!-- 滚动层：原生滚动条已隐藏，宽度为 0，内容可视宽度恒定 -->
-    <!-- 滚轮 / 触摸表示用户接管滚动，需中止进行中的动画 -->
+    <!-- 滚轮 / 触摸表示用户接管滚动，需中止进行中的动画；滚轮另负责边缘回弹 -->
     <div
       ref="wrapRef"
       class="reborn-scrollbar__wrap"
       :class="[wrapClass, { 'reborn-scrollbar__wrap--no-x': !horizontal }]"
       @scroll="onScroll"
-      @wheel.passive="stopScroll"
+      @wheel.passive="onWheel"
       @touchstart.passive="stopScroll"
     >
       <div ref="contentRef" :class="contentClass">

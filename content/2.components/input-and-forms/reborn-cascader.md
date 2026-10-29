@@ -116,6 +116,8 @@ const options = [
 
 `allow-search` 把触发器变成输入框，多选模式下默认开启。输入后面板被一列拍平的结果顶掉，默认按整条路径文本匹配；`search-option-only-label` 改成只显示（并只匹配）选项自身的文本。`filter-option` 可以整条换掉匹配规则，`search-delay` 只影响 `search` 事件的防抖节奏，本地过滤始终立即生效。
 
+搜索无结果或选项为空时，下拉面板与触发器等宽。通过 `empty` 插槽自定义两种空态的内容。
+
 ```vue
 <template>
   <RebornCascader
@@ -126,7 +128,9 @@ const options = [
     :filter-option="(input, option) => option.label.includes(input)"
     :search-delay="300"
     @search="fetchRemote"
-  />
+  >
+    <template #empty>未找到匹配地区，请更换关键词</template>
+  </RebornCascader>
 </template>
 ```
 
@@ -541,6 +545,8 @@ Web 端不自带私有尺寸变量，触发器使用 Tailwind 原生刻度；字
 | :--- | :--- | :--- |
 | 触发器高度三档 | `h-6` / `h-8` / `h-10` | `24px` / `32px` / `40px` |
 | 触发器水平内边距三档 | `px-2.5` / `px-3` / `px-4` | `10px` / `12px` / `16px` |
+
+多选标签左侧固定留 `4px`，右侧仍沿用尺寸档位，保证同尺寸单选与多选的尾部图标对齐。`borderless` 与 `underlined` 保持左右内边距为 `0`。
 
 ## 两端差异对照
 

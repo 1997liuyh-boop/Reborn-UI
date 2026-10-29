@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { PlaygroundControlGroup } from '~/components/common/play-ground/Playground.vue';
 import type { StepsUI } from '~/components/reborn/ui/reborn-steps/reborn-steps.config';
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
@@ -31,7 +32,6 @@ const defaultState: Record<string, any> = {
   processStatus: 'process',
   finishStatus: 'finish',
   progressEnabled: false,
-  progressStep: 1,
   overallMode: false,
   progress: 45,
   overallProgress: 50,
@@ -43,6 +43,15 @@ const defaultState: Record<string, any> = {
   color: 'primary',
 };
 const state = ref<Record<string, any>>({ ...defaultState });
+/** 两种演示模式互斥，避免整体折算与单步配置互相覆盖。 */
+const playgroundState = computed({
+  get: () => state.value,
+  set: (next: Record<string, any>) => {
+    if (next.progressEnabled && !state.value.progressEnabled) next = { ...next, overallMode: false };
+    else if (next.overallMode && !state.value.overallMode) next = { ...next, progressEnabled: false };
+    state.value = next;
+  },
+});
 const lastChange = shallowRef('尚未切换步骤');
 /** 纯数字转为数值传递，其余输入保留为 CSS 长度。 */
 function parseLength(input: unknown) {
@@ -53,14 +62,25 @@ const playgroundWidth = computed(() => parseLength(state.value.width));
 const playgroundSpace = computed(() => parseLength(state.value.space));
 /** 留空时横向居中布局回退到下方，明确选择位置时保留该位置。 */
 const playgroundPlacement = computed(() => state.value.placement || undefined);
-/** 整体进度负责折算展示下标，单步进度可以独立覆盖圆环百分比。 */
+/** 整体进度负责折算展示下标，关闭时不传入该参数。 */
 const playgroundOverallProgress = computed(() => state.value.overallMode ? Number(state.value.overallProgress) : undefined);
-/** 选中的步骤单独接收进度，其余步骤使用整体进度的折算结果。 */
+/** 单步进度始终传给当前步骤，切换步骤后继续显示所设百分比。 */
 function getPlaygroundProgress(index: number) {
-  return state.value.progressEnabled && index === Number(state.value.progressStep) ? Number(state.value.progress) : undefined;
+  return state.value.progressEnabled && index === Number(state.value.active) ? Number(state.value.progress) : undefined;
 }
+/** 回显当前进度，并说明无圆环的状态组合，避免配置结果不明确。 */
+const playgroundProgressNote = computed(() => {
+  const value = state.value;
+  if (!value.progressEnabled && !value.overallMode) return '开启一种进度模式后，可调节对应百分比。';
+  if (value.overallMode ? Number(value.overallProgress) >= 100 : Number(value.active) >= items.length) return '全部步骤已完成，没有进行中的步骤可显示进度圆环。';
+  if (value.type === 'text') return '文本步骤不显示节点圆环；选择 default 或 dot 可查看进度圆环。';
+  if (value.processStatus !== 'process') return `当前步骤状态为 ${value.processStatus}；进度圆环仅在 process 状态下显示。`;
+  return value.overallMode
+    ? `整体进度 ${value.overallProgress}%，自动折算当前步骤及其进度，不修改 active。`
+    : `当前第 ${Number(value.active) + 1} 步，单步进度 ${value.progress}%；切换步骤后进度跟随当前步骤。`;
+});
 /** 演练场真实配置项。 */
-const controls: any = [
+const controls: PlaygroundControlGroup[] = [
   {
     title: '基础属性',
     children: [
@@ -74,7 +94,7 @@ const controls: any = [
   {
     title: '状态',
     children: [
-      { label: '当前下标（4 表示全部完成）', key: 'active', component: 'input-number', defaultValue: 1, props: { min: 0, max: items.length } },
+      { label: '当前下标（4 表示全部完成）', key: 'active', component: 'input-number', defaultValue: 1, props: { min: 0, max: items.length }, hide: (value, model) => model.overallMode },
       { label: '当前步骤状态', key: 'processStatus', component: 'select', defaultValue: 'process', props: { options: options(stepsStatuses) } },
       { label: '前序步骤状态', key: 'finishStatus', component: 'select', defaultValue: 'finish', props: { options: options(stepsStatuses) } },
     ],
@@ -83,10 +103,9 @@ const controls: any = [
     title: '进度',
     children: [
       { label: '设置单步进度', key: 'progressEnabled', component: 'checkbox', defaultValue: false },
-      { label: '接收进度的步骤', key: 'progressStep', component: 'select', defaultValue: 1, props: { options: items.map((item, index) => ({ label: `${index}：${item.title}`, value: index })) } },
       { label: '使用整体进度（自动折算步骤）', key: 'overallMode', component: 'checkbox', defaultValue: false },
-      { label: '所选步骤进度（%）', key: 'progress', component: 'input-number', defaultValue: 45, props: { min: 0, max: 100, step: 5 } },
-      { label: '整体进度（%）', key: 'overallProgress', component: 'input-number', defaultValue: 50, props: { min: 0, max: 100, step: 5 } },
+      { label: '当前步骤进度（%）', key: 'progress', component: 'input-number', defaultValue: 45, props: { min: 0, max: 100, step: 5 }, hide: (value, model) => !model.progressEnabled },
+      { label: '整体进度（%）', key: 'overallProgress', component: 'input-number', defaultValue: 50, props: { min: 0, max: 100, step: 5 }, hide: (value, model) => !model.overallMode },
     ],
   },
   {
@@ -183,7 +202,7 @@ const firstTwoItems = items.slice(0, 2);
 <template>
   <div class="flex w-full flex-col">
     <Playground
-      v-model="state" :controls="controls" :code="stepsCode" component-name="RebornSteps" title="交互演练场"
+      v-model="playgroundState" :controls="controls" :code="stepsCode" component-name="RebornSteps" title="交互演练场"
       description="调节尺寸、状态、进度和布局，查看节点圆环与步骤之间的连接关系。"
     >
       <template #tag>
@@ -225,8 +244,8 @@ const firstTwoItems = items.slice(0, 2);
           </RebornButton>
         </div>
         <DemoNote tone="dimmed">
-          {{ lastChange }}；整体进度模式自动折算展示下标，不修改 <code>active</code>，也不触发 <code>change</code>。
-          单步 <code>progress</code> 仅在该步骤当前处于 <code>process</code> 时显示，优先于整体折算百分比。
+          {{ playgroundProgressNote }}
+          {{ lastChange }}；仅修改进度不会触发 <code>change</code>。
         </DemoNote>
       </div>
     </Playground>

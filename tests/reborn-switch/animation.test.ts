@@ -28,9 +28,18 @@ for (const [platform, theme] of Object.entries({ web: webTheme, uni: uniTheme })
         for (const autoWidth of [false, true]) {
           const off = styles({ size, type, autoWidth, active: false }).thumb();
           const on = styles({ size, type, autoWidth, active: true }).thumb();
-          assert.ok(off.includes('left-[2px]'));
-          assert.ok(on.includes('right-[2px]'));
-          assert.ok(on.includes('left-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))]'));
+          if (platform === 'web' && type === 'line') {
+            assert.ok(off.split(/\s+/).includes('left-0'));
+            assert.ok(on.split(/\s+/).includes('right-0'));
+            assert.ok(off.includes('right-[max(0px,calc(100%_-_var(--re-switch-thumb-size)))]'));
+            assert.ok(on.includes('left-[max(0px,calc(100%_-_var(--re-switch-thumb-size)))]'));
+            assert.ok(off.includes('motion-safe:group-[:active:not([data-disabled=true])]/switch:right-[max(0px,calc(100%_-_var(--re-switch-thumb-size)*1.3))]'));
+            assert.ok(on.includes('motion-safe:group-[:active:not([data-disabled=true])]/switch:left-[max(0px,calc(100%_-_var(--re-switch-thumb-size)*1.3))]'));
+          } else {
+            assert.ok(off.includes('left-[2px]'));
+            assert.ok(on.includes('right-[2px]'));
+            assert.ok(on.includes('left-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))]'));
+          }
           assert.ok(!on.includes('-translate-x-full'));
           assert.ok(!on.includes('-ml-0.5'));
           assert.ok(off.includes('w-auto'));

@@ -68,9 +68,9 @@ export const DROPDOWN_INJECTION_KEY: InjectionKey<DropdownContext> = Symbol('reb
 
 /*
  * 视觉规格对齐 reborn-select 的下拉列表：
- * 选项字号 14px / 行高 150% / 内边距 6/4 / 圆角 4px（rounded-sm），文字 gray-6，
- * hover 浅灰底 bg-gray-2（与 select 的 optionHighlight 同色），行距 4px，
- * 面板内边距 4/6，页头页脚 13px 字号、gray-3 分隔线。
+ * 选项字号 14px / 行高 150% / 内边距 6/4 / 圆角 4px（rounded-sm），文字 gray-8，
+ * hover 浅灰底 bg-gray-2（与 select 的 optionHighlight 同色），行距 4px，面板内边距 4/6。
+ * 页头与选项同一套内边距、字号与行距，只把文字降到 gray-5、不画分隔线；页脚 12px 字号，同样不画分隔线。
  * 颜色只用灰阶 token（base.css 的 .dark 会整条翻转），不写 dark: 前缀以免二次翻转。
  * 浮层外壳（底色 / 描边 / 圆角 / 阴影）由 RebornSelectTrigger 给出，与 Select 完全同源；
  * 这里只负责壳内的内容排版。禁用态走 data-[disabled]。
@@ -82,18 +82,19 @@ export const dropdownTheme = tv({
     wrapper: 'inline-flex w-fit',
     trigger: 'inline-flex cursor-pointer',
     panel: 'px-[4px] py-[6px]',
-    // 页眉 / 页脚比选项弱一档：text-sm（12px / 20px 行高）
-    header: 'shrink-0 border-b border-gray-3 px-[10px] py-[6px] text-sm text-gray-6',
+    // 页眉排版与 item 一致（内边距、字号、与下方选项的 4px 行距），只换成 gray-5 弱化色，不画分隔线
+    header: 'mb-[4px] shrink-0 px-[6px] py-[4px] text-base text-gray-5',
     list: 'max-h-60 overflow-y-auto scrollbar-hide space-y-[4px]',
-    item: 'flex w-full cursor-pointer select-none items-center gap-1 rounded-sm px-[6px] py-[4px] text-base text-gray-6 transition-colors hover:bg-gray-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent',
+    item: 'flex w-full cursor-pointer select-none items-center gap-1 rounded-sm px-[6px] py-[4px] text-base text-gray-8 transition-colors hover:bg-gray-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent',
     itemIcon: 'flex size-4 shrink-0 items-center justify-center',
     itemLabel: 'flex-1 truncate',
     // 子菜单入口右侧的展开指示箭头
     submenuIcon: 'ml-auto size-4 shrink-0 text-gray-5',
-    // 选项组：组内选项沿用列表的 4px 行距；组标题用 text-sm 弱化灰
-    group: 'space-y-[4px]',
+    // 选项组：组内行距 4px，相邻分组之间绘制 gray-2 分割线，左右各缩进 8px 不贴面板边缘；组标题用 text-sm 弱化灰
+    group: 'space-y-[4px] [&+&]:before:mx-2 [&+&]:before:mb-1 [&+&]:before:block [&+&]:before:h-px [&+&]:before:bg-gray-2',
     groupTitle: 'select-none px-[6px] py-[4px] text-sm text-gray-5',
-    footer: 'shrink-0 border-t border-gray-3 px-[10px] py-[6px] text-sm text-gray-6',
+    // 页脚比选项弱一档：text-sm（12px / 20px 行高），与页头一样不画分隔线
+    footer: 'shrink-0 px-[10px] py-[6px] text-sm text-gray-6',
   },
 });
 

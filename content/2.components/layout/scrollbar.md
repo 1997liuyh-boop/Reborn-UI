@@ -15,9 +15,9 @@ tags: [vue, component, scrollbar, layout]
 
 `RebornScrollbar` 是一个浮层式滚动条组件：原生滚动条被彻底隐藏（宽度为 0），滚动条视觉由绝对定位的浮层 DOM 承担。因此滚动条悬浮于内容之上，内容可视宽度不受有无滚动条影响，不会产生布局抖动。
 
-`size` 决定粗细，`track` 决定轨道显形，`inset` 决定圆角安全内缩；`verticalOffset` 独立排除顶部固定区域，仅影响纵向轨道和滑块比例，不改变横向几何或内容布局。
+`size` 决定粗细，`track` 决定轨道显形，`inset` 决定轨道两端的内缩（默认四周都留出与贴边一侧相同的间距，圆角容器自动加大）；`verticalOffset` 独立排除顶部固定区域，仅影响纵向轨道和滑块比例，不改变横向几何或内容布局。
 
-`always` / `hideDelay` 控制显示时机，`horizontal` 控制横向溢出，`wrapClass` / `contentClass` 设置内部类名。`scrollTo` 支持双轴同步动画，旧 `setScrollTop` / `setScrollLeft` 保留单轴默认动画和静默选项；当前组件仅提供 Web 实现。
+`always` / `hideDelay` 控制显示时机，`bounce` 控制滚轮到达边缘时的 2px 回弹，`horizontal` 控制横向溢出，`wrapClass` / `contentClass` 设置内部类名。`scrollTo` 支持双轴同步动画，旧 `setScrollTop` / `setScrollLeft` 保留单轴默认动画和静默选项；当前组件仅提供 Web 实现。
 
 ### 何时使用
 
@@ -25,6 +25,7 @@ tags: [vue, component, scrollbar, layout]
 - 长列表只需纵向滚动——设置 `horizontal="false"` 裁剪横向内容。
 - 固定表头上方不能出现纵向轨道——向 `verticalOffset` 传入实际表头累计高度（px）。
 - 容器带圆角——保留 `inset="auto"`，防止滑块端部被裁剪。
+- 需要提示已经滚到尽头——保留 `bounce`（默认开启），到达边缘时内容轻微回弹，不会生硬停住。
 - 需要调整命令式定位节奏——通过 `scrollDuration` 指定默认动画时长（ms）。
 
 ### 何时不使用
@@ -53,33 +54,55 @@ tags: [vue, component, scrollbar, layout]
 </template>
 ```
 
-### 圆角自适应
+### 边缘回弹
 
-`inset` 默认按实际圆角自动内缩，传数值可固定内缩。组件根元素为 `overflow: hidden`，容器一旦带上 `rounded-*`，紧贴边缘的轨道两端就会落进圆角弧线的裁剪区，thumb 滚到顶端 / 末端时会被削掉一角。
+`bounce` 默认开启：滚轮把内容送到顶部 / 底部（横向为最左 / 最右），或已在边缘还继续朝外滚时，滚动层朝越界方向位移 2px 后收回，提示已到边界。
 
-组件在挂载与尺寸变化时会读取容器实际的 `border-radius`，按弧线与轨道外沿的交点求出安全内缩量并写入 `--reborn-scrollbar-inset`：
+| 触发方式 | 是否回弹 | 原因 |
+| --- | --- | --- |
+| 滚轮 / 触控板滚到边缘、在边缘继续滚 | 回弹，一次手势只弹一次 | 滚轮停顿 200ms 视为手势结束，触控板惯性不会连弹 |
+| 拖拽滑块、点击轨道 | 不回弹 | 位置由用户直接指定，没有「冲过头」的过程 |
+| `scrollTo` 等命令式滚动 | 不回弹 | 自带缓动收尾 |
+| 触屏 | 不回弹 | 移动端浏览器自带越界效果，叠加会弹两次 |
 
-`inset = ceil(R - √(R² - (R - gap)²))`
+```vue
+<template>
+  <RebornScrollbar class="h-64">默认到边回弹</RebornScrollbar>
+  <RebornScrollbar :bounce="false" class="h-64">关闭回弹</RebornScrollbar>
+</template>
+```
 
-其中 `R` 为圆角半径、`gap` 为 `--reborn-scrollbar-gap`。以默认的 `rounded-2xl`（16px）配 `gap: 2px` 为例，内缩量为 9px，轨道上下各让出 9px，thumb 在两端都完整可见。容器无圆角时内缩为 `0`，行为与直角容器完全一致。
+::tip
+位移加在滚动层上而不是内容层：内容层向上平移会缩小可滚动区域，停在底部时 `scrollTop` 会被浏览器夹回，回弹结束后就不再贴底；平移滚动层不改变任何滚动量，`scroll` 事件也不会因回弹多派发。嵌套滚动时只有最内层在该方向能滚动的实例回弹，外层不跟着弹。
+::
+
+### 边距与圆角自适应
+
+`inset` 默认让轨道四周都不贴边，圆角容器自动加大两端内缩；传数值可固定内缩。轨道贴边一侧（纵向条的右侧、横向条的底部）留 `--reborn-scrollbar-gap`（默认 2px），两端至少留出同样的距离。组件根元素为 `overflow: hidden`，容器一旦带上 `rounded-*`，轨道两端还会落进圆角弧线的裁剪区，thumb 滚到顶端 / 末端时会被削掉一角。
+
+组件在挂载与尺寸变化时会读取容器实际的 `border-radius`，按弧线与轨道外沿的交点求出安全内缩量，与 `gap` 取较大值后写入 `--reborn-scrollbar-inset`：
+
+`inset = max(gap, ceil(R - √(R² - (R - gap)²)))`
+
+其中 `R` 为圆角半径、`gap` 为 `--reborn-scrollbar-gap`。以默认的 `rounded-2xl`（16px）配 `gap: 2px` 为例，内缩量为 9px，轨道上下各让出 9px，thumb 在两端都完整可见。容器无圆角时内缩等于 `gap`，轨道上、下、右（横向为左、右、下）都留 2px。
 
 thumb 的长度与拖拽行程都以内缩后的轨道长度为基准，因此拖拽、点击轨道跳转与滚轮位置始终保持一致。
 
-内缩策略由 `inset` 属性控制：默认 `'auto'` 即上述自动推算；传数值可固定内缩（例如直角容器上留出视觉余白），传 `0` 则完全贴边。
+内缩策略由 `inset` 属性控制：默认 `'auto'` 即上述自动推算；传数值可固定内缩（例如加大两端留白），传 `0` 则两端贴边。
 
 > 圆角是「只改样式不改尺寸」的变化，`ResizeObserver` 不会触发。运行时动态改变容器 `border-radius` 后，需在 `nextTick()` 后调用实例的 `refresh()` 重算；`inset` 属性本身的变化由组件内部自动处理。
 
 | `inset` | 行为 | 典型用途 |
 | --- | --- | --- |
-| `'auto'` | 按圆角自动计算 | 圆角面板 |
+| `'auto'` | 取 `gap` 与圆角推算值的较大者 | 直角与圆角面板通用 |
 | 正数 | 固定内缩（px） | 固定轨道留白 |
-| `0` | 关闭内缩 | 直角容器贴边 |
+| `0` | 两端贴边 | 需要轨道占满整条边 |
 
 ```vue
 <template>
   <RebornScrollbar class="h-64 rounded-2xl">自动内缩</RebornScrollbar>
   <RebornScrollbar :inset="12" class="h-64">固定 12px 内缩</RebornScrollbar>
-  <RebornScrollbar :inset="0" class="h-64">不内缩</RebornScrollbar>
+  <RebornScrollbar :inset="0" class="h-64">两端贴边</RebornScrollbar>
 </template>
 ```
 
@@ -219,7 +242,8 @@ async function jump() {
 | `minThumbSize`   | `number`            | `20`     | thumb 最小长度（px），防止内容极长时 thumb 小到无法拖拽。                                                           |
 | `horizontal`     | `boolean`           | `true`   | 是否启用横向滚动条。为 `false` 时横向内容被裁剪。                                                                   |
 | `hideDelay`      | `number`            | `800`    | 停止滚动后隐藏滚动条的延迟（ms），仅 `always` 为 `false` 时生效。                                                   |
-| `inset`          | `number \| 'auto'`  | `'auto'` | 轨道两端的圆角安全内缩（px）。`'auto'` 按容器实际 `border-radius` 自动推算；传数值则固定为该值，传 `0` 关闭内缩。   |
+| `inset`          | `number \| 'auto'`  | `'auto'` | 轨道两端的内缩（px）。`'auto'` 取 `--reborn-scrollbar-gap` 与按容器 `border-radius` 推算值中的较大者，轨道四周都不贴边；传数值则固定为该值，传 `0` 两端贴边。 |
+| `bounce`         | `boolean`           | `true`   | 滚轮滚到顶部 / 底部（横向为最左 / 最右）时是否播放 2px 回弹。只响应滚轮与触控板；拖拽滑块、点击轨道、命令式滚动与触屏不回弹，系统开启减少动态效果时不播放。 |
 | `verticalOffset` | `number` | `0` | 顶部固定内容高度（px）。负数或非有限值按 0 处理，最大夹至两端内缩后的可用高度；纵轨起点为有效偏移 + 内缩，仅纵向轨道、可视高度与内容高度扣除此偏移，动态变化自动刷新。 |
 | `track`          | `boolean \| string` | `false`  | 轨道是否显形。`false` 为完全透明的悬浮感；`true` 使用内置浅灰凹槽并自动适配暗色；传颜色字符串则用该颜色。           |
 | `scrollDuration` | `number`            | `400`    | 命令式滚动（`scrollTo` / `setScrollTop` / `setScrollLeft`）的默认动画时长（ms），传 `0` 关闭动画。                               |
@@ -275,7 +299,7 @@ async function jump() {
 | `--reborn-scrollbar-size`         | `6px`                     | 滚动条粗细（`size` 属性即写入该变量）。                                  |
 | `--reborn-scrollbar-radius`       | `999px`                   | thumb 圆角。                                                             |
 | `--reborn-scrollbar-gap`          | `2px`                     | 滚动条与容器边缘的间距。                                                 |
-| `--reborn-scrollbar-inset`        | 自动计算                  | 轨道两端的圆角安全内缩（`inset` 属性即写入该变量）。容器无圆角时为 `0`。 |
+| `--reborn-scrollbar-inset`        | 自动计算                  | 轨道两端的内缩（`inset` 属性即写入该变量）。容器无圆角时等于 `--reborn-scrollbar-gap`。 |
 | `--reborn-scrollbar-track`        | `transparent`             | 轨道颜色（`track` 属性传颜色字符串时即写入该变量）。                     |
 | `--reborn-scrollbar-thumb`        | `rgb(113 113 122 / 0.35)` | thumb 颜色。                                                             |
 | `--reborn-scrollbar-thumb-hover`  | `rgb(113 113 122 / 0.6)`  | thumb 悬停颜色。                                                         |
@@ -291,6 +315,7 @@ async function jump() {
 - **取消也会结束 Promise**。`stopScroll`、用户滚轮、触摸、拖拽、轨道点击、新请求及卸载都会 resolve 旧请求；等待结束不等于必然到达目标。
 - **静默定位仍派发事件**。`silent: true` 只抑制本次滚动引起的淡入，悬停与拖拽照常显示；无位移时不会挂静默标记，避免吞掉后续用户滚动。
 - **减少动态效果时立即定位**。即使传 `animated: true`，系统的 `prefers-reduced-motion: reduce` 仍优先，避免强制动画。
+- **回弹期间滚动层带 `transform`**。320ms 内滚动层内部的 `position: fixed` 元素会以滚动层为定位参照；内容里有未传送到 body 的固定定位元素时传 `:bounce="false"`。
 - **仅修改圆角需手动刷新**。`ResizeObserver` 只观察尺寸；动态改 `border-radius` 后在 `nextTick()` 后调用 `refresh()`，`inset` 和 `verticalOffset` 的变化则会自动刷新。
 
 ### 为什么不用原生滚动条

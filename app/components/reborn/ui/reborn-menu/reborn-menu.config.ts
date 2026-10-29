@@ -347,7 +347,7 @@ const theme = tv({
     mode: {
       horizontal: {
         // 一级条目之间留 16px
-        menu: "flex-row items-center gap-x-4 px-2 py-1",
+        menu: "flex-row items-center gap-x-4 px-4 py-1",
         menuItem: "h-10 px-4",
         subMenuPopup: "left-full top-0 ml-2",
         subMenuContent: "min-w-50",

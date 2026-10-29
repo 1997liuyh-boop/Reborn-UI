@@ -16,7 +16,7 @@ export type SliderMarks = Record<number, string | { style?: CSSProperties; label
 
 /** 气泡提示配置 */
 export interface SliderTooltip {
-    /** 强制常显（true）或强制隐藏（false）；缺省仅拖拽时显示 */
+    /** 强制常显（true）或强制隐藏（false）；缺省在悬停或拖拽时显示 */
     open?: boolean;
     /** 格式化气泡内容；显式传 null 等同隐藏气泡 */
     formatter?: ((value: number) => string | number) | null;
@@ -66,7 +66,7 @@ export interface SliderProps {
     vertical?: boolean;
     /** 垂直模式的滑轨长度（数字按 px 处理），缺省 200px */
     height?: string | number;
-    /** 气泡提示：默认拖拽时显示当前值，open 可强制常显/隐藏，formatter 格式化内容 */
+    /** 气泡提示：默认悬停或拖拽时显示当前值，open 可强制常显/隐藏，formatter 格式化内容 */
     tooltip?: SliderTooltip;
     /** 滑轨左侧（垂直模式为上方）图标，#prefix 插槽可完全接管 */
     prefixIcon?: string;
@@ -83,6 +83,7 @@ export interface SliderProps {
         inner: ClassValue;
         track: ClassValue;
         progress: ClassValue;
+        thumbWrapper: ClassValue;
         thumb: ClassValue;
         thumbDot: ClassValue;
         stopDot: ClassValue;
@@ -213,12 +214,18 @@ const ui = computed(() => {
         track: (opts?: { class?: any }) => styles.track({ class: cn(opts?.class, uiOverrides.value.track) }),
         progress: (opts?: { class?: any }) => styles.progress({ class: cn(opts?.class, uiOverrides.value.progress) }),
         // 激活 / 单柄禁用 / 删除预览态在调用处按滑块逐个传入，覆盖组合变体
-        thumb: (opts?: ThumbOpts) =>
-            styles.thumb({
+        thumbWrapper: (opts?: ThumbOpts) =>
+            styles.thumbWrapper({
                 active: opts?.active ?? true,
                 pressed: opts?.pressed ?? false,
                 handleDisabled: opts?.handleDisabled ?? false,
                 removing: opts?.removing ?? false,
+                class: cn(opts?.class, uiOverrides.value.thumbWrapper),
+            }),
+        thumb: (opts?: ThumbOpts) =>
+            styles.thumb({
+                pressed: opts?.pressed ?? false,
+                handleDisabled: opts?.handleDisabled ?? false,
                 class: cn(opts?.class, uiOverrides.value.thumb),
             }),
         thumbDot: (opts?: ThumbOpts) =>
@@ -279,6 +286,8 @@ const innerRef = useTemplateRef<HTMLElement>("innerRef");
 const thumbEls: (HTMLElement | null)[] = [];
 /** 激活节点下标：默认最右侧，此后跟随用户最近一次按下的滑块 */
 const activeThumbIndex = shallowRef(Math.max(0, values.value.length - 1));
+/** 当前悬停的滑块，只影响气泡，不改变激活节点与绑定值 */
+const hoveredThumbIndex = shallowRef<number | null>(null);
 /** 是否处于拖拽中：用显式状态而非 e.buttons，后者在部分浏览器的捕获移动事件里不可靠 */
 const dragging = shallowRef(false);
 /** 是否处于选区整体平移中（draggableTrack） */
@@ -300,17 +309,11 @@ function setThumbRef(el: unknown, index: number) {
     thumbEls[index] = el instanceof HTMLElement ? el : null;
 }
 
-/** 激活滑块的外径，即交互带厚度（色晕不占布局空间，越界部分直接溢出绘制） */
-const thumbSize = computed(() => {
-    switch (resolvedSize.value) {
-        case "sm": return 12;
-        case "lg": return 16;
-        default: return 14;
-    }
-});
+/** 按最大滑块外径预留交互带，悬停放大与圆环不会改变布局 */
+const thumbSize = 16;
 
 /** 滑块半径：交互带两端的内边距，也是滑块定位时要折算掉的偏移 */
-const thumbInset = computed(() => thumbSize.value / 2);
+const thumbInset = thumbSize / 2;
 
 /**
  * 交互带厚度取滑块外径（色晕溢出不占位），长度水平自适应、垂直取 height。
@@ -318,8 +321,8 @@ const thumbInset = computed(() => thumbSize.value / 2);
  * 不会溢出去压住旁边的数值文本或图标（范围整体拖到最右侧时尤其明显）
  */
 const innerStyle = computed(() => {
-    const thickness = `${thumbSize.value}px`;
-    const inset = `${thumbInset.value}px`;
+    const thickness = `${thumbSize}px`;
+    const inset = `${thumbInset}px`;
     if (props.vertical) {
         const h = typeof props.height === "number" ? `${props.height}px` : (props.height || "200px");
         return { width: thickness, height: h, padding: `${inset} 0` };
@@ -363,12 +366,12 @@ const progressStyle = computed(() => {
 });
 
 /**
- * 滑块与刻度文字的定位（它们是交互带的子元素）：尺寸交由 size × active 变体类控制，这里只负责沿滑轨方向的位置。
+ * 滑块与刻度文字的定位（它们是交互带的子元素）：尺寸由悬停与按压态控制，这里只负责沿滑轨方向的位置。
  * 轨道被交互带的内边距缩进了半个滑块，百分比要先折算到轨道长度上：inset + (100% - 2 × inset) × 比例；translate 已居中
  */
 function thumbStyle(pct: number) {
     const d = toDisplayPct(pct);
-    const inset = thumbInset.value;
+    const inset = thumbInset;
     const pos = `calc(${inset}px + (100% - ${inset * 2}px) * ${d / 100})`;
     return props.vertical ? { top: pos } : { left: pos };
 }
@@ -395,20 +398,31 @@ function tooltipContent(val: number): string | number | null {
 
 /** 该滑块是否处于按压拖拽中（整体平移与删除预览不算），色晕据此显示 */
 function thumbPressed(index: number): boolean {
+    if (isDisabled.value || handleDisabled(index)) return false;
     if (!dragging.value || trackDragging.value) return false;
     if (!props.range) return true;
     return activeThumbIndex.value === index && removingIndex.value !== index;
 }
 
-/** 气泡可见性：open 强制显隐，缺省仅在拖拽该滑块（非整体平移、非删除预览）时显示 */
+/** 鼠标或悬空笔进入滑块后立即显示气泡，触控仍通过拖拽显示 */
+function onThumbEnter(event: PointerEvent, index: number) {
+    if (event.pointerType === "touch" || handleDisabled(index)) return;
+    hoveredThumbIndex.value = index;
+}
+
+/** 仅清理当前离开的滑块，避免相邻滑块的进入与离开事件互相覆盖 */
+function onThumbLeave(index: number) {
+    if (hoveredThumbIndex.value === index) hoveredThumbIndex.value = null;
+}
+
+/** 气泡可见性：显式配置优先，默认悬停或拖拽当前滑块时显示 */
 function thumbTooltipVisible(index: number): boolean {
     if (tooltipContent(0) === null) return false;
     const open = props.tooltip?.open;
     if (open === true) return true;
     if (open === false) return false;
-    if (!props.range) return dragging.value && !trackDragging.value;
-    return dragging.value && !trackDragging.value
-        && activeThumbIndex.value === index && removingIndex.value !== index;
+    if (trackDragging.value || removingIndex.value === index) return false;
+    return thumbPressed(index) || (hoveredThumbIndex.value === index && !handleDisabled(index));
 }
 
 /** 指针坐标（rAF 合帧时只暂存坐标，不持有会被浏览器复用的事件对象） */
@@ -786,6 +800,7 @@ onBeforeUnmount(() => {
 
 // 节点数变化（父级改写或 editable 增删）时收敛激活下标，并截掉多余的元素引用
 watch(() => rangeValue.value.length, (length) => {
+    hoveredThumbIndex.value = null;
     activeThumbIndex.value = Math.min(activeThumbIndex.value, Math.max(0, length - 1));
     thumbEls.length = length;
 });
@@ -828,42 +843,53 @@ watch(() => rangeValue.value.length, (length) => {
         {{ m.label }}
       </div>
 
-      <!-- 单滑块：恒为激活态，可聚焦以支持方向键步进；thumb 插槽只替换中心圆，定位、聚焦与键盘交互仍在外层 -->
+      <!-- 定位层保持原尺寸，仅滑块本体缩放，气泡与本体并列以保持文字和箭头大小稳定 -->
       <template v-if="!range">
-        <div
-          :ref="(el) => setThumbRef(el, 0)" :class="ui.thumb({ pressed: thumbPressed(0) })" :style="singleThumbStyle"
-          :tabindex="isDisabled ? undefined : 0" @keydown="onThumbKeydown($event, 0)" @keyup="onThumbKeyup"
-        >
-          <slot name="thumb" :value="value" :index="0" :active="true" :disabled="isDisabled">
-            <div :class="ui.thumbDot()" />
-          </slot>
+        <div :class="ui.thumbWrapper({ pressed: thumbPressed(0) })" :style="singleThumbStyle">
+          <div
+            :ref="(el) => setThumbRef(el, 0)" :class="ui.thumb({ pressed: thumbPressed(0) })"
+            :tabindex="isDisabled ? undefined : 0" @keydown="onThumbKeydown($event, 0)" @keyup="onThumbKeyup"
+            @pointerenter="onThumbEnter($event, 0)" @pointerleave="onThumbLeave(0)"
+          >
+            <slot name="thumb" :value="value" :index="0" :active="true" :disabled="isDisabled">
+              <div :class="ui.thumbDot()" />
+            </slot>
+          </div>
           <div v-if="thumbTooltipVisible(0)" :class="ui.tooltip()">{{ tooltipContent(value) }}</div>
         </div>
       </template>
 
-      <!-- 多滑块：最近一次按下的为激活态（默认最右侧），未激活的小一号且无色晕；
+      <!-- 多滑块：最近一次按下的为激活节点（默认最右侧），尺寸反馈由悬停与按压控制；
            可聚焦以支持方向键步进，editable 时按 Delete / Backspace 删除 -->
       <template v-if="range">
         <div
-          v-for="(thumbValue, i) in rangeValue" :key="i" :ref="(el) => setThumbRef(el, i)" :class="ui.thumb({
+          v-for="(thumbValue, i) in rangeValue" :key="i" :class="ui.thumbWrapper({
             active: i === activeThumbIndex && !handleDisabled(i),
             pressed: thumbPressed(i),
             handleDisabled: handleDisabled(i),
             removing: removingIndex === i,
-          })" :style="thumbStyle(toPct(thumbValue))" :tabindex="handleDisabled(i) ? undefined : 0"
-          @keydown="onThumbKeydown($event, i)" @keyup="onThumbKeyup"
+          })" :style="thumbStyle(toPct(thumbValue))"
         >
-          <slot
-            name="thumb" :value="thumbValue" :index="i" :active="i === activeThumbIndex && !handleDisabled(i)"
-            :disabled="handleDisabled(i)"
+          <div
+            :ref="(el) => setThumbRef(el, i)" :class="ui.thumb({
+              pressed: thumbPressed(i),
+              handleDisabled: handleDisabled(i),
+            })" :tabindex="handleDisabled(i) ? undefined : 0"
+            @keydown="onThumbKeydown($event, i)" @keyup="onThumbKeyup"
+            @pointerenter="onThumbEnter($event, i)" @pointerleave="onThumbLeave(i)"
           >
-            <div
-              :class="ui.thumbDot({
-                active: i === activeThumbIndex && !handleDisabled(i),
-                handleDisabled: handleDisabled(i),
-              })"
-            />
-          </slot>
+            <slot
+              name="thumb" :value="thumbValue" :index="i" :active="i === activeThumbIndex && !handleDisabled(i)"
+              :disabled="handleDisabled(i)"
+            >
+              <div
+                :class="ui.thumbDot({
+                  active: i === activeThumbIndex && !handleDisabled(i),
+                  handleDisabled: handleDisabled(i),
+                })"
+              />
+            </slot>
+          </div>
           <div v-if="thumbTooltipVisible(i)" :class="ui.tooltip()">{{ tooltipContent(thumbValue) }}</div>
         </div>
       </template>

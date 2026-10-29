@@ -8,6 +8,23 @@ export const paginationSizes = ["sm", "md", "lg"] as const;
 /** 分页尺寸类型 */
 export type PaginationSize = (typeof paginationSizes)[number];
 
+/** 分页语义色，与按钮的颜色选项一致 */
+export const paginationColors = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
+
+/** 分页语义色类型 */
+export type PaginationColor = (typeof paginationColors)[number];
+
+/** 激活背景参考按钮 soft 变体；无背景时只使用对应文字色 */
+const colorStyles = {
+  primary: { text: "text-primary", hover: "hover:text-primary", soft: "bg-primary/10 text-primary enabled:hover:bg-primary/20" },
+  secondary: { text: "text-secondary", hover: "hover:text-secondary", soft: "bg-secondary/10 text-secondary enabled:hover:bg-secondary/20" },
+  success: { text: "text-success", hover: "hover:text-success", soft: "bg-success/10 text-success enabled:hover:bg-success/20" },
+  info: { text: "text-info", hover: "hover:text-info", soft: "bg-info/10 text-info enabled:hover:bg-info/20" },
+  warning: { text: "text-warning", hover: "hover:text-warning", soft: "bg-warning/10 text-warning enabled:hover:bg-warning/20" },
+  error: { text: "text-error", hover: "hover:text-error", soft: "bg-error/10 text-error enabled:hover:bg-error/20" },
+  neutral: { text: "text-neutral", hover: "hover:text-neutral", soft: "bg-gray-2 text-gray-10 enabled:hover:bg-gray-5/20" },
+} as const;
+
 /**
  * 分页组件 UI Slots 接口定义
  * 用于支持通过 ui 属性进行深度样式定制
@@ -35,7 +52,7 @@ export interface PaginationUI {
   sizes?: string;
   /** 简洁模式内容 */
   simple?: string;
-  /** 跳转输入框 */
+  /** 简洁模式与跳转区的输入框容器 */
   input?: string;
 }
 
@@ -61,6 +78,15 @@ export default {
     input: "shrink-0",
   },
   variants: {
+    color: {
+      primary: {},
+      secondary: {},
+      success: {},
+      info: {},
+      warning: {},
+      error: {},
+      neutral: {},
+    },
     /*
      * 尺寸直接使用 Tailwind 刻度：
      * 按钮 / 省略号共用 h-6 / h-8 / h-10 与对应的 min-w-6 / min-w-8 / min-w-10；
@@ -81,7 +107,7 @@ export default {
         ellipsis: "h-8 min-w-8 text-sm",
         jumper: "text-sm",
         total: "text-sm",
-        simple: "text-sm",
+        simple: "text-base",
         input: "w-24",
       },
       lg: {
@@ -89,7 +115,7 @@ export default {
         ellipsis: "h-10 min-w-10 text-base",
         jumper: "text-base",
         total: "text-base",
-        simple: "text-base",
+        simple: "text-lg",
         input: "w-30",
       },
     },
@@ -110,43 +136,46 @@ export default {
       false: {},
     },
     simple: {
-      true: {},
+      true: { input: "w-10" },
       false: {},
     },
   },
   compoundVariants: [
-    // 无背景 + 未激活：悬停高亮为主色
-    {
-      background: false,
-      active: false,
-      disabled: false,
-      class: { button: "hover:text-primary" },
-    },
-    // 无背景 + 激活：主色文字，无底
-    {
-      background: false,
-      active: true,
-      class: { button: "text-primary" },
-    },
+    // 语义色只控制激活项与可用按钮的悬停反馈，禁用灰阶由末尾规则覆盖
+    ...paginationColors.flatMap((color) => [
+      { color, background: false, active: false, disabled: false, class: { button: colorStyles[color].hover } },
+      { color, background: false, active: true, class: { button: colorStyles[color].text } },
+      { color, background: true, active: true, class: { button: colorStyles[color].soft } },
+    ]),
     // 有背景 + 未激活：灰色底
     {
       background: true,
       active: false,
       class: { button: "bg-gray-2 text-gray-5" },
     },
-    // 有背景 + 激活：主色浅底
-    {
-      background: true,
-      active: true,
-      class: { button: "bg-primary/50 text-primary" },
-    },
     // 有背景时省略号带灰色底
     {
       background: true,
       class: { ellipsis: "bg-gray-2" },
     },
+    // 普通无背景模式：可点击的未激活项使用正文灰色
+    {
+      simple: false,
+      background: false,
+      active: false,
+      disabled: false,
+      class: { button: "text-gray-9", ellipsis: "text-gray-9" },
+    },
+    // 禁用项直接使用灰色令牌，避免透明度再次淡化文字
+    {
+      simple: false,
+      background: false,
+      disabled: true,
+      class: { button: "text-gray-5 opacity-100", ellipsis: "text-gray-5 opacity-100" },
+    },
   ] as const,
   defaultVariants: {
+    color: "primary",
     size: "md",
     active: false,
     background: false,

@@ -22,7 +22,7 @@ Tabs 用于在多个平级内容区之间切换，Web 与 UniApp 两端同名同
 
 - 页面内多个平级视图之间切换，例如「概览 / 详情 / 日志」。
 - 标签数量会随用户操作增减，需要新增与关闭标签 —— 用 `editable` + `show-add-button`。
-- 标签较多需要横向滚动，且希望选中项自动进入可视区域 —— 用 `scroll-position`；需要可点击的滚动入口再加 `overflow`（仅 Web）。
+- 标签较多需要横向滚动，且希望选中项自动进入可视区域 —— 用 `scroll-position`；需要两侧省略号下拉选择隐藏标签时用 `overflow="dropdown"`（仅 Web）。
 - 标签顺序应由用户自己整理，如工作台的自定义页签 —— 用 `draggable`（仅 Web）。
 - 内容区较重（图表、长表单），希望首次展示时才挂载 —— 用 `lazy-load`。
 - 需要纵向排布的侧边分区导航 —— 用 `position="left"`。
@@ -70,8 +70,8 @@ const activeKey = ref("overview");
 | 类型 | 外观 | 典型用途 |
 | --- | --- | --- |
 | `line`（默认） | 无边框，标签之间留 32px 间距，选中项下方一条跟随动画的指示条 | 页面级主导航 |
-| `card` | 不画边框，相邻标签靠 `gray-2` 底色直接相接成一排，只在背离内容的首末两角留 6px 圆角；选中态是一块 `gray-1` 底板（不透明底色直接盖住分隔线、与内容连成一片），切换时底板从旧标签滑到新标签 | 类文件管理器的多文档切换 |
-| `card-gutter` | 卡片之间留 4px 间隙，各自带 6px 上方圆角与 `gray-3` 边框（三种卡片里唯一带边框的），底色与 `card` 相同，选中底板断开贴内容那侧的边框并滑动跟随，分隔线从间隙里透出来 | 需要卡片感但不追求连排的场景 |
+| `card` | 未选中标签不画边框，相邻标签靠 `gray-2` 底色直接相接成一排，只在背离内容的首末两角留 6px 圆角；选中态是一块 `gray-1` 底板（Web 端带 `gray-2` 边框，贴内容侧不画边框，底色盖住分隔线、与内容连成一片），切换时底板从旧标签滑到新标签 | 类文件管理器的多文档切换 |
+| `card-gutter` | 卡片之间留 4px 间隙，各自带 6px 上方圆角与 `gray-3` 边框，底色与 `card` 相同，选中底板断开贴内容那侧的边框并滑动跟随，分隔线从间隙里透出来 | 需要卡片感但不追求连排的场景 |
 | `card-fill` | 不画边框也不画分隔线，未选中只是 `gray-9` 文字加透明底，选中态是一块带 6px 上方圆角的 `gray-2` 底板并把标题换成主题色加粗，切换时同样滑动跟随；内容区同样铺 `gray-2`，与选中底板连成一整块 | 想要卡片感但不希望线条切碎版面的场景 |
 | `text` | 纯文字，仅靠颜色与字重区分选中，间距同 `line` | 内容密度高的次级切换 |
 | `rounded` | 选中项是一块填充语义色的实心胶囊，标题反白；切换时胶囊在标签间拉伸、压扁再回弹 | 强调当前项的分段切换 |
@@ -267,33 +267,34 @@ function handleDelete(key: string) {
 </template>
 ```
 
-### 溢出导航：箭头与下拉
+### 溢出导航：滑动与省略号下拉
 
-`overflow` 仅 Web 端提供。默认的滚动本身没有可点的入口：滚动条被隐藏，鼠标用户只能靠滚轮横滚（不少人不知道这个手势）。`overflow` 提供两种带按钮的方案，按钮都**只在标签真正溢出时渲染**，未溢出时与默认表现完全一致：
+`overflow` 仅 Web 端提供，可选左右滑动或省略号下拉。省略号只在对应一侧有未完整露出的标签时显示，悬停或点击均可展开：
 
 | 取值 | 行为 |
 | --- | --- |
-| `scroll`（默认） | 只靠滚轮 / 触摸滑动，不渲染任何按钮 |
-| `arrows` | 头部两端各一枚箭头按钮，每次滚动可视区的八成（留两成重叠便于对位），滚到端点后对应箭头置灰 |
-| `dropdown` | 头部末尾一枚下拉开关，展开的列表**只含当前被滚出可视区域的标签**——看得见的标签直接点头部即可，重复列出反而要在长列表里找；点选后该标签按 `scroll-position` 滚回可视区域并从列表中消失。选中项取当前 `color` 的选中文字色，禁用标签同样不可点 |
+| `scroll`（默认） | 溢出时显示左右箭头，点击滚动可视区的八成，到边界时对应箭头禁用；也支持触摸、触控板或 Shift + 滚轮滑动，适合连续浏览标签 |
+| `dropdown` | 左侧隐藏的标签收进左侧省略号，右侧隐藏的标签收进右侧省略号；悬停展开对应列表，选择后按 `scroll-position` 定位；适合快速选择较远的标签 |
 
 ```vue
 <template>
-  <RebornTabs v-model:active-key="activeKey" overflow="arrows">
+  <RebornTabs v-model:active-key="activeKey" overflow="dropdown" scroll-position="center">
     <RebornTabPane v-for="(i, paneIndex) in 24" :order="paneIndex" :key="String(i)" :pane-key="String(i)" :title="`标签 ${i}`">第 {{ i }} 项</RebornTabPane>
   </RebornTabs>
 </template>
 ```
 
-`arrows` 适合标签总量可控、用户主要用鼠标的场景；标签多到滚好几屏时改用 `dropdown`，从列表里点选比反复滚动快。两者与 `scroll-position` 不冲突：切换标签后选中项仍按 `scroll-position` 滚进可视区域。
+两种模式均支持 `scroll-position="start" / "center" / "end"`，仅修改参数也会立即重新定位当前选中项；靠近列表首尾时受最大滚动距离限制。`auto` 保留最小滚动量，数字直接指定偏移量。
 
-这两种模式下，滚动容器还会通过 `mask-image` 让两端的标签**渐隐成透明**（渐隐段 28px）：标签滚过哪一端，哪一端就有「滑进按钮下面」的层次感；滚到端点后对应一侧恢复实心，与箭头的置灰同步，让「这头没有更多了」有两重提示。渐隐是内容自身淡出而不是叠深色遮罩，明暗主题与任何底色下观感一致。
+省略号模式只在有隐藏标签的一侧渲染按钮及容器，没有隐藏标签的一侧不保留空白；选中后按最终可视区尺寸定位。纵向布局将左右两侧对应为上下两侧，列表在头部朝内容区的一侧展开；禁用项不可选择，按 Escape 或点击头部外关闭列表。
 
 ::warning
 UniApp 端没有该参数。触屏上滑动本身就是自然手势，`<scroll-view>` 保持默认的滑动浏览即可。
 ::
 
 ### 撑开标签
+
+Web 端 `type="line"` 与 `stretch` 同时开启时，指示条占满当前标签的整块宽度；关闭 `stretch` 后恢复跟随标题宽度。
 
 `stretch` 让标签均分头部宽度、标题居中，适合数量固定的少量标签占满整行的版式（`capsule` 配合它就是一个通栏的分段控件）。仅水平方向生效——纵向标签本就撑满列宽。标签用 `flex-grow` 撑开而不压缩：总宽超出容器时保持自然宽度、回到滚动浏览，不会把标题挤到截断。
 
@@ -482,7 +483,7 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 | `hideContent` | `boolean` | `false` | 隐藏内容区，只渲染标签头部。 |
 | `draggable` | `boolean` | `false` | 允许拖拽标签头调整顺序，松手后通过 `sort` 事件通报新顺序；禁用标签不可拖动。 |
 | `trigger` | `"hover" \| "click"` | `"click"` | 切换标签的触发方式。 |
-| `overflow` | `"scroll" \| "arrows" \| "dropdown"` | `"scroll"` | 标签溢出时的导航方式：`arrows` 两端箭头分步滚动，`dropdown` 末尾下拉选标（只列被滚出可视区域的标签）；按钮只在真正溢出时渲染，见「溢出导航：箭头与下拉」。 |
+| `overflow` | `"scroll" \| "dropdown"` | `"scroll"` | `scroll` 两侧箭头点击滚动，也支持手势滑动；`dropdown` 在有隐藏标签的一侧显示省略号，悬停展开该侧列表，见「溢出导航：滑动与省略号下拉」。 |
 | `scrollPosition` | `"start" \| "end" \| "center" \| "auto" \| number` | `"auto"` | 选中标签的滚动落点，传数字则直接滚到该偏移量。 |
 | `class` | `any` | - | 追加到根节点的自定义类名。 |
 | `ui` | `TabsUI` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
@@ -640,7 +641,7 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 | --- | --- |
 | `root` | 默认 `flex w-full min-w-0`。根节点，`class` prop 也并到这里。整体外边距、圆角、方向反转改这里。 |
 | `nav` | 默认 `relative flex shrink-0 items-center gap-2`。标签行容器，包含两侧额外内容、溢出导航按钮与滚动容器。头部与内容区之间的分隔线画在这里。 |
-| `navWrapper` | 默认 `relative min-w-0 flex-1 overflow-auto`。标签列表的滚动容器，横向 / 纵向滚动发生在这一层。它保持 `flex-1`（basis 0）勿改：换成内容基准后，它的 `max-content` 会把组件根节点的内在宽度撑成标签总宽，顶破没约束死宽度的祖先布局。溢出导航模式下组件还会在这层追加 `mask-image` 做两端渐隐，该 mask 由组件按滚动状态动态写入，不经由 `ui` 键。 |
+| `navWrapper` | 默认 `relative min-w-0 flex-1 overflow-auto`。标签列表的滚动容器，横向 / 纵向滚动发生在这一层。它保持 `flex-1`（basis 0）勿改：换成内容基准后，它的 `max-content` 会把组件根节点的内在宽度撑成标签总宽，顶破没约束死宽度的祖先布局。 |
 | `scrollBody` | 默认 `flex`。滚动内容内层，把标签列与新增按钮包进同一份滚动内容——按钮因此紧贴末尾标签而不是被推到头部最右端，代价是标签溢出时按钮跟着滚动。列与按钮之间的 8px 间距由它的 `gap` 给出。 |
 | `list` | 默认 `relative isolate flex w-max`。标签列表本身，标签之间的间距、`capsule` 的轨道底色在这里。它是指示条与选中底板的定位基准，`relative` 勿移除；`isolate` 把底板那套 z-index 关在标签列内部，移除后底板的层叠会外溢到页面其他元素上。 |
 | `tab` | 默认 `flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap`。单个标签按钮。高度、内边距、字号、选中 / 禁用态都由变体给出，覆盖写这里。 |
@@ -649,8 +650,8 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 | `indicator` | 默认 `pointer-events-none absolute rounded-full transition-all duration-300`。`line` 类型的指示条。位移与长度由组件测量后写成行内样式，这里只改高度、圆角、底色。 |
 | `tabSlider` | 默认 `pointer-events-none absolute z-0 transition-all duration-300`。`card` / `card-gutter` / `card-fill` / `rounded` / `capsule` 的选中底板，选中态的底色、边框、圆角全在这块底板上（标签自身只剩文字色与字重）。位置与尺寸由组件测量选中标签后写成行内样式，这里只改形态与过渡；`rounded` / `capsule` 的两段形变会在行程中额外写入 `transition-duration` / `transition-timing-function`，在这里写过渡时长会被那两段覆盖。 |
 | `addButton` | 默认 `justify-center px-0`。标签末尾的新增按钮，仅 `editable` + `showAddButton` 时渲染。按钮先套一整份「未选中标签」的盒子样式，本键的内容追加在其后，因此这里只写与标签不同的部分。 |
-| `navButton` | 默认 `flex size-6 rounded-md text-gray-6 disabled:text-gray-4`。溢出导航的图标按钮（两枚箭头与下拉开关共用），仅 `overflow` 为 `arrows` / `dropdown` 且标签真正溢出时渲染；禁用态（已滚到端点）的置灰也在这里。 |
-| `dropdown` | 默认 `relative flex shrink-0 items-center`。下拉选标的定位锚点，包着开关按钮与面板；面板相对它绝对定位，`relative` 勿移除。 |
+| `navButton` | 默认 `flex size-6 rounded-md text-gray-6`。两侧滚动箭头与省略号按钮；箭头到边界时禁用，省略号仅在对应一侧有隐藏标签时显示。 |
+| `dropdown` | 默认 `relative flex size-6 shrink-0 items-center justify-center self-center`。省略号与面板的定位锚点；对应一侧没有隐藏标签时整个容器被移除，`relative` 勿移除。 |
 | `dropdownPanel` | 默认 `absolute z-10 max-h-64 min-w-32 rounded-lg border border-gray-3 bg-gray-1 p-1`。下拉选标展开的面板，展开方向随 `position` 变化；投影默认取本仓库菜单类面板的统一投影（与 `reborn-context-menu` 同款），最大高度、圆角、投影改这里。 |
 | `dropdownItem` | 默认 `flex w-full rounded-sm px-3 py-1.5 text-sm text-gray-9`。面板里的单个选项，只列当前被滚出可视区域的标签；选中 / 禁用态与标签共用 `active` / `disabled` 变体，选中文字色随 `color` 走。 |
 | `leftExtra` | 默认 `flex shrink-0 items-center`。`left-extra` 插槽的包裹节点，仅填充了该插槽时渲染。 |
@@ -704,7 +705,7 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 
 | 维度 | Web | UniApp |
 | --- | --- | --- |
-| 溢出导航 | `overflow`：`scroll` / `arrows` / `dropdown` | 无该参数，只靠 `<scroll-view>` 滑动 |
+| 溢出导航 | `overflow`：`scroll` / `dropdown`，左右省略号悬停选择隐藏标签 | 无该参数，只靠 `<scroll-view>` 滑动 |
 | 拖拽排序 | `draggable` + `sort` 事件 | 不支持（小程序没有 HTML5 拖放事件） |
 | 标题富内容 | `RebornTabPane` 的 `title` 插槽 | 只能用 `title` prop 传纯文本 |
 | 头部缩进 | 无 | `header-padding`，仅对 `line` / `text` 生效 |
@@ -724,10 +725,10 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 - **组件只派发增删事件，不改数据**。`add` / `delete` 不会自动增删 `RebornTabPane`，也不会在删掉当前项后自动切换。删除当前项后如果不重设 `activeKey`，头部将没有任何选中项——回退到相邻标签的逻辑需要使用方自己写（见「可编辑：增删标签」示例）。
 - **`destroy-on-hidden` 与 `lazy-load` 同时开启时前者优先**。`destroy-on-hidden` 意味着被隐藏即销毁，`lazy-load` 的「挂载后保留」不再成立，此时两者等价于只开 `destroy-on-hidden`。
 - **切换标签默认不丢失内容状态**。面板用 `v-show` 控制显隐，表单填写与滚动位置都会保留；如果期望每次进入都是干净状态，必须显式开 `destroy-on-hidden`。
-- **溢出导航按钮只在标签真正溢出时渲染**（仅 Web）。`overflow="arrows"` / `"dropdown"` 写上后未必立即可见——容器足够宽时按钮不出现，这是刻意的：未溢出时没有可滚动的内容，按钮只会占位。容器尺寸变化由 `ResizeObserver` 跟踪，缩窄到溢出的瞬间按钮才补进来。
+- **省略号仅在对应一侧有隐藏标签时显示且占位**（仅 Web）。`overflow="dropdown"` 在列表起点只显示右侧按钮，在终点只显示左侧按钮，中间可同时显示两侧；没有溢出的那一侧不保留容器或间距。容器尺寸变化由 `ResizeObserver` 跟踪。
 - **Web 拖拽保留本地顺序直到父级改写 `order`。** `sort` 发出完整 `paneKey` 数组，组件不修改业务数据；父级可按该数组重排数据并传入新的下标，旧 `order` 和无关更新不会打回拖拽结果。
 - **指示条只属于 `line`，另外五种类型换成滑动底板，只有 `text` 两者都不渲染**。`card` / `card-gutter` / `card-fill` / `rounded` / `capsule` 不渲染指示器节点而渲染 `ui.tabSlider`。所以在这五种类型上覆盖 `ui.indicator` 没有任何视觉变化，要改选中态得覆盖 `ui.tabSlider`；在 `text` 上两者都无效，只能改 `ui.tab` 或换 `color`。
-- **这五种类型的选中态整块搬到了底板上，标签自己不再换底色**。底色、边框、圆角都写在 `ui.tabSlider` 上，选中标签只剩文字色与字重；标签的底色改为恒定（`card` / `card-gutter` 恒为 `gray-2`，`card-fill` / `rounded` / `capsule` 恒为透明；三种卡片里只有 `card-gutter` 带边框）。这是滑动动画能被看见的前提：若底色仍随选中切换，新标签会在底板滑到之前就自己亮起来、旧标签立刻变灰，结果先于动画呈现，滑动也就没有意义。三处连带的机制不要改动——① 标签列有 `isolate`，底板取 `z-index: 0` 恰好压住所有标签的背景与边框（标签本身不定位，属于更下层），标题与关闭图标取 `z-[1]` 压在底板之上，底板才能滑过沿途标签而不遮字；② 底板是标签列的**末位**子节点，并由行内 `margin: 0` 抹掉任何落在相邻子节点上的负外边距（早先 `card` 共用边框时的 `[&>*+*]:-ml-px` 就曾命中它），放到首位则会让首个标签整体偏移；③ `card` 的圆角按标签在列中的首尾分配，而底板永远既非首也非末，用不了 `first:` / `last:`，因此组件按选中项下标推导端位（首 / 末 / 唯一 / 中间）再取对应圆角——圆角也参与过渡，从端部滑向中间时能看到外角逐渐收平。
+- **这五种类型的选中态整块搬到了底板上，标签自己不再换底色**。底色、边框、圆角都写在 `ui.tabSlider` 上，选中标签只剩文字色与字重；标签的底色改为恒定（`card` / `card-gutter` 恒为 `gray-2`，`card-fill` / `rounded` / `capsule` 恒为透明；标签本身仅 `card-gutter` 带边框，Web 端 `card` 的选中底板另带 `gray-2` 边框）。这是滑动动画能被看见的前提：若底色仍随选中切换，新标签会在底板滑到之前就自己亮起来、旧标签立刻变灰，结果先于动画呈现，滑动也就没有意义。三处连带的机制不要改动——① 标签列有 `isolate`，底板取 `z-index: 0` 恰好压住所有标签的背景与边框（标签本身不定位，属于更下层），标题与关闭图标取 `z-[1]` 压在底板之上，底板才能滑过沿途标签而不遮字；② 底板是标签列的**末位**子节点，并由行内 `margin: 0` 抹掉任何落在相邻子节点上的负外边距（早先 `card` 共用边框时的 `[&>*+*]:-ml-px` 就曾命中它），放到首位则会让首个标签整体偏移；③ `card` 的圆角按标签在列中的首尾分配，而底板永远既非首也非末，用不了 `first:` / `last:`，因此组件按选中项下标推导端位（首 / 末 / 唯一 / 中间）再取对应圆角——圆角也参与过渡，从端部滑向中间时能看到外角逐渐收平。
 - **`rounded` 的选中文字靠底板托底，覆盖 `ui.tabSlider` 关掉底色会让它在浅色模式下看不见**。这个类型的选中标题是近白的 `gray-1`，自身没有任何底色，可读性完全来自底板那块主题色实心胶囊。若用 `ui.tabSlider` 把背景改成透明或浅色，浅色模式下就是白字打在页面底色上。要改配色得同时改 `ui.tab` 的选中文字色，或换 `color` / 在实例上改写色板变量（`class="[--color-primary:#7c3aed]"`）。
 - **底板形变期间会写行内过渡时长，在 `ui.tabSlider` 上写过渡时长无效**。`rounded` / `capsule` 的两段形变靠行内 `transition-duration` / `transition-timing-function` 驱动（行内优先级高于类名，两端都成立），行程中你在 `ui.tabSlider` 里写的时长会被覆盖。要改节奏只能改组件里的那两组常量，`ui.tabSlider` 留给形态。
 - **高度过渡的那段时间内容区是 `overflow-hidden`**。`animation` 开启时，切换后约 280ms 内容区外层是裁剪状态，面板里需要溢出容器的浮层（下拉、气泡、`tooltip`）会被切掉一截，过渡结束即释放。若面板一打开就有溢出容器的浮层，关掉 `animation`，或把浮层挂到 `body` 上。
@@ -738,7 +739,7 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 - **纵向时 `size` 既不控制高度也不控制宽度**。`position` 取 `left` / `right` 后，`line` / `text` 的高度由标题内容撑开、宽度由最长的标题决定，`size` 只剩标题与指示条之间的内边距那一处体现（8 / 12 / 16px）。所以纵向下量标签高度会量到行高而不是尺寸表里的 40 / 48 / 56px；标签之间那 16px 来自列表的间距，不是标签自身的内边距。五种盒子型不参与，纵向仍是宽度撑满列、高度吃 `size`。
 
 - **`size` 在盒子型标签上不等于行高，也不改卡片的水平内边距**。`line` / `text` 的高度是整行行高（`md` 为 48px），而 `card` / `card-gutter` / `rounded` / `capsule` 走另一套更矮的盒子高度（`md` 为 40px），`card-fill` 在 `md` 上再矮一档到 32px。水平内边距则完全不随 `size` 变：五种盒子型全档固定 16px / 32rpx。同一个 `size` 在不同形态下量出的高度不同是预期行为，不是漏改。
-- **`card` / `card-gutter` 的分隔线画在 `nav` 内部而不是 `nav` 的下边框上**。头部的滚动容器带 `overflow: auto`，标签一旦向外溢出就会被裁掉，所以这两种类型改用内阴影把这条线画进 `nav` 自身最后 1px：选中底板的不透明底色直接盖住这条线（`card-gutter` 还要去掉贴内容那一侧的边框）（后代节点总是画在祖先背景之上），不需要负外边距外移（外移还会因为标签列是底对齐而把选中项整体压低 1px，让相邻标签的顶边高出一截）。`card-gutter` 的 4px 间隙没有标签遮挡，分隔线会在间隙处透出来，这是预期效果。若用 `ui.nav` 覆盖了 `box-shadow`，这条分隔线会整条消失。
+- **`card` / `card-gutter` 的分隔线画在 `nav` 内部而不是 `nav` 的下边框上**。头部的滚动容器带 `overflow: auto`，标签一旦向外溢出就会被裁掉，所以这两种类型改用内阴影把这条线画进 `nav` 自身最后 1px：选中底板的不透明底色直接盖住这条线（带边框的底板还要去掉贴内容那一侧的边框）（后代节点总是画在祖先背景之上），不需要负外边距外移（外移还会因为标签列是底对齐而把选中项整体压低 1px，让相邻标签的顶边高出一截）。`card-gutter` 的 4px 间隙没有标签遮挡，分隔线会在间隙处透出来，这是预期效果。若用 `ui.nav` 覆盖了 `box-shadow`，这条分隔线会整条消失。
 - **`card-fill` 的底色一半画在内容区上，覆盖 `ui.content` 会把它拆散**。这个类型靠「选中底板」与「内容区」两块 `gray-2` 拼成一整面，所以 `gray-2` 与 16px / 32rpx 的内边距都写在 `ui.content` 上：用 `ui.content` 覆盖背景色会只剩底板那一小块底色浮在页面上；覆盖内边距则要连四边一起给，因为组件是用 `p-4` 整体压掉 `position` 变量原本只给一边的 `pt-4`，只写 `pt-*` 会让左右两侧重新贴边。圆角只开在背离内容的一侧（`position="top"` 时是上方两角），贴内容的两角必须保持直角才能无缝拼接。
 - **新增按钮是「未选中标签」的复用，不是一套独立外观**。它的高度、底色、边框、圆角、文字色与悬浮反馈全部取自当前 `type` / `size` / `position` 下未选中标签的那一套，`ui.addButton` 只在其后追加图标按钮特有的部分：去掉标题用的水平内边距，再按标签高度补一个等宽的方形。所以换类型、换尺寸时按钮会自动跟上，不必逐档配；反过来，`ui.tab` 的覆盖内容不会并到按钮上，两者只共用变体结果。另有一处按钮不跟随标签：`card` 类型的圆角按首尾分配，而按钮独立在标签列之外，若照搬首尾规则就只会剩一个孤零零的角，因此它背离内容的那条边两角都倒角。按钮与标签列同处 `ui.scrollBody` 这层滚动内容里，紧贴末尾标签（隔 8px / 16rpx）而不是被推到头部最右端；代价是标签溢出时按钮跟着滚动，要滚到末尾才能看到（两端一致）。
 - **纵向标签列需要外层有确定高度**。`position` 取 `left` / `right` 时滚动发生在标签列自身，外层没有高度约束时标签列会被内容撑开而不滚动，UniApp 端的 `<scroll-view>` 尤其如此。

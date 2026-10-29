@@ -7,7 +7,7 @@ tags: [calendar, date, picker, select, uniapp]
 badge: New
 ---
 
-::ComponentViewer{demoFile="RebornDatePickerDemo.vue" config="RebornDatePickerConfig" componentId="reborn-date-picker" dependencies="dayjs" :componentFiles='["RebornDatePicker.vue", "reborn-date-picker.config.ts"]' :uniappFiles='["RebornDatePicker.vue", "reborn-date-picker.config.ts", "types.ts", "RebornButton.vue", "reborn-button.config.ts", "RebornPickerView.vue", "reborn-picker-view.config.ts", "RebornPopup.vue", "reborn-popup.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts"]'}
+::ComponentViewer{demoFile="RebornDatePickerDemo.vue" config="RebornDatePickerConfig" componentId="reborn-date-picker" dependencies="dayjs" :componentFiles='["RebornDatePicker.vue", "reborn-date-picker.config.ts", "reborn-date-picker.input.ts"]' :uniappFiles='["RebornDatePicker.vue", "reborn-date-picker.config.ts", "types.ts", "RebornButton.vue", "reborn-button.config.ts", "RebornPickerView.vue", "reborn-picker-view.config.ts", "RebornPopup.vue", "reborn-popup.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts"]'}
 ::
 
 > Web 端源码面板只列 date-picker 自身目录下的文件。触发器 `RebornSelectTrigger` 与下拉内容 `RebornDatePickerPanel` 是独立组件，源码分别见 `reborn-select-trigger`、`reborn-date-picker-panel` 组件页。
@@ -49,6 +49,14 @@ Web 端由两部分拼成：触发器沿用 `RebornSelectTrigger`，下拉内容
 
 点击触发器展开日期面板，选中后自动收起。不传 `value-format` 时绑定值是 `Date` 对象，传了则按格式输出字符串；`format` 只改触发器里的展示文本，不影响绑定值。
 
+Web 全部 16 种 `type` 均支持手动输入，编辑格式见下表。完整可选的输入会立即同步面板，按 Enter 或离开输入框后确认；范围必须两端完整，顺序写反会自动交换。编辑格式独立于 `format` 和 `valueFormat`，结束编辑后恢复 `format` 的展示格式。
+
+多选在标签后输入，逗号分隔可一次追加多个值，已有值不会重复添加。`week` 输入一周中的任意日期后折算为该周周日至周六；`weekrange` 两端分别扩展到起始周的周日与结束周的周六。
+
+输入会校验真实日期、`start` / `end` 和对应粒度的 `disabledMethod`，日期时间还会校验 `disabledHours` / `disabledMinutes` / `disabledSeconds` / `disabledMilliseconds`，范围按排序后的起止角色判定。年、月、季度与边界有交集时仍可输入。单值或范围输入越界、命中禁用规则时清空绑定值；多选丢弃本次追加并保留原标签。格式错误或不完整输入恢复原值，Esc 取消输入。
+
+悬停面板中的可选日期会在触发器中以 `text-gray-5` 预览，移开恢复原值；预览不触发 `change`，点击才提交。触发器悬停边框跟随 `color`，日期浮层无描边，阴影为 `0 2px 13px 0 rgba(0, 0, 0, 0.13)`。
+
 ```vue
 <script setup lang="ts">
 const dateValue = ref(null);
@@ -69,15 +77,15 @@ const stringValue = ref("2024-04-03");
 </template>
 ```
 
-`format` 缺省时按类型取默认格式：
+`format` 缺省时按类型取默认格式；手动输入固定使用右列格式：
 
-| 类型                                  | 默认 `format`         |
-| ------------------------------------- | --------------------- |
-| `year` / `years` / `yearrange`        | `YYYY`                |
-| `month` / `months` / `monthrange`     | `YYYY-MM`             |
-| `quarter` / `quarters` / `quarterrange` | `YYYY-[Q]Q`         |
-| `datetime` / `datetimerange`          | `YYYY-MM-DD HH:mm:ss` |
-| 其余                                  | `YYYY-MM-DD`          |
+| 类型 | 默认 `format` | 手动输入示例 |
+| --- | --- | --- |
+| `year` / `years` / `yearrange` | `YYYY` | `2026` |
+| `month` / `months` / `monthrange` | `YYYY-MM` | `2026-10` |
+| `quarter` / `quarters` / `quarterrange` | `YYYY-[Q]Q` | `2026-Q4` |
+| `datetime` / `datetimerange` | `YYYY-MM-DD HH:mm:ss` | `2026-10-28 13:14:15` |
+| `date` / `dates` / `daterange` / `week` / `weekrange` | `YYYY-MM-DD` | `2026-10-28` |
 
 ### 选择类型
 
@@ -300,7 +308,7 @@ function disableNightHours() {
 
 ### 快捷选项
 
-`shortcuts` 在面板左侧列出常用日期，点击后直接写回并收起。`value` 写成函数才能每次点击都按当天重新计算，范围类型的函数返回 `[起点, 终点]`。
+`shortcuts` 在日期面板侧栏列出常用日期，`shortcutPosition` 可选 `left`（默认）或 `right`，点击后直接写回并收起。`value` 写成函数才能每次点击都按当天重新计算，范围类型的函数返回 `[起点, 终点]`。侧栏使用 `p-2 space-y-2`（默认根字号下内边距和选项间距均为 8px）；按钮宽 104px、高 24px、水平内边距 12px，使用 `bg-gray-2 text-gray-8 text-sm`（12px）。
 
 ```vue
 <script setup lang="ts">
@@ -324,11 +332,14 @@ const rangeShortcuts = [
     type="daterange"
     value-format="YYYY-MM-DD"
     :shortcuts="rangeShortcuts"
+    shortcut-position="right"
   />
 </template>
 ```
 
 ### 今天栏
+
+`highlightToday` 控制今天（或本月、本季度、今年）的文字高亮，默认 `false`；它与底部按钮 `showToday` 分别控制。需要高亮时传入 `<RebornDatePicker highlight-today />`，已选中的今天始终保留选中样式。
 
 `show-today` 在面板底部加一栏，点击选中当前时间所在的单位，文案随类型变为「今天」「本周」「本月」「本季度」「今年」。写回时机与手动点选一致：单值与范围类型写回并收起，多选类型只追加、面板不收。
 
@@ -640,12 +651,14 @@ const formRules = z.object({
 | `disabledMinutes`      | `(hour: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                                | -                   | 〔面板〕返回需禁用的分钟，入参为当前选中的小时。                                     |
 | `disabledSeconds`      | `(hour: number, minute: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                | -                   | 〔面板〕返回需禁用的秒，入参为当前选中的时、分。                                     |
 | `disabledMilliseconds` | `(hour: number, minute: number, second: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                | -                   | 〔面板〕返回需禁用的毫秒，入参为当前选中的时、分、秒。                               |
-| `shortcuts`            | `{ text: string; value: any }[]`                                                                                                                                                                      | `[]`                | 〔面板〕快捷选项，非空时面板左侧出现快捷侧栏。                                       |
+| `shortcuts`            | `{ text: string; value: any }[]`                                                                                                                                                                      | `[]`                | 〔面板〕快捷选项，非空时显示快捷侧栏。                                       |
+| `shortcutPosition` | `'left' \| 'right'` | `'left'` | 〔面板〕快捷选项显示在日期面板的左侧或右侧。 |
 | `activeType`           | `'fill' \| 'fillRound' \| 'outline' \| 'text'`                                                                                                                                                        | `'fill'`            | 〔面板〕选中项的表现形式。                                                           |
 | `showWeekNumber`       | `boolean`                                                                                                                                                                                             | `false`             | 〔面板〕日期视图左侧显示 ISO 周数；`week` / `weekrange` 类型不生效。                  |
 | `unlinkPanels`         | `boolean`                                                                                                                                                                                             | `false`             | 〔面板〕范围类型取消两个面板的联动；`singlePanel` 时无效。                           |
 | `singlePanel`          | `boolean`                                                                                                                                                                                             | `false`             | 〔面板〕范围类型只渲染一个面板。                                                     |
 | `showToday`            | `boolean`                                                                                                                                                                                             | `false`             | 〔面板〕面板底部显示「今天」栏，点击选中当前时间所在的单位，见「今天栏」。           |
+| `highlightToday` | `boolean` | `false` | 是否高亮今天 / 本月 / 本季度 / 今年的文字，与 `showToday` 分别控制；不影响选中样式。 |
 | `defaultValue`         | `Date \| string \| number \| (Date \| string \| number)[]` | -                   | 〔面板〕未选值时面板定位到的日期，不写入绑定值；缺省为当天。数组用法见「默认展示日期」。 |
 | `placeholder`          | `string`                                                                                                                                                                                              | -                   | 〔选择框〕单值与多选类型的占位文本；缺省时随类型取「请选择日期」「请选择月份」等。   |
 | `startPlaceholder`     | `string`                                                                                                                                                                                              | -                   | 〔选择框〕范围类型开始栏的占位文本；缺省时随类型取「开始日期」「开始月份」等。       |
@@ -937,6 +950,7 @@ const formRules = z.object({
 | `arrow`              | 浮层外壳 | 浮层指向触发器的小箭头，不是触发器尾部图标             |
 | `trigger`            | 触发器   | 触发器盒子，形态、尺寸、配色类名都落在这里             |
 | `triggerText`        | 触发器   | 单值与多选的已选文本                                   |
+| `input` | 触发器 | `date` / `daterange` 的日期输入框，预览为 `text-gray-5`，确定值为 `text-gray-9` |
 | `triggerIconWrapper` | 触发器   | 尾部图标区                                             |
 | `placeholder`        | 触发器   | 占位文本，范围类型未选的一栏也用它着色                 |
 | `clearBtn`           | 触发器   | 清空按钮                                               |
@@ -981,7 +995,7 @@ const formRules = z.object({
 | 多选         | `dates` / `months` 等多选类型，支持标签折叠                            | 不支持                                                                    |
 | 绑定值形态   | 不传 `valueFormat` 时是 `Date` 对象                                    | 始终是字符串，`valueFormat` 缺省按 `type` 取默认格式                      |
 | 写回时机     | 选定即写回（带时间的类型值完整时写回）                                 | 只在点「确定」或清空时写回，拨动滚轮不写回                                |
-| 快捷项       | `shortcuts: { text, value }[]`，面板左侧侧栏，空数组时不显示           | `shortcuts: { label, value }[]`，仅范围模式，空数组时用内置五项           |
+| 快捷项       | `shortcuts: { text, value }[]`，`shortcutPosition` 控制左右侧栏，空数组时不显示 | `shortcuts: { label, value }[]`，仅范围模式，空数组时用内置五项           |
 | `color` 取值 | 7 种，含 `secondary`                                                   | 6 种，不含 `secondary`                                                    |
 | 形态变体     | `variant` 四种，与 `RebornSelect` 一致                                 | 无 `variant`                                                              |
 | 样式覆盖入口 | `ui` + `triggerUi` + `panelUi`                                         | `ui` + `triggerUi` + `popupUi` + `pickerUi`                               |

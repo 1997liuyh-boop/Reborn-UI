@@ -21,6 +21,7 @@ export type {
   TransferExtraSlotProps,
   TransferFooterSlotProps,
   TransferItemSlotProps,
+  TransferListSlotProps,
   TransferOperationButtonSlotProps,
   TransferOperationSlotProps,
   TransferPaginationConfig,

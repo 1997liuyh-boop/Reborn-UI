@@ -72,6 +72,27 @@ function mount(initial = {}, { form, slots } = {}) {
 }
 after(() => { mounted.forEach(cleanup => cleanup()); dom.window.close(); });
 
+it("width 设置每个面板的宽度，移除后恢复父容器均分，height 仍作用于整体", async () => {
+  const t = mount({ width: 240, height: 320 });
+  const root = t.container.firstElementChild;
+  const panels = () => [...root.children].filter(el => el.className.includes("flex-col") && !el.className.includes("self-center"));
+  assert.equal(root.style.width, "");
+  assert.equal(root.style.height, "320px");
+  assert.equal(panels().length, 2);
+  for (const panel of panels()) {
+    assert.equal(panel.style.width, "240px");
+    assert.ok(panel.className.split(/\s+/).includes("flex-none"));
+  }
+  t.props.width = "18rem"; await nextTick();
+  assert.ok(panels().every(panel => panel.style.width === "18rem"));
+  t.props.width = undefined; await nextTick();
+  for (const panel of panels()) {
+    assert.equal(panel.style.width, "");
+    assert.ok(panel.className.split(/\s+/).includes("flex-1"));
+    assert.ok(!panel.className.split(/\s+/).includes("flex-none"));
+  }
+});
+
 it("disabled 从 true 切回 false 后，勾选与穿梭恢复可用", async () => {
   const t = mount({ disabled: true });
   assert.ok(t.checkboxes().every(el => el.disabled));
@@ -180,12 +201,12 @@ it("虚拟滚动只在跨行时更新窗口，同一行内的像素滚动不重�
   const t = mount({ dataSource: many, virtualScroll: true });
   const wrap = t.container.querySelector("[data-wrap]");
   const scrollTo = async (top) => { wrap.scrollTop = top; wrap.dispatchEvent(new Event("scroll")); await nextTick(); };
-  await scrollTo(10 * 32);
+  await scrollTo(10 * 34);
   // 首行 = 滚动行号 10 减去 4 行缓冲
   assert.equal(t.rows()[0].textContent, "虚拟6");
   globalThis.__transferCheckboxRenders = 0;
-  await scrollTo(10 * 32 + 20);
+  await scrollTo(10 * 34 + 20);
   assert.equal(globalThis.__transferCheckboxRenders, 0);
-  await scrollTo(12 * 32);
+  await scrollTo(12 * 34);
   assert.equal(t.rows()[0].textContent, "虚拟8");
 });

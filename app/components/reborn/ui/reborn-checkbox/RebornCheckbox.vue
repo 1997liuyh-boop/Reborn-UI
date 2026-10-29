@@ -44,6 +44,7 @@ export interface CheckboxProps {
    * 样式变体
    * - filled：选中/半选填充配色，图标为白色
    * - outlined：选中只染边框与图标、不填充背景；半选保持灰色边框，中间显示同色实心小方块
+   * - shadow：描边与图标同色，半选边框也染色；增加 2px 的整圈同色第 1 阶阴影环，不占布局高度
    */
   variant?: typeof checkboxVariants[number];
   /**
@@ -232,10 +233,10 @@ const computedVariant = computed(() => {
 });
 
 /**
- * 是否渲染 outlined 变体的半选方块（此时不再渲染横线图标）
+ * 是否渲染 outlined / shadow 变体的半选方块（此时不再渲染横线图标）
  */
 const showIndeterminateDot = computed(
-  () => computedVariant.value === "outlined" && isIndeterminate.value,
+  () => computedVariant.value !== "filled" && isIndeterminate.value,
 );
 
 const uiOverrides = computed(() => props.ui || {});

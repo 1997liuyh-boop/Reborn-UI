@@ -107,31 +107,31 @@ export default {
             },
         },
         /**
-         * 聚焦态与展开态的描边色。
+         * 悬停使用色板第 6 阶，聚焦与展开沿用语义色。
          * group-focus 依赖外层浮层容器（RebornSelectTrigger 的 wrapper）上的 group + tabindex，
          * 因此本组件必须渲染在该 wrapper 内部才有聚焦描边。
          */
         color: {
             primary: {
-                trigger: "group-focus:border-primary data-[state=open]:border-primary",
+                trigger: "hover:border-brand-6 group-focus:border-primary data-[state=open]:border-primary",
             },
             secondary: {
-                trigger: "group-focus:border-secondary data-[state=open]:border-secondary",
+                trigger: "hover:border-secondary-6 group-focus:border-secondary data-[state=open]:border-secondary",
             },
             success: {
-                trigger: "group-focus:border-success data-[state=open]:border-success",
+                trigger: "hover:border-green-6 group-focus:border-success data-[state=open]:border-success",
             },
             info: {
-                trigger: "group-focus:border-info data-[state=open]:border-info",
+                trigger: "hover:border-blue-6 group-focus:border-info data-[state=open]:border-info",
             },
             warning: {
-                trigger: "group-focus:border-warning data-[state=open]:border-warning",
+                trigger: "hover:border-orange-6 group-focus:border-warning data-[state=open]:border-warning",
             },
             error: {
-                trigger: "group-focus:border-error data-[state=open]:border-error",
+                trigger: "hover:border-red-6 group-focus:border-error data-[state=open]:border-error",
             },
             neutral: {
-                trigger: "group-focus:border-neutral data-[state=open]:border-neutral",
+                trigger: "hover:border-gray-6 group-focus:border-neutral data-[state=open]:border-neutral",
             },
         },
         open: {
@@ -151,7 +151,7 @@ export default {
         disabled: {
             true: {
                 trigger:
-                    "pointer-events-none cursor-not-allowed border-gray-4 bg-gray-2",
+                    "pointer-events-none cursor-not-allowed border-gray-4 bg-gray-2 hover:border-gray-4",
                 triggerText: "text-gray-5",
                 arrow: "text-gray-5",
             },
@@ -159,7 +159,7 @@ export default {
         error: {
             true: {
                 trigger:
-                    "border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
+                    "border-red-5 hover:border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
             },
         },
     },

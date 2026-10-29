@@ -210,10 +210,10 @@ it('Switch 在三种形态与尺寸保持边界，快速切换连续，禁用不
       for (const switchType of ['circle', 'round', 'line']) {
         await configure(page, { size, switchType, checked: false });
         await configure(page, { checked: true });
-        await page.waitForFunction(() => {
+        await page.waitForFunction((edge) => {
           const thumb = document.querySelector<HTMLElement>('.fixture-thumb')!;
-          return thumb.style.left === '' && Math.abs(Number.parseFloat(getComputedStyle(thumb).right) - 2) < 0.1;
-        });
+          return thumb.style.left === '' && Math.abs(Number.parseFloat(getComputedStyle(thumb).right) - edge) < 0.1;
+        }, switchType === 'line' ? 0 : 2);
         if (switchType === 'line') {
           const gap = await page.locator('.fixture-thumb').evaluate(element => {
             const thumb = element.getBoundingClientRect();

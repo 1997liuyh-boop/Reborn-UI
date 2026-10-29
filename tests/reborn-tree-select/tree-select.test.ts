@@ -255,6 +255,136 @@ it('fieldNames.key 指定绑定值字段，回显、搜索与内部树共用该�
   view.find('Tree').props.onSelect(['33']); await nextTick();
   assert.deepEqual(view.values, ['33']); view.unmount();
 });
+it('搜索默认关闭，配置异步回调也不会隐式开启或发请求', async () => {
+  let calls = 0;
+  const view = mount({ treeData: data, searchData: async () => { calls++; } });
+  await view.open();
+  assert.equal(view.find('input'), undefined);
+  assert.equal(calls, 0);
+  assert.deepEqual(view.find('Tree').props.treeData, data);
+  view.unmount();
+});
+
+it('本地搜索同时匹配映射后的 key 和 label，支持数值零与忽略大小写', async () => {
+  const view = mount({ treeData: [{ id: 'ROOT', label: '部门', items: [{ id: 'WEB-A', label: '前端' }, { id: 0, label: '后端' }] }],
+    fieldNames: { key: 'id', title: 'label', children: 'items' }, allowSearch: true });
+  await view.open();
+  for (const [value, key] of [[' web-a ', 'WEB-A'], ['前端', 'WEB-A'], ['0', 0]]) {
+    view.find('input').props.onInput({ target: { value } }); await nextTick();
+    assert.deepEqual(view.find('Tree').props.treeData[0].items.map((node: { id: string | number }) => node.id), [key]);
+    assert.deepEqual(view.find('Tree').props.expandedKeys, ['ROOT']);
+  }
+  view.unmount();
+});
+
+/** 手动完成请求，验证不同返回顺序与取消分支。 */
+function deferred() {
+  let resolve!: () => void;
+  let reject!: (error: Error) => void;
+  const promise = new Promise<void>((done, fail) => { resolve = done; reject = fail; });
+  return { promise, resolve, reject };
+}
+
+it('异步搜索由调用方回填 treeData，显示加载状态且不二次筛选服务端结果', async () => {
+  const request = deferred();
+  const searches: string[] = [];
+  let query: string | undefined;
+  const view = mount({ treeData: data, allowSearch: true, onSearch: (value: string) => searches.push(value),
+    searchData: async (value: string, { signal }: { signal: AbortSignal }) => {
+      query = value;
+      await request.promise;
+      if (!signal.aborted) view.props.treeData = [{ key: 'remote', title: '服务端语义匹配', children: [{ key: 'child', title: '检索结果' }] }];
+    } });
+  await view.open();
+  view.find('input').props.onInput({ target: { value: ' AbC ' } }); await nextTick();
+  assert.equal(query, 'AbC');
+  assert.deepEqual(searches, [' AbC ']);
+  assert.equal(view.find('Tree'), undefined);
+  assert.ok(flatten(view.root).some(node => node.text.trim() === '搜索中…'));
+  request.resolve(); await request.promise; await nextTick(); await nextTick();
+  assert.equal(view.find('Tree').props.treeData[0].title, '服务端语义匹配');
+  assert.deepEqual(view.find('Tree').props.expandedKeys, ['remote']);
+  assert.deepEqual(view.values, []);
+  view.unmount();
+});
+
+it('关键词变化取消旧请求，旧请求完成不会覆盖结果或结束新请求的加载状态', async () => {
+  const requests: { query: string; signal: AbortSignal; task: ReturnType<typeof deferred> }[] = [];
+  const view = mount({ treeData: data, allowSearch: true,
+    searchData: async (query: string, { signal }: { signal: AbortSignal }) => {
+      const task = deferred(); requests.push({ query, signal, task });
+      await task.promise;
+      if (!signal.aborted) view.props.treeData = [{ key: query, title: query }];
+    } });
+  await view.open();
+  view.find('input').props.onInput({ target: { value: '旧请求' } });
+  view.find('input').props.onInput({ target: { value: '新请求' } }); await nextTick();
+  assert.equal(requests[0].signal.aborted, true);
+  requests[0].task.resolve(); await requests[0].task.promise; await nextTick();
+  assert.equal(view.find('Tree'), undefined);
+  assert.ok(flatten(view.root).some(node => node.text.trim() === '搜索中…'));
+  requests[1].task.resolve(); await requests[1].task.promise; await nextTick(); await nextTick();
+  assert.equal(view.find('Tree').props.treeData[0].key, '新请求');
+  view.unmount();
+});
+
+it('清空搜索通知空关键词，关闭、关闭搜索和卸载都会取消请求', async () => {
+  const requests: { query: string; signal: AbortSignal }[] = [];
+  const view = mount({ treeData: data, allowSearch: true,
+    searchData: (query: string, { signal }: { signal: AbortSignal }) => {
+      requests.push({ query, signal }); return new Promise(() => {});
+    } });
+  await view.open();
+  view.find('input').props.onInput({ target: { value: 'a' } });
+  view.find('input').props.onInput({ target: { value: '' } }); await nextTick();
+  assert.deepEqual(requests.map(item => item.query), ['a', '']);
+  assert.equal(requests[0].signal.aborted, true);
+  assert.equal(requests[1].signal.aborted, false);
+  view.find('SelectTrigger').props.onClose(); await nextTick();
+  assert.equal(requests[1].signal.aborted, true);
+  await view.open();
+  view.find('input').props.onInput({ target: { value: 'b' } });
+  view.props.allowSearch = false; await nextTick();
+  assert.equal(requests[2].signal.aborted, true);
+  view.props.allowSearch = true; await nextTick();
+  view.find('input').props.onInput({ target: { value: 'c' } });
+  view.unmount();
+  assert.equal(requests[3].signal.aborted, true);
+});
+
+it('异步搜索失败显示可重试提示，再次输入可恢复，空结果使用 empty 插槽', async () => {
+  const request = deferred();
+  let calls = 0;
+  const view = mount({ treeData: data, allowSearch: true, searchData: async () => {
+    calls++;
+    if (calls === 1) await request.promise;
+    else view.props.treeData = [];
+  } }, undefined, { empty: () => [h('strong', '未找到相关部门')] });
+  await view.open();
+  view.find('input').props.onInput({ target: { value: '服务端' } }); await nextTick();
+  request.reject(new Error('网络失败')); await request.promise.catch(() => {}); await nextTick();
+  assert.ok(flatten(view.root).some(node => node.text.trim() === '搜索失败，请重新输入'));
+  view.find('input').props.onInput({ target: { value: '服务端' } }); await nextTick(); await nextTick();
+  assert.equal(calls, 2);
+  assert.equal(view.find('strong').text, '未找到相关部门');
+  view.unmount();
+});
+
+it('异步搜索可与 loadData 配合，懒加载收到映射后的源节点并更新搜索结果', async () => {
+  const view = mount({ treeData: [], allowSearch: true, fieldNames: { key: 'id', title: 'label', children: 'items' },
+    searchData: async () => { view.props.treeData = [{ id: 'remote', label: '远程部门' }]; },
+    loadData: async (node: { items?: unknown[] }) => { node.items = [{ id: 0, label: '异步子级', isLeaf: true }]; } });
+  await view.open();
+  view.find('input').props.onInput({ target: { value: '部门查询' } }); await nextTick(); await nextTick();
+  const displayed = view.find('Tree').props.treeData[0];
+  await view.find('Tree').props.loadData(displayed); await nextTick();
+  const source = view.props.treeData as { id: string; items: { id: number }[] }[];
+  assert.equal(source[0].items[0].id, 0);
+  assert.deepEqual(view.find('Tree').props.loadedKeys, ['remote']);
+  assert.equal(view.find('Tree').props.treeData[0].items[0].label, '异步子级');
+  view.unmount();
+});
+
 it('懒加载由选择器记录已加载 key，收起后重建的树仍拿到记录，重复加载不重复写入', async () => {
   const requested: unknown[] = [];
   const updates: unknown[] = [];

@@ -164,9 +164,9 @@ const scrollPanes = Array.from({ length: 40 }, (_, index) => ({
   title: `标签 ${index + 1}`,
 }));
 
-/** 溢出导航演示：overflow 之外再叠位置 / 尺寸 / 类型 / 选中项滚动落点，验证三种方案在各形态下的表现 */
+/** 溢出导航演示：两种模式配合位置、尺寸、类型与选中项滚动落点。 */
 const overflowProps = ref({
-  overflow: "arrows" as (typeof tabsOverflows)[number],
+  overflow: "dropdown" as (typeof tabsOverflows)[number],
   position: "top" as (typeof tabsPositions)[number],
   size: "md" as (typeof tabsSizes)[number],
   type: "line" as (typeof tabsTypes)[number],
@@ -474,13 +474,12 @@ function handleDelete(key: TabKey) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="溢出导航：箭头与下拉">
+    <DemoSection title="溢出导航：滑动与省略号下拉">
       <template #description>
-        默认溢出后只能靠滚轮或触摸滑动，没有任何可点的入口。<code>overflow="arrows"</code>
-        在头部两端补一对箭头按钮分步滚动，适合鼠标为主的场景；<code>overflow="dropdown"</code>
-        在头部末尾补一个下拉选标，列表只含被滚出可视区域的标签——看得见的直接点头部即可，点选后该标签滚回可视区域并从列表中消失。两种方案的按钮都只在标签真正溢出时渲染，未溢出时与默认表现一致；滚动容器两端的标签会渐隐成透明，滚过哪端、哪端就有滑进按钮下面的层次感，滚到端点即恢复实心。「定位」一组是
-        <code>scroll-position</code>：切换标签后选中项的滚动落点，对三种导航方式都生效——默认
-        <code>scroll</code> 没有可点按钮，选中项的自动定位就是它唯一的导航手段。
+        <code>overflow="scroll"</code> 点击两侧箭头滚动，也支持触摸或触控板滑动；<code>overflow="dropdown"</code>
+        在有隐藏标签的一侧显示省略号，悬停后只展开该侧的标签列表，点击也能展开。
+        选择列表项后，标签按 <code>scroll-position</code> 对齐到起点、居中或终点；
+        修改「定位」配置会立即调整当前选中项。没有隐藏标签的一侧不保留省略号占位，纵向布局对应上下两侧。
       </template>
       <DemoBlock layout="stack">
         <div class="flex flex-wrap items-center gap-3">

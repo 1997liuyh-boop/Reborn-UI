@@ -26,6 +26,7 @@ const result = await build({
     // 交互测试模拟动画完成时机；真实插值和中断连续性由浏览器测试验证。
     builder.onLoad({ filter: /lib[\\/]motion\.ts$/ }, () => ({ contents: `
       const runs = new WeakMap();
+      export function prefersReducedMotion() { return false; }
       export function runMotion(element, frames, options = {}) {
         runs.get(element)?.stop();
         let resolve; const finished = new Promise(done => resolve = done);

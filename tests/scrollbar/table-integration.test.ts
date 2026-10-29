@@ -55,6 +55,7 @@ before(async () => {
   await build({
     entryPoints: [resolve('app/components/reborn/ui/scrollbar/RebornScrollbar.vue')],
     outfile: output, bundle: true, format: 'esm', platform: 'node', packages: 'external',
+    alias: { '~': resolve('app'), '@': resolve('app') },
     plugins: [{ name: 'scrollbar-integration', setup(builder) {
       builder.onLoad({ filter: /\.vue$/ }, async ({ path }) => {
         const { descriptor } = parse(await readFile(path, 'utf8'), { filename: path });

@@ -3,7 +3,7 @@
   "whenToUse": [
     "页面内多个平级视图之间切换，例如概览/详情/日志。",
     "标签数量随用户操作增减，需要新增与关闭标签（editable + showAddButton）。",
-    "标签较多需要横向滚动，且希望选中项自动进入可视区域（scrollPosition）；需要可点击的滚动入口再加 overflow=arrows 或 dropdown（仅 web）。",
+    "标签较多需要横向滚动，且希望选中项自动进入可视区域（scrollPosition）；需要通过两侧省略号下拉选择隐藏标签时用 overflow=dropdown（仅 web）。",
     "标签顺序应由用户自己整理，如工作台的自定义页签（draggable + sort 事件，仅 web）。",
     "内容区较重（图表、长表单），希望首次展示时才挂载（lazyLoad）。",
     "需要纵向排布的侧边分区导航（position=left/right）。"
@@ -25,7 +25,7 @@
     },
     {
       "name": "overflow",
-      "description": "仅 web。标签溢出时的导航方式：scroll 只靠滚轮/触摸滑动（默认）/arrows 头部两端箭头按钮分步滚动（每次滚可视区八成，端点置灰）/dropdown 头部末尾下拉选标（只列当前被滚出可视区域的标签，点选后按 scrollPosition 滚回可视区域）。按钮只在标签真正溢出时渲染，未溢出时与默认表现一致；这两种模式下滚动容器经 mask-image 让两端标签渐隐成透明（28px，内容自身淡出而非叠深色遮罩，任何主题底色下观感一致），滚到端点的一侧恢复实心；与 scrollPosition 不冲突。默认 scroll"
+      "description": "仅 web。标签溢出提供两种模式：scroll 显示两侧箭头，点击滚动可视区的八成，到边界时对应箭头禁用，也支持触摸、触控板或 Shift + 滚轮滑动（默认）；dropdown 在有未完整露出标签的一侧显示省略号，悬停或点击展开该侧隐藏标签列表，没有隐藏标签的一侧移除整个按钮容器及间距。点选后按最终可视区尺寸和 scrollPosition 定位，禁用项不可选，Escape 或点击头部外关闭。未溢出时不显示导航按钮。纵向布局对应上下两侧。两种模式均支持 scrollPosition 的 start、center、end、auto 或数字；Web 端只修改定位参数也会立即生效。"
     },
     {
       "name": "stretch",
@@ -42,7 +42,7 @@
     "destroyOnHidden 与 lazyLoad 同时开启时前者优先，lazyLoad 的“挂载后保留”不再成立。子级 RebornTabPane 的 destroyOnHidden 与父级同名参数取或。",
     "面板默认用 v-show 控制显隐，切换不丢失内容状态（表单填写、滚动位置都保留）；需要每次进入都是干净状态必须显式开 destroyOnHidden。",
     "纵向（position=left/right）line 类型的标签在指示条一侧带逐档内边距（4/18/28/32rpx，web 端 2/9/14/16px），与水平模式下标签高度减行高除二的呼吸空间逐档一致；纵向标签被 items-stretch 撑满列宽，没有这段内边距时最宽的标题会直接贴上指示条。",
-    "overflow=arrows/dropdown 的按钮只在标签真正溢出时渲染，容器够宽时不出现；容器尺寸变化由 ResizeObserver 跟踪，缩窄到溢出的瞬间才补进来（仅 web）。",
+    "overflow=dropdown 的省略号只在对应一侧有隐藏标签时显示：列表起点显示右侧，终点显示左侧，中间可同时显示两侧；容器足够宽时移除两侧占位，容器尺寸变化由 ResizeObserver 跟踪（仅 web）。",
     "order 只有整组均为有限数值时生效，混传或 NaN/Infinity 整组忽略，同值保持相对次序；动态列表传唯一连续下标。Web 拖拽后暂时保留本地头部顺序，父级改写完整有效的 order 映射后重新接管；缺省时回退节点顺序，拖拽本地顺序仍保留。MP 无 VNode 可用时保留当前登记次序。",
     "新增按钮与标签列同处 ui.scrollBody 这层滚动内容里，紧贴末尾标签（隔 8px / 16rpx）而非被推到头部最右端；代价是标签溢出时按钮跟着滚动，要滚到末尾才能看到（两端一致）。",
     "指示条只属于 line 类型：card、card-gutter、card-fill、rounded、capsule 五种不渲染指示器而渲染 ui.tabSlider 这块滑动底板，只有 text 两个节点都不渲染。所以这五种类型上覆盖 ui.indicator 无视觉变化（要改选中态得覆盖 ui.tabSlider），text 上两者都无效，只能改 ui.tab 或换 color。",

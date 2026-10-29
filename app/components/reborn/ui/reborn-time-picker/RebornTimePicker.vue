@@ -32,6 +32,8 @@ const props = withDefaults(defineProps<TimePickerProps>(), {
   disabled: false,
   clearable: true,
   isRange: false,
+  followSystemTime: false,
+  interaction: "scroll",
   arrowControl: false,
   showFooter: true,
   format: "HH:mm:ss",
@@ -104,6 +106,10 @@ export interface TimePickerProps {
   disabled?: boolean;
   clearable?: boolean;
   isRange?: boolean;
+  /** 空值时是否以当前系统时间初始化；已有绑定值优先 */
+  followSystemTime?: TimePanelProps["followSystemTime"];
+  /** 时间列交互：默认滚动居中，click 仅点击选中并置顶 */
+  interaction?: TimePanelProps["interaction"];
   arrowControl?: boolean;
   /** 是否显示底部操作区，包含自定义 footer 插槽 */
   showFooter?: boolean;
@@ -485,6 +491,8 @@ function onOutsideClose() {
         aria-label="时间选择"
         :format="format"
         :is-range="isRange"
+        :follow-system-time="followSystemTime"
+        :interaction="interaction"
         :arrow-control="arrowControl"
         :show-footer="showFooter"
         :variant="panelVariant"

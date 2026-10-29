@@ -53,10 +53,12 @@ export interface DatePickerPanelProps {
   disabled?: boolean; // 是否禁用
   border?: boolean; // 是否显示边框
   shortcuts?: { text: string; value: any }[]; // 快捷选项
+  shortcutPosition?: "left" | "right"; // 快捷侧栏位置，默认位于日期面板左侧
   showWeekNumber?: boolean; // 日期视图左侧显示 ISO 周数（week / weekrange 类型本身按周选择，不生效）
   unlinkPanels?: boolean; // 范围选择时取消两个面板之间的联动，左右面板各自翻页
   singlePanel?: boolean; // 范围选择时只显示一个面板
   showToday?: boolean; // 面板底部显示「今天」按钮：点击选中当前时间所在的日 / 周 / 月 / 季度 / 年，文案随类型变为今天、此刻（datetime）、本周、本月、本季度、今年
+  highlightToday?: boolean; // 高亮今天 / 本月 / 本季度 / 今年，默认关闭，不影响已选样式
   defaultValue?: DatePickerDefaultValue | DatePickerDefaultValue[]; // 未选值时面板初始展示的日期，不写入绑定值；默认展示当天。数组时第一项定位左面板，取消联动（unlinkPanels）时第二项定位右面板；字符串按 valueFormat 解析，数字按时间戳
   ui?: Partial<{
     // 样式覆盖
@@ -121,11 +123,13 @@ const props = withDefaults(defineProps<DatePickerPanelProps>(), {
   disabled: false,
   border: false,
   shortcuts: () => [],
+  shortcutPosition: "left",
   valueFormat: "",
   showWeekNumber: false,
   unlinkPanels: false,
   singlePanel: false,
   showToday: false,
+  highlightToday: false,
 });
 
 const emit = defineEmits<{
@@ -142,6 +146,8 @@ const emit = defineEmits<{
   ): void;
   // 调用 clear 清空选中值时触发
   (e: "clear"): void;
+  // 候选日期预览；离开网格或悬停禁用格时为 null，不写入绑定值
+  (e: "hover-change", value: Date | [Date, Date | null] | null): void;
 }>();
 
 defineSlots<{
@@ -192,6 +198,7 @@ const showWeek = computed(() => props.showWeekNumber && !isWeekUnit.value); // �
 const uiOverrides = computed(() => props.ui || {});
 const ui = computed(() => {
   const styles = b({
+    shortcutPosition: props.shortcutPosition,
     size: props.size,
     color: props.color,
     activeType: props.activeType,
@@ -803,6 +810,37 @@ function selectUnit(panel: { side: PanelSide; year: number }, cell: UnitCell) {
   else selectQuarter(cell.value, panel.year, panel.side);
 }
 
+/** 预览与选择分开上报，沿用已计算的禁用状态，避免悬停反复调用禁用规则。 */
+function onCellHover(date: Date | null, side: PanelSide) {
+  range.setHover(date);
+  const unit = props.type.startsWith("year") ? "year"
+    : props.type.startsWith("month") ? "month"
+      : props.type.startsWith("quarter") ? "quarter" : "date";
+  if (!date || props.disabled || currentView.value !== unit) {
+    emit("hover-change", null);
+    return;
+  }
+  const candidate = parseValue(formatDate(date))!;
+  if (props.type === "week") {
+    emit("hover-change", [weekStartOf(date), weekEndOf(date)]);
+  } else if (isRange.value) {
+    let start = side === "right" ? range.start.value ?? new Date()
+      : range.start.value && !range.end.value ? range.start.value : date;
+    let end = side === "right" || (range.start.value && !range.end.value) ? date : null;
+    if (end && end < start) [start, end] = [end, start];
+    if (props.type === "weekrange") {
+      start = weekStartOf(start);
+      if (end) end = weekEndOf(end);
+    }
+    emit("hover-change", [parseValue(formatDate(start))!, end ? parseValue(formatDate(end, "end")) : null]);
+  } else {
+    emit("hover-change", candidate);
+  }
+}
+
+// 翻页、切换视图或禁用面板后，旧网格的候选日期立即失效。
+watch([currentView, nav.leftYear, nav.leftMonth, nav.leftPage, nav.rightYear, nav.rightMonth, nav.rightPage, () => props.disabled], () => onCellHover(null, "left"));
+
 // --- 选中判定 ---
 
 /** 该季度是否为选中项（范围模式下仅首尾两端为选中项） */
@@ -1201,9 +1239,20 @@ function selectToday() {
   selectDay(cell);
 }
 
+/** 只定位面板，不改变选中集合，供外部输入与多选追加共用。 */
+function focusDate(date: Date) {
+  if (props.disabled || Number.isNaN(date.getTime())) return;
+  nav.resetView();
+  nav.focus(date);
+  nav.realignRight(range.end.value);
+  viewSettled.value = true;
+}
+
 defineExpose({
   /** 清空选中值，触发 update:modelValue、change（清空前有值时）与 clear */
   clear,
+  /** 定位到日期所在的月份或年份，不提交绑定值。 */
+  focusDate,
 });
 
 // --- 模板辅助 ---
@@ -1299,9 +1348,9 @@ watch(defaultValueKey, () => {
     <div :class="ui.container()">
       <!-- 快捷选项侧栏 -->
       <div v-if="shortcuts.length" :class="ui.shortcuts()">
-        <div v-for="(s, i) in shortcuts" :key="i" :class="ui.shortcut()" @click.stop="handleShortcut(s)">
+        <button v-for="(s, i) in shortcuts" :key="i" type="button" :disabled="disabled" :class="ui.shortcut()" @click.stop="handleShortcut(s)">
           {{ s.text }}
-        </div>
+        </button>
       </div>
 
       <!-- 主内容区：定位到实际月份之前先隐藏（只占位），服务端首屏不露出固定基准月 -->
@@ -1363,8 +1412,9 @@ watch(defaultValueKey, () => {
             :kind="unitKind"
             :cells="p.units"
             :ui="ui"
+            :highlight-today="highlightToday"
             @select="(cell) => selectUnit(p, cell)"
-            @hover="range.setHover"
+            @hover="(date) => onCellHover(date, p.side)"
           >
             <!-- 未传 default 插槽时由网格显示「2026」「3月」「第1季度」这类默认文本 -->
             <template v-if="$slots.default" #default="cell">
@@ -1378,8 +1428,9 @@ watch(defaultValueKey, () => {
             :rows="p.rows"
             :show-week="showWeek"
             :ui="ui"
+            :highlight-today="highlightToday"
             @select="(day) => selectDay(day, p.side)"
-            @hover="range.setHover"
+            @hover="(date) => onCellHover(date, p.side)"
           >
             <template #default="cell">
               <slot v-bind="cell">{{ cell.text }}</slot>

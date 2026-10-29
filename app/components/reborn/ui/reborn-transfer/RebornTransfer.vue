@@ -30,6 +30,7 @@ export interface TransferPaginationConfig {
 const props = withDefaults(defineProps<TransferProps>(), {
   dataSource: () => [],
   defaultTargetKeys: () => [],
+  defaultSelectedKeys: () => [],
   titles: () => [] as unknown as [string, string],
   disabled: false,
   showSearch: false,
@@ -42,7 +43,7 @@ const props = withDefaults(defineProps<TransferProps>(), {
   showUndo: false,
   pagination: false,
   virtualScroll: false,
-  virtualItemHeight: 32,
+  virtualItemHeight: 34,
   virtualBuffer: 4,
   fieldNames: () => ({}),
 });
@@ -73,6 +74,8 @@ const slots = defineSlots<{
   default?: (props: TransferItemSlotProps) => any;
   /** 旧版条目插槽，作用域只有 { item }；新代码请用 default 插槽，二者同时提供时 default 优先 */
   item?: (props: { item: TransferDataRecord }) => any;
+  /** 替换整个列表，复用面板搜索、勾选、穿梭与分页逻辑 */
+  list?: (props: TransferListSlotProps) => any;
   /** 面板底部区域，渲染在分页栏下方 */
   footer?: (props: TransferFooterSlotProps) => any;
   /** 整个替换中间操作按钮；不提供时渲染 RebornButton */
@@ -117,6 +120,8 @@ export interface TransferProps {
    * 未绑定 v-model 或目标列表为空时生效；在首次拿到非空 dataSource 时初始化一次，会过滤掉 dataSource 中不存在的 key
    */
   defaultTargetKeys?: string[];
+  /** 首次取得非空数据时默认勾选的 key，按目标列表分配至两侧，禁用项不参与 */
+  defaultSelectedKeys?: string[];
   /** 两个面板的标题，索引 0 为源列表，索引 1 为目标列表 */
   titles?: [string, string];
   /**
@@ -178,14 +183,14 @@ export interface TransferProps {
   virtualScroll?: boolean;
   /**
    * 虚拟滚动的行步长（px），即单行高度加上 4px 行间距
-   * 默认 32 对应只有 label 的条目（行高 28）；带 description 的条目行高 50，应传 54；用插槽改了条目内容时须与实际高度一致
+   * 默认 34 对应只有 label 的条目（行高 30）；带 description 的条目行高 52，应传 56；用插槽改了条目内容时须与实际高度一致
    */
   virtualItemHeight?: number;
   /** 虚拟滚动在可视区上下各多渲染的条数，快速滚动时减少白屏 */
   virtualBuffer?: number;
   /**
-   * 组件整体宽度
-   * 支持数字（px）或 CSS 长度，如 640、'100%'、'50vw'
+   * 单个面板宽度，两侧相同；不传时按父容器宽度均分
+   * 支持数字（px）或 CSS 长度，如 240、'18rem'、'40%'
    */
   width?: string | number;
   /**
@@ -240,6 +245,16 @@ export interface TransferItemSlotProps {
   checked: boolean;
   /** 条目是否禁用（整体禁用或条目自身禁用） */
   disabled: boolean;
+}
+
+/** list 插槽作用域：当前页数据与面板内的勾选状态 */
+export interface TransferListSlotProps {
+  direction: TransferDirection;
+  items: TransferDataRecord[];
+  selectedKeys: string[];
+  disabled: boolean;
+  /** 只更新当前页的勾选，不影响其他页或搜索结果外的勾选 */
+  onSelectionChange: (keys: string[]) => void;
 }
 
 /** footer 插槽作用域：面板底部 */
@@ -476,6 +491,19 @@ const leftSearch = shallowRef("");
 const rightSearch = shallowRef("");
 const leftChecked = ref<string[]>([]);
 const rightChecked = ref<string[]>([]);
+
+// 默认勾选仅初始化一次；异步数据到达后再按左右面板分配。
+if (props.defaultSelectedKeys.length) {
+  const stop = watch(() => props.dataSource, (items) => {
+    if (!items.length) return;
+    const defaults = new Set(props.defaultSelectedKeys);
+    const targets = new Set(targetKeys.value);
+    const keys = items.filter(item => defaults.has(getItemKey(item)) && !isItemDisabled(item)).map(getItemKey);
+    leftChecked.value = keys.filter(key => !targets.has(key));
+    rightChecked.value = props.oneWay ? [] : keys.filter(key => targets.has(key));
+    nextTick(() => stop());
+  }, { immediate: true });
+}
 
 /** 穿梭操作历史栈（栈顶为最近一次操作） */
 const historyStack = ref<TransferHistoryEntry[]>([]);
@@ -1040,7 +1068,7 @@ const centerOperations = computed<CenterOperationDescriptor[]>(() => [
 
 const visibleCenterOperations = computed(() => centerOperations.value.filter((op) => op.visible));
 
-// ─── 整体尺寸 ──────────────────────────────────────────────────────
+// ─── 面板宽度与整体高度 ────────────────────────────────────────────
 
 function formatCssSize(value: string | number): string {
   return typeof value === "number" ? `${value}px` : value;
@@ -1052,10 +1080,13 @@ function isCssSizeSet(value: string | number | undefined | null): value is strin
 
 const rootStyle = computed(() => {
   const style: Record<string, string> = {};
-  if (isCssSizeSet(props.width)) style.width = formatCssSize(props.width);
   if (isCssSizeSet(props.height)) style.height = formatCssSize(props.height);
   return Object.keys(style).length ? style : undefined;
 });
+
+const panelStyle = computed(() =>
+  isCssSizeSet(props.width) ? { width: formatCssSize(props.width) } : undefined,
+);
 
 // ─── 样式计算 ──────────────────────────────────────────────────────
 
@@ -1065,6 +1096,7 @@ const ui = computed(() => {
     variant: props.variant,
     color: props.color,
     error: isError.value,
+    fixedWidth: isCssSizeSet(props.width),
   });
   const ov: any = props.ui ?? {};
   const slot =
@@ -1078,6 +1110,8 @@ const ui = computed(() => {
     headerSelectControls: slot("headerSelectControls"),
     headerSelectMenu: slot("headerSelectMenu"),
     headerSelectTrigger: slot("headerSelectTrigger"),
+    headerSelectIconWrapper: slot("headerSelectIconWrapper"),
+    headerSelectArrow: slot("headerSelectArrow"),
     headerSelectDropdown: slot("headerSelectDropdown"),
     headerSelectItem: slot("headerSelectItem"),
     panelTitleArea: slot("panelTitleArea"),
@@ -1221,6 +1255,15 @@ function handleMenuChange(panel: PanelDescriptor, value: unknown) {
   }
 }
 
+/** 自定义列表只回写当前页，保留其他页与搜索结果外的勾选。 */
+function updatePanelSelection(panel: PanelDescriptor, keys: string[]) {
+  if (isDisabled.value || !panel.selectable) return;
+  const selected = new Set(keys);
+  for (const item of panel.visible) {
+    if (selected.has(getItemKey(item)) !== panel.isChecked(item)) panel.toggleItem(item);
+  }
+}
+
 // ─── 左右面板描述 ──────────────────────────────────────────────────
 
 const panels = computed<[PanelDescriptor, PanelDescriptor]>(() => [
@@ -1310,29 +1353,38 @@ function getPanelMenu(panel: PanelDescriptor): PanelMenuState {
 <template>
   <div :class="cn(ui.root(), props.class)" :style="rootStyle">
     <template v-for="(panel, index) in panels" :key="panel.direction">
-      <div :class="ui.panel()">
+      <div :class="ui.panel()" :style="panelStyle">
         <!-- 头部：左侧勾选区（title 插槽）+ 下拉菜单，右侧标题（extra 插槽） -->
         <div v-if="hasPanelHeader" :class="ui.panelHeader()">
           <div :class="ui.headerSelectControls()">
-            <slot name="title" :direction="panel.direction" :selectable="panel.selectable" :checked="panel.allChecked"
+            <slot
+              name="title" :direction="panel.direction" :selectable="panel.selectable" :checked="panel.allChecked"
               :indeterminate="panel.indeterminate" :disabled="isDisabled || panel.enabled.length === 0"
               :count-text="panel.countText" :checked-count="panel.checkedCount" :total="panel.total"
-              :toggle="panel.toggleAll">
-              <RebornCheckbox v-if="panel.showHeaderCheckbox" :model-value="panel.allChecked"
+              :toggle="panel.toggleAll"
+            >
+              <RebornCheckbox
+                v-if="panel.showHeaderCheckbox" :model-value="panel.allChecked"
                 :indeterminate="panel.indeterminate" :disabled="isDisabled || panel.enabled.length === 0"
                 :color="props.color" size="sm" :label="showHeaderSelectMenu ? undefined : panel.countText"
-                :ui="{ control: ui.checkAll(), label: ui.panelCount() }" class="gap-2" @change="panel.toggleAll" />
+                :ui="{ control: ui.checkAll(), label: ui.panelCount() }" class="gap-2" @change="panel.toggleAll"
+              />
               <span v-else-if="!showHeaderSelectMenu" :class="ui.panelCount()">{{ panel.countText }}</span>
             </slot>
 
             <!-- 开启下拉时计数文案显示在触发器里，复选框不再重复显示 -->
             <!-- 开启虚拟滚动时下拉列表同样虚拟渲染，选项与面板条目一样多 -->
-            <RebornSelect v-if="showHeaderSelectMenu" :model-value="getPanelMenu(panel).value"
+            <RebornSelect
+              v-if="showHeaderSelectMenu" :model-value="getPanelMenu(panel).value"
               :options="getPanelMenu(panel).options" :virtual="props.virtualScroll" multiple collapse-tags
               variant="borderless" size="sm" :clearable="false" :color="props.color" :disabled="panel.menuDisabled"
               :class="ui.headerSelectMenu()"
-              :trigger-ui="{ trigger: ui.headerSelectTrigger(), dropdown: ui.headerSelectDropdown() }"
-              :ui="{ option: ui.headerSelectItem() }" @update:model-value="(value) => handleMenuChange(panel, value)">
+              :trigger-ui="{
+                trigger: ui.headerSelectTrigger(), dropdown: ui.headerSelectDropdown(),
+                triggerIconWrapper: ui.headerSelectIconWrapper(), arrow: ui.headerSelectArrow(),
+              }"
+              :ui="{ option: ui.headerSelectItem() }" @update:model-value="(value) => handleMenuChange(panel, value)"
+            >
               <span :class="ui.panelCount()">{{ panel.countText }}</span>
             </RebornSelect>
           </div>
@@ -1347,22 +1399,39 @@ function getPanelMenu(panel: PanelDescriptor): PanelMenuState {
         <!-- 内容区：搜索 + 滚动列表 + 底部 -->
         <div :class="ui.panelContent()">
           <div v-if="showSearch" :class="ui.panelSearch()">
-            <RebornInput size="sm" variant="outlined" suffix-icon="lucide:search" :separator="false"
+            <RebornInput
+              size="sm" variant="outlined" suffix-icon="lucide:search" :separator="false"
               :model-value="panel.search" :placeholder="searchPlaceholder" :disabled="isDisabled"
-              :class="ui.searchInput()" @update:model-value="(value) => panel.setSearch(String(value ?? ''))" />
+              :class="ui.searchInput()" @update:model-value="(value) => panel.setSearch(String(value ?? ''))"
+            />
           </div>
 
-          <RebornScrollbar :size="4" :ref="(el) => setScrollbarRef(panel.direction, el)" :horizontal="false"
+          <div v-if="$slots.list" :class="ui.panelBody()">
+            <slot
+              name="list" :direction="panel.direction" :items="panel.visible"
+              :selected-keys="panel.filtered.filter(panel.isChecked).map(getItemKey)"
+              :disabled="isDisabled || !panel.selectable"
+              :on-selection-change="keys => updatePanelSelection(panel, keys)"
+            />
+          </div>
+          <RebornScrollbar
+            v-else
+            :ref="(el) => setScrollbarRef(panel.direction, el)" :size="4" :horizontal="false"
             :class="ui.panelBody()" :content-class="ui.panelList()"
-            @scroll="(payload) => onPanelScroll(panel.direction, payload)">
+            @scroll="(payload) => onPanelScroll(panel.direction, payload)"
+          >
             <!--
               虚拟滚动：占位层撑出总高度，窗口层按偏移贴到可视区；
               关闭时两层都是 display: contents，不产生盒子，条目仍直接排在 panelList 的 flex 列里
             -->
-            <div v-if="panel.filtered.length" :class="props.virtualScroll ? ui.virtualPhantom() : 'contents'"
-              :style="getVirtualPhantomStyle(panel.direction)">
-              <div :class="props.virtualScroll ? ui.virtualWindow() : 'contents'"
-                :style="getVirtualWindowStyle(panel.direction)">
+            <div
+              v-if="panel.filtered.length" :class="props.virtualScroll ? ui.virtualPhantom() : 'contents'"
+              :style="getVirtualPhantomStyle(panel.direction)"
+            >
+              <div
+                :class="props.virtualScroll ? ui.virtualWindow() : 'contents'"
+                :style="getVirtualWindowStyle(panel.direction)"
+              >
                 <!--
                   左右面板各用一处 v-for：v-memo 的缓存按模板里的编译位置存放，
                   两侧共用一处 v-for 时会互相覆盖缓存、永远命中不了。左侧条目恒可勾选，右侧在单向模式下只读
@@ -1472,8 +1541,10 @@ function getPanelMenu(panel: PanelDescriptor): PanelMenuState {
 
           <div v-if="$slots.footer || (paginationEnabled && panel.filtered.length)" :class="ui.panelFooter()">
             <div v-if="paginationEnabled && panel.filtered.length" :class="ui.panelPagination()">
-              <RebornPagination :model-value="panel.currentPage" :total="panel.filtered.length"
-                :page-size="paginationPageSize" :disabled="isDisabled" size="sm" @update:model-value="panel.setPage" />
+              <RebornPagination
+                :model-value="panel.currentPage" :total="panel.filtered.length"
+                :page-size="paginationPageSize" :disabled="isDisabled" size="sm" @update:model-value="panel.setPage"
+              />
             </div>
             <slot name="footer" :direction="panel.direction" :total="panel.total" :checked-count="panel.checkedCount" />
           </div>
@@ -1485,11 +1556,15 @@ function getPanelMenu(panel: PanelDescriptor): PanelMenuState {
         <template v-for="op in visibleCenterOperations" :key="op.key">
           <slot name="operation" :action="op.key" :config="op.config" :disabled="op.disabled" :on-click="op.onClick">
             <!-- 禁用时改用 neutral，避免彩色底的禁用按钮被误认为可点 -->
-            <RebornButton type="button" size="sm" :color="op.disabled ? 'neutral' : props.color" :disabled="op.disabled"
+            <RebornButton
+              type="button" size="sm" :color="op.disabled ? 'neutral' : props.color" :disabled="op.disabled"
               :title="op.config.title" :aria-label="op.config.ariaLabel" :class="cn(ui.operationBtn(), isIconOnlyOperationBtn(op.config) && ui.operationBtnIconOnly())
-                " @click="op.onClick">
-              <slot v-if="$slots[op.slotName]" :name="op.slotName" :ui="ui" :config="op.config"
-                :disabled="op.disabled" />
+              " @click="op.onClick"
+            >
+              <slot
+                v-if="$slots[op.slotName]" :name="op.slotName" :ui="ui" :config="op.config"
+                :disabled="op.disabled"
+              />
               <template v-else>
                 <span v-if="op.config.showIcon" :class="ui.operationBtnIcon()">
                   <Icon :name="op.config.icon" :class="op.config.iconClass" />

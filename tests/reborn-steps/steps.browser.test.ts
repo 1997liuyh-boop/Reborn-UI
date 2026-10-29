@@ -486,6 +486,31 @@ it('左侧末项短标题的实际文字与节点保持 8px，剩余步宽不进
   });
 });
 
+it('水平左右描述使用相同可用宽度，长说明换行不再受标题列限制', { skip: !browserAvailable }, async () => {
+  await withSteps(async (page) => {
+    for (const size of ['sm', 'md', 'lg']) {
+      for (const type of ['default', 'dot']) {
+        for (const space of ['', 240, '25%']) {
+          const label = `${size} ${type} ${space || '自动步距'}`;
+          await configure(page, { size, type, space, placement: 'right', members: [
+            { key: 'a', title: '填写资料', description: '补充姓名、证件号与联系方式，确认信息后继续下一步。' },
+            { key: 'b', title: '身份验证', description: '短信验证码将发送至预留手机号，请留意接收。' },
+            { key: 'c', title: '提交完成', description: '审核结果会在二十四小时内通知，请耐心等待。' },
+          ] });
+          const right = await geometry(page);
+          await configure(page, { placement: 'left' });
+          const left = await geometry(page);
+          for (const [index, item] of left.entries()) {
+            near(item.description!.width, right[index]!.description!.width, `${label} 第 ${index + 1} 步描述宽度`);
+            near(item.description!.height, right[index]!.description!.height, `${label} 第 ${index + 1} 步换行高度`);
+            near(item.description!.left, item.title.left, `${label} 左侧标题与描述左对齐`);
+          }
+        }
+      }
+    }
+  });
+});
+
 it('四向长描述、点状节点和进度圆环保持可用空间，末项不压缩且连接线不穿字', { skip: !browserAvailable }, async () => {
   await withSteps(async (page) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });

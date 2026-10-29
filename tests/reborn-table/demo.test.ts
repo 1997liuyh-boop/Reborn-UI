@@ -83,7 +83,7 @@ const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document')
 const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
 const previousComputedStyle = Object.getOwnPropertyDescriptor(globalThis, 'getComputedStyle');
 Object.defineProperty(globalThis, 'document', { configurable: true, value: { fonts: undefined, removeEventListener() {}, body: { style: {} } } });
-Object.defineProperty(globalThis, 'window', { configurable: true, value: { getComputedStyle: () => ({ paddingRight: '0', paddingBottom: '0' }) } });
+Object.defineProperty(globalThis, 'window', { configurable: true, value: { getComputedStyle: () => ({ paddingRight: '0', paddingBottom: '0', getPropertyValue: () => '0' }) } });
 Object.defineProperty(globalThis, 'getComputedStyle', { configurable: true, value: () => ({ left: 'auto', right: 'auto' }) });
 after(() => {
   if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);

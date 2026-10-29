@@ -347,7 +347,7 @@ export default {
     {
       color: "neutral" as (typeof color)[number],
       variant: "soft" as (typeof variant)[number],
-      class: "bg-gray-2 text-gray-10 enabled:hover:bg-gray-2/20",
+      class: "bg-gray-2 text-gray-10 enabled:hover:bg-gray-5/20",
     },
 
     {

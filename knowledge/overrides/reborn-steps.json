@@ -3,7 +3,7 @@
     "注册、下单、审批等有序流程：通过 v-model:active 标出当前阶段，并用外部按钮推进。",
     "流程需要展示已完成、处理中或失败阶段：设置 processStatus / finishStatus，必要时用单步 status 覆盖。",
     "页面空间与信息量不同：用 width 控制整体宽度，direction 与 space 调整排列，placement 选择标题和描述相对节点的上、下、左、右位置，simple 控制描述显示。",
-    "需要区分阶段类型：使用 type=default/dot 定制节点，lineType=solid/dashed/arrow 定制连接，单步 icon 与 color 表达业务含义。",
+    "需要区分阶段类型：使用 type=default/dot/text 选择数字、点状或无标记文本，lineType=solid/dashed/arrow 定制连接，单步 icon 与 color 表达业务含义。",
     "耗时任务需要阶段内进度：为 RebornStep 单独设置 progress，或用父级 overallProgress 将整体百分比等分折算为完成步骤和当前步骤圆环。"
   ],
   "whenNotToUse": [
@@ -19,7 +19,7 @@
     "圆环只显示在当前且状态为 process 的节点周围；progress 达到 100% 不会推进步骤，仍需业务更新 active。",
     "步骤本身没有点击切换能力，使用外部按钮或业务状态更新 active。",
     "单步 status 优先于父级按 active 推导的状态；错误和成功状态的语义色优先于 color。",
-    "箭头使用 lineType=arrow；type 仅选择 default 或 dot 节点。dashed 使用原生 CSS 虚线，短段分布由浏览器决定。",
+    "箭头使用 lineType=arrow；type 选择 default、dot 或 text。text 不渲染标记、图标插槽和进度圆环，当前标题与描述使用步骤主题色，错误和成功沿用语义色。dashed 使用原生 CSS 虚线，短段分布由浏览器决定。",
     "实线和虚线的完成覆盖层沿流程方向延展、回退时收回；箭头使用颜色过渡，约 200ms，系统减少动态效果时关闭过渡。",
     "simple 会隐藏 description，包括描述插槽；不适合必须展示辅助说明的流程。",
     "placement 只控制标题与描述相对节点的位置，不改变 direction 的横纵排列；单步 placement 优先于父级 placement，均未指定时，横向 alignCenter=true 回退为 bottom，其余默认为 right。横向 top/bottom 默认沿每步起点左对齐，alignCenter=true 时节点与文字居中；纵向不受 alignCenter 影响，top/bottom 的连接线避开文案并连接内容组边缘。",

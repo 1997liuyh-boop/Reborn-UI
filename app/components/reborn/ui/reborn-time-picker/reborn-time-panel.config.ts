@@ -2,10 +2,12 @@ const sizes = ["sm", "md", "lg"] as const;
 const colors = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
 const timeUnits = ["hour", "minute", "second", "millisecond"] as const;
 const variants = ["filled", "outlined"] as const;
+const interactions = ["scroll", "click"] as const;
 
 export type TimeUnit = (typeof timeUnits)[number];
 export type TimeRangeRole = "start" | "end";
 export {
+  interactions as timePanelInteractions,
   variants as timePanelVariants,
   colors as timePickerColors,
   sizes as timePickerSizes,
@@ -25,6 +27,9 @@ export default {
     arrowButton:
       "flex h-5 w-full cursor-pointer items-center justify-center text-gray-6 hover:bg-gray-2 disabled:cursor-not-allowed disabled:opacity-40",
     list: "h-time-picker-panel-list-height w-full",
+    // 有限列表的留白保证首尾选项也能停靠在选中区域。
+    listPaddingStart: "h-[calc((var(--spacing-time-picker-panel-list-height)-var(--spacing-time-picker-panel-item))/2)]",
+    listPaddingEnd: "h-[calc((var(--spacing-time-picker-panel-list-height)-var(--spacing-time-picker-panel-item))/2)]",
     // 本组件按设计稿将局部行高令牌设为 150%，不修改全局 14px / 22px 档位；单项为 21px + 8px。
     item: "relative flex h-time-picker-panel-item w-full shrink-0 cursor-pointer items-center justify-center px-5 py-1 text-base [--text-base--line-height:1.5] text-gray-9 transition-colors hover:bg-gray-2 motion-reduce:transition-none",
     itemActive: "font-normal",
@@ -61,8 +66,19 @@ export default {
       },
     },
     arrowControl: { false: { arrowButton: "hidden" } },
+    interaction: {
+      scroll: {},
+      click: {
+        listPaddingStart: "hidden",
+        listPaddingEnd: "h-[calc(var(--spacing-time-picker-panel-list-height)-var(--spacing-time-picker-panel-item))]",
+        itemActive: "bg-(--time-color-1) hover:bg-(--time-color-1)",
+      },
+    },
     // 只屏蔽子元素的指针，外壳接住指针显示禁止光标；各交互处理函数已按 disabled 拦截
     disabled: { true: { wrapper: "cursor-not-allowed opacity-50 [&_*]:pointer-events-none" } },
   },
-  defaultVariants: { size: "md", color: "primary", variant: "filled" } as const,
+  compoundVariants: [
+    { interaction: "click", color: "neutral", class: { wrapper: "[--time-color-1:var(--color-gray-1)]" } },
+  ],
+  defaultVariants: { size: "md", color: "primary", variant: "filled", interaction: "scroll" } as const,
 };

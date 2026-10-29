@@ -100,7 +100,7 @@ it('原生尺寸随根字号缩放，支持外部覆盖并保留特殊几何关�
       }), switches);
       assert.deepEqual(switchSizes, switches.map(item => {
         const diameter = item.height * fontSize / 16 - 4;
-        return { diameter, width: diameter, edge: 2, vertical: item.type === 'line' ? 0 : 2 };
+        return { diameter, width: diameter, edge: item.type === 'line' ? 0 : 2, vertical: item.type === 'line' ? 0 : 2 };
       }));
     }
   } finally {
