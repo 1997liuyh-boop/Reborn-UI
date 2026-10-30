@@ -47,7 +47,7 @@ export interface AlertProps {
   type?: AlertType
   /** 视觉变体，对齐 reborn-button 的同名变体（不含 circle），默认 soft */
   variant?: AlertVariant
-  /** 配色覆盖；缺省时由 type 映射（normal → neutral） */
+  /** 配色覆盖；缺省时由 type 映射 */
   color?: AlertColor
   /** 是否展示图标，默认 true */
   showIcon?: boolean

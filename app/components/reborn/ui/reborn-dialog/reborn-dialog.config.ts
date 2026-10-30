@@ -16,9 +16,9 @@ export default {
      * 指针事件放行给 shell 处理，面板自行接管
      */
     panelWrapper: "flex w-full justify-center pointer-events-none",
-    /** 弹窗面板：统一内边距 py-20/px-24，header / body / footer 三段之间由 gap-20 分隔 */
+    /** 弹窗面板：四边内边距统一 20px，header / body / footer 三段之间间隔 20px */
     panel:
-      "pointer-events-auto relative flex w-full max-w-140 flex-col gap-[20px] overflow-hidden rounded-xl border border-black/5 bg-gray-1 py-[20px] px-[24px] text-gray-10 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
+      "pointer-events-auto relative flex w-full max-w-140 flex-col gap-[20px] overflow-hidden rounded-xl border border-black/5 bg-gray-1 p-5 text-gray-10 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
     /** 头部：无分隔线，内边距交由面板统一承担 */
     header: "flex items-start justify-between gap-4",
     /** 头部文字区：标题与描述之间间隔 8px */
@@ -34,8 +34,8 @@ export default {
     scrollbar: "",
     /** 浮层滚动条内部的滚动层（RebornScrollbar 的 wrap-class），仅 scrollable 时渲染 */
     scrollbarWrap: "",
-    /** 底部：无分隔线，按钮靠右对齐 */
-    footer: "flex items-center justify-end gap-3",
+    /** 底部：无分隔线，按钮靠右对齐，间隔 8px。 */
+    footer: "flex items-center justify-end gap-2",
   },
   variants: {
     /** 是否渲染遮罩层底色（modal=false 时遮罩透明，仅在不可穿透时保留点击拦截层） */
@@ -104,8 +104,8 @@ export default {
         header: "justify-center px-[26px] text-center",
         headerContent: "flex-none",
         footer: "justify-center",
-        /** 关闭图标脱离流、相对面板绝对定位钉在右上角（偏移与面板 py-[20px]/px-[24px] 对齐） */
-        close: "absolute top-[20px] right-[24px]",
+        /** 关闭图标脱离流、相对面板绝对定位钉在右上角，偏移与面板 20px 内边距对齐 */
+        close: "absolute top-5 right-5",
       },
       false: {},
     },

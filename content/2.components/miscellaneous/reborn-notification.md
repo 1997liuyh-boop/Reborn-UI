@@ -307,7 +307,7 @@ await notification.system({ title: "静默提醒", message: "不播放提示音�
 | 键名              | 对应节点                                           | 默认 class                                                                                                                                                                                 | 渲染条件                                                                                             |
 | :---------------- | :------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
 | `wrapper`         | 某一角的定位容器（`TransitionGroup` 渲染的 div）   | `fixed flex w-[360px] max-w-[calc(100vw-32px)] flex-col gap-[16px] pointer-events-none`；按位置追加 `items-end` / `items-start`，底部两角再加 `flex-col-reverse`                          | 四个角的容器常驻；**只取该角队列里第一条通知的 `ui.wrapper`**                                       |
-| `root`            | 单条通知的面板根节点                               | `reborn-notification pointer-events-auto relative flex w-full flex-col gap-[20px] overflow-hidden rounded-lg border border-black/5 bg-gray-1 py-[20px] px-[24px] text-gray-9 shadow-[0_12px_32px_rgba(15,23,42,0.16)]`；绑定 `onClick` 时加 `cursor-pointer` | 始终渲染；`customClass` 先于 `ui.root` 合并                                                         |
+| `root`            | 单条通知的面板根节点                               | `reborn-notification pointer-events-auto relative flex w-full flex-col gap-[20px] overflow-hidden rounded-lg border border-black/5 bg-gray-1 p-5 text-gray-9 shadow-[0_12px_32px_rgba(15,23,42,0.16)]`；绑定 `onClick` 时加 `cursor-pointer` | 始终渲染；`customClass` 先于 `ui.root` 合并                                                         |
 | `ribbon`          | 侧边飘带竖条                                       | `pointer-events-none absolute inset-y-0 w-[3px]`，按方向加 `left-0` / `right-0`，按类型加 `bg-*` 语义色（无类型为 `bg-primary`）                                                        | `ribbon` 为真值                                                                                      |
 | `header`          | 头部三列容器（图标 / 文字区 / 关闭按钮）           | `flex items-start gap-[12px]`                                                                                                                                                              | `title`、字符串 `message`、图标、`showClose` 任一存在                                               |
 | `iconWrapper`     | 图标外层容器                                       | `flex shrink-0 items-center justify-center`                                                                                                                                                | 设置了 `type` 或 `icon`                                                                              |
@@ -338,12 +338,12 @@ notification.open({
 
 ## 视觉规格
 
-面板内边距、三段间隔、标题与正文的字号字色，与 `RebornDialog` 面板令牌一致；文字行高走 `typography.css` 的字号阶梯（行高 = 字号 + 8px）。通知是悬浮层，底色用不透明的 `gray-1`，避免透出页面内容；深浅色由令牌翻转，不写 `dark:` 前缀。
+面板四边内边距统一为 20px；三段间隔、标题与正文的字号字色，与 `RebornDialog` 面板令牌一致。文字行高走 `typography.css` 的字号阶梯（行高 = 字号 + 8px）。通知是悬浮层，底色用不透明的 `gray-1`，避免透出页面内容；深浅色由令牌翻转，不写 `dark:` 前缀。
 
 | 项目                            | 值                                                                                         |
 | :------------------------------ | :----------------------------------------------------------------------------------------- |
 | 面板宽度                        | 360px（上限 `calc(100vw - 32px)`）                                                         |
-| 内边距                          | 上下 20px / 左右 24px                                                                      |
+| 内边距                          | 四边 20px（`p-5`）                                                                         |
 | header / 正文 / footer 三段间隔 | 20px                                                                                       |
 | 标题与正文间隔                  | 8px                                                                                        |
 | 标题                            | `text-lg` 令牌（16px / 行高 24px）/ 字重 500 / `gray-10`                                   |

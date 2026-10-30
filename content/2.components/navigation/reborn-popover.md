@@ -36,14 +36,14 @@ Popover 是锚定在触发元素上的小型气泡浮层，Web 与 UniApp 两端
 
 ### 基础用法
 
-默认插槽放触发器，`content` 插槽放气泡内容。不传任何属性时点击触发、向下弹出、居中对齐，点击外部关闭。气泡本身已带底色、边框、圆角和内边距，插槽里不需要再套一层卡片。
+默认插槽放触发器，`content` 插槽放气泡内容。不传任何属性时点击触发、向下弹出、居中对齐，点击外部关闭。Web 气泡使用 `bg-gray-1` 底色、8px 圆角、12px 内边距，无描边，阴影为 `0 2px 12px 0 rgba(0,0,0,0.15)`；插槽里不需要再套一层卡片。
 
 ```vue
 <template>
   <RebornPopover>
     <RebornButton label="点击打开" />
     <template #content>
-      <p class="w-56 text-sm">气泡自带底色、边框与内边距，内容区直接放文字即可。</p>
+      <p class="w-56 text-base text-gray-8">气泡自带底色、阴影与内边距，内容区直接放文字即可。</p>
     </template>
   </RebornPopover>
 </template>
@@ -62,7 +62,7 @@ Popover 是锚定在触发元素上的小型气泡浮层，Web 与 UniApp 两端
 | `'left-start'` / `'right-start'` | 与触发器上边缘对齐 | 侧栏里的操作按钮、悬停菜单 |
 | `'left-end'` / `'right-end'` | 与触发器下边缘对齐 | 列表最后一行的操作按钮 |
 
-`sideOffset` 默认 Web `8` / UniApp `0`（px）。主轴放不下时自动翻到对侧，箭头随之换边。`arrow` 打开箭头后，Web 端 `-start` / `-end` 的箭头停在气泡两端内缩 17px 处，只有居中才指向触发器中心；这样箭头不会压到气泡圆角上。
+`sideOffset` 默认 Web `4` / UniApp `0`（px）。Web 显示箭头时从箭头尖端计算间距，隐藏箭头时从面板边缘计算。主轴放不下时自动翻到对侧，箭头随之换边。Web 箭头为圆头曲线：上下方向为 17.5×7px，左右方向为 7×17.5px。上下方向的 `-start` / `-end` 箭头中心距对应端部 25px；左右方向无论如何对齐，箭头均指向触发器的高度中心。箭头始终限制在面板边界内，面板太短时收敛到正中。
 
 ```vue
 <template>
@@ -203,7 +203,7 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | ------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `mode`        | `'click' \| 'hover'`                                                                                           | `'click'`                                         | 触发方式。                                                                   |
 | `placement`   | `'top' \| 'top-start' \| 'top-end' \| 'bottom' \| 'bottom-start' \| 'bottom-end' \| 'left' \| 'left-start' \| 'left-end' \| 'right' \| 'right-start' \| 'right-end'` | `'bottom'` | 出现方向与对齐方式，与 `reborn-popconfirm`、`reborn-tooltip` 一致；主轴放不下时翻到对侧。 |
-| `sideOffset`  | `number`                                                                                                       | `8`                                               | 气泡与触发器的间距（px）。                                                   |
+| `sideOffset`  | `number`                                                                                                       | `4`                                               | 气泡与触发器的间距（px）；显示箭头时从箭头尖端计算。                          |
 | `content`     | `{ side?: 'top' \| 'bottom' \| 'left' \| 'right'; align?: 'start' \| 'center' \| 'end'; sideOffset?: number }` | -                                                 | 已废弃：旧的定位对象写法，等价于 `placement` + `sideOffset`；两者同时传入时以新属性为准。 |
 | `arrow`       | `boolean`                                                                                                      | `false`                                           | 是否显示指向触发器的箭头。                                                   |
 | `portal`      | `boolean \| string`                                                                                            | `true`                                            | 是否用 Teleport 挂载到 `body`；传字符串时作为挂载目标选择器。                |
@@ -332,8 +332,8 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | `wrapper`        | 最外层包裹节点，默认 `relative inline-block`，`class` prop 也并到这里；整体在行内流中的占位、外边距改这里。                             |
 | `trigger`        | 触发器包裹层，默认 `inline-flex max-w-full`，包住 `default` 插槽，点击与悬停事件绑定在它身上。                                         |
 | `contentWrapper` | 气泡定位层（Teleport 之后的过渡容器），默认 `fixed top-0 left-0 z-[9999]`，坐标由定位计算写入内联样式；层级改这里。                     |
-| `content`        | 气泡主体，默认 `relative bg-gray-1 border border-gray-3 shadow-lg rounded-lg p-[12px]`，另按实际方向追加 `origin-*` 作为缩放原点；底色、描边、圆角、内边距、阴影改这里。 |
-| `arrow`          | 箭头，默认 `absolute size-3 border border-gray-3 bg-gray-1`，只露出朝外的两条边并与面板描边相接。**仅 `arrow` 为真时渲染**；改底色、描边色要与 `content` 一起改，否则箭头与面板颜色不一致。 |
+| `content`        | 气泡主体，默认 `relative bg-gray-1 shadow-[0_2px_12px_0_rgb(0_0_0/0.15)] rounded-lg p-3`，另按实际方向追加 `origin-*` 作为缩放原点；底色、圆角、内边距、阴影改这里。 |
+| `arrow`          | 箭头，默认 `pointer-events-none absolute bg-gray-1`，使用共用 SVG 曲线遮罩，根部嵌入面板 2px；阴影跟随面板。**仅 `arrow` 为真时渲染**；改底色要与 `content` 一起改，保持连接处颜色一致。 |
 | `bridge`         | 触发器与气泡之间的透明桥接层，默认 `absolute inset-0 z-[-1]`。**仅 `mode="hover"` 时渲染**，一般不需要覆盖。                           |
 | `mask`           | 遮罩层，默认 `fixed inset-0 bg-black/30 z-[9998]`。**仅 `modal` 为真且气泡打开时渲染**；遮罩深浅改这里。                                |
 
@@ -363,8 +363,8 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
   <RebornPopover
     arrow
     :ui="{
-      content: 'bg-gray-10 text-gray-1 border-gray-10 p-2',
-      arrow: 'bg-gray-10 border-gray-10',
+      content: 'bg-gray-10 text-gray-1 p-2',
+      arrow: 'bg-gray-10',
     }"
   >
     <RebornButton label="深色气泡" />
@@ -385,7 +385,7 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | 滚动关闭         | `closeOnScroll`，默认开启                                   | 无                                                            |
 | 挂载位置         | 默认 Teleport 到 `body`                                     | 渲染在原位置，`portal` 不生效                                 |
 | `arrow` 默认值   | `false`                                                     | `true`                                                        |
-| `sideOffset` 默认 | `8`                                                        | `0`                                                           |
+| `sideOffset` 默认 | `4`，有箭头时从尖端计算                                     | `0`                                                           |
 | 多实例           | 各自独立                                                    | 自动互斥：打开一个会关闭其他实例                              |
 | 内置内容         | 只有 `content` 插槽                                         | `title` + `displayMode`（`normal` / `menu`）                  |
 | 禁用             | 无 `disabled`                                               | `disabled`                                                    |

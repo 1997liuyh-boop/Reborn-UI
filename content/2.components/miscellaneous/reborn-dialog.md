@@ -298,16 +298,16 @@ await delayedDialog.open();
 | `backdrop`      | 遮罩层，默认 `absolute inset-0 bg-black/45`（刻意不做 backdrop-blur——全屏背景模糊在动画期间每帧重算会严重掉帧）；`modal=false` 时转为 `bg-transparent` 的透明拦截层，`modalPenetrable` 生效时不渲染。                            |
 | `shell`         | 面板定位壳（静态层，不参与动画），默认 `absolute inset-0 flex justify-center px-4 sm:px-6`：`alignCenter` 时加 `items-center` 垂直居中，否则 `items-start` 并按 `top` 写入顶部内边距；点击面板外空白等同点击遮罩。                |
 | `panelWrapper`  | 面板动画包裹层（过渡动画作用在这一层），默认 `flex w-full justify-center pointer-events-none`：只有面板大小，避免整屏尺寸图层参与缩放导致每帧重栅格化。                                                                          |
-| `panel`         | 弹窗面板本体。默认 `pointer-events-auto relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-xl border bg-white py-[20px] px-[24px] shadow-…`；`fullscreen` 时改为 `h-full`、去掉最大宽度与圆角。`width` prop 与 `class` prop 也作用于该节点。 |
+| `panel`         | 弹窗面板本体。默认 `pointer-events-auto relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-xl border bg-white p-5 shadow-…`；`fullscreen` 时改为 `h-full`、去掉最大宽度与圆角。`width` prop 与 `class` prop 也作用于该节点。 |
 | `header`        | 头部条（无分隔线），默认 `flex items-start justify-between gap-4`，拖拽手柄绑定在它身上。**仅传了 `title` / `describe` 或填充 `header` 插槽时渲染**；`center` 时追加 `justify-center px-[26px]`。                                 |
 | `headerContent` | 头部左侧的文字区容器，默认 `flex min-w-0 flex-1 flex-col gap-[8px]`（标题与描述间隔 8px）；它在 `header` 插槽外层，填充插槽后依然生效。                                                                                          |
 | `title`         | 标题节点（`role="heading"`，层级由 `header-aria-level` 指定），默认 `text-lg font-medium text-gray-10`。**仅在传了 `title` 且未填充 `header` 插槽时渲染**。                                                                       |
 | `description`   | 描述 `<p>`，默认 `text-base text-gray-8`。**仅在传了 `describe`（或 `description`）且未填充 `header` 插槽时渲染**。                                                                                                               |
-| `close`         | 右上角关闭图标，默认 `size-[18px] shrink-0 cursor-pointer text-gray-5`。**仅 `show-close` 为真且标题区渲染时出现**，图标名走 `close-icon` prop；`center` 时改为 `absolute top-[20px] right-[24px]`。                              |
+| `close`         | 右上角关闭图标，默认 `size-[18px] shrink-0 cursor-pointer text-gray-5`。**仅 `show-close` 为真且标题区渲染时出现**，图标名走 `close-icon` prop；`center` 时改为 `absolute top-5 right-5`。                              |
 | `body`          | 内容区，承载 `default` 插槽，默认无类名（`overflow-visible`）；`scrollable` 时改为 `flex min-h-0 flex-col overflow-visible`，滚动交给内部的浮层滚动条。**未传 default 插槽时不渲染**。 |
 | `scrollbar`     | 浮层滚动条根节点（`RebornScrollbar`）。**仅 `scrollable` 时渲染**，默认 `-mr-[16px] flex min-h-0 flex-1 flex-col`：向右伸进面板内边距，让滚动条落在留白里；面板右内边距小于 16px 时需同步调整这里与 `scrollbarWrap`。 |
 | `scrollbarWrap` | 浮层滚动条内部的滚动层（`wrap-class`）。**仅 `scrollable` 时渲染**，默认 `h-auto min-h-0 flex-1 pr-[16px]`，右内边距补回 `scrollbar` 伸出的 16px，正文宽度不变。 |
-| `footer`        | 底部条（无分隔线），默认 `flex items-center justify-end gap-3` 按钮靠右。**仅底部有内容时渲染**（填充了 `footer` 插槽或至少启用了一个默认按钮）；`center` 时按钮居中。                                                           |
+| `footer`        | 底部条（无分隔线），默认 `flex items-center justify-end gap-2`，按钮靠右、间隔 8px。**仅底部有内容时渲染**（填充了 `footer` 插槽或至少启用了一个默认按钮）；`center` 时按钮居中。                                                           |
 
 ```vue
 <template>

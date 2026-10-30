@@ -1,10 +1,10 @@
 import { tv } from '~/lib/tv';
 
 /** 警告提示的类型（决定默认图标与配色） */
-export const alertTypes = ['info', 'success', 'warning', 'error', 'normal'] as const;
+export const alertTypes = ['info', 'success', 'warning', 'error'] as const;
 export type AlertType = (typeof alertTypes)[number];
 
-/** 视觉变体：对齐 reborn-button 的同名变体（不含 circle） */
+/** 视觉变体：filled 使用一阶浅底与六阶图标底色，其余保留同名按钮变体配色。 */
 export const alertVariants = ['filled', 'outlined', 'soft', 'subtle', 'text', 'round'] as const;
 export type AlertVariant = (typeof alertVariants)[number];
 
@@ -16,30 +16,28 @@ export type AlertColor = (typeof alertColors)[number];
 export const alertDirections = ['vertical', 'horizontal'] as const;
 export type AlertDirection = (typeof alertDirections)[number];
 
-/** type → 默认配色（normal 视作中性色） */
+/** type → 默认配色 */
 export const ALERT_TYPE_COLOR: Record<AlertType, AlertColor> = {
   info: 'info',
   success: 'success',
   warning: 'warning',
   error: 'error',
-  normal: 'neutral',
 };
 
-/** type → 默认图标名（normal 用于公告/通知场景） */
+/** type → 默认图标名 */
 export const ALERT_TYPE_ICON: Record<AlertType, string> = {
   info: 'lucide:info',
   success: 'lucide:circle-check',
   warning: 'lucide:circle-alert',
   error: 'lucide:circle-x',
-  normal: 'lucide:megaphone',
 };
 
 export const alertTheme = tv({
   slots: {
-    // 字号固定 text-sm（12px，本组件无 size 变体），行高用令牌自带的 20px，不再写 leading-[1.5]。
+    // 默认字号 text-sm（12px），filled 使用 text-base（14px），均采用令牌自带行高。
     // 下面图标 / 操作区 / 关闭按钮三个盒子的 h-5 / min-h-5 / size-5 就是这 20px：
     // 根节点是 items-start，它们必须与首行行盒等高才能和文字光学居中，改字号时要一起改。
-    root: 'reborn-alert relative flex w-full items-start gap-2 px-3 py-2 text-sm font-normal rounded-lg',
+    root: 'reborn-alert relative flex w-full items-start gap-2 px-3 py-2 text-sm font-normal rounded-sm',
     icon: 'flex h-5 shrink-0 items-center',
     content: 'flex min-w-0 flex-1 flex-col gap-2',
     title: 'font-medium',
@@ -59,13 +57,22 @@ export const alertTheme = tv({
   },
   variants: {
     variant: {
-      filled: '',
+      filled: {
+        root: 'text-base text-gray-8',
+        // 16px 圆形图标在 22px 首行行盒中居中。
+        icon: 'size-4 mt-0.75 justify-center rounded-full text-gray-1',
+        title: 'text-gray-10',
+        description: 'text-gray-8',
+        action: 'min-h-5.5',
+        closeButton: 'size-5.5',
+        closeIcon: 'text-gray-6',
+      },
       outlined: '',
       soft: '',
       subtle: '',
       // 文字提示：无背景/边框，仅保留语义色文字
       text: '',
-      // 胶囊提示：形状类，着色规则与 filled 一致（见 compoundVariants）
+      // 胶囊提示：保留语义色实底与白字（见 compoundVariants）。
       round: { root: 'rounded-full!' },
     },
     color: {
@@ -90,16 +97,17 @@ export const alertTheme = tv({
     },
   },
   compoundVariants: [
-    // Filled：同 reborn-button 的 filled（语义色实底 + 白字）
-    { variant: 'filled', color: 'primary', class: { root: 'bg-primary text-white' } },
-    { variant: 'filled', color: 'secondary', class: { root: 'bg-secondary text-white' } },
-    { variant: 'filled', color: 'success', class: { root: 'bg-success text-white' } },
-    { variant: 'filled', color: 'info', class: { root: 'bg-info text-white' } },
-    { variant: 'filled', color: 'warning', class: { root: 'bg-warning text-white' } },
-    { variant: 'filled', color: 'error', class: { root: 'bg-error text-white' } },
-    { variant: 'filled', color: 'neutral', class: { root: 'bg-neutral text-white' } },
+    // Filled：面板使用一阶浅底，图标底色固定为同色相六阶。
+    { variant: 'filled', color: 'primary', class: { root: 'bg-brand-1', icon: 'bg-brand-6' } },
+    { variant: 'filled', color: 'secondary', class: { root: 'bg-secondary-1', icon: 'bg-secondary-6' } },
+    { variant: 'filled', color: 'success', class: { root: 'bg-green-1', icon: 'bg-green-6' } },
+    { variant: 'filled', color: 'info', class: { root: 'bg-blue-1', icon: 'bg-blue-6' } },
+    { variant: 'filled', color: 'warning', class: { root: 'bg-orange-1', icon: 'bg-orange-6' } },
+    { variant: 'filled', color: 'error', class: { root: 'bg-red-1', icon: 'bg-red-6' } },
+    // 灰色一阶与页面底色相同，中性提示使用二阶底色保留可见背景。
+    { variant: 'filled', color: 'neutral', class: { root: 'bg-gray-2', icon: 'bg-gray-6' } },
 
-    // Round：胶囊形状，着色规则与 filled 一致
+    // Round：胶囊形状，语义色实底与白字。
     { variant: 'round', color: 'primary', class: { root: 'bg-primary text-white' } },
     { variant: 'round', color: 'secondary', class: { root: 'bg-secondary text-white' } },
     { variant: 'round', color: 'success', class: { root: 'bg-success text-white' } },
@@ -145,7 +153,7 @@ export const alertTheme = tv({
     { variant: 'text', color: 'neutral', class: { root: 'bg-transparent text-neutral' } },
   ],
   defaultVariants: {
-    variant: 'soft' as AlertVariant,
+    variant: 'filled' as AlertVariant,
     color: 'info' as AlertColor,
   },
 });

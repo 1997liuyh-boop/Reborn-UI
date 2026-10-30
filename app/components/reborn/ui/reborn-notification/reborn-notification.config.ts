@@ -261,8 +261,8 @@ export function addNotification(options: NotificationOptions): NotificationHandl
 }
 
 /*
- * 视觉规格：面板内边距 py-20px / px-24px，header / default / footer 三段间隔 20px，
- * 标题与正文间隔 8px——与 RebornDialog 面板令牌完全一致。
+ * 视觉规格：面板四边内边距 20px，header / default / footer 三段间隔 20px，
+ * 标题与正文间隔 8px。
  * 文字走 typography.css 的字号阶梯（行高 = 字号 + 8px）：
  * 标题 text-lg（16px/24px）/ 500 / gray-10，正文 text-base（14px/22px）/ gray-8；
  * 提示图标 24px，关闭图标 18px。
@@ -277,7 +277,7 @@ export const notificationTheme = tv({
     wrapper: 'fixed flex w-90 max-w-[calc(100vw-32px)] flex-col gap-[16px] pointer-events-none',
     /** 通知面板：三段结构由 gap-[20px] 分隔 */
     root:
-      'reborn-notification pointer-events-auto relative flex w-full flex-col gap-[20px] overflow-hidden rounded-lg border border-black/5 bg-gray-1 py-[20px] px-[24px] text-gray-9 shadow-[0_12px_32px_rgba(15,23,42,0.16)]',
+      'reborn-notification pointer-events-auto relative flex w-full flex-col gap-[20px] overflow-hidden rounded-lg border border-black/5 bg-gray-1 p-5 text-gray-9 shadow-[0_12px_32px_rgba(15,23,42,0.16)]',
     /** 侧边飘带：3px 竖条通栏，压在面板内边距上，不挤占内容宽度 */
     ribbon: 'pointer-events-none absolute inset-y-0 w-notification-ribbon-width',
     /** 头部：图标 / 文字区 / 关闭图标三列，顶部对齐，图标与文字间距 12px */

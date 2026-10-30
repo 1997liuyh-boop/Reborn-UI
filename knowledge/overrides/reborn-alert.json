@@ -1,7 +1,7 @@
 {
-  "description": "静态警告提示条：五种消息类型、按钮同款六种视觉变体、顶部公告模式与消息轮播通知栏（逐条垂直轮播 / 水平跑马灯 / 多行滚动），双端可用。",
+  "description": "静态警告提示条：四种消息类型、六种视觉变体、顶部公告模式与消息轮播通知栏，支持 Web 与 UniApp。",
   "whenToUse": [
-    "页面内需要长期展示的静态提示（info / success / warning / error / normal），可带标题、图标、操作项与关闭按钮。",
+    "页面内需要长期展示的静态提示（info / success / warning / error），可带标题、图标、操作项与关闭按钮。",
     "顶部公告：banner 模式去除边框圆角铺满容器，配合 center 让内容居中。",
     "消息轮播通知栏：传入 messages 即变为轮播，默认逐条垂直轮播；direction=horizontal 水平跑马灯（speed 控制速率）；rows 大于 1 时多条同时可见逐行上滚。"
   ],

@@ -236,7 +236,9 @@ message.success({
 
 ## 视觉规格
 
-`base` 变体为 `gray-1` 白底 + 投影，图标为语义色圆形底 + 白色符号；`filled` / `outlined` / `soft` / `subtle` 配色对齐按钮组件的同名变体（不含 circle）。消息是悬浮层，`soft` / `subtle` 的底色用同色相 1 阶**实色**填充令牌等效替代半透明底，`outlined` 垫 `gray-1` 底，避免透出页面内容。
+Web 的 `base` 图标圆底使用六阶颜色：`info` 为 `bg-blue-6`、`success` 为 `bg-green-6`、`warning` 为 `bg-orange-6`、`error` 为 `bg-red-6`。成功图标为 `lucide:check`。所有变体未自定义 `icon` 的加载消息均使用 `outline` 加载组件，底圈保持静止、短弧围绕中心匀速旋转；`base` 为 14px，图标无背景、弧线使用语义色，其他变体为 16px、继承文字色。
+
+`base` 变体为 `gray-1` 白底 + 投影，非加载图标为语义色圆形底 + 白色符号；`filled` / `outlined` / `soft` / `subtle` 配色对齐按钮组件的同名变体（不含 circle）。消息是悬浮层，`soft` / `subtle` 的底色用同色相 1 阶**实色**填充令牌等效替代半透明底，`outlined` 垫 `gray-1` 底，避免透出页面内容。
 
 | 项目              | Web                                | UniApp                               |
 | ----------------- | ---------------------------------- | ------------------------------------ |

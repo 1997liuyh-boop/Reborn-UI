@@ -10,6 +10,7 @@ import type {
 } from './reborn-toast.config';
 import { computed } from 'vue';
 import { useMotionList } from '@/composables/useMotionList';
+import RebornLoading from '../reborn-loading/RebornLoading.vue';
 import {
   closeMessage,
   MESSAGE_TYPE_ICON,
@@ -32,13 +33,13 @@ interface MessageClasses {
   badge: string;
 }
 
-/** 类名只由 variant 与 color 决定（最多 35 种组合），按组合缓存，渲染时不再逐条调用 tv */
+/** 按变体、配色与加载状态缓存类名，避免加载消息与普通消息共用图标底色。 */
 const classCache = new Map<string, MessageClasses>();
-function classesOf(variant: MessageVariant, color: MessageColor): MessageClasses {
-  const cacheKey = `${variant}|${color}`;
+function classesOf(variant: MessageVariant, color: MessageColor, loading: boolean): MessageClasses {
+  const cacheKey = `${variant}|${color}|${loading}`;
   let classes = classCache.get(cacheKey);
   if (!classes) {
-    const theme = messageTheme({ variant, color });
+    const theme = messageTheme({ variant, color, loading });
     classes = {
       root: theme.root(),
       iconWrapper: theme.iconWrapper(),
@@ -59,7 +60,7 @@ const stacks = computed(() =>
     wrapperClass: messageTheme({ placement }).wrapper(),
     items: messageState.list
       .filter(item => item.placement === placement)
-      .map(item => ({ item, cls: classesOf(item.variant, item.color) })),
+      .map(item => ({ item, cls: classesOf(item.variant, item.color, item.type === 'loading') })),
   })),
 );
 
@@ -153,10 +154,12 @@ function handleMouseLeave(item: MessageInstance) {
     >
       <span :class="[cls.iconWrapper, semanticClass(item, 'icon')]" :style="semanticStyle(item, 'icon')">
         <component :is="item.icon" v-if="isNodeContent(item.icon)" />
-        <Icon
-          v-else :name="iconName(item)"
-          :class="[cls.icon, item.type === 'loading' && !item.icon ? 'animate-spin' : '']"
+        <!-- 所有变体统一使用固定尺寸的加载组件，避免通用图标旋转时中心偏移。 -->
+        <RebornLoading
+          v-else-if="item.type === 'loading' && !item.icon"
+          type="outline" color="currentColor" :size="item.variant === 'base' ? 14 : 16" :class="cls.icon"
         />
+        <Icon v-else :name="iconName(item)" :class="cls.icon" />
       </span>
 
       <!-- dangerouslyUseHTMLString 开启时按 HTML 片段渲染，调用方需保证内容可信 -->

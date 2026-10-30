@@ -25,7 +25,7 @@ import { chromium } from 'playwright-core';
 const executablePath = chromium.executablePath();
 let fixture: Promise<{ script: string; css: string }>;
 
-/** 带箭头时默认间距：箭头伸出面板约 8.49px，尖端再与触发器留出约 3.5px */
+/** 带箭头时保持 12px 默认间距，曲线尖端与触发器留有空隙 */
 const ARROW_OFFSET = 12;
 /** 箭头尖端与触发器之间至少保留的间隙（px） */
 const MIN_TIP_GAP = 2;
@@ -48,12 +48,9 @@ async function buildFixture() {
         const options=[{label:'新建文件',value:'new'},{label:'编辑内容',value:'edit'},{label:'分享链接',value:'share'}];
         const box=(el)=>{const r=el.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom};};
         const panelEl=()=>document.querySelector('[role=menu]')?.closest('.rb-transition')??null;
-        // 箭头和它的投影必须由同一个节点绘制，透明的旋转投影底片也计数，防止阴影轮廓再次叠层
-        const isDiamond=(el)=>{const s=getComputedStyle(el);const m=s.transform.match(/^matrix\\(([^)]+)\\)$/);if(!m)return false;
-          const [a,b]=m[1].split(',').map(Number);return Math.abs(Math.abs(a)-Math.SQRT1_2)<1e-3&&Math.abs(Math.abs(b)-Math.SQRT1_2)<1e-3;};
         const snapshot=()=>{const panel=panelEl();return {
           noted:!!document.querySelector('#note'),trigger:box(document.querySelector('#trigger')),
-          panel:panel?box(panel):null,arrows:[...document.body.querySelectorAll('*')].filter(isDiamond).map(box)};};
+          panel:panel?box(panel):null,arrows:[...document.querySelectorAll('[data-floating-arrow]')].map(box)};};
         window.arrowFixture={state,flush:nextTick,snapshot,
           open:()=>dropdown.value.open(),close:()=>dropdown.value.close(),
           settled:()=>{const panel=panelEl();return !!panel&&panel.style.height===''&&panel.style.opacity==='';},
@@ -83,7 +80,7 @@ async function buildFixture() {
     } }],
   });
   const compiler = await compile("@import 'tailwindcss';@import './app/assets/theme/typography.css';@import './app/assets/theme/base.css';", { base: resolve('.'), onDependency() {} });
-  const scanner = new Scanner({ sources: ['reborn-select-trigger', 'reborn-transition', 'reborn-dropdown'].map(name => ({ base: resolve(`app/components/reborn/ui/${name}`), pattern: '**/*', negated: false })) });
+  const scanner = new Scanner({ sources: [{ base: resolve("app/lib"), pattern: "floating-arrow.ts", negated: false }, ...['reborn-select-trigger', 'reborn-transition', 'reborn-dropdown'].map(name => ({ base: resolve(`app/components/reborn/ui/${name}`), pattern: '**/*', negated: false }))] });
   return { script: result.outputFiles[0]!.text, css: compiler.build([...scanner.scan(), 'flex', 'h-[600px]', 'flex-col', 'items-center', 'justify-center', 'gap-4', 'h-8', 'w-24', 'h-20']) };
 }
 
@@ -151,14 +148,12 @@ function tipGap(side: string, arrow: Box, trigger: Box) {
   return arrow.left - trigger.right;
 }
 
-/** 箭头中心到面板朝向触发器那条边的距离：箭头应骑在这条边上 */
+/** 箭头根部到面板边缘的距离：向内覆盖 1px 描边以消除接缝 */
 function arrowToPanelEdge(side: string, arrow: Box, panel: Box) {
-  const cx = (arrow.left + arrow.right) / 2;
-  const cy = (arrow.top + arrow.bottom) / 2;
-  if (side === 'top') return Math.abs(cy - panel.bottom);
-  if (side === 'bottom') return Math.abs(cy - panel.top);
-  if (side === 'left') return Math.abs(cx - panel.right);
-  return Math.abs(cx - panel.left);
+  if (side === 'top') return Math.abs(arrow.top - panel.bottom);
+  if (side === 'bottom') return Math.abs(arrow.bottom - panel.top);
+  if (side === 'left') return Math.abs(arrow.left - panel.right);
+  return Math.abs(arrow.right - panel.left);
 }
 
 it('12 个方向都只有一个箭头，尖端不压到触发器且骑在面板边上', { skip: !existsSync(executablePath) }, async () => {
@@ -171,9 +166,12 @@ it('12 个方向都只有一个箭头，尖端不压到触发器且骑在面板�
       assert.equal(shot.arrows.length, 1, `${placement}：应只有一个箭头，实际 ${shot.arrows.length} 个`);
       assert.ok(shot.panel, `${placement}：面板应已展开`);
       const arrow = shot.arrows[0]!;
+      const vertical = side === 'top' || side === 'bottom';
+      assert.ok(Math.abs((arrow.right - arrow.left) - (vertical ? 17.5 : 7)) < 0.1, '箭头宽度');
+      assert.ok(Math.abs((arrow.bottom - arrow.top) - (vertical ? 7 : 17.5)) < 0.1, '箭头高度');
       const gap = tipGap(side, arrow, shot.trigger);
       assert.ok(gap >= MIN_TIP_GAP, `${placement}：箭头尖端与触发器间隙 ${gap.toFixed(2)}px，应不小于 ${MIN_TIP_GAP}px`);
-      assert.ok(arrowToPanelEdge(side, arrow, shot.panel!) <= 1, `${placement}：箭头中心应落在面板朝向触发器的边上`);
+      assert.ok(arrowToPanelEdge(side, arrow, shot.panel!) <= 1, `${placement}：箭头根部应贴住面板边缘`);
       await closeSettled(page);
       const closed = await snapshot(page);
       assert.equal(closed.arrows.length, 0, `${placement}：收起后箭头应移除`);

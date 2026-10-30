@@ -112,8 +112,8 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 | `size`       | 高度 | 字号                | 直角圆角             |
 | ------------ | ---- | ------------------- | -------------------- |
 | `sm`         | 24px | `text-sm`（12px）   | 4px（`--radius-sm`） |
-| `md`（默认） | 32px | `text-base`（14px） | 6px（`--radius-md`） |
-| `lg`         | 40px | `text-lg`（16px）   | 8px（`--radius-lg`） |
+| `md`（默认） | 32px | `text-base`（14px） | 4px（`--radius-sm`） |
+| `lg`         | 40px | `text-lg`（16px）   | 4px（`--radius-sm`） |
 
 :::
 
@@ -132,7 +132,7 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 
 `default` 与 `md` 完全等价，前者保留用于对齐旧代码。
 
-圆角令牌名两端不一致：Web 已改用 Tailwind 原生档名（`--radius-sm` / `--radius-md` / `--radius-lg`），uniapp 仍是 `--radius-ui-*`、值为 `rpx`。两边指的是各自端上的同一档圆角，只是取值口径不同（px 对 rpx），不是笔误。
+圆角规则两端不同：Web 常规按钮统一使用 `rounded-sm`（`--radius-sm`，固定 4px），不随 `size` 变化；UniApp 仍使用 `--radius-ui-*`、值为 `rpx`，并随尺寸取档。
 :::
 
 ::
@@ -151,7 +151,7 @@ Web 用独立布尔参数控制形状，配色、边框及禁用样式仍由 `va
 
 | 参数组合 | 外形 | 典型用途 |
 | --- | --- | --- |
-| 不传形状参数 | 默认尺寸圆角，`text` 无圆角 | 常规操作、行内文本操作 |
+| 不传形状参数 | Web 为固定 4px 圆角，UniApp 随尺寸取档；`text` 无圆角 | 常规操作、行内文本操作 |
 | `round` | 胶囊，宽度由内容撑开 | 描边标签式操作、主行动 |
 | `circle` | 固定等宽高、无内边距 | 单图标操作 |
 | `round circle` | `circle` 优先 | 同时开启两个开关的确定行为 |
@@ -543,7 +543,7 @@ Web 使用 Tailwind 原生尺寸刻度，UniApp 保留独立的 rpx 高度令牌
 | 自定义类名   | `class`                                                                                   | `customClass`                                        |
 | 尺寸档位     | `sm` / `md` / `lg`（3 档，Tailwind 原生尺寸刻度）                                         | `xs` ~ `2xl`（7 档，rpx）                            |
 | 形状 | 独立 `round` / `circle` 布尔参数；旧变体兼容 | 仍为 `variant="round"` / `variant="circle"` |
-| 直角圆角     | 随 `size` 取令牌 4 / 6 / 8px                                                              | 随 `size` 取令牌 4 / 6 / 8rpx                        |
+| 直角圆角     | 所有 `size` 统一 4px（`rounded-sm`）                                                       | 随 `size` 取令牌 4 / 6 / 8rpx                        |
 | 水平内边距   | 统一 `px-3`（默认根字号下 12px）                                                          | 随 `size` 递进 12 / 16 / 24rpx                       |
 | 边框线型     | 支持 `borderStyle`                                                                        | 不支持，固定实线                                     |
 | 块级布局     | 用 `class` 自行控制                                                                       | `block` prop                                         |

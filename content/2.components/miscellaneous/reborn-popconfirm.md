@@ -54,7 +54,7 @@ Popconfirm 是锚定在触发元素上的小型确认气泡：点击触发器弹
 
 ### 弹出方位：placement 十二向
 
-`placement` 取值与 `reborn-tooltip` 完全一致，默认 `'top'`：四个方向各带 `-start` / `-end` 对齐，共 12 种。`sideOffset` 控制气泡与触发器的间距（默认 8px），`arrow` 控制是否显示箭头（默认显示）。
+`placement` 取值与 `reborn-tooltip` 完全一致，默认 `'top'`：四个方向各带 `-start` / `-end` 对齐，共 12 种。`sideOffset` 控制箭头尖端与触发器的可见间距（默认 4px，隐藏箭头时从面板边缘计算），`arrow` 控制是否显示箭头（默认显示）。
 
 ```vue
 <template>
@@ -64,7 +64,7 @@ Popconfirm 是锚定在触发元素上的小型确认气泡：点击触发器弹
 </template>
 ```
 
-定位口径与 `reborn-tooltip` 共用同一套实现：主轴放不下时翻到对侧，对侧同样放不下就保持原方向，因为翻过去只会换个方向继续溢出；交叉轴则把气泡挪回视口内，但始终与触发器保持至少 12px 交叠，触发器滚出视口时气泡跟着一起走，不会被钉在屏幕边缘。箭头落点按 `placement` 的对齐档位固定：`-start` / `-end` 停在气泡两端 17px 处，只有居中档才指向触发器中心。
+定位口径与 `reborn-tooltip` 共用同一套实现：主轴放不下时翻到对侧，对侧同样放不下就保持原方向，因为翻过去只会换个方向继续溢出；交叉轴则把气泡挪回视口内，但始终与触发器保持至少 12px 交叠，触发器滚出视口时气泡跟着一起走，不会被钉在屏幕边缘。Web 箭头在上下方向的 `-start` / `-end` 档停在气泡对应端部内缩 25px 处；左右方向无论如何对齐，均指向触发器的高度中心。落点限制在面板边界内，面板太短时收敛到正中。
 
 ::tip
 旧的 `content` 对象写法（`{ side, align, sideOffset }`）仍然可用，等价于 `placement` + `sideOffset`。传了 `placement` 时方向与对齐以 `placement` 为准；但未传 `sideOffset` 时仍会读取 `content.sideOffset`。新代码请使用 `placement` / `sideOffset`。
@@ -191,7 +191,7 @@ async function onConfirm() {
 | `hideCancel`   | `boolean`                                             | `false`     | 隐藏取消按钮，仅保留确认                                                                                      |
 | `loading`      | `boolean`                                             | `false`     | 确认按钮加载中；加载时点击确认不会自动关闭气泡，配合 `v-model:open` 做异步确认                               |
 | `placement`    | `PopconfirmPlacement`                                 | `'top'`     | 出现方向与对齐方式，取值与 `reborn-tooltip` 一致                                                              |
-| `sideOffset`   | `number`                                              | `8`         | 气泡与触发器的间距（px）；未传时依次回落到 `content.sideOffset`、8                                           |
+| `sideOffset`   | `number`                                              | `4`         | 箭头尖端与触发器的间距（px）；未传时依次回落到 `content.sideOffset`、4                                           |
 | `content`      | `PopoverContentProps`                                 | -           | 已废弃：旧的定位对象写法（`side` / `align` / `sideOffset`），等价于 `placement` + `sideOffset`，仅为兼容保留 |
 | `arrow`        | `boolean`                                             | `true`      | 是否显示指向触发器的箭头                                                                                      |
 | `portal`       | `boolean \| string`                                   | `true`      | 传送目标，`true` 传送到 body，字符串为目标选择器，`false` 表示原地渲染                                       |

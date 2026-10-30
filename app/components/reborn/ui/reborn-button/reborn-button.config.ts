@@ -43,7 +43,7 @@ export default {
      * 三档尺寸：高度 24 / 32 / 40，水平内边距统一 12px（px-3）；text 变体另见 compoundVariants。
      * 行高由字号令牌自带（12/20、14/22、16/24），不再叠 leading-：按钮是定高盒子 + 单行居中，
      * 行高只影响行盒高度、不影响按钮外形。
-     * 直角圆角随尺寸取设计令牌：sm → rounded-sm(4px) / md → rounded-md(6px) / lg → rounded-lg(8px)；
+     * 常规圆角统一使用 rounded-sm（4px），不随尺寸变化；
      * round / circle / text 变体在 variant 轴覆盖此圆角（本轴刻意置于 variant 之前，保证后者在 tailwind-merge 中胜出）。
      */
     size: {
@@ -51,10 +51,10 @@ export default {
         base: "h-6 text-sm gap-1.5 px-3 rounded-sm",
       },
       md: {
-        base: "h-8 text-base px-3 rounded-md",
+        base: "h-8 text-base px-3 rounded-sm",
       },
       lg: {
-        base: "h-10 text-lg px-3 rounded-lg",
+        base: "h-10 text-lg px-3 rounded-sm",
       },
     },
     variant: {

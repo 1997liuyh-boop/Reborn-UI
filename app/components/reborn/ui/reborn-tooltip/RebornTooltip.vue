@@ -19,10 +19,10 @@ import {
 import { useFloatingHost } from '~/composables/useFloatingHost';
 import {
   FLOATING_PANEL_RADIUS,
-  FLOATING_TRIGGER_GAP,
   getArrowCenter,
   resolveFloatingPosition,
 } from '~/lib/floating';
+import { FLOATING_ARROW_DEPTH, FLOATING_ARROW_LENGTH } from "~/lib/floating-arrow";
 import { resolvePlacement } from '~/lib/placement';
 import { cn } from '~/lib/utils';
 import RebornTransition from '../reborn-transition/RebornTransition.vue';
@@ -116,26 +116,9 @@ const openModel = defineModel<boolean>('open', { default: undefined });
 /** 生成唯一 ID 用于 ARIA 关联 */
 const tooltipId = `tooltip-${useId()}`;
 
-/** 箭头伸出面板的厚度（设计稿 7px），同时作为面板与触发器的间距 */
-const ARROW_SIZE = 7;
-/** 箭头沿面板边缘方向的底边长（设计稿 18px） */
-const ARROW_LENGTH = 18;
-/** 短面板下箭头底边的收缩下限，再短就细得看不出指向 */
-const ARROW_LENGTH_MIN = 12;
-/** start / center / end 三档箭头位置至少要拉开的距离，不足时收缩箭头换取余量 */
-const ARROW_MIN_SPAN = 9;
-
-/**
- * 计算箭头底边长：标准取设计稿的 18px。
- * 面板沿交叉轴（top / bottom 看宽度，left / right 看高度）过短时，箭头底边加两端圆角
- * 会占满直边，start / center / end 三档挤在一起肉眼无法区分；此时按可用直边把底边
- * 收缩到 ARROW_LENGTH_MIN，换出至少 ARROW_MIN_SPAN 的位移范围。面板够长则保持 18px 不变。
- */
-const getArrowLength = (crossExtent: number) =>
-  Math.min(
-    ARROW_LENGTH,
-    Math.max(ARROW_LENGTH_MIN, crossExtent - FLOATING_PANEL_RADIUS * 2 - ARROW_MIN_SPAN),
-  );
+/** 箭头根部嵌入 2px，尖端与触发器保持 4px 可见间距。 */
+const ARROW_OVERLAP = 2;
+const TRIGGER_GAP = 4;
 
 const isMounted = shallowRef(false);
 
@@ -151,8 +134,6 @@ const isVisible = shallowRef(false);
 /** 定位样式与箭头样式每次都整体替换，用 shallowRef */
 const contentStyle = shallowRef<CSSProperties>({ top: '0px', left: '0px' });
 const arrowStyle = shallowRef<CSSProperties>({});
-/** 当前箭头底边长（px），短面板下会收缩，同时驱动 SVG 的渲染高度 */
-const arrowLength = shallowRef(ARROW_LENGTH);
 
 const slots = useSlots();
 /**
@@ -260,8 +241,8 @@ const popupStyle = computed(() =>
     : contentStyle.value,
 );
 
-/** 计算触发元素与提示层之间的间距，箭头正好填充这段距离 */
-const getOffset = () => (showArrow.value ? ARROW_SIZE : FLOATING_TRIGGER_GAP);
+/** 面板间距包含箭头露出高度，带箭头和无箭头时的可见间隙均为 4px。 */
+const getOffset = () => TRIGGER_GAP + (showArrow.value ? FLOATING_ARROW_DEPTH - ARROW_OVERLAP : 0);
 
 /** 清理显隐定时器，避免快速移入移出时状态错乱 */
 const clearTimers = () => {
@@ -276,7 +257,7 @@ const clearTimers = () => {
   }
 };
 
-/** 根据实际位置同步箭头坐标；默认停在对齐端，pointAtCenter 时指向触发元素中心 */
+/** 上下方向按对齐端或 pointAtCenter 定位，左右方向始终指向触发器的高度中心。 */
 const syncArrowPosition = (
   triggerRect: DOMRect,
   contentRect: FloatingSize,
@@ -289,19 +270,16 @@ const syncArrowPosition = (
     return;
   }
 
-  const halfThickness = ARROW_SIZE / 2;
-  // 交叉轴长度决定底边能有多长：短面板收缩底边，换取 start / end 的可分辨位移范围
-  const crossExtent = side === 'top' || side === 'bottom' ? contentRect.width : contentRect.height;
-  const length = getArrowLength(crossExtent);
+  const halfThickness = FLOATING_ARROW_DEPTH / 2;
+  const length = FLOATING_ARROW_LENGTH;
   const halfLength = length / 2;
-  // 箭头底边向面板内收 0.5px，保证连接处无缝
-  const overlap = 0.5;
+  // 根部内嵌面板，遮住曲线两端平直边并消除接缝。
+  const overlap = ARROW_OVERLAP;
   // 对齐端内缩量为圆角加半个底边，钳制与极小面板的兜底由 getArrowCenter 统一处理
   const inset = FLOATING_PANEL_RADIUS + halfLength;
 
   let centerX: number;
   let centerY: number;
-  let rotate: string;
 
   if (side === 'top' || side === 'bottom') {
     centerX = getArrowCenter({
@@ -316,11 +294,9 @@ const syncArrowPosition = (
     if (side === 'top') {
       // 面板在触发器上方：箭头贴面板底边，尖端向下
       centerY = contentRect.height + halfThickness - overlap;
-      rotate = 'rotate(90deg)';
     } else {
       // 面板在触发器下方：箭头贴面板顶边，尖端向上
       centerY = -halfThickness + overlap;
-      rotate = 'rotate(-90deg)';
     }
   } else {
     centerY = getArrowCenter({
@@ -329,26 +305,24 @@ const syncArrowPosition = (
       triggerStart: triggerRect.top,
       triggerExtent: triggerRect.height,
       align,
-      inset,
-      pointAtCenter: pointAtCenter.value,
+      // 侧向只预留半个底边，避免固定内缩量把矮触发器的中心挤偏。
+      inset: halfLength,
+      pointAtCenter: true,
     });
     if (side === 'left') {
       // 面板在触发器左侧：箭头贴面板右边，尖端向右（SVG 原始方向）
       centerX = contentRect.width + halfThickness - overlap;
-      rotate = 'rotate(0deg)';
     } else {
       // 面板在触发器右侧：箭头贴面板左边，尖端向左
       centerX = -halfThickness + overlap;
-      rotate = 'rotate(180deg)';
     }
   }
 
-  // 布局盒为 7×length（SVG 原始方向，尖端向右），以中心点定位后绕中心旋转到目标方向
-  arrowLength.value = length;
+  // 按实际方向设置布局盒，长短边始终保持 2.5:1。
+  const vertical = side === 'top' || side === 'bottom';
   arrowStyle.value = {
-    left: `${centerX - halfThickness}px`,
-    top: `${centerY - halfLength}px`,
-    transform: rotate,
+    left: `${centerX - (vertical ? halfLength : halfThickness)}px`,
+    top: `${centerY - (vertical ? halfThickness : halfLength)}px`,
   };
 };
 
@@ -725,21 +699,11 @@ onBeforeUnmount(() => {
           <template v-else>{{ displayText }}</template>
         </slot>
       </div>
-      <!-- 箭头取自设计稿（7×18 圆头曲线，尖端向右为原始方向），fill 走 currentColor 与面板同色 -->
-      <!-- 短面板下 arrowLength 会小于 18，用 preserveAspectRatio="none" 只压交叉轴，保住 7px 厚度不留缝 -->
+      <!-- 曲线轮廓与 Popover、下拉浮层共用，背景色跟随面板。 -->
       <span
-        v-if="showArrow" :class="styles.arrow()" :style="[arrowStyle, props.color ? { color: props.color } : null]"
-        aria-hidden="true"
-      >
-        <svg
-          class="block" width="7" :height="arrowLength" viewBox="0 0 7 18" preserveAspectRatio="none"
-          fill="currentColor"
-        >
-          <path
-            d="M0,0L0,18C0.322,15.745,1.46,13.687,3.199,12.216L5.647,10.145C6.355,9.546,6.355,8.454,5.647,7.855L3.199,5.784C1.46,4.313,0.322,2.255,0,0Z"
-          />
-        </svg>
-      </span>
+        v-if="showArrow" :class="styles.arrow()" :style="[arrowStyle, props.color ? { backgroundColor: props.color } : null]"
+        data-floating-arrow aria-hidden="true"
+      />
     </RebornTransition>
   </Teleport>
 </template>

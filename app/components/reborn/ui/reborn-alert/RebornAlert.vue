@@ -13,11 +13,11 @@ export interface AlertProps {
    */
   type?: AlertType;
   /**
-   * 视觉变体，对齐 reborn-button 的同名变体（不含 circle）
-   * @defaultValue 'soft'
+   * 视觉变体；filled 使用一阶浅底、六阶图标底色与灰色文字
+   * @defaultValue 'filled'
    */
   variant?: AlertVariant;
-  /** 配色覆盖；缺省时由 type 映射（normal → neutral） */
+  /** 配色覆盖；缺省时由 type 映射 */
   color?: AlertColor;
   /**
    * 是否展示图标
@@ -76,7 +76,7 @@ defineOptions({ name: 'RebornAlert' });
 
 const props = withDefaults(defineProps<AlertProps>(), {
   type: 'info',
-  variant: 'soft',
+  variant: 'filled',
   showIcon: true,
   closable: false,
   banner: false,

@@ -10,10 +10,10 @@ import { placements } from "~/lib/placement";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-/** 演练场默认状态：除 arrow / sideOffset 外与组件默认值一致 */
+/** 演练场显示箭头，其余配置与组件默认值一致。 */
 const defaultState: Record<string, any> = {
   placement: "bottom",
-  sideOffset: 12,
+  sideOffset: 4,
   mode: "click",
   arrow: true,
   modal: false,
@@ -37,7 +37,7 @@ const controls: any = [
     title: "位置",
     children: [
       { label: "方位 placement", key: "placement", component: "select" as const, defaultValue: "bottom", props: { options: placements.map(p => ({ label: p, value: p })) } },
-      { label: "间距 sideOffset（px）", key: "sideOffset", component: "slider" as const, defaultValue: 12, props: { min: 0, max: 40, step: 1 } },
+      { label: "间距 sideOffset（px）", key: "sideOffset", component: "slider" as const, defaultValue: 4, props: { min: 0, max: 40, step: 1 } },
       { label: "显示箭头", key: "arrow", component: "checkbox" as const, defaultValue: true },
     ],
   },
@@ -237,7 +237,7 @@ const actions = [
         </div>
       </DemoBlock>
       <DemoNote tone="dimmed">
-        主轴放不下时会自动翻到对侧（如靠近视口底部的 bottom 翻成 top），箭头随之换到另一边；间距用 <code>sideOffset</code> 调整，默认 8px。
+        主轴放不下时会自动翻到对侧（如靠近视口底部的 bottom 翻成 top），箭头随之换到另一边；间距用 <code>sideOffset</code> 调整，默认 4px，显示箭头时从箭头尖端计算。
       </DemoNote>
     </DemoSection>
 

@@ -59,7 +59,7 @@ export interface PopconfirmProps {
   loading?: boolean;
   /** 出现方向与对齐方式，取值与 reborn-tooltip 一致；默认 top（触发器上方居中）。 */
   placement?: PopconfirmPlacement;
-  /** 气泡与触发器的间距（px）。 */
+  /** 箭头尖端与触发器的间距，默认 4px；隐藏箭头时从面板边缘计算。 */
   sideOffset?: number;
   /**
    * 旧的定位对象写法（side / align / sideOffset），等价于 placement + sideOffset，仅为兼容保留。
@@ -100,7 +100,7 @@ const popoverPlacement = computed<Placement>(() => {
   return (align === 'center' ? side : `${side}-${align}`) as Placement;
 });
 
-const popoverSideOffset = computed(() => props.sideOffset ?? props.content?.sideOffset ?? 8);
+const popoverSideOffset = computed(() => props.sideOffset ?? props.content?.sideOffset ?? 4);
 
 /** 内容内边距固定 12px 写进底层气泡，不依赖 Popover 默认值；调用方覆盖仍然生效。 */
 const popoverUi = computed(() => ({

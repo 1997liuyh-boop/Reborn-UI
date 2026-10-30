@@ -13,6 +13,6 @@
     "布局固定：气泡内边距 12px，标题（14px gray-10）与描述（14px gray-8）间隔 8px，按钮区与文字区间隔 16px、按钮间隔 8px 右对齐。",
     "loading 时点击确认不自动关闭，异步确认需配合 v-model:open 手动收起；取消、点击外部与滚动不受 loading 影响，需要时把 dismissible 与 closeOnScroll 设为 false。",
     "footer 插槽的 confirm/cancel 回调会触发事件并按 loading 规则关闭，直接自绘按钮不调用回调则不会关闭。",
-    "placement / sideOffset / arrow / portal / dismissible / closeOnScroll 与 reborn-popover 语义一致，定位默认 top + 8px；旧的 content 对象已废弃但仍可用。"
+    "placement / sideOffset / arrow / portal / dismissible / closeOnScroll 与 reborn-popover 语义一致，定位默认 top + 4px（从箭头尖端计算）；旧的 content 对象已废弃但仍可用。"
   ]
 }

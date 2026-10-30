@@ -200,7 +200,7 @@ it('children 与 chidren 按父子顺序展开并继承目标，计数和步骤�
   });
 });
 
-it('面板样式、点状步骤及四方向定位满足规范，箭头贴近目标边缘', { skip: !browserAvailable }, async () => {
+it('面板样式、点状步骤及四方向定位满足规范，箭头与目标相距 8px', { skip: !browserAvailable }, async () => {
   await withGuide(async (page) => {
     await configure(page, { current: 0, indicator: 'dots' });
     const style = await page.locator('.fixture-panel').evaluate(element => {
@@ -231,8 +231,8 @@ it('面板样式、点状步骤及四方向定位满足规范，箭头贴近目�
       const arrow = (await page.locator('.fixture-arrow').boundingBox())!;
       const gap = placement === 'top' ? target.y - (panel.y + panel.height) : placement === 'bottom' ? panel.y - (target.y + target.height) : placement === 'left' ? target.x - (panel.x + panel.width) : panel.x - (target.x + target.width);
       const arrowGap = placement === 'top' ? target.y - (arrow.y + arrow.height) : placement === 'bottom' ? arrow.y - (target.y + target.height) : placement === 'left' ? target.x - (arrow.x + arrow.width) : arrow.x - (target.x + target.width);
-      assert.ok(gap >= 0 && gap <= 10, `${placement} 面板位于目标边缘且没有重叠，实际间距 ${gap}`);
-      assert.ok(Math.abs(arrowGap) <= 2, `${placement} 箭头应贴近目标边缘，实际间距 ${arrowGap}`);
+      assert.ok(Math.abs(gap - (6 * Math.SQRT2 + 8)) < 0.5, `${placement} 面板间距包含箭头和 8px 间隙，实际间距 ${gap}`);
+      assert.ok(Math.abs(arrowGap - 8) < 0.5, `${placement} 箭头与目标应相距 8px，实际间距 ${arrowGap}`);
     }
   });
 });
@@ -339,7 +339,7 @@ it('步骤切换让旧内容先退出、新内容再进入，结束后仍准确�
     const arrow = (await page.locator('.fixture-arrow').boundingBox())!;
     assert.ok(Math.abs(target.y + target.height / 2 - 400) < 2, '新目标完成居中');
     assert.ok(panel.y + panel.height < target.y, '新面板应位于目标上方且不覆盖目标');
-    assert.ok(Math.abs(target.y - (arrow.y + arrow.height)) < 2, '结束后的箭头准确贴合新目标');
+    assert.ok(Math.abs(target.y - (arrow.y + arrow.height) - 8) < 0.5, '切步结束后的箭头与新目标相距 8px');
   }, '?sticky=1');
 });
 

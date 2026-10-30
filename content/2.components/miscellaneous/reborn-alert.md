@@ -1,6 +1,6 @@
 ---
 title: Alert 警告提示
-description: 静态警告提示条：五种消息类型、按钮同款视觉变体、顶部公告模式与消息轮播通知栏。
+description: 静态警告提示条：四种消息类型、六种视觉变体、顶部公告模式与消息轮播通知栏。
 category: 反馈
 platform: both
 tags: [alert, notice, banner, marquee, uniapp]
@@ -14,7 +14,7 @@ badge: New
 
 Alert 是嵌在页面流里的提示条，用来说明当前状态，不打断用户操作。它不会自动消失，也不需要用户确认；能否关闭由 `closable` 决定。
 
-`type` 同时决定默认图标与配色，`variant` 决定着色方式，着色规则与 `RebornButton` 的同名变体一致，所以按钮和提示条放在一起时视觉语言统一。`color` 可以单独覆盖配色，让图标语义和颜色脱钩。
+`type` 同时决定默认图标与配色，`variant` 决定着色方式。Web 的 `filled` 使用语义色一阶浅底、六阶图标底色与灰色文字，其余变体保留同名按钮变体的配色。`color` 可以单独覆盖配色，让图标语义和颜色脱钩。
 
 传入 `messages` 后组件切换为轮播通知栏：单行逐条切换、多行逐行上移、水平跑马灯三种形态由 `direction` 与 `rows` 组合决定，此时默认插槽不再渲染。
 
@@ -35,7 +35,7 @@ Alert 是嵌在页面流里的提示条，用来说明当前状态，不打断�
 
 ### 基础用法
 
-`type` 同时决定图标与配色，默认插槽写正文。五种类型的默认图标依次为：`info` 圆形 i、`success` 圆形对勾、`warning` 圆形感叹号、`error` 圆形叉、`normal` 喇叭。`normal` 的配色映射为 `neutral`，用于公告等中性场景。
+`type` 同时决定图标与配色，默认插槽写正文。四种类型的默认图标依次为：`info` 圆形 i、`success` 圆形对勾、`warning` 圆形感叹号、`error` 圆形叉。中性提示可通过 `color="neutral"` 指定配色；Web 的 `filled` 中性配色使用 `bg-gray-2`，避免与页面底色重合。
 
 ```vue
 <template>
@@ -43,28 +43,28 @@ Alert 是嵌在页面流里的提示条，用来说明当前状态，不打断�
   <RebornAlert type="success">数据已保存</RebornAlert>
   <RebornAlert type="warning">库存不足，请及时补货</RebornAlert>
   <RebornAlert type="error" :show-icon="false">请求失败，请稍后重试</RebornAlert>
-  <RebornAlert type="normal">系统将于今晚进行例行维护</RebornAlert>
+  <RebornAlert type="info">系统将于今晚进行例行维护</RebornAlert>
 </template>
 ```
 
 ### 变体：六种 variant
 
-`variant` 与 `RebornButton` 的同名变体着色一致（不含按钮的 `circle`），默认 `soft`。
+`variant` 默认 Web `filled` / UniApp `soft`。Web 常规圆角为 4px，`round` 保留胶囊圆角，`banner` 去除圆角。
 
 | variant    | 着色                              | 典型用途                               |
 | ---------- | --------------------------------- | -------------------------------------- |
-| `soft`     | 语义色 10% 透明底 + 语义色文字    | 默认，页面内大多数说明性提示           |
+| `soft`     | 语义色 10% 透明底 + 语义色文字    | UniApp 默认，页面内说明性提示           |
 | `subtle`   | `soft` 再加语义色描边             | 背景偏浅、需要边界把提示区分出来时     |
 | `outlined` | 透明底 + 语义色描边与文字         | 卡片内部，不想再叠一层底色             |
-| `filled`   | 语义色实底 + 白字                 | 需要强提醒的错误或阻断性风险           |
-| `round`    | 着色同 `filled`，圆角改为胶囊     | 单行短提示，放在工具栏或浮层顶部       |
+| `filled`   | Web：语义色一阶浅底 + 灰色文字，中性用灰色二阶；UniApp：语义色实底 + 白字 | Web 默认，页面内带有明确状态的提示 |
+| `round`    | 语义色实底 + 白字，胶囊圆角     | 单行短提示，放在工具栏或浮层顶部       |
 | `text`     | 无底无边，仅语义色文字            | 行内的弱提示，只保留图标与文字         |
 
 ```vue
 <template>
   <RebornAlert variant="filled" type="success">实底</RebornAlert>
   <RebornAlert variant="outlined" type="success">描边</RebornAlert>
-  <RebornAlert variant="soft" type="success">浅底（默认）</RebornAlert>
+  <RebornAlert variant="soft" type="success">半透明浅底</RebornAlert>
   <RebornAlert variant="subtle" type="success">浅底 + 描边</RebornAlert>
   <RebornAlert variant="text" type="success">纯文字</RebornAlert>
   <RebornAlert variant="round" type="success">胶囊</RebornAlert>
@@ -74,6 +74,8 @@ Alert 是嵌在页面流里的提示条，用来说明当前状态，不打断�
 ::tip
 `color` 可脱离 `type` 单独指定，用于图标语义与配色不一致的场景。例如 `type="success"` 配 `color="primary"`：图标仍是对勾，配色换成主色。
 ::
+
+Web 的 `filled` 使用 14px 字号（`text-base`）：正文为 `text-gray-8`，标题为 `text-gray-10`，关闭图标为 `text-gray-6`。状态图标为 16×16px、圆形（`rounded-full`），底色取当前色相六阶，符号使用 `text-gray-1`。例如 `info` 面板为 `bg-blue-1`、图标底色为 `bg-blue-6`；`color="neutral"` 面板为 `bg-gray-2`、图标底色为 `bg-gray-6`。
 
 ### 标题与操作区：title 与 action 插槽
 
@@ -170,16 +172,16 @@ const current = ref(0);
 
 <template>
   <!-- 单行逐条 -->
-  <RebornAlert type="normal" :messages="messages" :interval="3000" @change="current = $event" />
+  <RebornAlert type="info" :messages="messages" :interval="3000" @change="current = $event" />
 
   <!-- 多行逐行滚动 -->
-  <RebornAlert type="normal" :messages="messages" :rows="2" />
+  <RebornAlert type="info" :messages="messages" :rows="2" />
 
   <!-- 水平跑马灯 -->
-  <RebornAlert type="normal" :messages="messages" direction="horizontal" :speed="60" />
+  <RebornAlert type="info" :messages="messages" direction="horizontal" :speed="60" />
 
   <!-- 自定义单条渲染 -->
-  <RebornAlert type="normal" :messages="messages">
+  <RebornAlert type="info" :messages="messages">
     <template #message="{ item, index }">
       <span>{{ index + 1 }}. {{ item }}</span>
     </template>
@@ -207,9 +209,9 @@ const current = ref(0);
 
 | 属性名         | 类型                                                                                   | 默认值       | 描述                                                              |
 | -------------- | -------------------------------------------------------------------------------------- | ------------ | ----------------------------------------------------------------- |
-| `type`         | `'info' \| 'success' \| 'warning' \| 'error' \| 'normal'`                              | `'info'`     | 消息类型，决定默认图标与配色。                                    |
-| `variant`      | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round'`                    | `'soft'`     | 视觉变体，着色规则同 `RebornButton` 的同名变体。                  |
-| `color`        | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | -            | 配色覆盖；缺省时按 `type` 映射，`normal` 映射为 `neutral`。       |
+| `type`         | `'info' \| 'success' \| 'warning' \| 'error'`                              | `'info'`     | 消息类型，决定默认图标与配色。                                    |
+| `variant`      | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round'`                    | `'filled'`     | 视觉变体；`filled` 使用浅底、灰字与圆形状态图标。                  |
+| `color`        | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | -            | 配色覆盖；缺省时按 `type` 映射，可用 `neutral` 指定中性色。       |
 | `show-icon`    | `boolean`                                                                              | `true`       | 是否展示图标。                                                    |
 | `closable`     | `boolean`                                                                              | `false`      | 是否展示关闭按钮。                                                |
 | `title`        | `string`                                                                               | -            | 标题，也可用 `title` 插槽。                                       |
@@ -234,9 +236,9 @@ const current = ref(0);
 
 | 属性名         | 类型                                                                                   | 默认值         | 描述                                                              |
 | -------------- | -------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------- |
-| `type`         | `'info' \| 'success' \| 'warning' \| 'error' \| 'normal'`                              | `'info'`       | 消息类型，决定默认图标与配色。                                    |
+| `type`         | `'info' \| 'success' \| 'warning' \| 'error'`                              | `'info'`       | 消息类型，决定默认图标与配色。                                    |
 | `variant`      | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round'`                    | `'soft'`       | 视觉变体，着色规则同 `RebornButton` 的同名变体。                  |
-| `color`        | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | -              | 配色覆盖；缺省时按 `type` 映射，`normal` 映射为 `neutral`。       |
+| `color`        | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | -              | 配色覆盖；缺省时按 `type` 映射，可用 `neutral` 指定中性色。       |
 | `show-icon`    | `boolean`                                                                              | `true`         | 是否展示图标。                                                    |
 | `closable`     | `boolean`                                                                              | `false`        | 是否展示关闭按钮。                                                |
 | `title`        | `string`                                                                               | -              | 标题，也可用 `title` 插槽。                                       |
@@ -291,7 +293,7 @@ const current = ref(0);
 
 | 键名              | 对应节点                                          | 默认类                                                                                                                                                       | 渲染条件                               |
 | ----------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
-| `root`            | 根节点（`role="alert"`），`class` 也并入此处      | `reborn-alert relative flex w-full items-start gap-2 px-3 py-2 text-sm font-normal rounded-lg`，另叠加变体配色                                               | 始终                                   |
+| `root`            | 根节点（`role="alert"`），`class` 也并入此处      | `reborn-alert relative flex w-full items-start gap-2 px-3 py-2 text-sm font-normal rounded-sm`，另叠加变体配色；`filled` 使用 `text-base text-gray-8` | 始终                                   |
 | `icon`            | 图标容器                                          | `flex h-5 shrink-0 items-center`                                                                                                                             | `show-icon` 为 `true`                  |
 | `content`         | 标题与正文所在的纵向列                            | `flex min-w-0 flex-1 flex-col gap-2`                                                                                                                         | 始终                                   |
 | `title`           | 标题                                              | `font-medium`                                                                                                                                                | 有 `title` 属性或 `title` 插槽         |
@@ -357,8 +359,9 @@ const current = ref(0);
 | ---------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
 | 根节点类名属性   | `class`                                                            | `custom-class`                                                                                      |
 | 图标写法         | Iconify 图标名，交给 `Icon` 组件（如 `lucide:x`）                  | 图标类名（如 `i-lucide-x`）                                                                         |
-| 字号与行高       | `text-sm`（12px，行高 20px）                                       | `text-28` + `leading-[1.5]`                                                                         |
-| 圆角             | `rounded-lg`                                                       | `rounded-ui-sm`                                                                                     |
+| 默认变体         | `filled`                                                           | `soft`                                                                                             |
+| 字号与行高       | `filled` 为 `text-base`（14px，行高 22px），其他为 `text-sm`（12px，行高 20px） | `text-28` + `leading-[1.5]`                                                                         |
+| 圆角             | `rounded-sm`（4px）                                                 | `rounded-ui-sm`                                                                                     |
 | 图标尺寸         | `size-4`                                                           | `size-[32rpx]`                                                                                      |
 | 关闭淡出时长     | 200ms                                                              | 300ms（`RebornTransition` 的默认值）                                                                |
 | 垂直轮播实现     | 单行用 `Transition` 进出场；多行把列表整体 `translateY`，逐行滚动  | 内置 `swiper`（`vertical` + `circular`），多行由 `display-multiple-items` 承担                      |

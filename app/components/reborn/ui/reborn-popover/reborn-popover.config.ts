@@ -1,3 +1,4 @@
+import { floatingArrowSides } from "~/lib/floating-arrow";
 export const popoverAnimations = {
     base: {
         enterActiveClass: "transition ease-out duration-200",
@@ -28,30 +29,30 @@ export default {
         wrapper: "relative inline-block",
         trigger: "inline-flex max-w-full",
         contentWrapper: "fixed top-0 left-0 z-[9999]",
-        /**
-         * 描边用 gray-3 而不是与底色相同的 gray-1：同色描边在白底页面上等于没有，
-         * shadow-lg 提供较轻的浮起感，朝上的箭头与面板上沿由描边补足轮廓。
-         * 与 RebornSelect 下拉框、RebornMention 面板同一套 gray-1 底 + gray-3 描边
-         */
-        content: "relative bg-gray-1 border border-gray-3 shadow-lg rounded-lg p-[12px]",
-        /** 箭头与面板同底色同描边，只露出朝外的两条边，与面板描边连成一条轮廓 */
-        arrow: "absolute size-3 border border-gray-3 bg-gray-1",
+        /** 面板不描边，以 8px 圆角和柔和阴影区分层级。 */
+        content: "relative bg-gray-1 shadow-[0_2px_12px_0_rgb(0_0_0/0.15)] rounded-lg p-3",
+        /** 曲线箭头与 Tooltip 共用轮廓，长短边比例固定为 2.5:1。 */
+        arrow: "pointer-events-none absolute bg-gray-1 mask-no-repeat mask-size-[100%_100%]",
         bridge: "absolute inset-0 z-[-1]",
         mask: "fixed inset-0 bg-black/30 z-[9998]",
     },
     variants: {
         side: {
             top: {
-                content: "origin-bottom"
+                content: "origin-bottom",
+                arrow: floatingArrowSides.top,
             },
             bottom: {
-                content: "origin-top"
+                content: "origin-top",
+                arrow: floatingArrowSides.bottom,
             },
             left: {
-                content: "origin-right"
+                content: "origin-right",
+                arrow: floatingArrowSides.left,
             },
             right: {
-                content: "origin-left"
+                content: "origin-left",
+                arrow: floatingArrowSides.right,
             },
         },
         align: {

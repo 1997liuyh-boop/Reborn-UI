@@ -79,3 +79,63 @@ it("对外导出的 messageState 只读，不能绕过 addMessage 改写", async
   assert.notEqual(messageState.top, 999);
   assert.equal(messageState.list.length, 0);
 });
+
+it("base 消息使用六阶图标底色，成功消息使用勾选图标", async () => {
+  for (const [type, background] of [["info", "bg-blue-6"], ["success", "bg-green-6"], ["warning", "bg-orange-6"], ["error", "bg-red-6"]]) {
+    void addMessage({ type, content: type, duration: 0 });
+    await nextTick();
+    const icon = container.querySelector(".reborn-message > span");
+    assert.ok(icon.classList.contains(background));
+    if (type === "success") assert.equal(icon.querySelector("i").dataset.icon, "lucide:check");
+    destroyMessages();
+    await nextTick();
+  }
+});
+
+it("所有变体 loading 使用 outline，支持自定义图标及同 key 更新成功", async () => {
+  for (const variant of ["filled", "outlined", "soft", "subtle"]) {
+    void addMessage({ type: "loading", variant, content: variant, duration: 0 });
+    await nextTick();
+    const loader = container.querySelector(".rb-loading");
+    assert.ok(loader.querySelector("circle"));
+    assert.equal(loader.style.width, "16px");
+    assert.equal(loader.style.height, "16px");
+    assert.equal(container.querySelector(".animate-spin"), null);
+    destroyMessages();
+    await nextTick();
+  }
+  void addMessage({ type: "loading", content: "加载中", duration: 0, key: "loading" });
+  await nextTick();
+  const loader = container.querySelector(".rb-loading");
+  assert.ok(loader.querySelector("circle"), "outline 包含完整底圈");
+  assert.equal(loader.style.width, "14px");
+  assert.equal(loader.style.height, "14px");
+  assert.equal(container.querySelector(".animate-spin"), null, "不重复旋转通用图标");
+  void addMessage({ type: "loading", content: "自定义", duration: 0, key: "loading", icon: "lucide:clock" });
+  await nextTick();
+  assert.equal(container.querySelector(".rb-loading"), null);
+  assert.ok(container.querySelector('[data-icon="lucide:clock"]'));
+  void addMessage({ type: "success", content: "已完成", duration: 0, key: "loading", icon: undefined });
+  await nextTick();
+  assert.equal(container.querySelectorAll(".reborn-message").length, 1);
+  assert.ok(container.querySelector('[data-icon="lucide:check"]'));
+  assert.ok(container.querySelector(".reborn-message > span").classList.contains("bg-green-6"));
+  destroyMessages();
+  await nextTick();
+});
+
+it("base loading 无图标底色，配色覆盖及普通消息类名缓存互不影响", async () => {
+  for (const [color, text] of [["primary", "text-primary"], ["secondary", "text-secondary"], ["success", "text-green-6"], ["info", "text-blue-6"], ["warning", "text-orange-6"], ["error", "text-red-6"], ["neutral", "text-neutral"]]) {
+    void addMessage({ type: "loading", color, content: "加载", duration: 0 });
+    void addMessage({ type: "info", color, content: "普通", duration: 0 });
+    await nextTick();
+    const [loading, info] = container.querySelectorAll(".reborn-message > span:first-child");
+    assert.ok(loading.classList.contains("bg-transparent"));
+    assert.ok(loading.classList.contains(text));
+    assert.ok(!loading.classList.contains("text-white"));
+    assert.ok(!info.classList.contains("bg-transparent"));
+    assert.ok(info.classList.contains("text-white"));
+    destroyMessages();
+    await nextTick();
+  }
+});

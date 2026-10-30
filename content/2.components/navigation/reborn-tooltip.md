@@ -175,7 +175,7 @@ function show(event: Event, value: string) {
 
 ### 箭头：显隐与指向中心
 
-`:arrow="false"` 隐藏箭头。`-start` / `-end` 方位下箭头默认停在对齐端，触发元素比气泡宽时箭头可能不在触发元素正中；`:arrow="{ pointAtCenter: true }"` 让箭头改为指向触发元素中心。
+`:arrow="false"` 隐藏箭头。上下方向的 `-start` / `-end` 方位下箭头默认停在对齐端，触发元素比气泡宽时箭头可能不在触发元素正中；`:arrow="{ pointAtCenter: true }"` 让箭头改为指向触发元素中心。左右方向（含 `left-start` / `left-end` / `right-start` / `right-end`）默认指向触发元素的高度中心，落点限制在面板边界内。
 
 ```vue
 <template>
@@ -299,7 +299,7 @@ const emptyTitle = ref(false);
 - **虚拟触发引用必须是原生元素。** `virtualRef` 接收已挂载的 `HTMLElement`；组件实例需先取得其真实 DOM。显示期间切换引用保持单例浮层并更新定位，引用置空或节点卸载会关闭。
 
 - **仅 Web 端可用。** UniApp 端没有同名组件，需要轻量气泡时可用 `reborn-popover` 的 `title` 属性。
-- **箭头是 7×18 的圆头曲线，与面板同色实色填充。** 面板沿箭头排布方向（`top` / `bottom` 看宽度，`left` / `right` 看高度）短到装不下 18px 底边时，箭头底边按可用直边收缩、最短 12px，用来拉开 `start` / `center` / `end` 三档的位置差；厚度恒为 7px，连接处仍然无缝。单行文字的 `left` / `right` 提示会走到这条规则。
+- **箭头采用长短边比例为 2.5:1 的圆头曲线，与面板同色。** 上下方向宽 17.5px、高 7px，左右方向宽 7px、高 17.5px；根部向面板内嵌入 2px，避免两端平直边露出。箭头尖端与触发器保持 4px 可见间距，隐藏箭头时从面板边缘计算。
 - **没有可显示内容时不会弹出。** `disabled` 为 `true`、`title` 为 `null` / 空串、或既无文案也无 `content` 插槽时都不会打开；文案中途变为空会立即关闭提示，避免出现一个空气泡。
 - **关闭期间文案默认被冻结。** 提示层 DOM 默认隐藏保留，冻结文案可以避免隐藏期间外部数据变化引起内容抖动；需要关闭期间也实时更新时设 `fresh`。
 - **提示层默认 Teleport 到 `body`。** 不受父容器 `overflow: hidden` 裁剪；用 `getPopupContainer` 改挂载点时，若容器带 CSS `transform`，fixed 定位会以该容器为参照而错位。

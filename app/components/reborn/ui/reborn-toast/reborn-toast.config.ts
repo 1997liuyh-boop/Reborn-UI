@@ -345,16 +345,30 @@ export const messageTheme = tv({
       error: { badge: 'bg-error' },
       neutral: { badge: 'bg-neutral' },
     },
+    loading: {
+      true: {},
+      false: {},
+    },
   },
   compoundVariants: [
-    // base：图标圆底取语义色（即各色相的 6 阶默认色）
+    // base：图标圆底固定使用六阶色，避免深色主题的语义色映射切换到其他档位。
     { variant: 'base', color: 'primary', class: { iconWrapper: 'bg-primary' } },
     { variant: 'base', color: 'secondary', class: { iconWrapper: 'bg-secondary' } },
-    { variant: 'base', color: 'success', class: { iconWrapper: 'bg-success' } },
-    { variant: 'base', color: 'info', class: { iconWrapper: 'bg-info' } },
-    { variant: 'base', color: 'warning', class: { iconWrapper: 'bg-warning' } },
-    { variant: 'base', color: 'error', class: { iconWrapper: 'bg-error' } },
+    { variant: 'base', color: 'success', class: { iconWrapper: 'bg-green-6' } },
+    { variant: 'base', color: 'info', class: { iconWrapper: 'bg-blue-6' } },
+    { variant: 'base', color: 'warning', class: { iconWrapper: 'bg-orange-6' } },
+    { variant: 'base', color: 'error', class: { iconWrapper: 'bg-red-6' } },
     { variant: 'base', color: 'neutral', class: { iconWrapper: 'bg-neutral' } },
+
+    // 基础加载消息去掉图标圆底，弧线使用当前语义色。
+    { variant: 'base', loading: true, class: { iconWrapper: 'bg-transparent' } },
+    { variant: 'base', loading: true, color: 'primary', class: { iconWrapper: 'text-primary' } },
+    { variant: 'base', loading: true, color: 'secondary', class: { iconWrapper: 'text-secondary' } },
+    { variant: 'base', loading: true, color: 'success', class: { iconWrapper: 'text-green-6' } },
+    { variant: 'base', loading: true, color: 'info', class: { iconWrapper: 'text-blue-6' } },
+    { variant: 'base', loading: true, color: 'warning', class: { iconWrapper: 'text-orange-6' } },
+    { variant: 'base', loading: true, color: 'error', class: { iconWrapper: 'text-red-6' } },
+    { variant: 'base', loading: true, color: 'neutral', class: { iconWrapper: 'text-neutral' } },
 
     // filled：同 reborn-button 的 filled（语义色实底 + 白字）
     { variant: 'filled', color: 'primary', class: { root: 'bg-primary' } },
@@ -396,5 +410,6 @@ export const messageTheme = tv({
     placement: 'top' as MessagePlacement,
     variant: 'base' as MessageVariant,
     color: 'info' as MessageColor,
+    loading: false,
   },
 });

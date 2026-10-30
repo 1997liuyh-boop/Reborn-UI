@@ -1,7 +1,7 @@
 import { tv } from '@/lib/tv'
 
 /** 警告提示的类型（决定默认图标与配色），与 Web 端一致 */
-export const alertTypes = ['info', 'success', 'warning', 'error', 'normal'] as const
+export const alertTypes = ['info', 'success', 'warning', 'error'] as const
 export type AlertType = (typeof alertTypes)[number]
 
 /** 视觉变体：对齐 reborn-button 的同名变体（不含 circle） */
@@ -16,13 +16,12 @@ export type AlertColor = (typeof alertColors)[number]
 export const alertDirections = ['vertical', 'horizontal'] as const
 export type AlertDirection = (typeof alertDirections)[number]
 
-/** type → 默认配色（normal 视作中性色） */
+/** type → 默认配色 */
 export const ALERT_TYPE_COLOR: Record<AlertType, AlertColor> = {
   info: 'info',
   success: 'success',
   warning: 'warning',
   error: 'error',
-  normal: 'neutral',
 }
 
 /** type → 默认图标类名（与 Web 端同一套 lucide 图标，本端走 tailwind 图标类） */
@@ -31,7 +30,6 @@ export const ALERT_TYPE_ICON: Record<AlertType, string> = {
   success: 'i-lucide-circle-check',
   warning: 'i-lucide-circle-alert',
   error: 'i-lucide-circle-x',
-  normal: 'i-lucide-megaphone',
 }
 
 /*

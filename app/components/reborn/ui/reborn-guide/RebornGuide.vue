@@ -375,9 +375,9 @@ function syncPosition() {
   }
   const placement = activeStep.value.placement;
   const { side: preferredSide, align } = resolvePlacement(placement === "center" || !placement ? "bottom" : placement);
-  // 12px 方块的半对角线正好连接面板边缘与目标真实边框
+  // 面板间距包含箭头的半对角线，尖端与目标真实边框再留出 8px。
   const arrowDepth = 6 * Math.SQRT2;
-  const { position, side } = resolveFloatingPosition({ triggerRect: rect, size, side: preferredSide, align, offset: arrowDepth });
+  const { position, side } = resolveFloatingPosition({ triggerRect: rect, size, side: preferredSide, align, offset: arrowDepth + 8 });
   const [offsetX, offsetY] = activeStep.value.offset ?? [0, 0];
   position.left += Number.parseFloat(String(offsetX)) || 0;
   position.top += Number.parseFloat(String(offsetY)) || 0;

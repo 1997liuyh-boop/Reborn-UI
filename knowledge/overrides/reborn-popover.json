@@ -13,7 +13,8 @@
   "pitfalls": [
     "web、uniapp 双端可用。",
     "portal 默认 true，浮层 Teleport 到 body 或指定节点。",
-    "定位用 placement（「方向-对齐」12 种，默认 bottom，与 reborn-popconfirm / reborn-tooltip 一致）+ sideOffset（Web 默认 8，UniApp 默认 0）；旧的 content 对象（side/align/sideOffset）已废弃但仍可用，同时传入时以 placement / sideOffset 为准。",
+    "定位用 placement（「方向-对齐」12 种，默认 bottom，与 reborn-popconfirm / reborn-tooltip 一致）+ sideOffset（Web 默认 4，显示箭头时从箭头尖端计算，UniApp 默认 0）；旧的 content 对象（side/align/sideOffset）已废弃但仍可用，同时传入时以 placement / sideOffset 为准。",
+    "Web 面板无描边，默认 gray-1 底色、8px 圆角、12px 内边距与 0 2px 12px rgba(0,0,0,0.15) 阴影；箭头使用共用 SVG 曲线遮罩，上下方向为 17.5×7px，左右方向交换宽高，根部嵌入面板 2px。上下起止对齐时中心距对应端部 25px，左右方向始终指向触发器高度中心，窄面板收敛到正中。",
     "modal 默认 false 无遮罩；hover 模式关闭延迟默认 120ms。",
     "Web 端 dismissible（点击外部，含 iframe 内点击）与 closeOnScroll（滚动关闭）默认都开启；closeOnScroll 只在页面或触发器所在容器滚动时关闭，设为 false 后气泡跟随触发器移动。UniApp 端没有 closeOnScroll。",
     "气泡里嵌套 RebornSelect、RebornPopconfirm 等浮层时，内层传送到 body 但会向外层登记，在内层点选不会关掉外层；与 Select 等下拉类组件共用同一套判定。",

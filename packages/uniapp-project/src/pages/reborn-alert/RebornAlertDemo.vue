@@ -32,7 +32,7 @@ function handleAfterClose() {
 // 轮播通知栏消息
 const noticeMessages = [
   '系统将于今晚 24:00 进行升级维护',
-  '新版本 2.41.0 已发布，新增 normal 类型',
+  '组件库已更新，可查看版本说明',
   '文档站已支持双端演示与在线运行',
   '组件库知识库与 AI 助手已上线，欢迎试用',
 ]
@@ -40,7 +40,7 @@ const noticeIndex = shallowRef(0)
 </script>
 
 <template>
-  <RebornPage title="Alert 警告提示" description="静态警告提示条，五种消息类型与按钮同款视觉变体，API 与 Web 端对齐。">
+  <RebornPage title="Alert 警告提示" description="静态警告提示条，四种消息类型与六种视觉变体，类型取值与 Web 端一致。">
     <!-- Playground Section -->
     <RebornCard>
       <template #title>
@@ -177,7 +177,7 @@ const noticeIndex = shallowRef(0)
             dark:text-slate-300
           "
         >
-          五种消息类型对应五种语义配色与默认图标；normal 为新增类型，用于公告等中性场景。
+          四种消息类型对应四种语义配色与默认图标；中性提示可使用 color="neutral"。
         </view>
       </template>
       <RebornAlert v-for="t in alertTypes" :key="t" :type="t">
@@ -320,7 +320,7 @@ const noticeIndex = shallowRef(0)
         </view>
       </template>
       <RebornAlert
-        type="normal" banner :messages="noticeMessages" :interval="2500" closable
+        type="info" banner :messages="noticeMessages" :interval="2500" closable
         @change="noticeIndex = $event"
       />
       <text class="text-xs text-slate-400">单条逐条垂直轮播：当前第 {{ noticeIndex + 1 }} / {{ noticeMessages.length }} 条</text>

@@ -5,7 +5,8 @@ import { defaultWindow, useEventListener } from "@vueuse/core";
 import { computed, getCurrentInstance, onBeforeUpdate, onDeactivated, onUnmounted, shallowRef, useTemplateRef, watch } from "vue";
 import { useFloatingDismiss } from "~/composables/useFloatingDismiss";
 import { useFloatingHost } from "~/composables/useFloatingHost";
-import { getArrowCenter, getArrowShadow, resolveFloatingPosition } from "~/lib/floating";
+import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
+import { FLOATING_ARROW_DEPTH, FLOATING_ARROW_LENGTH, getFloatingArrowShadow } from "~/lib/floating-arrow";
 import { resolvePlacement } from "~/lib/placement";
 import { tv } from "~/lib/tv";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
@@ -60,8 +61,8 @@ export interface PopoverProps {
    */
   placement?: PopoverPlacement;
   /**
-   * 气泡与触发器的间距（px）
-   * @defaultValue 8
+   * 气泡与触发器的间距（px），显示箭头时从箭头尖端计算
+   * @defaultValue 4
    */
   sideOffset?: number;
   /**
@@ -199,15 +200,16 @@ const placementInfo = computed(() => {
   const { side, align } = props.placement
     ? resolvePlacement(props.placement)
     : { side: legacy.side ?? "bottom", align: legacy.align ?? "center" };
-  return { side, align, offset: props.sideOffset ?? legacy.sideOffset ?? 8 };
+  return { side, align, offset: props.sideOffset ?? legacy.sideOffset ?? 4 };
 });
 
-/**
- * 箭头中心距面板端部的最小内缩量，与 reborn-tooltip 取同一口径：
- * 面板圆角 8px（rounded-lg）加半个箭头底边（12px 方块旋转 45° 后底边 ≈16.97px，半边 ≈8.49px），取整 17。
- * 小于该值箭头底边会压到圆角的弧线上，连接处出现悬空缺口。
- */
-const ARROW_INSET = 17;
+/** 上下方向起止对齐时，箭头中心距面板端部 25px。 */
+const ARROW_INSET = 25;
+const ARROW_HEIGHT = FLOATING_ARROW_DEPTH;
+/** 根部嵌入面板 2px，遮住曲线两端的平直边与抗锯齿接缝。 */
+const ARROW_OVERLAP = 2;
+/** 定位与悬停桥接只计箭头露出部分，sideOffset 始终表示可见间隙。 */
+const panelOffset = computed(() => placementInfo.value.offset + (props.arrow ? ARROW_HEIGHT - ARROW_OVERLAP : 0));
 
 const style = shallowRef<Record<string, string>>({
   left: "0px",
@@ -224,8 +226,7 @@ const arrowPosition = shallowRef({
 
 /**
  * 同步箭头在面板内的坐标。落点规则与 reborn-tooltip 一致：
- * start / end 停在对齐端的内缩位置，只有 center 才指向触发器中心，
- * 这样三档对齐的箭头位置是稳定的，不随触发器宽度漂移。
+ * 上下方向的 start / end 停在对齐端的内缩位置；左右方向始终指向触发器的高度中心。
  *
  * 箭头绝对定位在带边框的 .content 里，top / left 以内边距盒为原点，
  * 而 position 是面板边框盒的位置，因此要把边框宽度算进面板起点。
@@ -255,8 +256,9 @@ function syncArrowPosition(
       panelExtent: contentBox.clientHeight,
       triggerStart: rect.top,
       triggerExtent: rect.height,
-      align: isVertical ? "center" : align,
-      inset: ARROW_INSET,
+      align: "center",
+      // 侧向只预留半个底边，避免固定内缩量把矮触发器的中心挤偏。
+      inset: isVertical ? ARROW_INSET : FLOATING_ARROW_LENGTH / 2,
     })}px`,
   };
 }
@@ -271,7 +273,7 @@ function calculatePosition(contentElement?: HTMLElement) {
   const rect = triggerRef.value.getBoundingClientRect();
   // 取 offsetWidth / offsetHeight 而非 getBoundingClientRect，入场动画的 scale 不会算进尺寸
   const size = { width: contentBox.offsetWidth, height: contentBox.offsetHeight };
-  const { side: preferredSide, align, offset } = placementInfo.value;
+  const { side: preferredSide, align } = placementInfo.value;
 
   // 翻转与贴边都交给共享的浮层几何，口径与 reborn-tooltip 保持一致
   const { side, position } = resolveFloatingPosition({
@@ -279,7 +281,7 @@ function calculatePosition(contentElement?: HTMLElement) {
     size,
     side: preferredSide,
     align,
-    offset,
+    offset: panelOffset.value,
   });
 
   resolvedSide.value = side;
@@ -303,7 +305,7 @@ function updatePosition() {
   });
 }
 
-/** 面板实际的 box-shadow，展开时读取，供箭头投影底片换算 */
+/** 面板实际阴影，箭头投影跟随 ui.content 的阴影覆盖。 */
 const panelShadow = shallowRef("none");
 
 const onBeforeEnter = (el: Element) => {
@@ -312,10 +314,9 @@ const onBeforeEnter = (el: Element) => {
 
 const onEnter = (el: Element) => {
   calculatePosition(el as HTMLElement);
-  // 面板实际的阴影（随 ui.content 覆盖走，如 Popconfirm 的双层阴影），供箭头投影底片换算；
-  // 面板到 enter 才插入文档，before-enter 时读不到计算样式
+  // 此时面板已插入文档；即使暂未显示箭头，也保留阴影以支持展开期间切换 arrow。
   const content = el.firstElementChild;
-  if (props.arrow && content) panelShadow.value = getComputedStyle(content).boxShadow;
+  if (content) panelShadow.value = getComputedStyle(content).boxShadow;
 };
 
 let resizeObserver: ResizeObserver | null = null;
@@ -358,7 +359,7 @@ onUnmounted(() => {
 });
 
 // 方位在打开期间改变（如演练场切换 placement）时立即重新定位
-watch(placementInfo, () => {
+watch([placementInfo, () => props.arrow], () => {
   if (open.value) updatePosition();
 });
 
@@ -372,61 +373,50 @@ watch(open, (value) => {
 
 const arrowStyle = computed(() => {
   const side = resolvedSide.value;
-  // 12px 方块旋转 45° 后中心压在面板 1px 描边的中线上，箭头的两条描边与面板描边无缝相接
-  // 保留朝内的半块背景覆盖面板描边，裁成三角形会在箭头底边留下分割线
-  const offsetScale = "-6.5px";
+  // 四向统一内嵌根部，实色箭头与投影底片共用这个偏移。
+  const offset = `-${ARROW_HEIGHT - ARROW_OVERLAP}px`;
 
   if (side === "bottom") {
     return {
-      top: offsetScale,
+      top: offset,
       left: arrowPosition.value.x,
-      transform: "translateX(-50%) rotate(45deg)",
-      borderBottomWidth: "0",
-      borderRightWidth: "0",
+      transform: "translateX(-50%)",
     };
   }
 
   if (side === "top") {
     return {
-      bottom: offsetScale,
+      bottom: offset,
       left: arrowPosition.value.x,
-      transform: "translateX(-50%) rotate(45deg)",
-      borderTopWidth: "0",
-      borderLeftWidth: "0",
+      transform: "translateX(-50%)",
     };
   }
 
   if (side === "left") {
     return {
-      right: offsetScale,
+      right: offset,
       top: arrowPosition.value.y,
-      transform: "translateY(-50%) rotate(45deg)",
-      borderBottomWidth: "0",
-      borderLeftWidth: "0",
+      transform: "translateY(-50%)",
     };
   }
 
   return {
-    left: offsetScale,
+    left: offset,
     top: arrowPosition.value.y,
-    transform: "translateY(-50%) rotate(45deg)",
-    borderTopWidth: "0",
-    borderRightWidth: "0",
+    transform: "translateY(-50%)",
   };
 });
 
-/**
- * 箭头投影底片：与箭头同形同位，只带面板的阴影（偏移已换算到旋转后的坐标系，见 getArrowShadow）。
- * z-index -1 让它垫到面板背后，只有露出面板的那截阴影可见，接住箭头尖；
- * 向上弹出时箭头不再像贴在面板阴影带上的另一层。底色与描边置透明，ui.arrow 覆盖的颜色也不会透出来
- */
-const arrowShadowStyle = computed(() => ({
-  ...arrowStyle.value,
-  zIndex: "-1",
-  boxShadow: getArrowShadow(panelShadow.value),
-  background: "transparent",
-  borderColor: "transparent",
-}));
+/** 按裁切后的箭头轮廓投影，底片垫在面板后方，避免矩形阴影与接缝。 */
+const arrowShadowStyle = computed(() => {
+  return {
+    ...arrowStyle.value,
+    zIndex: "-1",
+    filter: getFloatingArrowShadow(panelShadow.value),
+    maskImage: "none",
+    background: "transparent",
+  };
+});
 
 const b = tv(theme);
 const ui = computed(() => {
@@ -479,11 +469,13 @@ defineExpose({
 
           <div
             v-if="props.mode === 'hover'" :class="ui.bridge()"
-            :style="{ margin: `-${placementInfo.offset}px` }"
+            :style="{ margin: `-${panelOffset}px` }"
           />
 
-          <div v-if="arrow" :class="ui.arrow()" :style="arrowShadowStyle" aria-hidden="true" />
-          <div v-if="arrow" :class="ui.arrow()" :style="arrowStyle" />
+          <div v-if="arrow" :class="ui.arrow()" :style="arrowShadowStyle" aria-hidden="true">
+            <div :class="ui.arrow()" :style="{ inset: 0 }" />
+          </div>
+          <div v-if="arrow" :class="ui.arrow()" :style="arrowStyle" data-floating-arrow aria-hidden="true" />
         </div>
       </RebornTransition>
     </Teleport>

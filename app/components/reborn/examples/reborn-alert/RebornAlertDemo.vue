@@ -14,7 +14,7 @@ const variantOptions = alertVariants.map((v) => ({ label: v, value: v }));
 /** 演练场默认值，重置时恢复全部配置 */
 const defaultState = {
   type: "info" as const,
-  variant: "soft" as const,
+  variant: "filled" as const,
   title: "",
   content: "这是一条警告提示的内容",
   showIcon: true,
@@ -45,7 +45,7 @@ const controls = [
         label: "视觉变体",
         key: "variant",
         component: "select" as const,
-        defaultValue: "soft",
+        defaultValue: "filled",
         props: { options: variantOptions },
       },
       { label: "标题", key: "title", component: "input" as const, defaultValue: "" },
@@ -67,7 +67,7 @@ const controls = [
 const alertCode = computed(() => {
   const s = state.value;
   const attrs: string[] = [`type="${s.type}"`];
-  if (s.variant !== "soft") attrs.push(`variant="${s.variant}"`);
+  if (s.variant !== "filled") attrs.push(`variant="${s.variant}"`);
   if (s.title) attrs.push(`title="${s.title}"`);
   if (!s.showIcon) attrs.push(':show-icon="false"');
   if (s.closable) attrs.push("closable");
@@ -88,7 +88,7 @@ function handleAfterClose() {
 /** 轮播通知栏消息 */
 const noticeMessages = [
   "系统将于今晚 24:00 进行升级维护",
-  "新版本 2.41.0 已发布，新增 normal 类型",
+  "组件库已更新，可查看版本说明",
   "文档站已支持双端演示与在线运行",
   "组件库知识库与 AI 助手已上线，欢迎试用",
 ];
@@ -138,7 +138,7 @@ function resetState() {
 
     <DemoSection title="基础用法">
       <template #description>
-        <code>type</code> 同时决定默认图标与配色，五种类型对应五种语义；<code>normal</code> 用于公告等中性场景，配色映射为 <code>neutral</code>。
+        <code>type</code> 同时决定默认图标与配色，支持 <code>info</code>、<code>success</code>、<code>warning</code>、<code>error</code> 四种类型；中性提示可使用 <code>color="neutral"</code>。
       </template>
       <DemoBlock layout="stack">
         <RebornAlert v-for="t in alertTypes" :key="t" :type="t">
@@ -149,7 +149,7 @@ function resetState() {
 
     <DemoSection title="变体：六种 variant">
       <template #description>
-        <code>variant</code> 与 <code>RebornButton</code> 的同名变体着色规则一致（不含 <code>circle</code>），默认 <code>soft</code> 浅底；<code>round</code> 只把圆角改为胶囊。
+        <code>variant</code> 默认 <code>filled</code>，使用一阶浅底、灰色文字与六阶圆形图标底色，中性配色使用灰色二阶底；<code>round</code> 使用语义色实底与白字，圆角为胶囊。
       </template>
       <DemoBlock layout="stack">
         <RebornAlert v-for="v in alertVariants" :key="v" type="success" :variant="v">
@@ -238,7 +238,7 @@ function resetState() {
       </template>
       <DemoBlock layout="stack">
         <RebornAlert
-          type="normal"
+          type="info"
           banner
           :messages="noticeMessages"
           :interval="2500"

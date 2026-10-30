@@ -15,7 +15,7 @@
     "仅 web 端可用。",
     "显隐为 v-model（modelValue），旧的 v-model:open 已废弃；未绑定时组件内部自管理。",
     "正文放 default 插槽，触发器放 trigger 具名插槽（与 Element Plus 的 default=正文对齐），勿混淆。",
-    "描述文字参数为 describe（旧名 description 兼容、describe 优先），与标题间隔 8px；面板统一 py-[20px] px-[24px]、header/body/footer 之间 gap-[20px]，header/footer 无分隔线，footer 按钮靠右（取消 neutral+outlined、确认 filled，均 size=md、border-style=solid）。",
+    "描述文字参数为 describe（旧名 description 兼容、describe 优先），与标题间隔 8px；普通面板统一 p-5（四边 20px）、header/body/footer 之间 gap-[20px]，header/footer 无分隔线，footer 按钮靠右、间隔 8px（取消 neutral+outlined、确认 filled，均 size=md、border-style=solid）。",
     "默认按 top（15vh）顶部落位，需要垂直居中要开 align-center；center 只管 header/footer 内容居中。",
     "遮罩关闭/ESC 分别由 close-on-click-modal、close-on-press-escape 控制；modal-penetrable 需 modal=false 才生效。",
     "点击确认按钮触发 confirm 事件但默认不自动关闭，取消按钮默认会关闭；before-close 拦截全部关闭入口。",
