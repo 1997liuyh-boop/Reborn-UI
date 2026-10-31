@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { VNode } from 'vue'
-import type { TimelineDirection, TimelineItemData, TimelineUI } from './reborn-timeline.config'
+import type { TimelineDirection, TimelineItemData, TimelineSize, TimelineUI, TimelineVariant } from './reborn-timeline.config'
 import { Comment, computed, Fragment, h, isVNode, onBeforeUpdate, provide, shallowRef, useSlots } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -12,6 +12,10 @@ export interface RebornTimelineProps {
     items?: TimelineItemData[]
     /** 时间轴方向 */
     direction?: TimelineDirection
+    /** 节点尺寸：sm 8px、md 12px、lg 16px，单个节点可覆盖 */
+    size?: TimelineSize
+    /** 节点样式：实心或空心，单个节点可覆盖 */
+    variant?: TimelineVariant
     /** 是否倒序排列节点 */
     reverse?: boolean
     /** 细粒度样式覆盖对象，会级联到所有节点 */
@@ -21,6 +25,8 @@ export interface RebornTimelineProps {
 defineOptions({ inheritAttrs: false })
 const props = withDefaults(defineProps<RebornTimelineProps>(), {
     direction: 'vertical',
+    size: 'md',
+    variant: 'solid',
     reverse: false,
     ui: () => ({})
 })
@@ -54,6 +60,8 @@ function toItemProps(item: TimelineItemData, index: number) {
         class: item.class,
         timestamp: item.timestamp,
         color: item.color,
+        size: item.size,
+        variant: item.variant,
         content: item.content,
         dangerouslyUseHTMLString: item.dangerouslyUseHTMLString,
         icon: item.icon,
@@ -98,6 +106,8 @@ function TimelineNodes(input: { nodes: VNode[] }) { return input.nodes }
 
 provide(TIMELINE_INJECTION_KEY, {
     direction: computed(() => props.direction),
+    size: computed(() => props.size),
+    variant: computed(() => props.variant),
     ui: computed(() => props.ui || {})
 })
 </script>

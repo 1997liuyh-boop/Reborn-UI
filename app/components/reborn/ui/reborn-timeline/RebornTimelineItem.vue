@@ -1,16 +1,21 @@
 <script setup lang="ts">
+import type { ClassValue } from 'tailwind-variants'
 import type { Component } from 'vue'
-import type { TimelineLabelPosition, TimelinePlacement, TimelinePresetColor, TimelineUI } from './reborn-timeline.config'
+import type { TimelineLabelPosition, TimelinePlacement, TimelinePresetColor, TimelineSize, TimelineUI, TimelineVariant } from './reborn-timeline.config'
 import { computed, inject, onBeforeUpdate, shallowRef, useSlots } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
-import theme, { TIMELINE_INJECTION_KEY, TIMELINE_PRESET_COLORS } from './reborn-timeline.config'
+import theme, { TIMELINE_INJECTION_KEY, TIMELINE_OUTLINED_COLORS, TIMELINE_PRESET_COLORS } from './reborn-timeline.config'
 
 export interface RebornTimelineItemProps {
     /** 时间戳文本 */
     timestamp?: string
     /** 节点颜色：primary / secondary / success / info / warning / error / neutral，或任意 CSS 色值 */
     color?: TimelinePresetColor | (string & {})
+    /** 节点尺寸，未传时继承时间线，独立使用默认 md */
+    size?: TimelineSize
+    /** 节点实心或空心样式，未传时继承时间线，独立使用默认 solid */
+    variant?: TimelineVariant
     /** 节点内容，默认作为文本渲染；默认插槽或 content 插槽存在时忽略 */
     content?: string
     /** 显式启用 HTML；仅传入已经清理过的可信内容 */
@@ -46,11 +51,13 @@ onBeforeUpdate(() => {
 
 const direction = computed(() => context?.direction.value ?? 'vertical')
 const isVertical = computed(() => direction.value === 'vertical')
+const size = computed(() => props.size ?? context?.size?.value ?? 'md')
+const variant = computed(() => props.variant ?? context?.variant?.value ?? 'solid')
 
 // --- 时间戳落位 ---
 /**
  * 竖向：top / bottom 堆叠在内容上下；left / right 按轴线两侧理解——
- * 与内容同侧时和内容并排、贴在远离轴线的一端，与内容异侧时越过轴线放进对侧格。
+ * 与内容同侧时紧邻内容并排，与内容异侧时越过轴线放进对侧格。
  * 横向：top 越过轴线放到上方，bottom 堆叠在内容下方，left / right 与内容同行并排。
  */
 const hasTimestamp = computed(() => slotState.value.timestamp || !!props.timestamp)
@@ -61,7 +68,7 @@ const timestampSlot = computed<'opposite' | 'before' | 'after'>(() => {
         if (placement === 'top') { return 'before' }
         if (placement === 'bottom') { return 'after' }
         if (placement !== props.labelPosition) { return 'opposite' }
-        // 同侧并排：右侧内容的时间戳排在后面，左侧内容的时间戳排在前面，都远离轴线
+        // 同侧并排：右侧内容的时间戳排在后面，左侧内容的时间戳排在前面，整组靠近轴线。
         return placement === 'right' ? 'after' : 'before'
     }
     if (placement === 'top') { return 'opposite' }
@@ -77,14 +84,16 @@ const flow = computed(() => {
 /** 用自有属性判断而不是 in：避免 toString 之类的原型属性被误认成预设色 */
 const presetColor = computed(() =>
     Object.prototype.hasOwnProperty.call(TIMELINE_PRESET_COLORS, props.color)
-        ? TIMELINE_PRESET_COLORS[props.color as TimelinePresetColor]
+        ? (variant.value === 'outlined' ? TIMELINE_OUTLINED_COLORS : TIMELINE_PRESET_COLORS)[props.color as TimelinePresetColor]
         : null
 )
 
-/** 非预设色走内联样式，作为实心圆的填充色 */
-const customColorStyle = computed(() => (presetColor.value ? undefined : { backgroundColor: props.color }))
+/** 自定义色分别控制实心填充或空心边框，空心节点的图标沿用边框颜色。 */
+const customColorStyle = computed(() => presetColor.value ? undefined : variant.value === 'outlined'
+    ? { borderColor: props.color, color: props.color }
+    : { backgroundColor: props.color })
 
-const hasIcon = computed(() => slotState.value.icon || !!props.icon || props.loading)
+const hasIcon = computed(() => size.value !== 'sm' && (slotState.value.icon || !!props.icon || props.loading))
 const hasContent = computed(() => slotState.value.content || !!props.content)
 
 // --- 样式计算：类名优先级为 config 基础类 < 父组件 ui < 本节点 ui ---
@@ -92,13 +101,15 @@ const b = tv(theme)
 const ui = computed(() => {
     const styles = b({
         direction: direction.value,
+        size: size.value,
+        variant: variant.value,
         side: isVertical.value ? props.labelPosition : undefined,
         flow: flow.value
     })
     const inherited: TimelineUI = context?.ui.value || {}
     const own = props.ui || {}
-    const slot = (key: keyof TimelineUI) => (opts?: { class?: any }) =>
-        (styles as any)[key]({ class: cn(opts?.class, inherited[key], own[key]) }) as string
+    const slot = (key: keyof TimelineUI) => (opts?: { class?: ClassValue }) =>
+        styles[key]({ class: cn(opts?.class, inherited[key], own[key]) })
     return {
         item: slot('item'),
         axis: slot('axis'),
@@ -127,11 +138,11 @@ const ui = computed(() => {
     <div :class="ui.axis()">
       <span :class="ui.line()" aria-hidden="true" />
       <div :class="ui.dotWrapper()">
-        <!-- 实心圆：带图标时放大为底圆，图标（含 icon 插槽内容）以白色居中 -->
+        <!-- 图标与圆点尺寸独立；sm 不渲染图标，空心背景遮住节点后方的轴线 -->
         <!-- 加载中的节点在圆点上显示等待光标 -->
         <span :class="ui.dot({ class: [presetColor, props.loading && 'cursor-wait'] })" :style="customColorStyle">
           <template v-if="hasIcon">
-            <slot name="icon">
+            <slot name="icon" :class="ui.icon()">
               <Icon v-if="props.loading" name="lucide:loader-circle" :class="ui.icon({ class: 'animate-spin' })" />
               <component :is="props.icon" v-else-if="typeof props.icon !== 'string'" :class="ui.icon()" />
               <Icon v-else :name="props.icon" :class="ui.icon()" />

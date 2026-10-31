@@ -28,9 +28,9 @@ export default {
   },
   variants: {
     variant: {
-      solid: {},
+      solid: { base: 'ring-1 ring-gray-1' },
       outline: { base: 'box-content border-solid bg-gray-1' },
-      textDot: { label: 'text-white' },
+      textDot: { base: 'ring-1 ring-gray-1', label: 'text-white' },
       textOutline: { base: 'border border-solid bg-gray-1' }
     },
     /** 只声明维度，配色随变体不同（底色 / 描边 + 文字），交给复合变体 */

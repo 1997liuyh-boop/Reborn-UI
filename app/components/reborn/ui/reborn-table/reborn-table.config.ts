@@ -14,16 +14,16 @@ export const tableFixedStyles = {
 /** 字号和行高完整沿用项目令牌，不为表格单独覆盖。 */
 export default {
   slots: {
-    root: 'relative min-w-0 w-full text-base font-medium text-gray-9 tracking-normal',
+    root: 'relative min-w-0 w-full text-base font-normal text-gray-9 tracking-normal',
     scrollbar: 'relative min-w-0 w-full',
-    table: 'w-full table-fixed border-separate border-spacing-0 border-b border-gray-3 text-left text-base font-medium text-gray-9 tracking-normal',
+    table: 'w-full table-fixed border-separate border-spacing-0 border-b border-gray-2 text-left text-base font-normal text-gray-9 tracking-normal',
     thead: '',
-    headerCell: 'box-border border-b border-gray-3 bg-gray-1 px-4 py-0 text-base font-medium text-gray-9 align-middle',
+    headerCell: 'box-border border-b border-gray-3 border-b-gray-2 bg-gray-1 px-4 py-0 text-base font-normal text-gray-9 align-middle',
     row: 'group/row bg-gray-1',
     // 表体用上边框分隔行；底边由表格统一绘制，跨行合并也不会重复描边。
-    cell: 'box-border border-t border-gray-3 px-4 py-0 text-base font-medium text-gray-9 align-middle',
+    cell: 'box-border border-t border-gray-3 border-t-gray-2 px-4 py-0 text-base font-normal text-gray-9 align-middle',
     cellContent: 'min-w-0 py-1',
-    expand: 'border-t border-gray-3 bg-gray-1 px-4 py-3',
+    expand: 'border-t border-gray-2 bg-gray-1 px-4 py-3',
     empty: 'px-4 py-10 text-center text-gray-6',
     // 遮罩盖住整个表体，等待光标同时压过下面所有被加载态禁用的控件
     loading: 'absolute inset-0 z-40 flex cursor-wait items-center justify-center gap-2 bg-gray-1/80 text-gray-6',
@@ -43,7 +43,8 @@ export default {
       headerCell: 'border-r', cell: 'border-r',
     } },
     headerBackground: { true: { headerCell: 'bg-gray-2' } },
-    hover: { true: { row: 'hover:bg-gray-2' } },
+    // 将三成灰色与底色合成为不透明背景，固定列继承后不会透出横向滚动的内容。
+    hover: { true: { row: 'hover:bg-[color-mix(in_srgb,var(--color-gray-2)_30%,var(--color-gray-1))]' } },
   },
   defaultVariants: { size: 'md' as const, hover: true },
 };

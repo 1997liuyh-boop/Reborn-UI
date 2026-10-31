@@ -62,7 +62,7 @@ before(async () => {
   });
   const compiler = await compile(`@import 'tailwindcss';@import './app/assets/theme/typography.css';@import './app/assets/theme/base.css';`, { base: resolve('.'), onDependency() {} });
   const scanner = new Scanner({ sources: [{ base: resolve('app/components/reborn/ui/reborn-calendar'), pattern: '**/*', negated: false }] });
-  const css = compiler.build(scanner.scan());
+  const css = compiler.build([...scanner.scan(), 'bg-gray-2']);
   const script = result.outputFiles[0]!.text;
   server = createServer((request, response) => {
     response.setHeader('Content-Type', request.url === '/app.js' ? 'text/javascript' : request.url === '/style.css' ? 'text/css' : 'text/html');
@@ -102,7 +102,91 @@ function near(actual: number, expected: number, message: string) {
   assert.ok(Math.abs(actual - expected) < 0.2, `${message}：实际 ${actual}，预期 ${expected}`);
 }
 
-it('边框模式的月、年网格保持直角，日期选中胶囊继续显示圆角', { skip: !browserAvailable }, async () => {
+it('本日与本月默认不强调，highlightToday 动态控制当前单元格描边且不改变选择', { skip: !browserAvailable }, async () => {
+  await withCalendar(async (page) => {
+    await page.addStyleTag({ content: '* { transition: none !important; }' });
+    const today = (await page.locator('.fixture-calendar').getAttribute('data-calendar-today'))!;
+    const [year, month, day] = today.split('-').map(Number);
+    for (const mode of ['month', 'year']) {
+      const selectedMonth = mode === 'year' ? month === 1 ? 2 : 1 : month;
+      const selectedDay = day === 1 ? 2 : 1;
+      const modelValue = `${year}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+      await configure(page, { mode, modelValue, highlightToday: undefined });
+      const current = page.locator('[aria-current="date"]');
+      const cell = current.locator('..').locator('..');
+      const before = await page.evaluate(() => (window as any).calendarFixture.changes.length);
+      for (const enabled of [undefined, true, false]) {
+        if (enabled !== undefined) await configure(page, { highlightToday: enabled });
+        const style = await cell.evaluate(element => ({
+          border: getComputedStyle(element).borderTopColor,
+          shadow: getComputedStyle(element.querySelector('.fixture-date')!).boxShadow,
+          weight: getComputedStyle(element.querySelector('.fixture-date')!).fontWeight,
+        }));
+        const expected = await page.evaluate(enabled => {
+          const probe = document.createElement('span'); probe.style.color = enabled ? 'var(--color-brand-6)' : 'var(--color-gray-4)'; document.body.append(probe);
+          const color = getComputedStyle(probe).color; probe.remove(); return color;
+        }, enabled);
+        assert.equal(style.border, expected, `${mode}/${enabled} 当前单元格顶边`);
+        assert.equal(style.shadow, 'none', `${mode}/${enabled} 日期始终不添加描边`);
+        assert.equal(style.weight, enabled ? '500' : '400', `${mode}/${enabled} 日期文字字重随开关变化`);
+        assert.equal(await current.getAttribute('aria-current'), 'date', '开关只控制视觉标记');
+        assert.equal(await page.evaluate(() => (window as any).calendarFixture.state.modelValue), modelValue);
+        assert.equal(await page.evaluate(() => (window as any).calendarFixture.changes.length), before, '开关不派发面板切换');
+      }
+    }
+  });
+});
+
+it('月年视图在六种配色和明暗主题下悬停只变灰底，选中使用第 1 阶底色与第 6 阶顶边', { skip: !browserAvailable }, async () => {
+  await withCalendar(async (page) => {
+    await page.addStyleTag({ content: '* { transition: none !important; }' });
+    const today = (await page.locator('.fixture-calendar').getAttribute('data-calendar-today'))!;
+    const [year, month, day] = today.split('-').map(Number);
+    const selectedDay = day === 1 ? 2 : 1;
+    const selectedMonth = month === 1 ? 2 : 1;
+    const emptyDay = [1, 2, 3].find(value => value !== day && value !== selectedDay)!;
+    const emptyMonth = [1, 2, 3].find(value => value !== month && value !== selectedMonth)!;
+    const eventDay = [1, 2, 3, 4].find(value => ![day, selectedDay, emptyDay].includes(value))!;
+    const eventMonth = [1, 2, 3, 4].find(value => ![month, selectedMonth, emptyMonth].includes(value))!;
+    const palettes = { primary: 'brand', secondary: 'secondary', success: 'green', info: 'blue', warning: 'orange', error: 'red' };
+    for (const dark of [false, true]) for (const mode of ['month', 'year']) for (const [color, token] of Object.entries(palettes)) for (const border of [false, true]) {
+      const colors = await page.evaluate(({ dark, token }) => {
+        document.documentElement.classList.toggle('dark', dark);
+        const probe = document.createElement('span'); document.body.append(probe);
+        const result: Record<string, string> = {};
+        for (const value of ['gray-2', 'gray-4', `${token}-1`, `${token}-6`]) { probe.style.color = `var(--color-${value})`; result[value] = getComputedStyle(probe).color; }
+        probe.remove(); return result;
+      }, { dark, token });
+      const selectedValue = mode === 'month' ? `${today.slice(0, 7)}-${String(selectedDay).padStart(2, '0')}` : `${year}-${String(selectedMonth).padStart(2, '0')}-01`;
+      const eventValue = mode === 'month' ? `${today.slice(0, 7)}-${String(eventDay).padStart(2, '0')}` : `${year}-${String(eventMonth).padStart(2, '0')}-01`;
+      await configure(page, { mode, color, border, modelValue: selectedValue, highlightToday: false, events: [{ date: eventValue, title: '事项' }] });
+      const empty = page.getByRole('button', { name: mode === 'month' ? `${today.slice(0, 7)}-${String(emptyDay).padStart(2, '0')}` : `${emptyMonth} 月`, exact: true }).locator('..').locator('..');
+      const event = page.getByRole('button', { name: mode === 'month' ? eventValue : `${eventMonth} 月`, exact: true }).locator('..').locator('..');
+      const selected = page.locator('[role="gridcell"][aria-selected="true"]');
+      for (const [name, cell, expectedBorder, expectedBackground] of [
+        ['普通', empty, colors['gray-4'], colors['gray-2']],
+        ['有事项', event, colors[`${token}-6`], colors['gray-2']],
+        ['选中', selected, colors[`${token}-6`], colors[`${token}-1`]],
+      ] as const) {
+        await page.mouse.move(0, 0);
+        const original = await cell.evaluate(element => getComputedStyle(element).borderTopColor);
+        assert.equal(original, expectedBorder, `${dark}/${mode}/${color}/${border}/${name} 基础顶边`);
+        await cell.hover();
+        const style = await cell.evaluate(element => { const style = getComputedStyle(element); return { border: style.borderTopColor, background: style.backgroundColor, left: style.borderLeftColor }; });
+        assert.equal(style.background, expectedBackground, `${dark}/${mode}/${color}/${border}/${name} 悬停底色`);
+        assert.equal(style.border, original, '悬停不改变当前顶边颜色');
+        if (border) assert.equal(style.left, colors['gray-4'], '主题色不染到左侧网格分隔线');
+      }
+      await configure(page, { highlightToday: true });
+      const current = page.locator('[aria-current="date"]').locator('..').locator('..');
+      await current.hover();
+      const style = await current.evaluate(element => ({ border: getComputedStyle(element).borderTopColor, background: getComputedStyle(element).backgroundColor }));
+      assert.deepEqual(style, { border: colors[`${token}-6`], background: colors['gray-2'] }, '开启高亮后悬停仍保留当前单元格描边');
+    }
+  });
+});
+
+it('边框模式的月、年网格保持直角，选中日期不再显示胶囊', { skip: !browserAvailable }, async () => {
   await withCalendar(async (page) => {
     for (const mode of ['month', 'year']) {
       await configure(page, { mode, border: true });
@@ -112,8 +196,11 @@ it('边框模式的月、年网格保持直角，日期选中胶囊继续显示�
       });
       assert.deepEqual(style.radius, ['0px', '0px', '0px', '0px'], `${mode} 网格四角均无圆角`);
       assert.equal(style.border, '1px', `${mode} 保留可见外框`);
-      const radius = await page.locator('[aria-selected="true"] .fixture-date').evaluate(element => Number.parseFloat(getComputedStyle(element).borderRadius));
-      assert.ok(radius > 0, `${mode} 日期自身圆角不受外框影响`);
+      const dateStyle = await page.locator('[aria-selected="true"] .fixture-date').evaluate(element => {
+        const style = getComputedStyle(element);
+        return { radius: style.borderRadius, background: style.backgroundColor, shadow: style.boxShadow };
+      });
+      assert.deepEqual(dateStyle, { radius: '0px', background: 'rgba(0, 0, 0, 0)', shadow: 'none' }, `${mode} 选中日期保持透明且无胶囊描边`);
     }
   });
 });

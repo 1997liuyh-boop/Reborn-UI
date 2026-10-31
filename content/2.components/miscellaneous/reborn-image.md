@@ -19,7 +19,7 @@ badge: New
 | `mode` | `string` | `aspectFill` | 图片裁剪、缩放的模式，两端通用。支持 `scaleToFill`, `aspectFit`, `aspectFill`, `widthFix`, `heightFix`, `top`, `bottom`, `center`, `left`, `right`, `top left`, `top right`, `bottom left`, `bottom right`。Web 端映射为 CSS：`scaleToFill` / `aspectFit` / `aspectFill` 对应 `object-fit` 的 `fill` / `contain` / `cover`，方位类取值为 `object-fit: none` 加对应的 `object-position`（不缩放原图）；`widthFix` / `heightFix` 需把另一边设为 `auto`，否则根节点的固定宽高不会随原图比例伸缩。 |
 | `width` | `string \| number` | `120` | 图片宽度。数字默认为 px，字符串支持 rpx, %, vw 等。 |
 | `height` | `string \| number` | `120` | 图片高度。数字默认为 px，字符串支持 rpx, %, vw 等。 |
-| `preview` | `boolean` | `false` | 是否开启点击预览（大图查看）。Web 端使用 viewerjs，移动端使用 uni.previewImage。 |
+| `preview` | `boolean` | `false` | 是否开启点击预览（大图查看）。Web 端使用 viewerjs，加载失败时也可点击错误占位打开预览；预览图加载失败显示 `lucide:image` 图标。移动端使用 uni.previewImage。 |
 | `previewList` | `string[]` | `[]` | 预览时的图片列表。如果不传，默认预览当前 `src`。列表多于 1 张时，预览遮罩左右两侧出现切换箭头。 |
 | `previewNavbar` | `boolean` | `false` | **仅 Web**。多图预览时是否在底部显示缩略图列表，点缩略图可直接跳到对应图片。只有预览列表多于 1 张时生效，单图时始终不显示。 |
 | `previewToolbar` | `string` | `fullscreen, rotateRight, rotateLeft, zoomIn, zoomOut, oneToOne` | **仅 Web**。预览菜单的按钮与顺序：逗号分隔的 token，写法同 RebornPagination 的 `layout`，按书写顺序渲染，未知 token 忽略，传空字符串不显示菜单。可选 `fullscreen`（全屏）、`zoomIn`（放大）、`zoomOut`（缩小）、`oneToOne`（1:1）、`reset`（重置）、`prev` / `next`（上一张 / 下一张）、`rotateLeft` / `rotateRight`（逆 / 顺时针旋转 90°）、`flipHorizontal` / `flipVertical`（水平 / 垂直翻转），即 viewerjs 自带工具栏的全部功能。`fullscreen` 对应 viewerjs 的播放模式：请求浏览器全屏，多图时每 5 秒自动轮播，点击画面或按 Esc 退出。 |
@@ -50,7 +50,7 @@ badge: New
 | `loading`            | 通用   | 加载态遮罩容器。**仅 `showLoading` 为真且图片仍在加载时渲染**，默认 `absolute h-full w-full bg-gray-2 flex flex-col items-center justify-center`。 |
 | `loadingIcon`        | 通用   | 加载态的转圈图标。**仅在未填充 `loading` 插槽时渲染**，填充该插槽会替换掉这个节点，`ui.loadingIcon` 随之失效。                                   |
 | `error`              | 通用   | 加载失败遮罩容器。**仅图片加载失败时渲染**，默认与 `loading` 同款底色与居中布局。                                                              |
-| `errorIcon`          | 通用   | 失败态图标，默认 `text-gray-4 size-8 icon-[lucide--image-off]`。**仅在未填充 `error` 插槽时渲染**，填充该插槽会使其失效。                        |
+| `errorIcon`          | 通用   | 失败态图标。Web 默认 `text-gray-4 size-8 icon-[lucide--image]`，原图与预览共用该样式。原图填充 `error` 插槽时替换默认图标；Web 预览仍显示该图标，不读取 `error` 插槽。UniApp 默认 `text-gray-4`，内部使用 `lucide:image`。 |
 | `magnifierLens`      | Web    | 放大镜在原图上的透镜方块。**仅 `magnifier` 为真且视口达到宽屏断点时渲染**，默认 `absolute bg-black/30 border border-white/20 rounded-lg backdrop-blur-[2px]`；透镜的可见度改这里，尺寸请用 `magnifierSize` prop。 |
 | `magnifierView`      | Web    | 放大镜的预览窗口（浮在原图右侧）。默认 `absolute top-0 left-[calc(100%+16px)] border bg-white shadow-2xl overflow-hidden z-50`；想换预览窗位置就覆盖这里的定位类。 |
 | `magnifierViewImage` | Web    | 预览窗内被放大的图层，默认 `absolute max-w-none origin-top-left`；缩放与偏移由内联样式实时计算，一般只在这里加圆角或滤镜。                     |

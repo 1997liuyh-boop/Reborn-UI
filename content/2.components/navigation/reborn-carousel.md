@@ -63,7 +63,7 @@ Carousel 是基于原生 CSS Scroll Snap 的 Web 轮播组件，不依赖第三�
 | --- | --- | --- |
 | `line` | 全部项 24×2px，间距 8px；无背景时容器为 `p-0.5 rounded-sm`，开启背景后为 `p-2` 胶囊；inside 激活 gray-1、outside 激活 gray-5，未激活均为 gray-4 | 图片底部的线段导航 |
 | `dot` | 普通项 6×6px、gray-10；激活项 10×6px、透明底与 1px gray-10 描边；间距 8px，容器为胶囊，开启背景时 `p-2`、关闭时 `p-0.5` | 紧凑圆点导航 |
-| `progress` | 复用 `RebornProgress`，通过 ui 将轨道高度设为 2px、两端去圆角；比例为 `(当前索引 + 1) / 总数` | 显示当前第几张 / 总张数，不表示自动播放倒计时 |
+| `progress` | 复用 `RebornProgress`，通过 ui 将轨道粗细设为 2px、两端去圆角；比例为 `(当前索引 + 1) / 总数` | 显示当前第几张 / 总张数，不表示自动播放倒计时 |
 | `fraction` | `index / total`、`text-base`，容器 `px-4 py-1 rounded-full`；当前页文字自身悬停时使用 `color` 对应色，容器悬停时总数 `font-bold` | 需要明确页数的图库 |
 | `button` | 保留 20×20px 数字按钮与内描边，容器 `px-2 py-1`（左右 8px、上下 4px） | 直接按序号选择内容 |
 
@@ -72,9 +72,11 @@ Carousel 是基于原生 CSS Scroll Snap 的 Web 轮播组件，不依赖第三�
 | `line` | `bg-gray-10/30` + `ring-gray-1/20` 内描边 + 24px 毛玻璃 + 阴影 | `bg-gray-1/80` + `ring-gray-10/15` 内描边 + 24px 毛玻璃 + 阴影 | 8px 留白的胶囊底板，衬托对应位置的激活项 |
 | `dot` | `bg-gray-1/80` + `ring-gray-10/15` 内描边 + 24px 毛玻璃 + 阴影 | `bg-gray-1/80` + `ring-gray-10/15` 内描边 + 24px 毛玻璃 + 阴影 | 8px 留白的胶囊底板，保留圆点与图片间的可见边界 |
 | `fraction` / `button` | `bg-gray-1/30` + 24px 毛玻璃 + 阴影 | `bg-gray-1/30` + 24px 毛玻璃 + 阴影 | 文字与数字按钮的胶囊底板 |
-| `progress` | 贴主图内部顶部 | 贴主图外部底部，无间隙 | 满宽页数进度，不使用容器背景和 indicatorOffset |
+| `progress` | 横向贴主图内部顶部；纵向贴内部右侧 | 横向贴主图外部底部；纵向贴外部右侧，均无间隙 | 沿轮播方向铺满的页数进度，不使用容器背景和 indicatorOffset |
 
-`fraction` 没有固定宽度或最小宽度，由文字自然撑开。纵向轮播的 `fraction` 和 `progress` 仍横向显示；其他类型沿纵向排列。`color` 取对应色板第 6 阶：`line` 可点击的激活项悬停时改变填充色，`dot` 可点击的激活项悬停时改变描边色，未悬停和未激活项仍使用上述灰阶；`button` 激活项与 `progress` 填充直接使用该色，`fraction` 仅当前页文字自身悬停时变色。`clickable: false` 时，线段和圆点的悬停配色不生效。
+`fraction` 没有固定宽度或最小宽度，由文字自然撑开。纵向轮播中：`line` 为 2×24px，`dot` 激活项为 6×10px；`fraction` 仍按 `当前页 / 总页数` 横向排列，保留 `px-1 py-4`，默认位于右上方，图内距顶部和右侧均为 `indicatorOffset`，图外与主图顶部对齐；图内可通过 `ui.indicatorWrapper: 'left-(--carousel-indicator-offset) right-auto'` 改到左上角，图外可用 `'order-first ml-0 mr-(--carousel-indicator-offset)'` 改到左侧；`button` 使用 `px-1 py-2`；`progress` 在侧边从上向下填充，可通过 `ui.indicatorWrapper` 调整到左侧。横向尺寸见上表。
+
+`color` 取对应色板第 6 阶：`line` 可点击的激活项悬停时改变填充色，`dot` 可点击的激活项悬停时改变描边色，未悬停和未激活项仍使用上述灰阶；`button` 激活项与 `progress` 填充直接使用该色，`fraction` 仅当前页文字自身悬停时变色。`clickable: false` 时，线段和圆点的悬停配色不生效。
 
 `display="hover"` 同时支持悬停与轮播内的键盘焦点，内外分页及自定义 `indicators` 插槽遵循同一规则；隐藏时不拦截点击或焦点，外部分页仍保留占位，避免页面上下跳动。无悬停能力的触屏设备降级为始终显示。`display` 只控制显隐，`trigger` 决定指示项通过点击还是悬停切页。
 
@@ -304,20 +306,23 @@ const carousel = ref<CarouselExpose>();
 
 #### 箭头与指示器
 
+下表未特别注明的尺寸与留白以横向布局为准；纵向时线段与激活圆点交换宽高，fraction / button 交换横纵留白，fraction 保持横排并置于上方，progress 铺满侧边。
+
 | 键名                | 说明                                                                                                                                                                                                                     |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `arrowGroup`        | 左右箭头的定位容器。**仅 `arrow` 判定为显示时渲染**，默认 `pointer-events-none absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 justify-between`；箭头离边距离改这里。                                              |
 | `arrow`             | 单个箭头按钮，默认 `size-10 rounded-full inline-flex items-center justify-center bg-[#000000]/45 backdrop-blur-3xl border`。**仅在未填充 `prev` / `next` 插槽时渲染**，填充这两个插槽会替换掉按钮，`ui.arrow` 随之失效。 |
-| `indicatorWrapper`  | 指示器定位与显隐容器，默认 `flex justify-center`；`indicatorPosition` 为 `inside` 时在 `root` 内绝对定位，为 `outside` 时在 `root` 下方常规排列；偏移由 indicatorOffset 设置，优先于该键的边缘距离 / 间距类名；`pagination.display` 对内置分页与自定义插槽均生效。 |
+| `indicatorWrapper`  | 指示器定位与显隐容器，默认 `flex justify-center`；`indicatorPosition` 为 `inside` 时在 `root` 内绝对定位，为 `outside` 时在横向主图下方或纵向主图右侧常规排列；普通分页的 indicatorOffset 优先于边缘距离 / 间距类名，纵向 fraction 通过局部偏移变量保留此键的左右位置覆盖，progress 固定贴边；`pagination.display` 对内置分页与自定义插槽均生效。 |
 | `indicators`        | 五种内置分页的容器；基础为 `flex w-max items-center gap-2 p-0.5`。line / dot 开启背景时使用 `p-2`，button 使用 `px-2 py-1`，fraction 使用 `px-4 py-1`，progress 为满宽无内边距。背景由 `pagination.indicatorBackground` 控制：line / dot 使用 `bg-gray-1/80 ring-1 ring-inset ring-gray-10/15`，其中 inside line 改用 `bg-gray-10/30 ring-gray-1/20`，衬托 gray-1 激活项；fraction / button 保留 `bg-gray-1/30`。开启背景的四种分页均使用 `backdrop-blur-xl shadow-[0_0_8px_rgb(0_0_0/0.18)] rounded-full`：24px 背景模糊，阴影横纵偏移均为 0、模糊半径为 8px，均匀环绕四周；progress 不使用底板。自定义 `indicators` 插槽时此键及以下分页内容样式键失效，`indicatorWrapper` 仍有效。 |
-| `indicator`         | line / dot / button 的导航按钮；line 为 24×2px，dot 普通项 6×6px、激活项 10×6px，button 为 20×20px。fraction / progress 不渲染此节点。 |
+| `indicator`         | line / dot / button 的导航按钮；横向 line 为 24×2px、纵向为 2×24px；dot 普通项 6×6px，横向激活项 10×6px、纵向为 6×10px；button 为 20×20px。fraction / progress 不渲染此节点。 |
 | `indicatorActive`   | 当前按钮的追加类名，line 默认依位置使用 gray-1 / gray-5，可点击时悬停为 `bg-(--carousel-color)`；dot 默认透明底与 gray-10 描边，可点击时悬停为 `border-(--carousel-color)`；button 使用 `bg-(--carousel-color)`。仅 line / dot / button 生效。 |
 | `indicatorInactive` | 非当前按钮的追加类名，line 为 bg-gray-4，dot 为 bg-gray-10，button 保留 gray-2 与内描边；仅 line / dot / button 生效。 |
 | `indicatorCurrent` | fraction 的当前页文字，默认 `hover:text-(--carousel-color)`，仅该文字自身悬停时变色；其他类型不渲染。 |
 | `indicatorTotal` | fraction 的总数文字，默认容器悬停时 font-bold；其他类型不渲染。 |
-| `progress` | RebornProgress 根节点，默认满宽、无间距、`text-(--carousel-color)`；填充通过 `currentColor` 继承该配色，仅 progress 生效。 |
-| `progressTrack` | 传给 RebornProgress 的 ui.step，默认 h-0.5 rounded-none；仅 progress 生效。 |
-| `progressFill` | 传给 RebornProgress 的 ui.fill，默认 rounded-none；仅 progress 生效。 |
+| `progress` | RebornProgress 根节点，横向满宽、纵向满高，无间距、`text-(--carousel-color)`；填充通过 `currentColor` 继承该配色，仅 progress 生效。 |
+| `progressRail` | 传给 RebornProgress 的 ui.track，纵向使用 min-h-0 flex-col；仅 progress 生效。 |
+| `progressTrack` | 传给 RebornProgress 的 ui.step，横向 h-0.5、纵向 w-0.5，均为 rounded-none；仅 progress 生效。 |
+| `progressFill` | 传给 RebornProgress 的 ui.fill，默认 rounded-none；纵向使用 --carousel-progress 控制填充高度；仅 progress 生效。 |
 
 > `pagination.type="fraction"` 的容器也使用 `ui.indicators`，可直接覆盖分数分页样式。自定义 `indicators` 插槽会替换默认分页。
 
@@ -347,12 +352,14 @@ const carousel = ref<CarouselExpose>();
 
 ### CSS 变量
 
-局部变量 `--carousel-color` 由 `app/components/reborn/ui/reborn-carousel/reborn-carousel.config.ts` 的 `color` 变体通过 Tailwind 类写入 `indicators` 节点。其引用的色板定义在 `app/assets/theme/base.css`，字号定义在 `app/assets/theme/typography.css`；局部样式优先通过 `ui` 覆盖。
+局部变量 `--carousel-color` 由 `app/components/reborn/ui/reborn-carousel/reborn-carousel.config.ts` 的 `color` 变体通过 Tailwind 类写入 `indicators` 节点；`--carousel-progress` 由同目录的 `RebornCarousel.vue` 按页数写入纵向进度条，`--carousel-indicator-offset` 按 `indicatorOffset` 写入纵向分数分页的外层节点。其引用的色板定义在 `app/assets/theme/base.css`，字号定义在 `app/assets/theme/typography.css`；局部样式优先通过 `ui` 覆盖。
 
 | 变量名 | 用途 | 默认值 |
 | --- | --- | --- |
 | `--color-gray-1` / `--color-gray-2` / `--color-gray-4` / `--color-gray-5` / `--color-gray-10` | 线段、圆点与分页底板 | 随浅色 / 深色主题切换 |
 | `--carousel-color` | 可点击的 line / dot 激活项悬停色、fraction 当前页文字自身悬停色，以及 button 激活项和 progress 填充色 | 默认 `var(--color-brand-6)`；随 `color` 映射，见下表 |
+| `--carousel-progress` | 纵向进度条的填充高度 | `(当前索引 + 1) / 总数 × 100%` |
+| `--carousel-indicator-offset` | 纵向分数分页的顶部与左右间距，支持通过 `ui.indicatorWrapper` 切换左右位置 | `indicatorOffset`，默认 8px |
 | `--text-base` / `--text-base--line-height` | 分数分页字号与行高 | 14px / 22px |
 
 | `color` | `--carousel-color` 引用 |

@@ -35,7 +35,7 @@ export default defineComponent({
       default: () => h('button', {
         type: 'button', disabled: props.disabled, 'aria-label': `筛选${props.column.label ?? ''}`,
         'aria-expanded': open.value, 'aria-haspopup': 'dialog',
-        class: ['inline-flex size-6 shrink-0 items-center justify-center rounded-sm hover:bg-gray-3 focus-visible:outline-2 focus-visible:outline-primary', props.values.length ? 'text-primary' : 'text-gray-6'],
+        class: ['inline-flex size-6 shrink-0 items-center justify-center rounded-sm focus-visible:outline-2 focus-visible:outline-primary', props.values.length ? 'text-primary' : 'text-gray-5 hover:text-gray-8'],
       }, [h('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.5, 'aria-hidden': 'true' }, [h('path', { d: 'M4 5h16l-6 7v7l-4-2v-5z' })])]),
       content: () => h('div', { role: 'dialog', 'aria-label': `筛选${props.column.label ?? ''}`, class: 'min-w-[160px] text-base' }, [
         h('div', { class: 'flex max-h-[240px] flex-col gap-2 overflow-y-auto' }, props.column.filters?.map(option => h(RebornCheckbox, {

@@ -38,6 +38,8 @@ interface Props {
    * 只响应滚轮与触控板；拖拽滑块、点击轨道、命令式滚动与触屏不回弹，系统开启「减少动态效果」时不播放
    */
   bounce?: boolean;
+  /** 回弹目标的 CSS 选择器，在内容层内查找；未指定时回弹整个滚动层，用于让固定表头与表体分开反馈。 */
+  bounceTarget?: string;
   /** 顶部固定内容高度（px），仅从纵向轨道与表体视窗中排除，默认 0 */
   verticalOffset?: number;
   /**
@@ -292,25 +294,27 @@ function syncEdges(wrap: HTMLElement, allowBounce: boolean) {
 }
 
 /**
- * 播放一次边缘回弹：滚动层朝越界方向位移 2px 后回到原位。
+ * 播放一次边缘回弹：目标朝越界方向位移 2px 后回到原位。
  *
  * 位移加在滚动层 wrap 上而不是内容层：内容层向上平移会缩小可滚动区域，
  * 停在底部时 scrollTop 被浏览器夹回，动画结束后就不再贴底；平移滚动层本身不改变任何滚动量。
  * 用原生 WAAPI 且不保留结束帧，播完不在滚动层上留下 transform，
  * 内部 position: fixed 元素只在这 320ms 内以滚动层为定位参照。
+ * 固定表头表格可指定表体作为目标，表头与原生滚动层保持原位；没有匹配目标时不回弹。
  */
 function playBounce(axis: "y" | "x", edge: "start" | "end") {
   const wrap = wrapRef.value;
   const key = `${axis}-${edge}`;
   if (!wrap || !props.bounce || bouncedEdge === key) return;
   bouncedEdge = key;
-  if (bounceAnimation || typeof wrap.animate !== "function" || prefersReducedMotion()) return;
+  const target = props.bounceTarget ? contentRef.value?.querySelector<HTMLElement>(props.bounceTarget) : wrap;
+  if (!target || bounceAnimation || typeof target.animate !== "function" || prefersReducedMotion()) return;
 
   // 到达顶部 / 最左时内容顺着来势继续往下 / 往右多走一点，底部 / 最右反之
   const distance = edge === "start" ? BOUNCE_DISTANCE : -BOUNCE_DISTANCE;
   const translate = (value: number) => (axis === "y" ? `translateY(${value}px)` : `translateX(${value}px)`);
   // 缓动逐段生效：前 30% 快速冲出，后段平滑收回，不做反向过冲
-  bounceAnimation = wrap.animate(
+  const animation = target.animate(
     [
       { transform: translate(0), easing: "cubic-bezier(0.2, 0, 0, 1)" },
       { transform: translate(distance), offset: 0.3, easing: "cubic-bezier(0.3, 0, 0.2, 1)" },
@@ -318,11 +322,19 @@ function playBounce(axis: "y" | "x", edge: "start" | "end") {
     ],
     { duration: BOUNCE_DURATION },
   );
+  bounceAnimation = animation;
   const release = () => {
-    bounceAnimation = null;
+    if (bounceAnimation === animation) bounceAnimation = null;
   };
-  bounceAnimation.onfinish = release;
-  bounceAnimation.oncancel = release;
+  animation.onfinish = release;
+  animation.oncancel = release;
+}
+
+/** 立即释放回弹状态，旧动画迟到的 cancel 事件不能清掉新动画。 */
+function stopBounce() {
+  const animation = bounceAnimation;
+  bounceAnimation = null;
+  animation?.cancel();
 }
 
 /**
@@ -592,6 +604,8 @@ watch(() => props.size, refresh);
 watch(() => props.inset, refresh);
 // 固定头部高度变化或开关切换时同步轨道与 thumb，不等待下一次滚动。
 watch(() => props.verticalOffset, update);
+// 固定区域开关切换时，取消旧目标上的反馈，避免表头恢复后还残留动画。
+watch(() => props.bounceTarget, stopBounce);
 
 onMounted(() => {
   refresh();
@@ -606,7 +620,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (hideTimer) clearTimeout(hideTimer);
   if (wheelGestureTimer) clearTimeout(wheelGestureTimer);
-  bounceAnimation?.cancel();
+  stopBounce();
   resizeObserver?.disconnect();
   resizeObserver = null;
   // 卸载时中止滚动动画，避免 rAF 回调访问已销毁的 DOM

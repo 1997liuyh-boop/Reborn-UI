@@ -1,4 +1,5 @@
 import type { ClassValue } from "clsx";
+import { floatingArrowSides } from "~/lib/floating-arrow";
 
 const sizes = ["sm", "md", "lg"] as const;
 
@@ -11,12 +12,7 @@ export type SelectTriggerSide = (typeof selectTriggerSides)[number];
 /** 无箭头时浮层与触发器的默认间距（px） */
 export const TRIGGER_OFFSET = 4;
 
-/**
- * 带箭头时浮层与触发器的默认间距（px）。
- * 箭头是 12px 方块旋转 45°，中心骑在面板朝向触发器的边上，伸出面板 6√2 ≈ 8.49px；
- * 间距比伸出量短时尖端会压进触发器，向上展开时还会和触发器里朝下的下拉图标连成两个箭头。
- * 取 12，尖端与触发器之间留出约 3.5px，与无箭头时 4px 的间隙观感一致
- */
+/** 带箭头时保持 12px 面板间距，7px 箭头外侧剩余 5px 可见间隙。 */
 export const ARROW_TRIGGER_OFFSET = 12;
 
 /** 浮层在交叉轴上的对齐方式 */
@@ -63,10 +59,8 @@ export default {
         // 圆角 8px（rounded-lg）；内边距不放这里，展开动画走 height:0 → scrollHeight，border-box 下内边距会撑出一段残留高度
         dropdown: "absolute z-50 w-full flex flex-col rounded-lg border border-gray-3 bg-gray-1 shadow-lg overflow-y-auto overscroll-contain scrollbar-hide",
         dropdownInner: "w-full shrink-0",
-        // 指向触发器的小箭头：12px 正方形旋转 45°，与浮层同底色同描边。
-        // 它是浮层的同级节点而非子节点：浮层展开 / 收起动画期间是 overflow-hidden，探出盒子的箭头会被瞬间裁掉；
-        // 独立成节点后按同样时长淡入淡出。位置（贴在浮层朝向触发器的边上、对准触发器中心）与描边方向由组件内联下发
-        arrow: "absolute size-3 border border-gray-3 bg-gray-1 pointer-events-none",
+        // 箭头独立于面板淡入淡出，避免被展开动画的溢出裁剪隐藏。
+        arrow: "absolute bg-gray-1 pointer-events-none mask-no-repeat mask-size-[100%_100%]",
     },
     variants: {
         /**
@@ -110,12 +104,10 @@ export default {
          * 若这里再叠 top-full / bottom-full，两套定位会互相打架（只是恰好被内联优先级压住）。
          */
         placement: {
-            // 只绘制面板外侧的半边箭头及阴影，旋转前沿对角线裁剪，向内多留约 1.4px 盖住面板描边。
-            // 裁剪区域向视口外延伸，避免外侧的模糊阴影被截断。
-            bottom: { arrow: "[clip-path:polygon(-100vmax_-100vmax,calc(100vmax_+_100%_+_2px)_-100vmax,-100vmax_calc(100vmax_+_100%_+_2px))]" },
-            top: { arrow: "[clip-path:polygon(-100vmax_calc(100vmax_+_100%_-_2px),calc(100vmax_+_100%_-_2px)_-100vmax,100vmax_100vmax)]" },
-            left: { arrow: "[clip-path:polygon(-100vmax_calc(-100vmax_+_2px),100vmax_calc(100vmax_+_2px),100vmax_-100vmax)]" },
-            right: { arrow: "[clip-path:polygon(calc(-100vmax_+_2px)_-100vmax,calc(100vmax_+_2px)_100vmax,-100vmax_100vmax)]" },
+            top: { arrow: floatingArrowSides.top },
+            bottom: { arrow: floatingArrowSides.bottom },
+            left: { arrow: floatingArrowSides.left },
+            right: { arrow: floatingArrowSides.right },
         },
         /** 交叉轴对齐，仅传送模式生效（由组件内联下发），行内模式恒为 start */
         align: {

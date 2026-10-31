@@ -151,6 +151,16 @@ const emit = defineEmits<{
 }>();
 
 defineSlots<{
+  /** 自定义每侧面板的头部；month 从 1 起，focusDate 只定位面板，不改变选中值 */
+  header?: (props: {
+    side: PanelSide;
+    year: number;
+    month: number;
+    view: ViewType;
+    focusDate: (date: Date) => void;
+    switchView: (view: ViewType) => void;
+    navigate: (direction: -1 | 1, unit: "page" | "year") => void;
+  }) => any;
   /** 自定义单元格内容：作用域参数即单元格数据，年 / 月 / 季度 / 日期四种视图共用 */
   default?: (props: DatePickerCell) => any;
   /** 上个月图标：仅日期视图的内侧单箭头 */
@@ -1393,18 +1403,29 @@ watch(defaultValueKey, () => {
             </RebornTimePicker>
           </template>
 
-          <DatePickerHeader
-            :panel="p"
+          <slot
+            name="header"
+            :side="p.side"
+            :year="p.year"
+            :month="p.month + 1"
             :view="currentView"
-            :ui="ui"
-            @navigate="(direction, unit) => nav.navigate(p.side, direction, unit)"
-            @switch-view="switchView"
+            :focus-date="focusDate"
+            :switch-view="switchView"
+            :navigate="(direction, unit) => nav.navigate(p.side, direction, unit)"
           >
-            <template v-if="$slots['prev-year']" #prev-year><slot name="prev-year" /></template>
-            <template v-if="$slots['next-year']" #next-year><slot name="next-year" /></template>
-            <template v-if="$slots['prev-month']" #prev-month><slot name="prev-month" /></template>
-            <template v-if="$slots['next-month']" #next-month><slot name="next-month" /></template>
-          </DatePickerHeader>
+            <DatePickerHeader
+              :panel="p"
+              :view="currentView"
+              :ui="ui"
+              @navigate="(direction, unit) => nav.navigate(p.side, direction, unit)"
+              @switch-view="switchView"
+            >
+              <template v-if="$slots['prev-year']" #prev-year><slot name="prev-year" /></template>
+              <template v-if="$slots['next-year']" #next-year><slot name="next-year" /></template>
+              <template v-if="$slots['prev-month']" #prev-month><slot name="prev-month" /></template>
+              <template v-if="$slots['next-month']" #next-month><slot name="next-month" /></template>
+            </DatePickerHeader>
+          </slot>
 
           <!-- 年 / 月 / 季度视图：翻页单位为十年或一年，按钮走 prev-year / next-year 插槽；单元格状态由 panels 预先算好 -->
           <DatePickerUnitGrid

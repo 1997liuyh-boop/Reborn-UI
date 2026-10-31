@@ -50,6 +50,7 @@ const defaultState: Record<string, any> = {
   mode: "month",
   titleAlign: "right",
   border: false,
+  highlightToday: false,
   lunar: false,
 };
 
@@ -108,6 +109,7 @@ const controls: any = [
     title: "外观",
     children: [
       { label: "边框模式（border）", key: "border", component: "checkbox" as const, defaultValue: false },
+      { label: "高亮本日 / 本月（highlightToday）", key: "highlightToday", component: "checkbox" as const, defaultValue: false },
       { label: "农历模式（lunar）", key: "lunar", component: "checkbox" as const, defaultValue: false },
     ],
   },
@@ -125,6 +127,7 @@ const calendarCode = computed(() => {
     `  color="${s.color}"`,
     `  title-align="${s.titleAlign}"`,
     `  :border="${s.border}"`,
+    `  :highlight-today="${s.highlightToday}"`,
     `  :lunar="${s.lunar}"`,
     '  @panel-change="onPanelChange"',
     "/>",
@@ -224,6 +227,7 @@ const jumpTargets: { label: string; type: CalendarDateType }[] = [
           :color="state.color"
           :title-align="state.titleAlign"
           :border="state.border"
+          :highlight-today="state.highlightToday"
           :lunar="state.lunar"
           @panel-change="onPanelChange"
         />

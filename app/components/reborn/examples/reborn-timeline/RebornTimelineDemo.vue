@@ -4,7 +4,7 @@ import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components"
 import { computed, ref, shallowRef } from "vue"
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue"
-import { TIMELINE_PRESET_COLORS } from "~/components/reborn/ui/reborn-timeline/reborn-timeline.config"
+import { TIMELINE_PRESET_COLORS, timelineSizes, timelineVariants } from "~/components/reborn/ui/reborn-timeline/reborn-timeline.config"
 import RebornTimeline from "~/components/reborn/ui/reborn-timeline/RebornTimeline.vue"
 import RebornTimelineItem from "~/components/reborn/ui/reborn-timeline/RebornTimelineItem.vue"
 
@@ -20,6 +20,9 @@ const directionOptions = [
   { label: '竖向 vertical', value: 'vertical' },
   { label: '横向 horizontal', value: 'horizontal' },
 ]
+const sizeLabels = { sm: 'sm（8px）', md: 'md（12px）', lg: 'lg（16px）' }
+const sizeOptions = timelineSizes.map(size => ({ label: sizeLabels[size], value: size }))
+const variantOptions = timelineVariants.map(variant => ({ label: variant === 'solid' ? '实心 solid' : '空心 outlined', value: variant }))
 const labelPositionOptions = [
   { label: '右侧 right', value: 'right' },
   { label: '左侧 left', value: 'left' },
@@ -40,6 +43,8 @@ const colorOptions = [
 /** 演练场默认状态 */
 const defaultState: Record<string, any> = {
   direction: 'vertical',
+  size: 'md',
+  variant: 'solid',
   reverse: false,
   labelPosition: 'right',
   placement: 'bottom',
@@ -94,6 +99,8 @@ const controls: any = [
   {
     title: '节点',
     children: [
+      { label: '节点尺寸', key: 'size', component: 'select' as const, defaultValue: 'md', props: { options: sizeOptions } },
+      { label: '节点形态', key: 'variant', component: 'select' as const, defaultValue: 'solid', props: { options: variantOptions } },
       { label: '节点颜色', key: 'color', component: 'select' as const, defaultValue: 'primary', props: { options: colorOptions } },
       { label: '最后一个节点加载中', key: 'loading', component: 'checkbox' as const, defaultValue: false },
     ],
@@ -106,6 +113,7 @@ const timelineCode = computed(() => {
   const itemProps: string[] = [
     ':key="activity.timestamp"',
     ':timestamp="activity.timestamp"',
+    ':icon="activity.icon"',
     `color="${s.color}"`,
     `label-position="${s.labelPosition}"`,
     `placement="${s.placement}"`,
@@ -114,6 +122,8 @@ const timelineCode = computed(() => {
   return [
     '<RebornTimeline',
     `  direction="${s.direction}"`,
+    `  size="${s.size}"`,
+    `  variant="${s.variant}"`,
     `  :reverse="${s.reverse}"`,
     '>',
     '  <RebornTimelineItem',
@@ -179,7 +189,7 @@ const stageItems: TimelineItemData[] = [
 
       <div class="flex w-full flex-col items-center gap-6">
         <div :class="state.direction === 'horizontal' ? 'w-full' : 'w-full max-w-md'">
-          <RebornTimeline :direction="state.direction" :reverse="state.reverse">
+          <RebornTimeline :direction="state.direction" :size="state.size" :variant="state.variant" :reverse="state.reverse">
             <RebornTimelineItem
               v-for="(activity, index) in playgroundActivities" :key="activity.timestamp"
               :timestamp="activity.timestamp" :color="state.color" :label-position="state.labelPosition"
@@ -202,7 +212,7 @@ const stageItems: TimelineItemData[] = [
         </RebornButton>
 
         <DemoNote tone="dimmed" class="font-mono text-xs">
-          Props: { direction: '{{ state.direction }}', reverse: {{ state.reverse }}, labelPosition: '{{
+          Props: { direction: '{{ state.direction }}', size: '{{ state.size }}', variant: '{{ state.variant }}', reverse: {{ state.reverse }}, labelPosition: '{{
             state.labelPosition
           }}',
           placement: '{{ state.placement }}', color: '{{ state.color }}', loading: {{ state.loading }} } · 节点数：{{
@@ -251,10 +261,35 @@ const stageItems: TimelineItemData[] = [
       </DemoBlock>
     </DemoSection>
 
+    <DemoSection title="节点尺寸与形态">
+      <template #description>
+        <code>size</code> 控制 8px、12px、16px 节点，<code>variant</code> 切换实心与空心；单个节点可覆盖父级配置，<code>sm</code> 不显示图标。
+      </template>
+      <DemoBlock layout="grid" :columns="3">
+        <div v-for="size in timelineSizes" :key="size" class="flex flex-col gap-3" :data-timeline-size="size">
+          <p class="text-sm text-gray-7">{{ sizeLabels[size] }}</p>
+          <RebornTimeline :size="size">
+            <RebornTimelineItem>实心节点</RebornTimelineItem>
+            <RebornTimelineItem variant="outlined">空心节点</RebornTimelineItem>
+            <RebornTimelineItem icon="lucide:check">{{ size === 'sm' ? '小尺寸隐藏图标' : '带图标的实心节点' }}</RebornTimelineItem>
+            <RebornTimelineItem variant="outlined" icon="lucide:check">{{ size === 'sm' ? '小尺寸空心节点' : '带图标的空心节点' }}</RebornTimelineItem>
+          </RebornTimeline>
+        </div>
+      </DemoBlock>
+      <DemoBlock layout="stack">
+        <RebornTimeline size="sm" variant="outlined">
+          <RebornTimelineItem>继承父级：8px 空心圆</RebornTimelineItem>
+          <RebornTimelineItem size="md" icon="lucide:check">单独覆盖：12px 空心圆，图标 6px</RebornTimelineItem>
+          <RebornTimelineItem size="lg" variant="solid" color="success" icon="lucide:check">单独覆盖：16px 实心圆，图标 8px</RebornTimelineItem>
+        </RebornTimeline>
+      </DemoBlock>
+      <DemoNote tone="dimmed">空心圆内孔为外径的一半：4px、6px、8px。节点尺寸不改变正文或节点间距，混合尺寸仍共用同一条轴线。</DemoNote>
+    </DemoSection>
+
     <DemoSection title="自定义图标与加载">
       <template #description>
         设了 <code>icon</code>、<code>loading</code> 或 <code>#icon</code>
-        插槽时，节点放大为实心底圆，图标以白色显示在圆内；<code>loading</code> 显示旋转图标。
+        插槽时，图标尺寸随节点取 6px 或 8px，节点外径保持不变；<code>sm</code> 隐藏图标，<code>loading</code> 显示旋转图标。
       </template>
       <DemoBlock layout="stack">
         <RebornTimeline>
@@ -262,8 +297,8 @@ const stageItems: TimelineItemData[] = [
             提交代码
           </RebornTimelineItem>
           <RebornTimelineItem color="success" timestamp="2026-09-01 10:32">
-            <template #icon>
-              <Icon name="lucide:check" class="size-3" />
+            <template #icon="{ class: iconClass }">
+              <Icon name="lucide:check" :class="iconClass" />
             </template>
             流水线通过
           </RebornTimelineItem>
@@ -272,7 +307,7 @@ const stageItems: TimelineItemData[] = [
           </RebornTimelineItem>
         </RebornTimeline>
       </DemoBlock>
-      <DemoNote>底圆取节点 color，圆内文字色为白色：插槽里的图标不写颜色类时显示为白色，尺寸建议与默认图标一致（size-3）。</DemoNote>
+      <DemoNote>实心节点的图标为白色，空心节点的图标跟随 color；自定义图标插槽可使用作用域里的 class，继承当前尺寸。</DemoNote>
     </DemoSection>
 
     <DemoSection title="时间戳位置">
@@ -290,7 +325,7 @@ const stageItems: TimelineItemData[] = [
           </RebornTimeline>
         </div>
       </DemoBlock>
-      <DemoNote>内容在右侧时，placement="left" 把时间戳越过轴线放到左列；placement="right" 与内容同行，贴在远离轴线的一端。</DemoNote>
+      <DemoNote>内容在右侧时，placement="left" 把时间戳越过轴线放到左列；placement="right" 与内容同行，保留 12px 间距，整组贴近轴线。</DemoNote>
     </DemoSection>
 
     <DemoSection title="内容侧">
@@ -320,7 +355,7 @@ const stageItems: TimelineItemData[] = [
           </RebornTimeline>
         </div>
       </DemoBlock>
-      <DemoNote>两侧都有内容时左右列等宽，轴线居中；只有一侧时轴线贴向另一侧。</DemoNote>
+      <DemoNote>两侧都有内容时左右列等宽，轴线居中；单侧布局按内容宽度排布，不因内容在左侧而整体靠右。</DemoNote>
     </DemoSection>
 
     <DemoSection title="横向时间轴">

@@ -3,7 +3,7 @@ import type { SelectTriggerAlign, SelectTriggerSide, selectTriggerSizes, SelectT
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from "vue";
 import { useFloatingDismiss } from "~/composables/useFloatingDismiss";
 import { useFloatingHost } from "~/composables/useFloatingHost";
-import { getArrowShadow } from "~/lib/floating";
+import { FLOATING_ARROW_DEPTH, getFloatingArrowShadow } from "~/lib/floating-arrow";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
@@ -301,25 +301,28 @@ function syncArrow(rect: DOMRect, scrollX: number, scrollY: number) {
   arrowPoint.value = { x, y };
 }
 
-/** 箭头只保留朝外两条边的描边。 */
-const ARROW_BORDER_WIDTH: Record<ResolvedSide, string> = {
-  bottom: "1px 0 0 1px",
-  top: "0 1px 1px 0",
-  left: "1px 1px 0 0",
-  right: "0 0 1px 1px",
-};
-
-/** 浮层实际的 box-shadow，展开时读取一次，随 ui.dropdown 覆盖的阴影走。 */
+/** 浮层实际投影，每次展开读取以跟随 ui.dropdown 覆盖。 */
 const panelShadow = shallowRef("none");
 
-/** 箭头的底色、描边与投影由同一节点绘制，避免独立投影底片叠出双层轮廓。 */
-const arrowStyle = computed<Record<string, string>>(() => ({
-  left: `${arrowPoint.value.x}px`,
-  top: `${arrowPoint.value.y}px`,
-  transform: "translate(-50%, -50%) rotate(45deg)",
-  borderWidth: ARROW_BORDER_WIDTH[resolvedSide.value],
-  boxShadow: getArrowShadow(panelShadow.value),
-}));
+/** 箭头根部贴住面板，向内覆盖 1px 描边，避免连接处出现横线。 */
+const arrowStyle = computed<Record<string, string>>(() => {
+  const depth = FLOATING_ARROW_DEPTH - 1;
+  const offsets = {
+    top: { x: 0, y: depth, transform: "translate(-50%, -100%)" },
+    bottom: { x: 0, y: -depth, transform: "translateX(-50%)" },
+    left: { x: depth, y: 0, transform: "translate(-100%, -50%)" },
+    right: { x: -depth, y: 0, transform: "translateY(-50%)" },
+  };
+  const offset = offsets[resolvedSide.value];
+  return {
+    left: `${arrowPoint.value.x + offset.x}px`,
+    top: `${arrowPoint.value.y + offset.y}px`,
+    transform: offset.transform,
+    maskImage: "none",
+    background: "transparent",
+    filter: getFloatingArrowShadow(panelShadow.value),
+  };
+});
 
 /** 滚动补位合批到下一帧，避免一次滚动手势内多次强制同步布局 */
 let syncFrame = 0;
@@ -473,7 +476,6 @@ function onBeforeEnter(el?: Element) {
  */
 function onEnter() {
   syncFloating();
-  // 浮层到 enter 才插入文档，before-enter 时读不到计算样式；阴影随 ui.dropdown 覆盖走，每次展开重读
   const panel = floatingEl();
   if (props.arrow && panel) panelShadow.value = getComputedStyle(panel).boxShadow;
   emit("enter");
@@ -540,8 +542,10 @@ defineExpose({
       <!-- 箭头与浮层同级、同时长淡入淡出，避免被浮层展开 / 收起期间的 overflow-hidden 裁掉 -->
       <RebornTransition
         v-if="arrow" :show="isOpen" :duration="{ enter: 300, leave: 200 }" name="fade"
-        :custom-class="ui.arrow()" :custom-style="arrowStyle"
-      />
+        :custom-class="ui.arrow()" :custom-style="arrowStyle" data-floating-arrow aria-hidden="true"
+      >
+        <div :class="ui.arrow()" :style="{ inset: 0 }" />
+      </RebornTransition>
     </Teleport>
   </div>
 </template>

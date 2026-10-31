@@ -18,7 +18,7 @@ badge: New
 
 Timeline 用于按时间顺序展示一组事件，例如审批记录、发布流程、操作日志。节点有两种写法：传 `items` 数组由组件渲染，适合节点来自接口数据；或在默认插槽里逐个书写 `RebornTimelineItem`，适合节点内容需要插槽定制。两种写法共用同一套节点属性。
 
-每个节点由三格组成：**轴线格**（实心圆点或带图标的底圆，加上贯穿整个节点的连接线）、**内容格**、**对侧格**。相邻节点的轴线格首尾相接，连接线从第一个节点一直连到最后一个节点的内容末尾，中间不会断开。`labelPosition` 决定内容落在轴线的哪一侧；`placement` 决定时间戳是堆叠在内容上下（`top` / `bottom`），还是放到轴线的某一侧（`left` / `right`）——与内容同侧时并排，与内容异侧时越过轴线进入对侧格。
+每个节点由三格组成：**轴线格**（实心或空心节点，加上贯穿整个节点的 `gray-3` 连接线）、**内容格**、**对侧格**。`size` 决定节点外径，`variant` 决定实心或空心，两者可在父级统一设置，也能由单节点覆盖。`labelPosition` 决定内容落在轴线的哪一侧；`placement` 决定时间戳堆叠在内容上下，或放到轴线的某一侧。
 
 布局上，父级是 CSS Grid，每个节点通过 subgrid 继承父级的列（竖向）或行（横向）轨道，所有节点的轴线落在同一条轨道上，某个节点的时间戳变长也不会让轴线错位。`direction="horizontal"` 时节点改为等分一行排布。
 
@@ -99,17 +99,44 @@ const items: TimelineItemData[] = [
 </template>
 ```
 
+### 节点尺寸与形态
+
+`size` 默认 `md`，`variant` 默认 `solid`；`RebornTimelineItem` 与 `items` 数组项均可单独覆盖，省略时继承父级。尺寸只控制节点和图标，不改变文字或节点间距。
+
+| `size` | 节点外径 / 空心内孔 / 图标 | 典型用途 |
+| --- | --- | --- |
+| `sm` | 8px / 4px / 隐藏 | 紧凑的操作日志 |
+| `md` | 12px / 6px / 6px | 常规审批与流程记录 |
+| `lg` | 16px / 8px / 8px | 强调关键阶段 |
+
+| `variant` | 外观 | 典型用途 |
+| --- | --- | --- |
+| `solid` | 语义色填充，图标为白色 | 已完成或需强调的节点 |
+| `outlined` | 语义色边框与图标，中心遮住连接线 | 待办或弱化展示的节点 |
+
+```vue
+<template>
+  <RebornTimeline size="sm" variant="outlined">
+    <RebornTimelineItem>继承：8px 空心节点</RebornTimelineItem>
+    <RebornTimelineItem size="md" icon="lucide:check">12px 空心节点</RebornTimelineItem>
+    <RebornTimelineItem size="lg" variant="solid" icon="lucide:check">
+      16px 实心节点，图标 8px
+    </RebornTimelineItem>
+  </RebornTimeline>
+</template>
+```
+
 ### 自定义图标与加载
 
-`icon` 传 Iconify 名称或组件，`#icon` 插槽可以放任意内容，`loading` 显示旋转的 `lucide:loader-circle`。三者任一存在时，节点从 10px 的实心圆点放大为 20px 的实心底圆（填充色取 `color`），图标以白色居中显示在圆内；`#icon` 插槽的内容同样放进底圆，不写颜色类时显示为白色，尺寸建议与默认图标一致用 `size-3`。
+`icon` 传 Iconify 名称或组件，`#icon` 插槽可替换图标，`loading` 显示旋转的 `lucide:loader-circle`。图标不会改变节点外径：`md` 图标为 6px，`lg` 为 8px，`sm` 隐藏所有图标。实心图标为白色，空心图标跟随 `color`；插槽可绑定作用域的 `class` 继承尺寸。
 
 ```vue
 <template>
   <RebornTimeline>
     <RebornTimelineItem icon="lucide:git-commit-horizontal">提交代码</RebornTimelineItem>
     <RebornTimelineItem color="success">
-      <template #icon>
-        <Icon name="lucide:check" class="size-3" />
+      <template #icon="{ class: iconClass }">
+        <Icon name="lucide:check" :class="iconClass" />
       </template>
       流水线通过
     </RebornTimelineItem>
@@ -127,7 +154,7 @@ const items: TimelineItemData[] = [
 | `bottom`（默认） | 堆叠在内容下方 | 操作日志、审批记录 |
 | `top` | 堆叠在内容上方 | 以日期为主线的动态流 |
 | `left` | 越过轴线放到左列，与内容隔轴相对 | 时间与事件分列两侧的对照展示 |
-| `right` | 与内容同一行并排，贴在远离轴线的一端 | 行内展示简短时间 |
+| `right` | 与内容同一行并排，保留 12px 间距，整组贴近轴线 | 行内展示简短时间 |
 
 ```vue
 <template>
@@ -216,6 +243,8 @@ const items: TimelineItemData[] = [
 | --- | --- | --- | --- |
 | `items` | `TimelineItemData[]` | - | 节点数据，非空时由组件渲染节点并忽略默认插槽；字段见下方 TimelineItemData 表。 |
 | `direction` | `'vertical' \| 'horizontal'` | `'vertical'` | 时间轴方向：竖向为「左格 \| 轴线 \| 右格」三列网格，横向为节点等分一行的三行网格。 |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 节点外径为 8px / 12px / 16px，空心内孔为 4px / 6px / 8px；单节点可覆盖。 |
+| `variant` | `'solid' \| 'outlined'` | `'solid'` | 节点实心或空心样式，单节点可覆盖；连接线均为 `gray-3`。 |
 | `reverse` | `boolean` | `false` | 倒序排列节点。翻转的是 DOM 顺序而非视觉顺序，键盘与读屏顺序随之一致。 |
 | `ui` | `TimelineUI` | `{}` | 细粒度样式覆盖，会级联到所有节点；键位见「自定义样式（ui）」。 |
 
@@ -224,6 +253,8 @@ const items: TimelineItemData[] = [
 | 字段名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
 | `key` | `string \| number` | 数组下标 | 列表渲染用的唯一标识。 |
+| `size` | `'sm' \| 'md' \| 'lg'` | 继承父级 | 只覆盖当前节点的尺寸。 |
+| `variant` | `'solid' \| 'outlined'` | 继承父级 | 只覆盖当前节点的实心或空心样式。 |
 | `timestamp` | `string` | - | 时间戳文本。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral' \| string` | `'primary'` | 节点颜色，预设色或任意 CSS 色值。 |
 | `content` | `string` | - | 节点内容，默认作为文本渲染。 |
@@ -246,11 +277,13 @@ const items: TimelineItemData[] = [
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
 | `timestamp` | `string` | - | 时间戳文本；复杂内容用 `timestamp` 插槽。 |
+| `size` | `'sm' \| 'md' \| 'lg'` | 继承父级，独立使用为 `'md'` | 当前节点外径 8px / 12px / 16px；`sm` 隐藏图标，`md` / `lg` 图标为 6px / 8px。 |
+| `variant` | `'solid' \| 'outlined'` | 继承父级，独立使用为 `'solid'` | 当前节点实心或空心样式；空心内孔为外径的一半。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral' \| string` | `'primary'` | 节点颜色：预设色走语义类，其余值作为 CSS 色值走内联样式，取值见「节点颜色」。 |
 | `content` | `string` | - | 节点内容，默认作为文本渲染；默认插槽或 `content` 插槽存在时忽略。 |
 | `dangerouslyUseHTMLString` | `boolean` | `false` | 显式启用 HTML，仅传入已清理的可信内容。 |
-| `icon` | `string \| Component` | - | 自定义节点图标：字符串按 Iconify 名称渲染，否则按组件渲染，以白色显示在节点的实心底圆内。 |
-| `loading` | `boolean` | `false` | 加载中节点：底圆内显示旋转的 `lucide:loader-circle`，优先级高于 `icon`。 |
+| `icon` | `string \| Component` | - | 字符串按 Iconify 名称渲染，否则按组件渲染；实心图标为白色，空心图标跟随 `color`，`sm` 不渲染。 |
+| `loading` | `boolean` | `false` | 加载中节点：显示旋转的 `lucide:loader-circle`，优先级高于 `icon`；`sm` 隐藏加载图标。 |
 | `labelPosition` | `'left' \| 'right'` | `'right'` | 内容位于轴线的哪一侧，仅 `vertical` 方向生效。 |
 | `placement` | `'left' \| 'right' \| 'top' \| 'bottom'` | `'bottom'` | 时间戳位置：`top` / `bottom` 堆叠在内容上下；`left` / `right` 放到轴线对应一侧，落位规则见「时间戳位置」。 |
 | `ui` | `TimelineUI` | `{}` | 本节点的细粒度样式覆盖，优先级高于父组件的 `ui`。 |
@@ -261,7 +294,7 @@ const items: TimelineItemData[] = [
 | --- | --- | --- |
 | `default` | - | 节点内容，优先级高于 `content` 属性。 |
 | `content` | - | 替换整个内容区，优先级高于默认插槽。 |
-| `icon` | - | 替换底圆内的图标；内容放进填充了节点颜色的实心底圆，不写颜色类时显示为白色。 |
+| `icon` | `{ class: string }` | 替换节点内的图标，可绑定 `class` 继承尺寸；`sm` 不渲染此插槽。 |
 | `timestamp` | - | 替换时间戳文本，落位仍由 `placement` 决定。 |
 
 ### 自定义样式（ui）
@@ -274,8 +307,8 @@ const items: TimelineItemData[] = [
 | `item` | 单个节点 `li` | `grid`；竖向 `col-span-3 grid-cols-subgrid`，横向 `row-span-3 grid-rows-subgrid` | 每个节点 |
 | `axis` | 轴线格：圆点与连接线 | `relative flex`；竖向 `col-start-2 flex-col items-center pt-1`，横向 `row-start-2 items-center pl-1` | 每个节点 |
 | `dotWrapper` | 圆点 / 图标的定位容器 | `relative items-center justify-center`；竖向 `h-[22px] min-w-5`（对齐内容首行），横向 `h-5` | 每个节点 |
-| `dot` | 实心圆点；带图标时是图标底圆 | `rounded-full text-white`，填充色随 `color`；无图标 `size-2.5`，有图标 `size-5` | 每个节点 |
-| `icon` | 底圆内的图标 | `size-3 shrink-0`；加载图标追加 `animate-spin` | 设了 `icon` 或 `loading`；`icon` 插槽的内容不走此键 |
+| `dot` | 实心或空心节点 | `rounded-full`，外径随 `size` 为 8px / 12px / 16px；空心边框为 2px / 3px / 4px，中心为 `bg-gray-1` | 每个节点 |
+| `icon` | 节点内的图标 | `md` 为 `size-1.5`，`lg` 为 `size-2`；加载图标追加 `animate-spin` | `md` / `lg` 设置图标或加载态；插槽需绑定作用域 `class` |
 | `line` | 连接线 | `pointer-events-none absolute bg-gray-3`，铺满整个轴线格；竖向 `inset-y-0 w-px`，横向 `inset-x-0 h-px` | 每个节点（含末项） |
 | `body` | 内容格：内容及同侧的时间戳 | `min-w-0`；堆叠时 `flex flex-col gap-1`，并排时 `flex items-baseline gap-3`；竖向 `pt-1 pb-5`，距轴线 `pl-4`（内容在左时 `pr-4`）；横向 `pt-4 pl-1 pr-5` | 每个节点 |
 | `opposite` | 对侧格：越过轴线的时间戳 | `min-w-0 text-gray-6`；竖向 `pt-1 pb-5`，距轴线 16px；横向 `pb-4 pl-1 pr-5` | 竖向 `placement` 为 `left` / `right` 且与 `labelPosition` 异侧；横向 `placement="top"` |
@@ -303,9 +336,11 @@ const items: TimelineItemData[] = [
 
 - **`content` 默认转义为文本**。此前依赖 HTML 的调用方需显式开启 `dangerouslyUseHTMLString`；该开关不清理 HTML，调用方必须先清理不可信内容。结构化内容优先使用插槽。
 - **`labelPosition` 只在竖向生效**。横向时每个节点占一列，内容固定在轴线下方，没有「轴线左右」可言。
-- **竖向列宽由所有节点的内容侧共同决定**。内容全在右侧时左列按时间戳自适应宽度；全在左侧时相反；两侧都有时左右列等宽、轴线居中——所以只要有一个节点设了 `labelPosition="left"`，整条时间线都会切成居中布局。
+- **`labelPosition` 控制内容相对轴线的位置，不控制整条时间线的对齐**。单侧布局的左列按内容或时间戳自适应宽度，剩余空间留在右侧，不会因内容切换到左侧而整体靠右；两侧都有内容时左右列等宽、轴线居中。同侧的时间戳与内容保留 12px 间距。
 - **`reverse` 翻转的是 DOM 顺序**。插槽模式下翻转的是默认插槽平铺后的节点列表（`v-for` 与手写节点混用时按整体顺序翻转），不是用 CSS `order` 做视觉倒序，因此键盘与读屏顺序都与视觉一致。
 - **`items` 非空时忽略默认插槽**。两种写法不能混用；`items` 为空数组时退回默认插槽。
 - **节点必须是 `RebornTimeline` 的直接子元素**。布局依赖 `li` 直接落在父级网格上并通过 subgrid 共享轨道，在节点外再包一层 `div` 会打断网格，轴线随之错位；`v-for` 与 `<template>` 不受影响。
-- **自定义色值走内联样式**。非预设的 `color` 以内联 `background-color` 生效，`ui.dot` 里的背景色类覆盖不了它；预设色则是普通类名，可以用 `ui.dot` 覆盖。
+- **自定义色值走内联样式**。实心以内联 `background-color` 生效，空心以内联边框色和文字色生效，对应的 `ui.dot` 颜色类无法覆盖；预设色则是普通类名，可以用 `ui.dot` 覆盖。
+- **节点尺寸不会随图标放大**。`sm` 隐藏图标、加载图标与 `icon` 插槽，`md` / `lg` 图标分别为 6px / 8px；自定义插槽绑定作用域 `class` 即可跟随尺寸。
+- **空心节点的内孔为外径的一半**。`outlined` 使用 2px / 3px / 4px 边框与 `bg-gray-1` 中心遮住轴线；自定义色值以内联边框色和文字色生效，特殊页面底色可用 `ui.dot` 覆盖中心背景。
 - **轴线对齐依赖 CSS subgrid**。需要 Chrome 117+、Safari 16+、Firefox 71+；更早的浏览器里各节点的列宽会各自计算，时间戳长短不一时轴线会错位。

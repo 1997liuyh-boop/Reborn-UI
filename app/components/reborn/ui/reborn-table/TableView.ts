@@ -46,11 +46,20 @@ const TableBodyRow = defineComponent({
   setup(props) { return () => props.render(props.item, props.position, props); },
 });
 
-/** 展开和排序使用内联图标，不要求安装额外图标库。 */
-function chevron(direction: 'up' | 'down' | 'right', active = false) {
-  return h('svg', { width: 12, height: 12, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.5, 'aria-hidden': 'true', class: active ? 'text-primary' : '' }, [
-    h('path', { d: direction === 'up' ? 'm4 10 4-4 4 4' : direction === 'down' ? 'm4 6 4 4 4-4' : 'm6 4 4 4-4 4' }),
+/** 排序使用 bxs:up-arrow / bxs:down-arrow 的路径，无需额外安装图标库。 */
+function chevron(direction: 'up' | 'down', active = false) {
+  return h('svg', { viewBox: '0 0 24 24', fill: 'currentColor', 'aria-hidden': 'true', class: ['size-2.5 shrink-0', active ? 'text-primary' : 'text-gray-5 group-hover/sort:text-gray-8'] }, [
+    h('path', { d: direction === 'up' ? 'M3 19h18a1.002 1.002 0 0 0 .823-1.569l-9-13c-.373-.539-1.271-.539-1.645 0l-9 13A.999.999 0 0 0 3 19' : 'M11.178 19.569a.998.998 0 0 0 1.644 0l9-13A.999.999 0 0 0 21 5H3a1.002 1.002 0 0 0-.822 1.569z' }),
   ]);
+}
+
+/** 展开使用 Lucide plus / minus 的路径，图标保持 8px，不依赖外部图标加载。 */
+function expandIcon(expanded: boolean) {
+  return h('svg', {
+    viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2,
+    'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true',
+    class: 'size-2 text-gray-9',
+  }, [h('path', { d: 'M5 12h14' }), expanded ? null : h('path', { d: 'M12 5v14' })]);
 }
 
 /** 拖拽手柄的六点图标，同样内联绘制。 */
@@ -304,9 +313,9 @@ export default defineComponent({
         type: 'button', disabled: props.table.loading, 'aria-expanded': expanded, 'aria-busy': loading,
         'aria-label': `${expanded ? '收起' : '展开'}第 ${item.index + 1} 行`,
         // 懒加载子行期间显示等待光标；整表加载时按钮被禁用，同样是等待（加载遮罩也盖在上面）
-        class: ['inline-flex size-6 shrink-0 items-center justify-center rounded-sm hover:bg-gray-3 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait', loading ? 'cursor-wait' : 'cursor-pointer'],
+        class: ['box-border inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] border border-gray-3 p-0 enabled:hover:bg-gray-3 enabled:active:bg-gray-3 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait', loading ? 'cursor-wait' : 'cursor-pointer'],
         onClick: (event: MouseEvent) => { event.stopPropagation(); state.toggleRowExpansion(item.row); },
-      }, [loading ? h(RebornLoading, { size: 12, 'aria-hidden': true }) : chevron(expanded ? 'down' : 'right')]);
+      }, [loading ? h(RebornLoading, { size: 12, 'aria-hidden': true }) : expandIcon(expanded)]);
     }
     function radioKeydown(event: KeyboardEvent, item: TableVisibleRow) {
       if (!state.canSelect(item.row, item.index)) return;
@@ -362,9 +371,9 @@ export default defineComponent({
           column.sortable && column.prop
             ? h('button', {
               type: 'button', disabled: props.table.loading, 'aria-label': `排序${column.label ?? column.prop}`,
-              class: 'inline-flex min-w-0 items-center gap-1 rounded-sm text-inherit focus-visible:outline-2 focus-visible:outline-primary',
+              class: 'group/sort inline-flex min-w-0 items-center gap-1 rounded-sm text-inherit focus-visible:outline-2 focus-visible:outline-primary',
               onClick: () => state.sortColumn(column),
-            }, [header, h('span', { class: 'inline-flex flex-col text-gray-5' }, [chevron('up', order === 'ascending'), chevron('down', order === 'descending')])])
+            }, [header, h('span', { class: 'inline-flex shrink-0 flex-col -space-y-0.5' }, [chevron('up', order === 'ascending'), chevron('down', order === 'descending')])])
             : h('span', { class: 'min-w-0' }, header),
           column.filters?.length ? h(TableFilter, { column, values: state.filters.value[key] ?? [], disabled: props.table.loading, onApply: (values: typeof column.filteredValue) => state.setFilter(key, values ?? []) }) : null,
         ]);
@@ -425,7 +434,7 @@ export default defineComponent({
         class: cls('cell', [
           'bg-inherit', fixedClass(column, columnIndex, span.colspan), rightBorderClass(columnIndex, span.colspan),
           // 合并格属于首行 DOM，但覆盖任一行悬停时都应亮起；当前行的品牌底色优先。
-          span.rowspan > 1 && isHovered(item.index, span.rowspan, view.hoverRange) && !view.current && 'bg-gray-2',
+          span.rowspan > 1 && isHovered(item.index, span.rowspan, view.hoverRange) && !view.current && 'bg-[color-mix(in_srgb,var(--color-gray-2)_30%,var(--color-gray-1))]',
           isCentered(column) ? 'px-2 text-center' : alignClasses[column.align ?? 'left'], column.className, typeof props.table.cellClassName === 'function' ? props.table.cellClassName(scope) : props.table.cellClassName,
         ]),
         style: cellStyle(column, columnIndex, span.colspan),
@@ -439,7 +448,7 @@ export default defineComponent({
         },
         onDblclick: (event: MouseEvent) => { if (!props.table.loading) props.notify('row-dblclick', item.row, column, event); },
       }, tree ? h('div', { class: 'flex min-w-0 items-center gap-1', style: { paddingLeft: `${item.level * (props.table.indent ?? 16)}px` } }, [
-        item.hasChildren ? expandableButton(item, view.expanded) : h('span', { class: 'inline-block size-6 shrink-0' }),
+        item.hasChildren ? expandableButton(item, view.expanded) : h('span', { class: 'inline-block size-4 shrink-0' }),
         h('div', { class: 'min-w-0 flex-1' }, [text]),
       ]) : [text]);
     }
@@ -450,7 +459,8 @@ export default defineComponent({
         key: `${typeof item.key}:${item.key}`, 'data-row-key': item.key, 'data-selected': selected || undefined,
         'data-dragging': dragging || undefined,
         class: cls('row', [
-          ((props.table.stripe && position % 2 === 1) || selected || isHovered(position, 1, view.hoverRange)) && 'bg-gray-2',
+          ((props.table.stripe && position % 2 === 1) || selected) && 'bg-gray-2',
+          isHovered(position, 1, view.hoverRange) && 'bg-[color-mix(in_srgb,var(--color-gray-2)_30%,var(--color-gray-1))]',
           // 表格默认语义色为品牌色，color-2 对应品牌二阶；悬停不能盖掉当前行高亮。
           current && 'bg-brand-2 hover:bg-brand-2',
           // 拖动中的行淡出，落点由指示线标出
@@ -514,6 +524,8 @@ export default defineComponent({
         h(RebornScrollbar, {
           ref: scrollbar, class: cls('scrollbar'), style: { height: toCssSize(props.table.height), maxHeight: toCssSize(props.table.maxHeight) },
           verticalOffset: headerOffset.value,
+          // 固定表头不参与边缘回弹，只让当前表格的表体产生轻微位移。
+          bounceTarget: headerOffset.value > 0 ? ':scope > table > tbody' : undefined,
           onScroll: updateHorizontalOverflow,
           // 固定列的层级留在内容区内，避免覆盖同级轨道并拦截滚动条拖拽。
           wrapClass: 'isolate max-h-[inherit]', contentClass: 'min-w-full',

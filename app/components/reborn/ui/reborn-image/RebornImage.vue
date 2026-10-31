@@ -35,6 +35,7 @@ type PreviewToolbarToken = (typeof previewToolbarTokens)[number];
  */
 interface ViewerInternals {
 	viewer: HTMLElement; // 预览根容器
+	canvas: HTMLElement; // 当前大图画布
 	footer: HTMLElement; // 底部区域：标题 + 工具栏 + 缩略图条
 	navbar: HTMLElement; // 缩略图条
 	imageData: { scaleX?: number; scaleY?: number };
@@ -387,6 +388,35 @@ function disposeViewer() {
 	container?.remove();
 }
 
+/** 监听每张预览图本身的加载结果，兼容上传组件直接打开和列表内其他图片失败。 */
+function watchPreviewError(instance: Viewer, image: HTMLImageElement) {
+	const { canvas } = instance as unknown as ViewerInternals;
+	let failed = false;
+	const showError = () => {
+		// 快速切图或关闭后，旧图片迟到的错误不能覆盖当前画面。
+		if (failed || disposed || viewer !== instance || !canvas.contains(image)) return;
+		failed = true;
+		image.classList.add("hidden!");
+		canvas.classList.remove("viewer-loading");
+
+		const placeholder = document.createElement("div");
+		placeholder.className = ui.value.error({ class: "pointer-events-none inset-0 bg-transparent" });
+		placeholder.setAttribute("role", "img");
+		placeholder.setAttribute("aria-label", "图片加载失败");
+		const icon = document.createElement("span");
+		icon.className = ui.value.errorIcon();
+		icon.setAttribute("aria-hidden", "true");
+		placeholder.appendChild(icon);
+		// 切图时 viewerjs 会清空画布，错误占位随上一张图片一并移除。
+		canvas.appendChild(placeholder);
+	};
+	image.addEventListener("error", showError, { once: true });
+	// view 回调发生在图片挂入画布之前，缓存中的失败结果需在挂入后补判。
+	queueMicrotask(() => {
+		if (image.complete && !image.naturalWidth) showError();
+	});
+}
+
 function onPreview(force = false) {
 	if (viewer || viewerPending) return;
 	if (force || props.preview || (props.magnifier && !isMagnifierActive.value)) {
@@ -420,6 +450,9 @@ function onPreview(force = false) {
 					navbar: props.previewNavbar && urls.length > 1,
 					ready() {
 						mountPreviewControls(instance, urls.length);
+					},
+					view(event) {
+						watchPreviewError(instance, event.detail.image);
 					},
 					hidden() {
 						disposeViewer();
@@ -817,7 +850,7 @@ function onMouseLeave() {
 			</slot>
 		</div>
 
-		<div v-if="isError" :class="ui.error()">
+		<div v-if="isError" :class="ui.error()" @click="onPreview()">
 			<slot name="error">
 				<div :class="ui.errorIcon()"></div>
 			</slot>

@@ -2,6 +2,7 @@
 import type { ClassValue } from "clsx";
 import type { Component, CSSProperties } from "vue";
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
+import type { guideColors } from "./reborn-guide.config";
 import type { Placement, PlacementSide } from "~/lib/placement";
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, toRaw, useTemplateRef, watch } from "vue";
 import { prefersReducedMotion, runMotion, stopMotion } from "@/lib/motion";
@@ -10,7 +11,7 @@ import { resolvePlacement } from "~/lib/placement";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornButton from "../reborn-button/RebornButton.vue";
-import theme from "./reborn-guide.config";
+import theme, { guideButtonUi } from "./reborn-guide.config";
 
 /** 子步骤按父步骤在前的深度优先顺序展开 */
 export interface GuideStep {
@@ -47,6 +48,8 @@ export interface GuideStep {
 }
 
 export interface RebornGuideProps {
+  /** 可选语义色；省略时保留默认浅色面板。 */
+  color?: (typeof guideColors)[number];
   defaultCurrent?: number;
   steps: GuideStep[];
   mode?: "popup" | "dialog";
@@ -203,22 +206,34 @@ watch([highlightStyle, highlightRef], ([style, element]) => {
   previousHighlight = style;
   previousHighlightElement = element;
 }, { flush: "post" });
-const mergedNextProps = computed<ButtonProps>(() => ({
-  label: "下一步", color: "primary", variant: "filled", size: "sm",
-  ...props.nextButtonProps, ...activeStep.value?.nextButtonProps,
-}));
-const mergedPrevProps = computed<ButtonProps>(() => ({
+/** 按组件级、步骤级依次覆盖，ui 单独合并以保留有色面板的默认配色。 */
+function mergeButtonProps(defaults: ButtonProps, ...overrides: (ButtonProps | undefined)[]): ButtonProps {
+  return overrides.reduce<ButtonProps>((merged, override) => ({
+    ...merged,
+    ...override,
+    ui: {
+      ...merged.ui,
+      ...override?.ui,
+      base: cn(merged.ui?.base, override?.ui?.base),
+    },
+  }), defaults);
+}
+const mergedNextProps = computed(() => mergeButtonProps({
+  label: "下一步", color: props.color ?? "primary", variant: props.color ? "outlined" : "filled", size: "sm",
+  ui: props.color ? guideButtonUi.next : undefined,
+}, props.nextButtonProps, activeStep.value?.nextButtonProps));
+const mergedPrevProps = computed(() => mergeButtonProps({
   label: "上一步", color: "neutral", variant: "outlined", size: "sm",
-  ...props.prevButtonProps, ...activeStep.value?.prevButtonProps,
-}));
-const mergedSkipProps = computed<ButtonProps>(() => ({
+  ui: props.color ? guideButtonUi.prev : undefined,
+}, props.prevButtonProps, activeStep.value?.prevButtonProps));
+const mergedSkipProps = computed(() => mergeButtonProps({
   label: "跳过", color: "neutral", variant: "text", size: "sm",
-  ...props.skipButtonProps, ...activeStep.value?.skipButtonProps,
-}));
-const mergedFinishProps = computed<ButtonProps>(() => ({
-  label: "完成", color: "primary", variant: "filled", size: "sm",
-  ...props.finishButtonProps, ...activeStep.value?.nextButtonProps, ...activeStep.value?.finishButtonProps,
-}));
+  ui: props.color ? guideButtonUi.skip : undefined,
+}, props.skipButtonProps, activeStep.value?.skipButtonProps));
+const mergedFinishProps = computed(() => mergeButtonProps({
+  label: "完成", color: props.color ?? "primary", variant: props.color ? "outlined" : "filled", size: "sm",
+  ui: props.color ? guideButtonUi.next : undefined,
+}, props.finishButtonProps, activeStep.value?.nextButtonProps, activeStep.value?.finishButtonProps));
 function eventContext(event?: MouseEvent, index = currentStep.value, count = total.value): GuideEventContext {
   return { e: event ?? new MouseEvent("click"), current: index, total: count };
 }
@@ -514,9 +529,9 @@ onBeforeUnmount(() => {
 
 const styles = tv(theme);
 const ui = computed(() => {
-  const slots = styles({ mode: actualMode.value });
-  const slot = (key: keyof typeof theme.slots) => (options?: { class?: ClassValue }) =>
-    cn(slots[key](), options?.class, props.ui?.[key]);
+  const slots = styles({ mode: actualMode.value, color: props.color });
+  const slot = (key: keyof typeof theme.slots) => (options?: { class?: ClassValue; active?: boolean }) =>
+    cn(slots[key]({ active: options?.active }), options?.class, props.ui?.[key]);
   return {
     overlay: slot("overlay"), highlightMask: slot("highlightMask"),
     guideBox: slot("guideBox"), guideArrow: slot("guideArrow"),
@@ -582,7 +597,7 @@ defineExpose({ next: onNext, prev: onPrev, finish: onFinish, skip: onSkip, close
                 <div v-else :class="ui.indicators()" :aria-label="`第 ${displayedCurrent + 1} 步，共 ${displayedTotal} 步`">
                   <span
                     v-for="(_, index) in displayedSteps" :key="index"
-                    :class="ui.indicatorDot({ class: index === displayedCurrent ? 'h-1.5 w-2.5 bg-primary' : 'size-1.5 bg-gray-4' })"
+                    :class="ui.indicatorDot({ active: index === displayedCurrent })"
                     :aria-current="index === displayedCurrent ? 'step' : undefined"
                   />
                 </div>

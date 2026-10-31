@@ -102,7 +102,7 @@ const columns = [{ prop: 'name', label: '姓名' }]
 
 ### 带斑马纹表格
 
-`stripe` 默认关闭，开启后交替行使用 `bg-gray-2`；悬停和勾选行也使用同一灰阶，不替代当前行高亮。
+`stripe` 默认关闭，开启后交替行与勾选行使用 `bg-gray-2`；悬停使用 `bg-gray-2/30`，不替代当前行高亮。
 
 | 配置 | 外观 | 典型用途 |
 | --- | --- | --- |
@@ -122,7 +122,7 @@ const columns = [{ prop: 'name', label: '姓名' }]
 
 ### 带边框表格
 
-`size` 默认 `md`；表头和内容均使用 `text-base font-medium text-gray-9`，沿用 14px 字号、22px 行高与 500 字重，不另叠 `leading-*`。
+`size` 默认 `md`；表头和内容均使用 `text-base font-normal text-gray-9`，沿用 14px 字号、22px 行高与 400 字重，不另叠 `leading-*`。
 
 | `size` | 单行高度 | 典型用途 |
 | --- | --- | --- |
@@ -373,7 +373,7 @@ const radioColumns = computed<TableColumn[]>(() => [...(showRadio.value ? [{ typ
 </template>
 ```
 
-外部设置 `radioCurrentKey` 即同步两种状态；设为 `undefined` 同时清空。隐藏单选列不清除当前键，再次显示会还原按钮选中态。此关联只属于本示例，不是新增 Table prop，也不改变其他示例的独立模型。当前行品牌二阶 `bg-brand-2` 等价于设计中的 `bg-color-2`，悬停时保留该高亮；普通悬停、勾选和斑马纹使用 `bg-gray-2`。
+外部设置 `radioCurrentKey` 即同步两种状态；设为 `undefined` 同时清空。隐藏单选列不清除当前键，再次显示会还原按钮选中态。此关联只属于本示例，不是新增 Table prop，也不改变其他示例的独立模型。当前行品牌二阶 `bg-brand-2` 等价于设计中的 `bg-color-2`，悬停时保留该高亮；普通悬停使用 `bg-gray-2/30`，勾选和斑马纹使用 `bg-gray-2`。
 
 ### 多选
 
@@ -383,7 +383,7 @@ const radioColumns = computed<TableColumn[]>(() => [...(showRadio.value ? [{ typ
 
 演示使用独立的两批数据，每批八条、行键跨批唯一；切换批次后仍可读取已选行或清空全部选择，待审核行始终禁选。这份扩容数据不用于合并或分页示例。
 
-当前行高亮使用品牌二阶 `bg-brand-2`（设计中的 `bg-color-2`），悬停时保留该底色；勾选行与普通悬停仍使用 `bg-gray-2`，两种状态互相独立。
+当前行高亮使用品牌二阶 `bg-brand-2`（设计中的 `bg-color-2`），悬停时保留该底色；勾选行使用 `bg-gray-2`，普通悬停使用 `bg-gray-2/30`，两种状态互相独立。
 
 | 列类型 / 配置 | 状态入口 | 典型用途 |
 | --- | --- | --- |
@@ -616,6 +616,8 @@ const columns = [{ prop: 'name', label: '姓名' }, { prop: 'amount', label: '�
 ### 展开行
 
 `type: 'expand'` 配合 `expand` 插槽展示整行详情，`expandedRowKeys` 默认 `[]`，可由外部控制。展开内容可嵌套 `RebornTable`，每个父行按自身键读取对应明细；这与 `children` 树节点不是同一种展示。
+
+展开入口为 16×16px 按钮，使用 `border border-gray-3` 与 2px 圆角；未展开显示 Lucide plus，展开后显示 Lucide minus，图标为 8px、`text-gray-9`。按钮仅在 hover 或按下时显示 `bg-gray-3`，展开后移开指针不保留背景。树形节点沿用相同入口。
 
 | 开关 | 影响范围 | 典型用途 |
 | --- | --- | --- |
@@ -1071,19 +1073,19 @@ const columns: TableColumn[] = [{ prop: 'note', label: '说明', width: 180, for
 
 ### 自定义样式（ui）
 
-`ui` 使用 `TableUi` 按内部节点覆盖 Tailwind 类名。共享文字为 `text-base font-medium text-gray-9`，不需要重复设置行高；灰阶边界和表头可优先通过外观参数控制。
+`ui` 使用 `TableUi` 按内部节点覆盖 Tailwind 类名。共享文字为 `text-base font-normal text-gray-9`，不需要重复设置行高；行分割线为灰阶 2，外框和列边界为灰阶 3。
 
 | 键名 | 说明 |
 | --- | --- |
 | `root` | 根容器，默认 `relative min-w-0 w-full`，并提供共享文字令牌。 |
 | `scrollbar` | 滚动容器，默认 `relative min-w-0 w-full`；开启 `border` 时底框由 `after` 向内叠绘 1px，避免与表格底线相加。涉及固定表头时不要覆盖滚动行为。 |
-| `table` | 语义化表格，默认 `w-full table-fixed border-separate border-spacing-0 text-left`，`tableLayout="auto"` 切换为 `table-auto`，底部分隔线为 `border-b border-gray-3`。 |
+| `table` | 语义化表格，默认 `w-full table-fixed border-separate border-spacing-0 text-left`，`tableLayout="auto"` 切换为 `table-auto`，底部分隔线为 `border-b border-gray-2`。 |
 | `thead` | 表头区域，默认无附加类名；`showHeader=false` 时不渲染。 |
-| `headerCell` | 表头单元格，默认 `border-b border-gray-3 bg-gray-1 px-4 py-0 align-middle`，高度跟随 `size`。 |
+| `headerCell` | 表头单元格，默认 `border-b border-gray-3 border-b-gray-2 bg-gray-1 px-4 py-0 align-middle`，高度跟随 `size`。 |
 | `row` | 数据行，默认 `group/row bg-gray-1`，悬停背景为灰阶 2；当前行高亮为 `bg-brand-2`，悬停时保留。 |
-| `cell` | 数据单元格，默认 `border-t border-gray-3 px-4 py-0 align-middle`，表体首行不重复绘制顶线，高度跟随 `size`。 |
+| `cell` | 数据单元格，默认 `border-t border-gray-3 border-t-gray-2 px-4 py-0 align-middle`，表体首行不重复绘制顶线，高度跟随 `size`。 |
 | `cellContent` | 单元格内容容器，默认 `min-w-0 py-1`。 |
-| `expand` | 详情单元格，默认 `border-t border-gray-3 bg-gray-1 px-4 py-3`；无展开详情时不渲染。 |
+| `expand` | 详情单元格，默认 `border-t border-gray-2 bg-gray-1 px-4 py-3`；无展开详情时不渲染。 |
 | `empty` | 空态区域，默认 `px-4 py-10 text-center text-gray-6`，仅无数据时可见。 |
 | `loading` | 加载覆盖区域，默认绝对定位铺满表体、`z-40 bg-gray-1/80 text-gray-6`，内容居中；仅加载时可见。 |
 | `summary` | 合计行，默认 `bg-gray-2`，仅 `showSummary=true` 时渲染。 |

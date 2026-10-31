@@ -63,6 +63,18 @@ it('自定义 CSS 色值在两种模式中保留内联填充', async () => {
     for (const items of [false, true]) assert.ok((await render({ color }, items)).includes(`background-color:${color}`));
   }
 });
+it('空心节点在两种模式中使用语义边框，自定义色不再填充内孔', async () => {
+  for (const items of [false, true]) {
+    const preset = await render({ variant: 'outlined', color: 'success' }, items);
+    assert.match(preset, /class="[^"]*border-success/);
+    assert.match(preset, /class="[^"]*text-success/);
+    assert.doesNotMatch(preset, /bg-success/);
+    const custom = await render({ variant: 'outlined', color: '#123456' }, items);
+    assert.match(custom, /border-color:#123456/);
+    assert.match(custom, /color:#123456/);
+    assert.doesNotMatch(custom, /background-color:#123456/);
+  }
+});
 it('预设色允许节点配置覆盖，但自定义色值保留内联优先级', async () => {
   const html = await render({ color: 'success', ui: { dot: 'bg-secondary' } });
   assert.match(html, /class="[^"]*bg-secondary/);
@@ -72,7 +84,7 @@ it('预设色允许节点配置覆盖，但自定义色值保留内联优先级'
 
 it('服务端首帧根据 items 与插槽节点生成左右轨道', async () => {
   for (const items of [false, true]) {
-    assert.match(await render({ labelPosition: 'left' }, items), /grid-cols-\[1fr_auto_auto\]/);
+    assert.match(await render({ labelPosition: 'left' }, items), /grid-cols-\[auto_auto_1fr\]/);
   }
   const app = createSSRApp({ render: () => h(Timeline, {}, { default: () => [h(Item, { labelPosition: 'left' }), h(Item)] }) });
   app.component('Icon', { render: () => h('i') });

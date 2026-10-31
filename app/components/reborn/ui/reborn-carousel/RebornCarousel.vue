@@ -469,6 +469,10 @@ const indicatorWrapperStyle = computed(() => {
   const offset = props.indicatorOffset;
 
   if (isVertical.value) {
+    // 分数分页复用原有间距，并允许 ui 自由切换左右上角。
+    if (isFractionPagination.value) {
+      return { "--carousel-indicator-offset": `${offset}px` };
+    }
     if (effectiveIndicatorPosition.value === "inside") {
       return { right: `${offset}px` };
     }
@@ -607,12 +611,15 @@ const CarouselIndicators = defineComponent({
   name: "CarouselIndicators",
   setup: () => () => {
     if (isProgressPagination.value) {
+      const percent = slideCount.value ? (currentIndex.value + 1) / slideCount.value * 100 : 0;
       return h("div", { class: ui.value.indicators() }, [h(RebornProgress, {
-        percent: slideCount.value ? (currentIndex.value + 1) / slideCount.value * 100 : 0,
+        percent,
+        style: isVertical.value ? { "--carousel-progress": `${percent}%` } : undefined,
+        "aria-orientation": isVertical.value ? "vertical" : "horizontal",
         showText: false,
         ariaLabel: "轮播页数进度",
         format: () => `${currentIndex.value + 1} / ${slideCount.value}`,
-        ui: { root: ui.value.progress(), step: ui.value.progressTrack(), fill: ui.value.progressFill() },
+        ui: { root: ui.value.progress(), track: ui.value.progressRail(), step: ui.value.progressTrack(), fill: ui.value.progressFill() },
       })]);
     }
     const children = isFractionPagination.value
@@ -675,7 +682,7 @@ const thumbsShellClass = computed(() => {
 
 /** 主播放区的 CSS 布局类名 */
 const mainPaneClass = computed(() =>
-  cn("min-w-0", showThumbs.value && isThumbsVertical.value ? "flex-1" : "w-full"),
+  cn("min-w-0", showThumbs.value && isThumbsVertical.value ? "flex-1" : "w-full", isVertical.value && "flex items-center"),
 );
 
 /** 联动缩略图面板背景盒的 CSS 类名 */
@@ -1806,10 +1813,10 @@ defineExpose({
         <!-- 缩略图箭头使用绝对定位 -->
         <div v-if="showThumbArrows" :class="thumbsArrowGroupClass">
           <button type="button" aria-label="上一项缩略图" :disabled="!canGoPrevThumb" :class="ui.thumbsArrow()" @click="prevThumb">
-            <Icon :name="isThumbsVertical ? 'lucide:chevron-up' : 'lucide:chevron-left'" class="size-4.5" />
+            <Icon :name="isThumbsVertical ? 'lucide:arrow-up' : 'lucide:arrow-left'" class="size-4.5" />
           </button>
           <button type="button" aria-label="下一项缩略图" :disabled="!canGoNextThumb" :class="ui.thumbsArrow()" @click="nextThumb">
-            <Icon :name="isThumbsVertical ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="size-4.5" />
+            <Icon :name="isThumbsVertical ? 'lucide:arrow-down' : 'lucide:arrow-right'" class="size-4.5" />
           </button>
         </div>
       </div>
@@ -1851,7 +1858,7 @@ defineExpose({
             <slot name="prev" :prev="prev" :disabled="!canGoPrev">
               <button type="button" aria-label="上一项" :disabled="!canGoPrev" :class="ui.arrow()" @click="prev">
                 <Icon
-                  :name="isVertical ? 'lucide:chevron-up' : 'lucide:chevron-left'"
+                  :name="isVertical ? 'lucide:arrow-up' : 'lucide:arrow-left'"
                   class="size-5"
                 />
               </button>
@@ -1862,7 +1869,7 @@ defineExpose({
                 @click="() => next(true)"
               >
                 <Icon
-                  :name="isVertical ? 'lucide:chevron-down' : 'lucide:chevron-right'"
+                  :name="isVertical ? 'lucide:arrow-down' : 'lucide:arrow-right'"
                   class="size-5"
                 />
               </button>
@@ -1879,7 +1886,7 @@ defineExpose({
           </div>
         </div>
 
-        <!-- outside 指示器在 mainPane 内部，但在 root 外部，确保不受 flex 影响 -->
+        <!-- outside 指示器放在 root 外部，由主播放区按轮播方向排列。 -->
         <div
           v-if="showIndicators && effectiveIndicatorPosition === 'outside'" :class="ui.indicatorWrapper()"
           :style="indicatorWrapperStyle"

@@ -24,6 +24,7 @@ before(async () => {
   const result = await build({
     stdin: {
       contents: `import Upload from '~/components/reborn/ui/reborn-upload/RebornUpload.vue';
+        import Image from '~/components/reborn/ui/reborn-image/RebornImage.vue';
         import {createApp,h,nextTick,reactive} from 'vue';
         const files=()=>[{name:'第一张.svg',url:'/first.svg'},{name:'第二张.svg',url:'/second.svg'},
           {name:'说明.pdf',url:'/manual.pdf'},{name:'视频.mp4',url:'/video.mp4'}];
@@ -40,7 +41,11 @@ before(async () => {
               'onUpdate:fileList':value=>state.files=value})])),
           h('section',{id:'disabled'},[h(Upload,{listType:'picture-card',fileList:files(),disabled:true})]),
           h('section',{id:'custom'},[h(Upload,{listType:'picture-card',fileList:files(),
-            onPreview:file=>state.callbacks.push({name:file.name,uid:file.uid})})])
+            onPreview:file=>state.callbacks.push({name:file.name,uid:file.uid})})]),
+          h('section',{id:'failed-image'},[h(Image,{src:'/broken.svg',preview:true})]),
+          h('section',{id:'failed-no-preview'},[h(Image,{src:'/broken.svg'})]),
+          h('section',{id:'mixed-images'},[h(Image,{src:'/first.svg',preview:true,
+            previewList:['/first.svg','/broken.svg','/second.svg']})])
         ]):null});
         app.component('Icon',props=>h('svg',{'data-icon':props.name}));
         app.mount('#app');window.uploadFixture={state,apis,revoked,flush:nextTick};`,
@@ -59,12 +64,13 @@ before(async () => {
       });
     } }],
   });
-  const compiler = await compile("@import 'tailwindcss';@import './app/assets/theme/typography.css';@import './app/assets/theme/base.css';", { base: resolve('.'), onDependency() {} });
+  const compiler = await compile("@import 'tailwindcss';@plugin '@iconify/tailwind4';@import './app/assets/theme/typography.css';@import './app/assets/theme/base.css';", { base: resolve('.'), onDependency() {} });
   const scanner = new Scanner({ sources: [{ base: resolve('app/components/reborn/ui'), pattern: '**/*', negated: false }] });
   const css = compiler.build(scanner.scan()) + result.outputFiles.find(file => file.path.endsWith('.css'))!.text;
   const script = result.outputFiles.find(file => file.path.endsWith('.js'))!.text;
   server = createServer((request, response) => {
     const path = request.url;
+    if (path === '/broken.svg') { response.writeHead(404); response.end(); return; }
     if (path?.endsWith('.svg')) {
       response.setHeader('Content-Type', 'image/svg+xml');
       response.end(`<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="320" height="200" fill="${path === '/first.svg' ? 'red' : 'blue'}"/></svg>`);
@@ -181,4 +187,60 @@ it('文字列表本地图片可预览，移除、清空与卸载会释放地址�
       });
     }
   }
+}));
+
+async function waitForPreviewError(page: Page) {
+  const placeholder = page.locator('.viewer-canvas').getByRole('img', { name: '图片加载失败', exact: true });
+  await placeholder.waitFor({ state: 'visible' });
+  assert.equal(await page.locator('.viewer-canvas.viewer-loading').count(), 0, '错误态结束加载动画');
+  assert.equal(await page.locator('.viewer-canvas > img').isVisible(), false, '隐藏浏览器破图');
+  const previewMask = await placeholder.locator('span').evaluate(icon => getComputedStyle(icon).maskImage);
+  const imageMask = await page.locator('#failed-image [data-lazy=error] + div > div').evaluate(icon => getComputedStyle(icon).maskImage);
+  assert.notEqual(previewMask, 'none', '图标实际生成并显示');
+  assert.equal(previewMask, imageMask, '预览与原图使用相同错误图标');
+}
+
+it('错误占位可以点击预览，关闭后可重新打开，preview=false 仍不打开', { skip: !browserAvailable }, () => withPage(async (page) => {
+  const failedImage = page.locator('#failed-image [data-lazy=error] + div');
+  await failedImage.waitFor();
+  await page.locator('#failed-no-preview [data-lazy=error] + div').click();
+  assert.equal(await page.locator('.viewer-container').count(), 0);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await failedImage.click();
+    await waitForPreviewError(page);
+    await page.keyboard.press('Escape');
+    await page.locator('.viewer-container').waitFor({ state: 'detached' });
+    assert.equal(await page.locator('body.viewer-open').count(), 0);
+  }
+}));
+
+it('多图预览切换到失败图片显示图标，返回正常图片不残留错误占位', { skip: !browserAvailable }, () => withPage(async (page) => {
+  await page.locator('#mixed-images > div > img').click();
+  await waitForImage(page, '/first.svg');
+  await page.getByRole('button', { name: '下一张', exact: true }).click();
+  await waitForPreviewError(page);
+  await page.getByRole('button', { name: '下一张', exact: true }).click();
+  await waitForImage(page, '/second.svg');
+  assert.equal(await page.locator('.viewer-canvas').getByRole('img', { name: '图片加载失败' }).count(), 0);
+  await page.getByRole('button', { name: '上一张', exact: true }).click();
+  await waitForPreviewError(page);
+  await page.keyboard.press('ArrowLeft');
+  await waitForImage(page, '/first.svg');
+}));
+
+it('上传组件的失败图片也显示预览错误图标，卸载会清理预览器', { skip: !browserAvailable }, () => withPage(async (page) => {
+  await page.evaluate(async () => {
+    const fixture = (window as any).uploadFixture;
+    fixture.state.files = [{ name: '损坏.svg', url: '/broken.svg' }];
+    await fixture.flush();
+  });
+  await page.locator('#text').getByRole('button', { name: '预览 损坏.svg', exact: true }).click();
+  await waitForPreviewError(page);
+  await page.evaluate(async () => {
+    const fixture = (window as any).uploadFixture;
+    fixture.state.visible = false;
+    await fixture.flush();
+  });
+  await page.locator('.viewer-container').waitFor({ state: 'detached' });
+  assert.equal(await page.locator('body.viewer-open').count(), 0);
 }));

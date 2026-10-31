@@ -18,17 +18,17 @@ export type CalendarTitleAlign = (typeof titleAligns)[number];
 
 /**
  * 每种语义色用到的完整类名，写成字面量 Tailwind 才扫得到。
- * 深色（设计稿的「第 6 阶」）用语义令牌 bg-primary 等：浅色下它就是第 6 阶，暗色下自动换成对比度更好的第 5 阶，
- * primary 还会跟随站点的主题色切换；浅底（第 1 阶）没有语义令牌，直接取色板，映射与 RebornDatePickerPanel 一致。
+ * 日期文字用语义令牌，暗色下自动换成对比度更好的第 5 阶；primary 随站点主题色切换。
+ * 单元格浅底固定取色板第 1 阶，顶边固定取第 6 阶；选中与本日日期仅通过文字颜色强调。
  * 描边只给顶边上色（border-t-*）：边框模式下单元格还有左边线，整圈上色会把相邻格的分隔线也染掉
  */
-const tones: Record<CalendarColor, { solid: string; soft: string; text: string; border: string; ring: string; hover: string; hoverText: string }> = {
-  primary: { solid: "bg-primary", soft: "bg-brand-1", text: "text-primary", border: "border-t-primary", ring: "ring-primary", hover: "hover:bg-brand-1 hover:border-t-primary", hoverText: "group-hover/cell:text-primary" },
-  secondary: { solid: "bg-secondary", soft: "bg-secondary-1", text: "text-secondary", border: "border-t-secondary", ring: "ring-secondary", hover: "hover:bg-secondary-1 hover:border-t-secondary", hoverText: "group-hover/cell:text-secondary" },
-  success: { solid: "bg-success", soft: "bg-green-1", text: "text-success", border: "border-t-success", ring: "ring-success", hover: "hover:bg-green-1 hover:border-t-success", hoverText: "group-hover/cell:text-success" },
-  info: { solid: "bg-info", soft: "bg-blue-1", text: "text-info", border: "border-t-info", ring: "ring-info", hover: "hover:bg-blue-1 hover:border-t-info", hoverText: "group-hover/cell:text-info" },
-  warning: { solid: "bg-warning", soft: "bg-orange-1", text: "text-warning", border: "border-t-warning", ring: "ring-warning", hover: "hover:bg-orange-1 hover:border-t-warning", hoverText: "group-hover/cell:text-warning" },
-  error: { solid: "bg-error", soft: "bg-red-1", text: "text-error", border: "border-t-error", ring: "ring-error", hover: "hover:bg-red-1 hover:border-t-error", hoverText: "group-hover/cell:text-error" },
+const tones: Record<CalendarColor, { solid: string; soft: string; text: string; border: string; hoverText: string }> = {
+  primary: { solid: "bg-primary", soft: "bg-brand-1", text: "text-primary", border: "border-t-brand-6", hoverText: "group-hover/cell:text-primary" },
+  secondary: { solid: "bg-secondary", soft: "bg-secondary-1", text: "text-secondary", border: "border-t-secondary-6", hoverText: "group-hover/cell:text-secondary" },
+  success: { solid: "bg-success", soft: "bg-green-1", text: "text-success", border: "border-t-green-6", hoverText: "group-hover/cell:text-success" },
+  info: { solid: "bg-info", soft: "bg-blue-1", text: "text-info", border: "border-t-blue-6", hoverText: "group-hover/cell:text-info" },
+  warning: { solid: "bg-warning", soft: "bg-orange-1", text: "text-warning", border: "border-t-orange-6", hoverText: "group-hover/cell:text-warning" },
+  error: { solid: "bg-error", soft: "bg-red-1", text: "text-error", border: "border-t-red-6", hoverText: "group-hover/cell:text-error" },
 };
 
 /**
@@ -63,7 +63,7 @@ export const calendarTheme = tv({
     body: "mt-6",
     /** 一行：表头行、每一周、年视图的每一季 */
     row: "grid gap-x-2",
-    /** 表头星期；文字套一层与日期胶囊等宽的盒子，靠左 / 居中 / 靠右时都与下方日期对齐 */
+    /** 表头星期；文字套一层与日期标题等宽的盒子，靠左 / 居中 / 靠右时都与下方日期对齐 */
     weekday: "flex h-7 items-center px-1 text-base text-gray-5",
     /** 单元格：日期标题 + 事项区；group/cell 让悬停时日期文字也跟着变色 */
     cell: "group/cell relative min-w-0 cursor-pointer border-t border-gray-4 p-1 transition-colors",
@@ -71,9 +71,9 @@ export const calendarTheme = tv({
     cellHeader: "flex h-6 min-w-0 items-center",
     /**
      * 日期标题：做成按钮，键盘可聚焦、回车即选中；
-     * 圆角胶囊同时承载「今天」描边与「选中」实底两种标记
+     * 选中与今天仅使用文字高亮，不添加日期底色或描边
      */
-    date: "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-base whitespace-nowrap tabular-nums transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
+    date: "inline-flex h-6 min-w-6 items-center justify-center px-1 text-base whitespace-nowrap tabular-nums transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
     /** 农历文字：公历下方的小字；限制宽度，节日名称不会撑破日期格 */
     lunar: "max-w-full min-w-0 truncate text-sm text-gray-6",
     /** 事项区 */
@@ -135,13 +135,18 @@ export const calendarTheme = tv({
     },
     /** 是否今天（年视图里是本月） */
     today: {
-      true: { date: "ring-1 ring-inset" },
+      true: {},
+      false: {},
+    },
+    /** 是否强调今天（年视图为本月），不改变日期选择和无障碍语义 */
+    highlightToday: {
+      true: {},
       false: {},
     },
     /** 是否选中 */
     selected: {
-      true: { date: "text-gray-1" },
-      false: {},
+      true: {},
+      false: { cell: "hover:bg-gray-2" },
     },
   },
   compoundVariants: [
@@ -152,15 +157,13 @@ export const calendarTheme = tv({
       // 有事项：浅底 + 深色顶边 + 深色日期
       { color: color as CalendarColor, hasEvents: true, class: { cell: `${tone.soft} ${tone.border}` } },
       { color: color as CalendarColor, hasEvents: true, inMonth: true, selected: false, class: { date: tone.text } },
-      // 悬停与选中复用「有事项」的外观：任意格子悬停时浅底 + 深色顶边，本月未选中的日期文字同时变深色；
-      // 选中格常驻同样的浅底与顶边，日期本身仍是下面的实底胶囊
-      { color: color as CalendarColor, class: { cell: tone.hover } },
+      // 悬停只改变未选中单元格的底色，选中格始终保留主题浅底与第 6 阶顶边。
       { color: color as CalendarColor, inMonth: true, selected: false, class: { date: tone.hoverText } },
       { color: color as CalendarColor, selected: true, class: { cell: `${tone.soft} ${tone.border}` } },
-      { color: color as CalendarColor, today: true, class: { date: tone.ring } },
+      { color: color as CalendarColor, highlightToday: true, today: true, class: { cell: tone.border, date: `${tone.text} font-medium` } },
       { color: color as CalendarColor, festival: true, class: { lunar: tone.text } },
-      // 选中排在最后：实底盖过描边与文字色
-      { color: color as CalendarColor, selected: true, class: { date: tone.solid } },
+      // 选中日期仅高亮文字，保留日期标题的透明背景。
+      { color: color as CalendarColor, selected: true, class: { date: `${tone.text} font-medium` } },
     ]),
   ],
   defaultVariants: {
@@ -173,6 +176,7 @@ export const calendarTheme = tv({
     hasEvents: false,
     inMonth: true,
     today: false,
+    highlightToday: false,
     selected: false,
   },
 });

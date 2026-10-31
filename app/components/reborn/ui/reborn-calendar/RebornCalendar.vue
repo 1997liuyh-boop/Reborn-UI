@@ -65,7 +65,7 @@ export interface CalendarProps {
    */
   events?: CalendarEvent[];
   /**
-   * 语义色：有事项日期的浅底、顶边与日期文字，选中实底与今天描边，事项圆点的默认色；
+   * 语义色：有事项及选中日期的浅底与顶边、日期标记、可选的本日 / 本月文字高亮、事项圆点的默认色；
    * 同时传给工具栏的年月下拉与月 / 年切换
    * @defaultValue 'primary'
    */
@@ -80,6 +80,11 @@ export interface CalendarProps {
    * @defaultValue false
    */
   border?: boolean;
+  /**
+   * 强调今天（月视图）或本月（年视图），顶边使用 color 对应色板第 6 阶，日期仅高亮文字
+   * @defaultValue false
+   */
+  highlightToday?: boolean;
   /**
    * 农历模式：公历日期下方显示较小的农历日，节日、节气优先，初一显示月名；工具栏显示干支年与生肖
    * @defaultValue false
@@ -130,6 +135,7 @@ const props = withDefaults(defineProps<CalendarProps>(), {
   color: "primary",
   titleAlign: "right",
   border: false,
+  highlightToday: false,
   lunar: false,
   ui: () => ({}),
 });
@@ -411,6 +417,7 @@ const ui = computed(() => {
     view: isYearView.value ? "year" : "month",
     titleAlign: props.titleAlign,
     border: props.border,
+    highlightToday: props.highlightToday,
     lunar: props.lunar,
   });
   // 每格的类名只由几个布尔状态决定，同一次渲染里按状态缓存，几十个格子不必逐个合并类名
@@ -434,8 +441,8 @@ const ui = computed(() => {
     body: () => theme.body({ class: o.body }),
     row: () => cached("row", () => theme.row({ class: o.row })),
     weekday: () => cached("weekday", () => theme.weekday({ class: o.weekday })),
-    cell: (hasEvents: boolean, selected: boolean) =>
-      cached(`cell:${hasEvents}${selected}`, () => theme.cell({ hasEvents, selected, class: o.cell })),
+    cell: (hasEvents: boolean, selected: boolean, today: boolean) =>
+      cached(`cell:${hasEvents}${selected}${today}`, () => theme.cell({ hasEvents, selected, today, class: o.cell })),
     cellHeader: () => cached("cellHeader", () => theme.cellHeader({ class: o.cellHeader })),
     date: (state: CellStyleState) =>
       cached(`date:${state.hasEvents}${state.inMonth}${state.today}${state.selected}`, () => theme.date({ ...state, class: o.date })),
@@ -502,7 +509,7 @@ defineExpose({
           size="md" color="neutral" variant="outlined" border-style="solid" :disabled="!todayVisible"
           @click="selectDate('today')"
         >
-          今天
+          {{ isYearView ? '本月' : '今天' }}
         </RebornButton>
       </slot>
     </div>
@@ -512,7 +519,7 @@ defineExpose({
       <div v-for="(quarter, index) in quarters" :key="index" role="row" :class="ui.row()">
         <div
           v-for="cell in quarter" :key="cell.key" role="gridcell" :aria-selected="cell.isSelected"
-          :class="ui.cell(cell.events.length > 0, cell.isSelected)" @click="pickMonth(cell.month)"
+          :class="ui.cell(cell.events.length > 0, cell.isSelected, cell.isToday)" @click="pickMonth(cell.month)"
         >
           <div :class="ui.cellHeader()">
             <button
@@ -538,14 +545,14 @@ defineExpose({
     <div v-else ref="bodyRef" role="grid" :aria-label="titleText" :class="ui.body()">
       <div role="row" :class="ui.row()">
         <div v-for="weekday in CALENDAR_WEEK_DAYS" :key="weekday" role="columnheader" :class="ui.weekday()">
-          <!-- 与日期胶囊同宽，三种对齐下都和日期上下对齐 -->
+          <!-- 与日期标题同宽，三种对齐下都和日期上下对齐 -->
           <span class="inline-block min-w-6 text-center">{{ weekday }}</span>
         </div>
       </div>
       <div v-for="(week, weekIndex) in weeks" :key="week[0]?.day ?? weekIndex" role="row" :class="ui.row()">
         <div
           v-for="cell in week" :key="cell.day" role="gridcell" :aria-selected="cell.isSelected"
-          :data-type="cell.type" :class="ui.cell(cell.events.length > 0, cell.isSelected)" @click="commit(cell.date)"
+          :data-type="cell.type" :class="ui.cell(cell.events.length > 0, cell.isSelected, cell.isToday)" @click="commit(cell.date)"
         >
           <slot name="date-cell" :data="toCellData(cell)" :events="cell.events">
             <div :class="ui.cellHeader()">

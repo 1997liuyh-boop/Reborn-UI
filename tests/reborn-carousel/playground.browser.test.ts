@@ -63,7 +63,7 @@ async function buildPlayground(contents = demoEntry) {
     'app/components/common/play-ground', 'app/components/common/demo', 'app/components/reborn/ui/reborn-button', 'app/components/reborn/ui/reborn-loading',
   ].map(base => ({ base: resolve(base), pattern: '**/*', negated: false })) });
   // 对照色不依赖组件是否正确使用，避免错误样式让期望令牌也被裁剪。
-  return { script: result.outputFiles[0]!.text, css: compiler.build([...scanner.scan(), 'bg-gray-2', 'text-gray-2', 'enabled:hover:bg-gray-2', 'enabled:hover:border-gray-2', 'hover:text-gray-2']) };
+  return { script: result.outputFiles[0]!.text, css: compiler.build([...scanner.scan(), 'bg-gray-2', 'text-gray-2', 'enabled:hover:bg-gray-2', 'enabled:hover:border-gray-2', 'hover:text-gray-2', 'left-(--carousel-indicator-offset)', 'right-auto', 'order-first', 'ml-0', 'mr-(--carousel-indicator-offset)']) };
 }
 
 it('演练场切换时轮播宽度保持稳定，悬停和箭头不被回显文字挤压干扰', { skip: !browserAvailable }, async () => {
@@ -439,7 +439,7 @@ it('line 为 24×2px，dot 为 6×6px 和 10×6px 描边，间距和容器内边
   });
 });
 
-it('button 分页容器左右 8px、上下 4px，切换前后激活与未激活项的可见尺寸保持一致', { skip: !browserAvailable }, async () => {
+it('button 分页容器随方向交换留白，切换前后激活与未激活项的可见尺寸保持一致', { skip: !browserAvailable }, async () => {
   await withCarousel(async (page) => {
     await page.goto(`${page.url()}?count=4`);
     for (const direction of ['horizontal', 'vertical']) for (const indicatorPosition of ['inside', 'outside']) for (const indicatorBackground of [true, false]) {
@@ -455,7 +455,7 @@ it('button 分页容器左右 8px、上下 4px，切换前后激活与未激活�
           const style = getComputedStyle(element);
           return [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft];
         });
-        assert.deepEqual(padding, ['4px', '8px', '4px', '8px'], '背景开关与内外位置不应改变 button 容器留白');
+        assert.deepEqual(padding, direction === 'vertical' ? ['8px', '4px', '8px', '4px'] : ['4px', '8px', '4px', '8px'], '背景开关与内外位置不应改变当前方向的 button 容器留白');
         const dimensions = await page.locator('.fixture-indicators button').evaluateAll(buttons => buttons.map((button) => {
           const rect = button.getBoundingClientRect();
           const shadow = getComputedStyle(button).boxShadow;
@@ -495,7 +495,7 @@ it('pagination.indicatorBackground 控制全部内置分页背景，关闭不影
   });
 });
 
-it('fraction 由分数字符自然撑开，横向纵向均没有最小宽度', { skip: !browserAvailable }, async () => {
+it('fraction 由分数字符自然撑开，横纵轮播均横向排列', { skip: !browserAvailable }, async () => {
   await withCarousel(async (page) => {
     for (const direction of ['horizontal', 'vertical']) {
       await page.evaluate(value => (window as any).carouselFixture.configure(value), { direction, modelValue: 0, pagination: { type: 'fraction' } });
@@ -506,8 +506,32 @@ it('fraction 由分数字符自然撑开，横向纵向均没有最小宽度', {
       await page.waitForTimeout(700);
       const second = (await container.boundingBox())!;
       assert.equal(first.min, '0px'); assert.ok(first.width < 90, `分数容器不应保留固定宽度：${first.width}`);
-      assert.ok(second.width > first.width + 4, '双位数应自然增加容器宽度');
-      assert.equal(second.height, first.height, '纵向轮播的分数文字也应横向排列');
+      assert.ok(second.width > first.width + 4, '双位数应自然增加横向容器宽度');
+      assert.equal(second.height, first.height, '页码位数改变不影响容器高度');
+      const items = await container.locator('span').evaluateAll(elements => elements.map(element => {
+        const rect = element.getBoundingClientRect(); return { x: rect.x, y: rect.y };
+      }));
+      assert.ok(items[0]!.x < items[1]!.x && items[1]!.x < items[2]!.x, '当前页、分隔符、总页数从左到右排列');
+      assert.equal(items[0]!.y, items[2]!.y, '当前页与总页数保持同一行');
+    }
+    for (const indicatorPosition of ['inside', 'outside']) for (const side of ['right', 'left']) for (const indicatorOffset of [undefined, 0, 24]) {
+      await page.evaluate(async value => {
+        const api = (window as any).carouselFixture; api.configure(value); await api.flush();
+      }, {
+        direction: 'vertical', modelValue: 0, indicatorPosition, indicatorOffset, pagination: { type: 'fraction' },
+        ui: { root: 'fixture-main', indicators: 'fixture-indicators', indicatorWrapper: side === 'right' ? '' : indicatorPosition === 'inside' ? 'left-(--carousel-indicator-offset) right-auto' : 'order-first ml-0 mr-(--carousel-indicator-offset)' },
+      });
+      const bounds = await page.locator('.fixture-indicators').evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const main = document.querySelector('.fixture-main')!.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return { top: rect.top - main.top, innerLeft: rect.left - main.left, innerRight: main.right - rect.right, outerLeft: main.left - rect.right, outerRight: rect.left - main.right, padding: [style.paddingTop, style.paddingRight] };
+      });
+      const offset = indicatorOffset ?? 8;
+      const label = `${indicatorPosition}/${side}/${offset}`;
+      assert.equal(bounds.top, indicatorPosition === 'inside' ? offset : 0, `${label} 分数应位于顶部`);
+      assert.equal(indicatorPosition === 'inside' ? side === 'left' ? bounds.innerLeft : bounds.innerRight : side === 'left' ? bounds.outerLeft : bounds.outerRight, offset, `${label} 保留左右间距`);
+      assert.deepEqual(bounds.padding, ['16px', '4px'], `${label} 保留现有内边距`);
     }
   });
 });
@@ -625,13 +649,44 @@ it('分页背景按类型与内外位置使用灰阶和毛玻璃，文字悬停�
   });
 });
 
-it('progress 使用 2px 平端进度条显示当前页比例，inside 贴顶且 outside 贴底无间隔', { skip: !browserAvailable }, async () => {
+it('指示器线段、激活圆点和按钮留白跟随轮播方向，内外位置一致', { skip: !browserAvailable }, async () => {
+  await withCarousel(async (page) => {
+    await page.goto(`${page.url()}?count=4`);
+    await page.addStyleTag({ content: '* { transition: none !important; }' });
+    for (const direction of ['horizontal', 'vertical']) for (const indicatorPosition of ['inside', 'outside']) for (const type of ['line', 'dot', 'button']) {
+      await page.evaluate(async value => {
+        const api = (window as any).carouselFixture; api.configure(value); await api.flush();
+      }, { direction, indicatorPosition, pagination: { type } });
+      const styles = await page.locator('.fixture-indicators').evaluate(element => {
+        const style = getComputedStyle(element);
+        const active = element.querySelector('[aria-current="true"]')!.getBoundingClientRect();
+        const inactive = element.querySelector('button:not([aria-current])')!.getBoundingClientRect();
+        return { active: [active.width, active.height], inactive: [inactive.width, inactive.height], padding: [style.paddingTop, style.paddingRight], direction: style.flexDirection };
+      });
+      const vertical = direction === 'vertical'; const label = `${direction}/${indicatorPosition}/${type}`;
+      assert.equal(styles.direction, vertical ? 'column' : 'row', label);
+      if (type === 'line') {
+        assert.deepEqual(styles.active, vertical ? [2, 24] : [24, 2], label);
+        assert.deepEqual(styles.inactive, styles.active, label);
+      } else if (type === 'dot') {
+        assert.deepEqual(styles.active, vertical ? [6, 10] : [10, 6], label);
+        assert.deepEqual(styles.inactive, [6, 6], label);
+      } else {
+        assert.deepEqual(styles.active, [20, 20], label);
+        assert.deepEqual(styles.padding, vertical ? ['8px', '4px'] : ['4px', '8px'], label);
+      }
+    }
+  });
+});
+
+it('progress 使用 2px 平端进度条显示页数比例，横向贴顶或贴底，纵向贴侧边从上向下', { skip: !browserAvailable }, async () => {
   await withCarousel(async (page) => {
     await page.goto(`${page.url()}?count=4`);
     for (const direction of ['horizontal', 'vertical']) for (const position of ['inside', 'outside']) for (const indicatorBackground of [true, false]) {
       await page.evaluate(value => (window as any).carouselFixture.configure(value), { direction, modelValue: 0, indicatorPosition: position, indicatorOffset: 32, pagination: { type: 'progress', indicatorBackground } });
       const progress = page.getByRole('progressbar');
       assert.equal(await progress.count(), 1, '渲染真实 RebornProgress 而非导航按钮');
+      assert.equal(await progress.getAttribute('aria-orientation'), direction);
       await page.waitForTimeout(700);
       for (const [modelValue, percent] of [[0, 25], [3, 100], [0, 25]]) {
         await page.evaluate(value => (window as any).carouselFixture.configure({ modelValue: value }), modelValue);
@@ -642,13 +697,44 @@ it('progress 使用 2px 平端进度条显示当前页比例，inside 贴顶且 
           const container = document.querySelector('.fixture-indicators')!;
           const track = container.querySelector('[data-progress-track]')!; const fill = container.querySelector('[data-progress-fill]')!;
           const rect = track.getBoundingClientRect(); const style = getComputedStyle(container);
-          return { x: rect.x - main.x, y: rect.y - main.y, width: rect.width, height: rect.height, mainWidth: main.width, mainHeight: main.height, radius: [getComputedStyle(track).borderRadius, getComputedStyle(fill).borderRadius], fill: fill.getBoundingClientRect().width / rect.width * 100, blur: style.backdropFilter, background: style.backgroundColor, shadow: style.boxShadow };
+          const filled = fill.getBoundingClientRect();
+          return { x: rect.x - main.x, y: rect.y - main.y, width: rect.width, height: rect.height, mainWidth: main.width, mainHeight: main.height, radius: [getComputedStyle(track).borderRadius, getComputedStyle(fill).borderRadius], fillWidth: filled.width / rect.width * 100, fillHeight: filled.height / rect.height * 100, fillTop: filled.top - rect.top, fillLeft: filled.left - rect.left, blur: style.backdropFilter, background: style.backgroundColor, shadow: style.boxShadow };
         });
-        assert.deepEqual([bounds.x, bounds.width, bounds.height], [0, bounds.mainWidth, 2]);
-        assert.equal(bounds.y, position === 'inside' ? 0 : bounds.mainHeight);
-        assert.deepEqual(bounds.radius, ['0px', '0px']); assert.ok(Math.abs(bounds.fill - percent) < 0.1);
+        if (direction === 'vertical') {
+          assert.deepEqual([bounds.y, bounds.width, bounds.height], [0, 2, bounds.mainHeight]);
+          assert.equal(bounds.x, position === 'inside' ? bounds.mainWidth - 2 : bounds.mainWidth);
+          assert.equal(bounds.fillTop, 0, '纵向进度从顶部开始');
+          assert.ok(Math.abs(bounds.fillHeight - percent) < 0.1);
+          assert.equal(bounds.fillWidth, 100);
+        } else {
+          assert.deepEqual([bounds.x, bounds.width, bounds.height], [0, bounds.mainWidth, 2]);
+          assert.equal(bounds.y, position === 'inside' ? 0 : bounds.mainHeight);
+          assert.equal(bounds.fillLeft, 0);
+          assert.ok(Math.abs(bounds.fillWidth - percent) < 0.1);
+        }
+        assert.deepEqual(bounds.radius, ['0px', '0px']);
         assert.deepEqual([bounds.blur, bounds.background, bounds.shadow], ['none', 'rgba(0, 0, 0, 0)', 'none']);
       }
+    }
+    // 断点生效后同样按纵向绘制，并保留将内外进度条移到左侧的样式覆盖。
+    for (const indicatorPosition of ['inside', 'outside']) {
+      await page.evaluate(async value => {
+        const api = (window as any).carouselFixture; api.configure(value); await api.flush();
+      }, {
+        direction: 'horizontal', breakpoints: { 0: { direction: 'vertical' } }, modelValue: 1,
+        indicatorPosition, pagination: { type: 'progress' },
+        ui: { root: 'fixture-main', indicators: 'fixture-indicators', indicatorWrapper: indicatorPosition === 'inside' ? 'left-0 right-auto' : 'order-first' },
+      });
+      await page.waitForTimeout(700);
+      const bounds = await page.evaluate(() => {
+        const main = document.querySelector('.fixture-main')!.getBoundingClientRect();
+        const track = document.querySelector('[data-progress-track]')!.getBoundingClientRect();
+        const fill = document.querySelector('[data-progress-fill]')!.getBoundingClientRect();
+        return { x: track.x - main.x, y: track.y - main.y, height: track.height, mainHeight: main.height, fill: fill.height / track.height * 100 };
+      });
+      assert.equal(await page.getByRole('progressbar').getAttribute('aria-orientation'), 'vertical');
+      assert.deepEqual([bounds.x, bounds.y, bounds.height], [indicatorPosition === 'inside' ? 0 : -2, 0, bounds.mainHeight]);
+      assert.ok(Math.abs(bounds.fill - 50) < 0.1, '左侧进度条仍按页数从上往下填充');
     }
   });
 });

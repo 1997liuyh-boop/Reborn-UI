@@ -58,6 +58,8 @@ tags: [vue, component, scrollbar, layout]
 
 `bounce` 默认开启：滚轮把内容送到顶部 / 底部（横向为最左 / 最右），或已在边缘还继续朝外滚时，滚动层朝越界方向位移 2px 后收回，提示已到边界。
 
+有固定表头时，可用 `bounceTarget` 指定内容层内的回弹目标，例如 `bounce-target=":scope > table > tbody"` 只移动表体，固定表头与滚动层保持原位。目标应保留原有布局占位，避免回弹改变滚动边界；未匹配到元素时不播放回弹。
+
 | 触发方式 | 是否回弹 | 原因 |
 | --- | --- | --- |
 | 滚轮 / 触控板滚到边缘、在边缘继续滚 | 回弹，一次手势只弹一次 | 滚轮停顿 200ms 视为手势结束，触控板惯性不会连弹 |
@@ -73,7 +75,7 @@ tags: [vue, component, scrollbar, layout]
 ```
 
 ::tip
-位移加在滚动层上而不是内容层：内容层向上平移会缩小可滚动区域，停在底部时 `scrollTop` 会被浏览器夹回，回弹结束后就不再贴底；平移滚动层不改变任何滚动量，`scroll` 事件也不会因回弹多派发。嵌套滚动时只有最内层在该方向能滚动的实例回弹，外层不跟着弹。
+默认位移加在滚动层上而不是内容层：内容层向上平移会缩小可滚动区域，停在底部时 `scrollTop` 会被浏览器夹回，回弹结束后就不再贴底；平移滚动层不改变任何滚动量，`scroll` 事件也不会因回弹多派发。嵌套滚动时只有最内层在该方向能滚动的实例回弹，外层不跟着弹。
 ::
 
 ### 边距与圆角自适应
@@ -244,6 +246,7 @@ async function jump() {
 | `hideDelay`      | `number`            | `800`    | 停止滚动后隐藏滚动条的延迟（ms），仅 `always` 为 `false` 时生效。                                                   |
 | `inset`          | `number \| 'auto'`  | `'auto'` | 轨道两端的内缩（px）。`'auto'` 取 `--reborn-scrollbar-gap` 与按容器 `border-radius` 推算值中的较大者，轨道四周都不贴边；传数值则固定为该值，传 `0` 两端贴边。 |
 | `bounce`         | `boolean`           | `true`   | 滚轮滚到顶部 / 底部（横向为最左 / 最右）时是否播放 2px 回弹。只响应滚轮与触控板；拖拽滑块、点击轨道、命令式滚动与触屏不回弹，系统开启减少动态效果时不播放。 |
+| `bounceTarget`   | `string`            | —        | 回弹目标的 CSS 选择器，在内容层内匹配首个元素。不传时回弹整个滚动层；指定后未匹配到元素则不回弹。变更目标时取消旧目标的回弹。 |
 | `verticalOffset` | `number` | `0` | 顶部固定内容高度（px）。负数或非有限值按 0 处理，最大夹至两端内缩后的可用高度；纵轨起点为有效偏移 + 内缩，仅纵向轨道、可视高度与内容高度扣除此偏移，动态变化自动刷新。 |
 | `track`          | `boolean \| string` | `false`  | 轨道是否显形。`false` 为完全透明的悬浮感；`true` 使用内置浅灰凹槽并自动适配暗色；传颜色字符串则用该颜色。           |
 | `scrollDuration` | `number`            | `400`    | 命令式滚动（`scrollTo` / `setScrollTop` / `setScrollLeft`）的默认动画时长（ms），传 `0` 关闭动画。                               |
@@ -315,7 +318,7 @@ async function jump() {
 - **取消也会结束 Promise**。`stopScroll`、用户滚轮、触摸、拖拽、轨道点击、新请求及卸载都会 resolve 旧请求；等待结束不等于必然到达目标。
 - **静默定位仍派发事件**。`silent: true` 只抑制本次滚动引起的淡入，悬停与拖拽照常显示；无位移时不会挂静默标记，避免吞掉后续用户滚动。
 - **减少动态效果时立即定位**。即使传 `animated: true`，系统的 `prefers-reduced-motion: reduce` 仍优先，避免强制动画。
-- **回弹期间滚动层带 `transform`**。320ms 内滚动层内部的 `position: fixed` 元素会以滚动层为定位参照；内容里有未传送到 body 的固定定位元素时传 `:bounce="false"`。
+- **默认回弹期间滚动层带 `transform`**。320ms 内滚动层内部的 `position: fixed` 元素会以滚动层为定位参照；内容里有未传送到 body 的固定定位元素时传 `:bounce="false"`。指定 `bounceTarget` 时仅匹配的目标带 `transform`。
 - **仅修改圆角需手动刷新**。`ResizeObserver` 只观察尺寸；动态改 `border-radius` 后在 `nextTick()` 后调用 `refresh()`，`inset` 和 `verticalOffset` 的变化则会自动刷新。
 
 ### 为什么不用原生滚动条

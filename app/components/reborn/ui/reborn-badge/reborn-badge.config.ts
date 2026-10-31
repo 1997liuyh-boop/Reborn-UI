@@ -23,7 +23,8 @@ const config = {
     label: 'inline-flex items-center justify-center truncate max-w-full min-w-0',
     leadingIcon: 'shrink-0',
     trailingIcon: 'shrink-0',
-    closeButton: 'inline-flex items-center justify-center rounded-full text-gray-6 transition-colors hover:text-gray-9 cursor-pointer focus:outline-none',
+    // 关闭图标继承标签文字颜色，悬停时也保持一致。
+    closeButton: 'inline-flex items-center justify-center rounded-full text-inherit transition-colors cursor-pointer focus:outline-none',
     closeIcon: ''
   },
   /** 徽章变体配置 */

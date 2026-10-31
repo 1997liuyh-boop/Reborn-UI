@@ -66,6 +66,8 @@ Chip 是挂在宿主元素角上的角标。宿主放进默认插槽后，组件
 
 `outline` 与 `textOutline` 垫了一层纸面色底（`bg-gray-1`，暗色模式随主题反转），宿主内容不会透过圆环的空洞或衬在文字下面。
 
+Web 端只有 `solid` 与 `textDot` 带 `ring-1 ring-gray-1` 外圈，用于区分角标与宿主；`outline` 和 `textOutline` 保留自身描边，不增加 ring。
+
 ```vue
 <template>
   <RebornChip variant="outline" color="success">

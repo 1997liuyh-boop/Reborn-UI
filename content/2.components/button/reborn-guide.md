@@ -63,11 +63,15 @@ const steps = [
 
 ::tip
 默认面板使用 8px 圆角、16px 内边距与 `0 2px 12px rgba(0, 0, 0, 0.15)` 阴影。标题和正文均为 14px，关闭按钮独占顶部一行；`:show-overlay="false"` 只隐藏可见遮罩，透明交互拦截和滚动锁定仍然生效。
+
+`color` 可选，省略时保留默认配色。传入 `primary`、`secondary`、`success`、`info`、`warning`、`error` 或 `neutral` 后，面板和箭头使用对应语义色，文字、关闭图标和数字指示使用 `text-gray-1`；点状指示未激活时为 `bg-gray-1/15`，激活时为 `bg-gray-1`。浮层与对话框均生效，可在交互演练场切换。
 ::
 
 ### 步骤指示与按钮
 
 `indicator` 默认是 `counter`，设置为 `dots` 使用点状进度；`hideCounter` 可隐藏两种指示。每一步的按钮配置优先于组件级配置。
+
+传入 `color` 后，上一步、下一步与完成按钮默认使用 `outlined`，尺寸仍为 `sm`；上一步通过按钮 `ui` 设置灰阶 1 的边框与文字，下一步和完成按钮通过 `ui` 设置灰阶 1 的背景。组件级与步骤级按钮配置仍可覆盖默认值，`ui` 按节点合并。
 
 | 配置 | 默认表现 | 典型用途 |
 | --- | --- | --- |
@@ -196,6 +200,7 @@ defineProps<{ message: string; current: number; total: number; finish: () => voi
 | `current` | `number` | `-1` | 支持 `v-model:current`；展开后从 0 开始的步骤索引，`-1` 隐藏引导。 |
 | `defaultCurrent` | `number` | `-1` | 未传入受控 `current` 时的初始步骤。 |
 | `steps` | `GuideStep[]` | - | 必填的步骤树，按深度优先顺序展开。 |
+| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | - | 可选面板语义色；省略时保留默认样式，传入后联动箭头、文字、按钮与步骤指示。 |
 | `mode` | `'popup' \| 'dialog'` | `'popup'` | 面板定位方式，可被步骤级 `mode` 覆盖。 |
 | `indicator` | `'counter' \| 'dots'` | `'counter'` | 数字或点状步骤指示。 |
 | `hideCounter` | `boolean` | `false` | 隐藏默认步骤指示区域。 |

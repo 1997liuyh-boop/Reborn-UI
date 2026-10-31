@@ -391,6 +391,7 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 
 | 插槽名       | 作用域参数       | 描述                                                                                           |
 | ------------ | ---------------- | ---------------------------------------------------------------------------------------------- |
+| `header` | `{ side, year, month, view, focusDate, switchView, navigate }` | 替换每侧面板头部；`month` 为 1–12。`focusDate(date)` 定位主面板并恢复类型对应视图，不提交选中值；`switchView(view)` 切换视图，`navigate(direction, unit)` 翻动当前侧，`direction` 为 `-1` / `1`，`unit` 为 `page` / `year`。未传时保留默认头部。 |
 | `default`    | `DatePickerCell` | 自定义单元格内容，四种视图共用；默认显示年份、`N月`、`第N季度` 或日期数字。                    |
 | `prev-month` | -                | 日期视图「上个月」按钮的图标，默认 `lucide:chevron-left`。                                     |
 | `next-month` | -                | 日期视图「下个月」按钮的图标，默认 `lucide:chevron-right`。                                    |

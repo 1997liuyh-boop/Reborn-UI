@@ -25,6 +25,8 @@ const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 演练场气泡的显隐，回显在预览区 */
 const playgroundOpen = shallowRef(false);
+/** 基础示例由关闭按钮收起。 */
+const basicOpen = shallowRef(false);
 
 /** 重置演练场配置 */
 function resetState() {
@@ -152,22 +154,19 @@ const actions = [
           v-model:open="playgroundOpen" :mode="state.mode" :placement="state.placement" :side-offset="state.sideOffset"
           :arrow="state.arrow" :modal="state.modal" :dismissible="state.dismissible"
           :close-on-scroll="state.closeOnScroll"
+          :ui="{ content: 'w-48' }"
         >
           <RebornButton
             size="lg" :variant="state.mode === 'hover' ? 'soft' : 'filled'"
             :label="state.mode === 'hover' ? '悬停触发' : '点击触发'" class="min-w-[140px]"
           />
 
-          <!-- 浮层自带表面样式（底色 + 描边 + 圆角），内容区不再叠盒子 -->
+          <!-- 浮层自带底色、阴影与内边距，插槽只排列内容。 -->
           <template #content>
-            <div class="w-60 space-y-2">
-              <div class="text-gray-10 flex items-center gap-2 font-medium">
-                <Icon name="lucide:settings-2" class="text-primary size-5" />
-                <span>实时配置预览</span>
-              </div>
-              <p class="text-gray-8 text-sm">
-                placement：<code>{{ state.placement }}</code>，间距 {{ state.sideOffset }}px
-              </p>
+            <div class="flex flex-col items-start gap-2 text-base">
+              <p class="text-gray-10 font-medium">标题</p>
+              <p class="text-gray-8">这是一段内容说明</p>
+              <button type="button" class="text-primary hover:text-brand-7 h-6 cursor-pointer" @click="playgroundOpen = false">关闭</button>
             </div>
           </template>
         </RebornPopover>
@@ -180,12 +179,14 @@ const actions = [
     <DemoSection title="基础用法">
       <template #description>默认插槽放触发器，<code>#content</code> 插槽放气泡内容；默认点击触发、向下弹出、点击外部关闭。</template>
       <DemoBlock>
-        <RebornPopover>
+        <RebornPopover v-model:open="basicOpen" :ui="{ content: 'w-48' }">
           <RebornButton label="点击打开" />
           <template #content>
-            <p class="text-muted w-56 text-sm leading-relaxed">
-              气泡自带底色、边框与内边距，内容区直接放文字即可。
-            </p>
+            <div class="flex flex-col items-start gap-2 text-base">
+              <p class="text-gray-10 font-medium">标题</p>
+              <p class="text-gray-8">这是一段内容说明</p>
+              <button type="button" class="text-primary hover:text-brand-7 h-6 cursor-pointer" @click="basicOpen = false">关闭</button>
+            </div>
           </template>
         </RebornPopover>
       </DemoBlock>
@@ -471,7 +472,7 @@ const actions = [
                   >
                     <Icon
                       :name="action.icon"
-                      :class="['size-4 transition-transform group-hover:scale-110', action.color]"
+                      class="size-4 transition-transform group-hover:scale-110" :class="[action.color]"
                     />
                     <span class="text-muted font-medium">{{ action.label }}</span>
                   </button>

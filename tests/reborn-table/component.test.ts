@@ -79,7 +79,7 @@ it('真实依赖 SSR 输出语义表格，三档高度使用原生刻度且转�
     const html = await render({ size, data: [{ name: '<script>危险</script>', amount: 0 }] });
     assert.match(html, /<table[^>]+aria-label="数据表格"/);
     assert.ok(html.includes(`h-${Number(height) / 4}`));
-    assert.match(html, /text-base font-medium text-gray-9/);
+    assert.match(html, /text-base font-normal text-gray-9/);
     assert.doesNotMatch(html, /leading-|line-height:/);
     assert.match(html, /&lt;script&gt;危险&lt;\/script&gt;/);
     assert.match(html, />0<\/div>/);
@@ -409,10 +409,10 @@ it('相同行键与跨度的数据刷新保留合并格悬停，真正改变行�
   await nextTick();
   t.props.data = t.props.data.map(row => ({ ...row, amount: row.amount + 1 }));
   await nextTick();
-  assert.match(rows()[1]!.props.class, /(?:^| )bg-gray-2(?: |$)/);
+  assert.match(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
   t.props.data = [...t.props.data].reverse();
   await nextTick();
-  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-gray-2(?: |$)/);
+  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
   t.stop();
 });
 
@@ -427,22 +427,22 @@ it('合并单元格与覆盖数据行双向联动悬停，且不会扩散到其�
   assert.equal(typeof merged().props.onMouseenter, 'function');
   merged().props.onMouseenter();
   await nextTick();
-  assert.match(rows()[0]!.props.class, /(?:^| )bg-gray-2(?: |$)/);
-  assert.match(rows()[1]!.props.class, /(?:^| )bg-gray-2(?: |$)/);
-  assert.doesNotMatch(rows()[2]!.props.class, /(?:^| )bg-gray-2(?: |$)/);
+  assert.match(rows()[0]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.match(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.doesNotMatch(rows()[2]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
   merged().props.onMouseleave();
   secondName().props.onMouseenter();
   await nextTick();
-  assert.match(merged().props.class, /(?:^| )bg-gray-2(?: |$)/, '悬停姓名也必须高亮其覆盖的部门单元格');
-  assert.doesNotMatch(rows()[0]!.props.class, /(?:^| )bg-gray-2(?: |$)/, '共享部门单元格高亮不应让另一条姓名行全部高亮');
+  assert.match(merged().props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/, '悬停姓名也必须高亮其覆盖的部门单元格');
+  assert.doesNotMatch(rows()[0]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/, '共享部门单元格高亮不应让另一条姓名行全部高亮');
   secondName().props.onMouseleave();
   await nextTick();
-  assert.doesNotMatch(merged().props.class, /(?:^| )bg-gray-2(?: |$)/);
-  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-gray-2(?: |$)/);
+  assert.doesNotMatch(merged().props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
   t.props.hover = false;
   merged().props.onMouseenter();
   await nextTick();
-  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-gray-2(?: |$)/);
+  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
   t.stop();
 });
 

@@ -237,6 +237,80 @@ it('面板样式、点状步骤及四方向定位满足规范，箭头与目标�
   });
 });
 
+it('color 动态切换联动两种面板、箭头、文字和按钮，清空后恢复默认样式', { skip: !browserAvailable }, async () => {
+  await withGuide(async (page) => {
+    await configure(page, { current: 1, steps: [
+      { element: '#target', title: '第一步' },
+      { element: '#target', title: '有色面板', body: '引导内容' },
+      { element: '#target', title: '最后一步' },
+    ] });
+    for (const mode of ['popup', 'dialog']) {
+      for (const color of ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral']) {
+        await configure(page, { mode, color });
+        const actual = await page.evaluate((value) => {
+          const panel = document.querySelector('.fixture-panel')!;
+          const probe = document.createElement('span');
+          panel.append(probe);
+          probe.style.color = `var(--color-${value})`;
+          const background = getComputedStyle(probe).color;
+          probe.style.color = 'var(--color-gray-1)';
+          const foreground = getComputedStyle(probe).color;
+          probe.remove();
+          const arrow = document.querySelector('.fixture-arrow');
+          const prev = Array.from(panel.querySelectorAll('button')).find(button => button.textContent === '上一步')!;
+          const next = Array.from(panel.querySelectorAll('button')).find(button => button.textContent === '下一步')!;
+          const nextStyle = getComputedStyle(next);
+          return {
+            background, foreground, panel: getComputedStyle(panel).backgroundColor,
+            arrow: arrow ? getComputedStyle(arrow).backgroundColor : null,
+            text: ['.fixture-title', '.fixture-body', '.fixture-counter', '[aria-label="关闭引导"]'].map(selector => getComputedStyle(panel.querySelector(selector)!).color),
+            prev: { border: getComputedStyle(prev).borderColor, color: getComputedStyle(prev).color },
+            next: { background: nextStyle.backgroundColor, color: nextStyle.color, border: nextStyle.borderColor, width: nextStyle.borderTopWidth, height: next.getBoundingClientRect().height },
+          };
+        }, color);
+        assert.equal(actual.panel, actual.background, `${mode} ${color} 使用对应面板背景`);
+        assert.equal(actual.arrow, mode === 'popup' ? actual.background : null);
+        assert.deepEqual(actual.text, Array.from({ length: 4 }, () => actual.foreground));
+        assert.deepEqual(actual.prev, { border: actual.foreground, color: actual.foreground });
+        assert.deepEqual(actual.next, { background: actual.foreground, color: color === 'neutral' ? 'rgb(29, 33, 41)' : actual.background, border: actual.foreground, width: '1px', height: 24 });
+      }
+    }
+    await configure(page, { color: 'primary', indicator: 'dots', mode: 'popup' });
+    const dots = await page.locator('.fixture-dot').evaluateAll(elements => elements.map(element => getComputedStyle(element).backgroundColor));
+    assert.equal(dots[1], 'rgb(255, 255, 255)');
+    assert.equal(dots[0], dots[2]);
+    assert.match(dots[0]!, /\/ 0\.15\)/, '未激活指示点使用灰阶 1 的 15% 透明度');
+    await page.getByRole('button', { name: '下一步', exact: true }).click();
+    const finish = page.getByRole('button', { name: '完成', exact: true });
+    await finish.waitFor();
+    assert.equal(await finish.evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(255, 255, 255)');
+    await configure(page, { current: 1, color: undefined, indicator: 'counter' });
+    assert.equal(await page.locator('.fixture-panel').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(255, 255, 255)');
+    assert.equal(await page.locator('.fixture-title').evaluate(element => getComputedStyle(element).color), 'rgb(29, 33, 41)');
+    assert.equal(await page.getByRole('button', { name: '下一步', exact: true }).evaluate(element => getComputedStyle(element).borderTopWidth), '0px');
+  });
+});
+
+it('有色面板保留组件与步骤级按钮覆盖，ui 配色按节点合并', { skip: !browserAvailable }, async () => {
+  await withGuide(async (page) => {
+    await configure(page, {
+      current: 0, color: 'primary',
+      nextButtonProps: { size: 'md', ui: { base: 'text-gray-1 bg-error' } },
+      steps: [
+        { element: '#target', title: '自定义按钮', nextButtonProps: { label: '继续引导', size: 'lg', ui: { base: 'bg-success', label: 'font-medium' } } },
+        { element: '#target', title: '完成步骤' },
+      ],
+    });
+    const next = page.getByRole('button', { name: '继续引导', exact: true });
+    assert.equal(await next.evaluate(element => element.getBoundingClientRect().height), 40, '步骤尺寸覆盖组件级尺寸和默认尺寸');
+    assert.equal(await next.evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(129, 226, 44)', '步骤背景覆盖组件配置');
+    assert.equal(await next.evaluate(element => getComputedStyle(element).color), 'rgb(255, 255, 255)', '保留组件级 ui 的文字配色');
+    assert.equal(await next.locator('span').evaluate(element => getComputedStyle(element).fontWeight), '500');
+    await next.click();
+    await page.getByRole('heading', { name: '完成步骤', exact: true }).waitFor();
+  });
+});
+
 it('整体组件替换获得上下文和导航动作，缺失目标退回屏幕中心', { skip: !browserAvailable }, async () => {
   await withGuide(async (page) => {
     await page.evaluate(() => (window as any).guideFixture.custom());

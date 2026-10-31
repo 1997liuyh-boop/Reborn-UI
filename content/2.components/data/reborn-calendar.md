@@ -18,9 +18,9 @@ badge: New
 
 Calendar 把一个月的日期铺成周日开头的七列网格，每个日期格分上下两段：上面是日期（默认靠右），下面是 65px 高的事项区。`v-model`、`range`、`controller-type`、`formatter`、`date-cell` / `header` 插槽与 `selectDate` 等实例方法沿用 Element Plus `el-calendar` 的命名，仅 Web 端实现。
 
-数据驱动方式是 `events` + `v-model`：`events` 是 `{ date, title, color? }` 数组，按 `date` 落到对应的日期格，年视图里按月汇总；`v-model` 是选中日期，视图始终停在选中日期所在的月份——翻页、改年月下拉、点「今天」都是在挪选中日期，视图随之跟过去。`color` 决定有事项日期的浅底、顶边与日期文字——悬停任意日期、以及选中的日期也显示同样的浅底与顶边——并传给工具栏的年月下拉与月 / 年切换；事项自己的 `color` 只改它的圆点，两者互不影响。
+数据驱动方式是 `events` + `v-model`：`events` 是 `{ date, title, color? }` 数组，按 `date` 落到对应的日期格，年视图里按月汇总；`v-model` 是选中日期，视图始终停在选中日期所在的月份——翻页、改年月下拉、点「今天」都是在挪选中日期，视图随之跟过去。`color` 决定有事项及选中单元格的浅底、顶边与日期文字，并传给工具栏的年月下拉与月 / 年切换；未选中单元格悬停使用 `bg-gray-2`，保留原有顶边颜色。事项自己的 `color` 只改它的圆点，两者互不影响。
 
-其余 API 分五组：视图由 `v-model:mode`（月 / 年）与 `range`（只显示一段日期）控制；外观由 `title-align`（标题对齐）、`border`（直角边框）与 `lunar`（农历）控制；工具栏由 `controller-type`（年月下拉 / 翻页按钮）与 `formatter`（下拉文案）控制；日期换算由 `timezone`（时区）与 `value-format`（字符串绑定值）控制；`panel-change` 通知换月换年。`date-cell` 与 `header` 两个插槽分别替换日期格内容与整个工具栏，编辑入口和弹窗可在业务层自由组合。
+其余 API 分五组：视图由 `v-model:mode`（月 / 年）与 `range`（只显示一段日期）控制；外观由 `title-align`（标题对齐）、`border`（直角边框）、`highlight-today`（本日 / 本月文字高亮，默认关闭）与 `lunar`（农历）控制；工具栏由 `controller-type`（年月下拉 / 翻页按钮）与 `formatter`（下拉文案）控制；日期换算由 `timezone`（时区）与 `value-format`（字符串绑定值）控制；`panel-change` 通知换月换年。`date-cell` 与 `header` 两个插槽分别替换日期格内容与整个工具栏，编辑入口和弹窗可在业务层自由组合。
 
 ### 何时使用
 
@@ -42,6 +42,8 @@ Calendar 把一个月的日期铺成周日开头的七列网格，每个日期�
 
 `v-model` 绑定选中日期（默认是当天零点的 `Date`，设置 `value-format` 后是字符串）；未选中时视图停在本月。点任意日期即选中，点上下月补位的日期会跟着翻到那个月。
 
+`highlight-today` 默认 `false`；开启后，月视图中的今天、年视图中的本月增加 `color` 对应色板第 6 阶的顶边与日期文字高亮。选中单元格使用第 1 阶浅底和第 6 阶顶边，悬停仍保留选中态；未选中单元格悬停仅改为 `bg-gray-2`，不改变边框颜色。
+
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -60,7 +62,7 @@ const value = ref<Date>()
 
 | 设置位置 | 影响范围 | 典型用途 |
 | --- | --- | --- |
-| 日历的 `color` | 有事项日期的浅底、顶边、日期文字，选中实底、今天描边、圆点默认色，以及工具栏的年月下拉与月 / 年切换 | 让整张日历与页面主题一致 |
+| 日历的 `color` | 有事项及选中单元格的浅底、顶边、日期文字，日期文字高亮、可选的本日 / 本月文字高亮、圆点默认色，以及工具栏的年月下拉与月 / 年切换 | 让整张日历与页面主题一致 |
 | 事项的 `color` | 只有该条事项的圆点 | 用颜色区分事项类型（发布、故障、截止） |
 
 ```vue
@@ -165,7 +167,7 @@ const mode = ref<'month' | 'year'>('year')
 
 ### 工具栏控制器
 
-`controller-type` 决定工具栏左侧的切换控件，两种都带「月 / 年」切换，右侧都是「今天」。
+`controller-type` 决定工具栏左侧的切换控件，两种都带「月 / 年」切换，右侧按钮在月视图显示「今天」，年视图显示「本月」，点击回到当前日期所在的月份。
 
 | `controller-type` | 左侧控件 | 典型用途 |
 | --- | --- | --- |
@@ -286,9 +288,10 @@ const calendar = ref()
 | `controllerType` | `'select' \| 'button'` | `'select'` | 工具栏左侧控件：年月下拉 / 前后翻页按钮加年月标题。 |
 | `formatter` | `(value: number, type: 'year' \| 'month') => string \| number` | - | 年份、月份下拉选项的文案；月份的 `value` 为 1~12。不传时为「2026 年」「10 月」。 |
 | `events` | `CalendarEvent[]` | `[]` | 事项数据 `{ date, title, color?, ...自定义字段 }`；`date` 无法解析的事项被跳过。 |
-| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error'` | `'primary'` | 有事项日期的浅底、顶边、日期文字，选中实底、今天描边、事项圆点的默认色，以及工具栏年月下拉与月 / 年切换的颜色。 |
+| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error'` | `'primary'` | 有事项及选中单元格的第 1 阶浅底与第 6 阶顶边、日期标记、可选的本日 / 本月文字高亮、事项圆点默认色，以及工具栏年月下拉与月 / 年切换的颜色。 |
 | `titleAlign` | `'left' \| 'center' \| 'right'` | `'right'` | 表头星期、公历日期与下方农历文字的水平对齐。 |
 | `border` | `boolean` | `false` | 边框模式：主体加无圆角外框，格子之间画分隔线，列间距取消。 |
+| `highlightToday` | `boolean` | `false` | 月视图强调今天、年视图强调本月，单元格顶边与日期文字高亮使用 color 对应色板第 6 阶；不影响选中状态、今天按钮和日期的无障碍语义。 |
 | `lunar` | `boolean` | `false` | 农历模式：公历日期下方以较小字号显示节日 / 节气 / 月名 / 日名，工具栏显示干支年与生肖；运行环境不支持 Intl 中国历法时不显示。 |
 | `timezone` | `string` | - | IANA 时区名（如 `'Asia/Shanghai'`）。决定「今天」、带时区的时刻落在哪天，以及向外派发的 `Date` 取哪个时区的零点；不传用本地时区，非法名称警告后退回本地时区。 |
 | `valueFormat` | `string` | - | dayjs 格式串（如 `'YYYY-MM-DD'`）。设置后 `v-model` 收发该格式的字符串，不经过 `Date` 的时区换算。 |
@@ -335,9 +338,9 @@ const calendar = ref()
 | body | 日历主体，默认 `mt-6`（与工具栏间隔 24px）。 |
 | row | 表头行与每一行单元格，默认 `grid gap-x-2`，月视图 7 列、年视图 4 列；边框模式下 `gap-x-0`。 |
 | weekday | 表头星期，默认 `h-7 text-base text-gray-5`，对齐随 `titleAlign`。 |
-| cell | 单元格，默认 `border-t border-gray-4 p-1`；有事项、悬停与选中时叠加语义色浅底与顶边，边框模式下补左分隔线。 |
+| cell | 单元格，默认 `border-t border-gray-4 p-1`；有事项或选中时使用主题第 1 阶浅底与第 6 阶顶边，highlightToday 开启时当前单元格使用第 6 阶顶边。未选中格悬停仅使用 bg-gray-2，保留原有边框；边框模式下补灰色左分隔线。 |
 | cellHeader | 日期标题容器，公历在上、农历在下，对齐随 `titleAlign`。**仅在不使用 `date-cell` 插槽时渲染**，下同。 |
-| date | 日期标题按钮，默认 `text-base text-gray-9` 的圆角胶囊；补位日期 `text-gray-5`。 |
+| date | 日期标题按钮，默认 `text-base text-gray-9`；补位日期 `text-gray-5`。选中或开启 highlightToday 后的本日 / 本月仅使用主题文字色和中等字重，不添加底色或描边。 |
 | lunar | 公历日期下方的农历文字，默认 `text-sm text-gray-6`，小于公历的 `text-base`；节日与节气用语义色，未开启 `lunar` 时不渲染。 |
 | content | 事项区，默认 `h-[65px] pt-0.5`。 |
 | eventList | 事项列表，超出事项区时纵向滚动；当天没有事项时不渲染。 |
@@ -360,7 +363,7 @@ const calendar = ref()
 - **事项按天归档，不支持跨天事项**。`date` 只取到日，同一条事项不会铺满多天；跨天的会议需要按天拆成多条。
 - **插槽会连带替换样式节点**。用了 `date-cell` 后默认的日期标题、农历文字与事项列表一起被替换，`cellHeader` / `date` / `lunar` / `content` / `eventList` / `event` / `eventDot` / `eventTitle` 这些 `ui` 键随之失效；`header` 插槽同理会让 `controller` / `title` / `select` / `navButton` 失效。
 - **默认的 `Date` 绑定值会在序列化时「差一天」**。东八区的 10 月 20 日零点 `toISOString()` 是 `2026-10-19T16:00:00.000Z`，这是 `Date` 表示时刻的固有行为；要把选中日期交给接口，用 `value-format` 收发字符串。
-- **未传 `timezone` 时，首屏按服务器时区渲染，挂载后切到用户时区**。服务端时区与当天日期通过根节点的 `data-calendar-zone`、`data-calendar-today` 携带到客户端，以 `id`（缺省为 Vue `useId()`）找到对应快照，水合前两端都按它计算「今天」、视图月份与事项落格，避免水合只修文本不修类名、「今天」描边停在服务端结果上；挂载后改按用户本地时区重算并经正常更新修正，之后在该时区的下一个零点自动刷新。服务器与用户不在同一时区时，首屏的「今天」与月份可能与挂载后不同，月份变化会派发一次 `panel-change`；需要首屏就是最终结果时传 `timezone`。
+- **未传 `timezone` 时，首屏按服务器时区渲染，挂载后切到用户时区**。服务端时区与当天日期通过根节点的 `data-calendar-zone`、`data-calendar-today` 携带到客户端，以 `id`（缺省为 Vue `useId()`）找到对应快照，水合前两端都按它计算「今天」、视图月份与事项落格，避免水合只修文本不修类名、「今天」文字高亮停在服务端结果上；挂载后改按用户本地时区重算并经正常更新修正，之后在该时区的下一个零点自动刷新。服务器与用户不在同一时区时，首屏的「今天」与月份可能与挂载后不同，月份变化会派发一次 `panel-change`；需要首屏就是最终结果时传 `timezone`。
 - **农历依赖运行环境的 Intl 中国历法**。现代浏览器与带完整 ICU 的 Node 都支持；不支持的环境里 `lunar` 静默不显示。节气只覆盖 2000–2099 年，范围外只显示农历日名。
 - **事项管理由业务层维护**。日历不内置编辑按钮或新增、编辑事件；在 `date-cell` 插槽里组合右键菜单、弹窗和输入框，更新传入的 `events` 后月视图与年视图会同步展示。需要刷新后保留事项时，还需自行保存到接口或本地存储。
 - **事项行高有意偏离字号令牌**。设计稿的事项标题行高是 150%（21px），而 `text-base` 令牌自带 22px；事项区去掉 2px 顶距后正好放下 3 条 21px 的事项，所以 `eventTitle` 叠了 `leading-normal`，改字号时记得一起调 `content` 的高度。

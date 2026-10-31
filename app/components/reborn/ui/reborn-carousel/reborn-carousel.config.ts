@@ -57,6 +57,7 @@ export default {
     indicatorTotal: "group-hover/carousel-pagination:font-bold",
     // 通过 RebornProgress 的 ui 覆盖高度和两端圆角，不改公共进度条组件。
     progress: "w-full gap-0 text-(--carousel-color)",
+    progressRail: "",
     progressTrack: "h-0.5 rounded-none",
     progressFill: "rounded-none",
     // 激活状态幻灯片
@@ -225,19 +226,19 @@ export default {
         indicatorActive: "enabled:hover:bg-(--carousel-color)",
         indicatorInactive: "bg-gray-4",
       },
-      // 点型：普通项为圆点，激活项横向延长。
+      // 点型：普通项为圆点，激活项沿轮播方向延长。
       dot: {
         indicators: "rounded-full",
         indicator: "h-1.5",
         indicatorActive: "w-2.5 border border-gray-10 bg-transparent enabled:hover:border-(--carousel-color)",
         indicatorInactive: "w-1.5 bg-gray-10",
       },
-      // 进度条始终横向铺满，背景开关不影响轨道，不继承浮动分页的留白。
+      // 进度条沿轮播方向铺满，背景开关不影响轨道，不继承浮动分页的留白。
       progress: {
         indicatorWrapper: "w-full",
         indicators: "w-full flex-row gap-0 rounded-none p-0",
       },
-      // 分数型：文字自然撑开，纵向轮播也不把分数字符拆成一列。
+      // 分数型：文字自然撑开，始终按当前页 / 总页数横向排列。
       fraction: {
         indicators: "min-w-0 flex-row gap-1 rounded-full px-4 py-1 text-base tabular-nums",
       },
@@ -301,8 +302,27 @@ export default {
     { indicatorPosition: "inside" as const, indicatorType: "line" as const, indicatorBackground: true, class: { indicators: "bg-gray-10/30 ring-gray-1/20" } },
     { indicatorPosition: "inside" as const, indicatorType: "line" as const, class: { indicatorActive: "bg-gray-1" } },
     { indicatorPosition: "outside" as const, indicatorType: "line" as const, class: { indicatorActive: "bg-gray-5" } },
-    { indicatorPosition: "inside" as const, indicatorType: "progress" as const, class: { indicatorWrapper: "inset-x-0 inset-y-auto top-0 bottom-auto items-stretch" } },
-    { indicatorPosition: "outside" as const, indicatorType: "progress" as const, class: { indicatorWrapper: "static inset-auto mt-0 items-stretch" } },
+    { direction: "horizontal" as const, indicatorPosition: "inside" as const, indicatorType: "progress" as const, class: { indicatorWrapper: "inset-x-0 inset-y-auto top-0 bottom-auto items-stretch" } },
+    { direction: "horizontal" as const, indicatorPosition: "outside" as const, indicatorType: "progress" as const, class: { indicatorWrapper: "static inset-auto mt-0 items-stretch" } },
+    // 纵向分页同时交换指示项的长短轴与容器留白，避免类型变体覆盖方向。
+    { direction: "vertical" as const, indicatorType: "line" as const, class: { indicator: "h-6 w-0.5" } },
+    { direction: "vertical" as const, indicatorType: "dot" as const, class: { indicator: "w-1.5", indicatorActive: "h-2.5 w-1.5", indicatorInactive: "h-1.5" } },
+    { direction: "vertical" as const, indicatorType: "fraction" as const, class: { indicatorWrapper: "self-start", indicators: "flex-row px-1 py-4" } },
+    // 纵向分数默认置于右上角；偏移交给类名使用，保留 ui 切换到左上角的能力。
+    { direction: "vertical" as const, indicatorPosition: "inside" as const, indicatorType: "fraction" as const, class: { indicatorWrapper: "inset-auto top-(--carousel-indicator-offset) right-(--carousel-indicator-offset) items-start" } },
+    { direction: "vertical" as const, indicatorPosition: "outside" as const, indicatorType: "fraction" as const, class: { indicatorWrapper: "mt-0 ml-(--carousel-indicator-offset)" } },
+    { direction: "vertical" as const, indicatorType: "button" as const, class: { indicators: "px-1 py-2" } },
+    // 仅在轮播局部将公共进度条改为纵向，覆盖其行内填充宽度，高度复用同一页数比例。
+    { direction: "vertical" as const, indicatorType: "progress" as const, class: {
+      indicatorWrapper: "w-auto mt-0 items-stretch",
+      indicators: "h-full w-auto flex-col",
+      progress: "h-full w-auto min-h-0 flex-col",
+      progressRail: "min-h-0 flex-col",
+      progressTrack: "h-auto w-0.5",
+      progressFill: "bottom-auto h-(--carousel-progress) w-full! transition-[height]",
+    } },
+    { direction: "vertical" as const, indicatorPosition: "inside" as const, indicatorType: "progress" as const, class: { indicatorWrapper: "inset-y-0 right-0 left-auto" } },
+    { direction: "vertical" as const, indicatorPosition: "outside" as const, indicatorType: "progress" as const, class: { indicatorWrapper: "static inset-auto self-stretch" } },
   ],
   defaultVariants: {
     direction: "horizontal" as (typeof carouselDirections)[number],
