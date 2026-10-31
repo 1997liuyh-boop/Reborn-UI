@@ -37,7 +37,7 @@ badge: New
 
 ### 七种状态
 
-`icon` 决定图标区的字形与配色，默认 `info`。前四种是语义反馈，后三种是 HTTP 状态码；状态码不额外配色，而是复用语义色——403 是权限拦截走警示色，404 只是资源不存在、不算故障走信息色，500 是服务端故障走错误色。
+`icon` 决定图标区的字形与配色，默认 `info`。Web 默认字形铺满 72×72px 的图标区。前四种是语义反馈，后三种是 HTTP 状态码；状态码不额外配色，而是复用语义色——403 是权限拦截走警示色，404 只是资源不存在、不算故障走信息色，500 是服务端故障走错误色。
 
 | `icon` | 图标 | 配色 | 典型用途 |
 | --- | --- | --- | --- |
@@ -288,7 +288,7 @@ badge: New
 | --- | --- |
 | `root` | 根容器，默认 `flex w-full flex-col items-center gap-6 text-center`（UniApp `gap-[48rpx]`）。改段间距、改左对齐都在这里。 |
 | `icon` | 图标区底板，默认 `flex size-18 shrink-0 items-center justify-center rounded-full` 加语义色淡底（UniApp `size-[144rpx]`）。`icon` 为 `null` 时默认类名变成 `size-auto rounded-none bg-transparent`。 |
-| `iconGlyph` | 图标字形，默认 `size-8 shrink-0`（UniApp `size-[64rpx]`）。**只管尺寸**：UniApp 端的 `i-lucide-*` 字形类单独挂在节点上，不走这个键。提供 `icon` 插槽时该节点不渲染，此键随之失效。 |
+| `iconGlyph` | 图标字形，Web 默认 `size-full shrink-0`，铺满 72px 图标区（UniApp `size-[64rpx]`）。**只管尺寸**：UniApp 端的 `i-lucide-*` 字形类单独挂在节点上，不走这个键。提供 `icon` 插槽时该节点不渲染，此键随之失效。 |
 | `content` | 标题与描述的包裹层，默认 `flex min-w-0 max-w-full flex-col items-center gap-2`（UniApp `gap-[16rpx]`）。标题与描述之间的 8px 在这里改。 |
 | `title` | 标题节点，默认 `text-2xl font-medium leading-[1.5] text-gray-10`（UniApp `text-48 ... text-gray-8 dark:text-gray-1`）。 |
 | `subTitle` | 描述节点，默认 `text-base font-normal leading-[1.5] text-gray-7`（UniApp `text-28 ... text-gray-7 dark:text-gray-4`）。 |
@@ -318,7 +318,7 @@ badge: New
 | 段间距 | 24px（`gap-6`） | 48rpx（`gap-[48rpx]`） |
 | 标题与描述间距 | 8px（`gap-2`） | 16rpx（`gap-[16rpx]`） |
 | 操作区元素间距 | 12px（`gap-3`） | 24rpx（`gap-[24rpx]`） |
-| 图标底板 / 字形 | 72px / 32px | 144rpx / 64rpx |
+| 图标底板 / 字形 | 72px / 铺满底板（默认 72px） | 144rpx / 64rpx |
 | 标题字号 | 24px（`text-2xl`） | 48rpx（`text-48`） |
 | 描述字号 | 14px（`text-base`，本仓库把 `--text-base` 改写成 14px） | 28rpx（`text-28`） |
 | 文字颜色 | `text-gray-10` / `text-gray-7`，色阶随暗色模式反转，无需 `dark:` | `text-gray-8 dark:text-gray-1` / `text-gray-7 dark:text-gray-4`，色阶静态且止于 `gray-8` |

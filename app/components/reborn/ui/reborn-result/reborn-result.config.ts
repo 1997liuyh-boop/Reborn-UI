@@ -48,9 +48,9 @@ export const resultTheme = tv({
   slots: {
     // 图标 /（标题 + 描述）/ 额外区三段，段间 gap-6（24px），整体居中
     root: "reborn-result flex w-full flex-col items-center gap-6 text-center",
-    // 72px 圆形底板，承载 32px 字形
+    // 72px 圆形底板，默认字形铺满整个图标区域。
     icon: "flex size-18 shrink-0 items-center justify-center rounded-full",
-    iconGlyph: "size-8 shrink-0",
+    iconGlyph: "size-full shrink-0",
     // 标题与描述同属一段，段内 gap-2（8px）
     // 行高取令牌自带的 32 / 22px，不再叠 leading-[1.5]：多行标题的段间距由 gap-2 统一给出
     content: "flex min-w-0 max-w-full flex-col items-center gap-2",
@@ -83,7 +83,7 @@ export interface ResultUI {
   root?: string;
   /** 图标区底板：72px 圆形 + 语义色淡底 */
   icon?: string;
-  /** 图标字形：32px */
+  /** 图标字形：铺满图标区，默认 72px */
   iconGlyph?: string;
   /** 标题 + 描述的包裹层 */
   content?: string;
