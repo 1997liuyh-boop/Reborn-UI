@@ -153,7 +153,7 @@ export default {
     itemThumb: 'size-10 shrink-0 rounded-[2px] object-cover',
     // 名称容器只收缩不伸展：错误图标、暂停提示要紧跟在名称后面，操作按钮组再用 ml-auto 推到最右。
     itemName: 'min-w-0 shrink grow-0',
-    itemStatus: 'flex shrink-0 items-center text-red-6 outline-none',
+    itemStatus: 'flex shrink-0 items-center text-error outline-none',
     itemActions: 'ml-auto flex shrink-0 items-center gap-[4px]',
     // 暂停 / 继续 / 重试按钮常驻显示，不像删除按钮那样在 text 形态下悬停才出现。
     itemControl: 'flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-gray-8 transition-[color,background-color] outline-none hover:bg-gray-2 focus-visible:ring-2 focus-visible:ring-primary',
@@ -202,7 +202,7 @@ export default {
       // 暂停时名称后跟一段灰字「已暂停」；进度条转灰由模板通过 RebornProgress 的 ui.root 处理。
       paused: { itemStatus: 'text-sm text-gray-6' },
       success: { item: 'text-primary' },
-      fail: { item: 'text-red-6', card: 'border-red-6 bg-red-1' },
+      fail: { item: 'text-error', card: 'border-error bg-error-soft' },
     },
     drag: {
       true: {},
@@ -215,10 +215,10 @@ export default {
     },
     // 所在表单项校验失败：拖拽区与照片墙入口的虚线描边改为错误色；排在 dragover 之前，拖入文件时仍显示主色高亮。
     error: {
-      true: { dragger: 'border-red-5', trigger: 'border-red-5' },
+      true: { dragger: 'border-error', trigger: 'border-error' },
     },
     dragover: {
-      true: { dragger: 'border-primary bg-brand-1', trigger: 'border-primary' },
+      true: { dragger: 'border-primary bg-primary-soft', trigger: 'border-primary' },
     },
     // 禁用时子元素不接收指针：否则触发区里的图标、自定义按钮会露出各自的光标，盖掉外层的禁用光标。
     // 点击与拖放仍落在触发区本身，由 openPicker / onDrop 里的禁用判断拦下。
@@ -237,9 +237,9 @@ export default {
     { listType: 'picture-card', disabled: false, class: { trigger: 'hover:border-primary hover:text-primary focus-visible:border-primary' } },
     { listType: 'picture-card', disabled: true, class: { trigger: 'text-gray-5' } },
     // 失败的行操作按钮标红；text 下失败的行删除按钮常驻，不必悬停就能看到如何清掉它。
-    { listType: ['text', 'picture'], status: 'fail', class: { itemAction: 'text-red-6', itemControl: 'text-red-6' } },
+    { listType: ['text', 'picture'], status: 'fail', class: { itemAction: 'text-error', itemControl: 'text-error' } },
     { listType: 'text', status: 'fail', class: { itemAction: 'opacity-100' } },
-    { listType: 'picture', status: 'fail', class: { item: 'border-red-6' } },
+    { listType: 'picture', status: 'fail', class: { item: 'border-error' } },
     // 加载图标沿用 40px 占位，但不显示普通文件图标的背景。
     { listType: 'picture', status: 'uploading', class: { itemIcon: 'bg-transparent' } },
     // 图片列表的进度条右侧再让出一个 24px 按钮与 4px 间距。

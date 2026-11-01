@@ -32,8 +32,8 @@ export default {
         actions: 'absolute pointer-events-none flex gap-3 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] origin-center',
         // 触发按钮基础样式
         trigger: 'pointer-events-auto flex items-center justify-center rounded-full transition-transform active:scale-95 duration-200 cursor-pointer shrink-0',
-        // 触发按钮内图标样式
-        icon: 'text-white text-3xl',
+        // 触发按钮内图标样式：继承触发器上与实底配对的前景色
+        icon: 'text-current text-3xl',
         // 分割线样式
         divider: ''
     },
@@ -58,15 +58,15 @@ export default {
                 actions: 'absolute left-1/2 top-1/2 size-0 pointer-events-none opacity-0 transition-opacity duration-300'
             }
         },
-        /** 颜色定义 */
+        /** 颜色定义：实底与配对前景成对给出，图标及胶囊内未自定颜色的内容随之保持可读 */
         color: {
-            primary: { trigger: 'bg-primary', capsuleWrapper: 'bg-primary' },
-            secondary: { trigger: 'bg-secondary', capsuleWrapper: 'bg-secondary' },
-            success: { trigger: 'bg-success', capsuleWrapper: 'bg-success' },
-            info: { trigger: 'bg-info', capsuleWrapper: 'bg-info' },
-            warning: { trigger: 'bg-warning', capsuleWrapper: 'bg-warning' },
-            error: { trigger: 'bg-error', capsuleWrapper: 'bg-error' },
-            neutral: { trigger: 'bg-neutral text-white', capsuleWrapper: 'bg-neutral text-white' },
+            primary: { trigger: 'bg-primary text-primary-foreground', capsuleWrapper: 'bg-primary text-primary-foreground' },
+            secondary: { trigger: 'bg-secondary text-secondary-foreground', capsuleWrapper: 'bg-secondary text-secondary-foreground' },
+            success: { trigger: 'bg-success text-success-foreground', capsuleWrapper: 'bg-success text-success-foreground' },
+            info: { trigger: 'bg-info text-info-foreground', capsuleWrapper: 'bg-info text-info-foreground' },
+            warning: { trigger: 'bg-warning text-warning-foreground', capsuleWrapper: 'bg-warning text-warning-foreground' },
+            error: { trigger: 'bg-error text-error-foreground', capsuleWrapper: 'bg-error text-error-foreground' },
+            neutral: { trigger: 'bg-neutral text-neutral-foreground', capsuleWrapper: 'bg-neutral text-neutral-foreground' },
         },
         /** 尺寸定义 */
         size: {

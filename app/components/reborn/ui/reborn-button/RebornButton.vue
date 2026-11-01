@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { buttonBorderStyles, buttonColors, buttonSizes, buttonVariants } from './reborn-button.config';
+import type { ClassValue } from 'clsx';
+import type { buttonBorderStyles, buttonColors, buttonSizes, ButtonUI, buttonVariants } from './reborn-button.config';
 import { computed, toRef } from 'vue'
 import { useFormInject } from '~/composables/useFieldGroup'
 import { tv } from '~/lib/tv'
@@ -28,14 +29,14 @@ export interface ButtonProps {
     /** 是否禁用按钮 */
     disabled?: boolean
     /** 追加到根元素的自定义类名 */
-    class?: any
+    class?: ClassValue
     /** 细粒度样式覆盖对象，键为 base/label/leadingIcon/leadingAvatar/leadingAvatarSize/trailingIcon */
-    ui?: any
+    ui?: ButtonUI
     gap?: boolean // 是否间隔按钮：为相邻的同级按钮自动添加左边距
 }
 
 /** 生成某个内部节点类名的函数，可追加 class */
-type ButtonClassFn = (opts?: { class?: any }) => string
+type ButtonClassFn = (opts?: { class?: ClassValue }) => string
 
 /** 插槽作用域里的 ui：按内部节点取类名，三个插槽拿到的是同一个对象 */
 export interface ButtonSlotUi {
@@ -76,11 +77,8 @@ const color = toRef(props, 'color')
 const variant = toRef(props, 'variant')
 const size = toRef(props, 'size')
 
-const loadingColor = computed(() => {
-    // filled / round / circle 为实底着色，加载动画用白色；其余变体跟随语义色
-    if (props.variant === 'filled' || props.variant === 'round' || props.variant === 'circle') return 'white'
-    return props.color
-})
+// 加载图标继承按钮前景色，跟随明暗模式、交互态及外部覆盖。
+const loadingColor = 'currentColor'
 
 const loadingSize = computed(() => {
     // 使用相对单位，使其跟随当前文字大小
@@ -107,7 +105,7 @@ const ui = computed<ButtonSlotUi>(() => {
     })
 
     return {
-        base: (opts?: { class?: any }) => styles.base({
+        base: (opts?: { class?: ClassValue }) => styles.base({
             class: cn(
                 opts?.class,
                 // 加载中按钮带着原生 disabled，disabled:cursor-not-allowed 会盖过普通的 cursor-wait，
@@ -116,11 +114,11 @@ const ui = computed<ButtonSlotUi>(() => {
                 uiOverrides.value.base
             )
         }),
-        label: (opts?: { class?: any }) => styles.label({ class: cn(uiOverrides.value.label, opts?.class, 'leading-none') }),
-        leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(uiOverrides.value.leadingIcon, opts?.class) }),
-        leadingAvatar: (opts?: { class?: any }) => styles.leadingAvatar({ class: cn(uiOverrides.value.leadingAvatar, opts?.class) }),
-        leadingAvatarSize: (opts?: { class?: any }) => styles.leadingAvatarSize({ class: cn(uiOverrides.value.leadingAvatarSize, opts?.class) }),
-        trailingIcon: (opts?: { class?: any }) => styles.trailingIcon({ class: cn(uiOverrides.value.trailingIcon, opts?.class) }),
+        label: (opts?: { class?: ClassValue }) => styles.label({ class: cn(uiOverrides.value.label, opts?.class) }),
+        leadingIcon: (opts?: { class?: ClassValue }) => styles.leadingIcon({ class: cn(uiOverrides.value.leadingIcon, opts?.class) }),
+        leadingAvatar: (opts?: { class?: ClassValue }) => styles.leadingAvatar({ class: cn(uiOverrides.value.leadingAvatar, opts?.class) }),
+        leadingAvatarSize: (opts?: { class?: ClassValue }) => styles.leadingAvatarSize({ class: cn(uiOverrides.value.leadingAvatarSize, opts?.class) }),
+        trailingIcon: (opts?: { class?: ClassValue }) => styles.trailingIcon({ class: cn(uiOverrides.value.trailingIcon, opts?.class) }),
     }
 })
 </script>
@@ -128,7 +126,7 @@ const ui = computed<ButtonSlotUi>(() => {
 <template>
   <button :disabled="isDisabled" :class="ui.base({ class: props.class })">
     <!-- 单根组件，非 prop 属性与监听器由 Vue 自动透传到 button，无需再写 v-bind="$attrs" -->
-    <div class="flex items-center justify-center gap-2 h-full w-full">
+    <div class="flex items-center justify-center gap-[inherit] h-full w-full">
       <!-- 前置内容或加载动画 -->
       <template v-if="props.loading">
         <RebornLoading

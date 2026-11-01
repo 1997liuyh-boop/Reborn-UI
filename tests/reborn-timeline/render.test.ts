@@ -40,9 +40,9 @@ const render = (props: Record<string, unknown> = {}, items = false) => {
   return renderToString(app);
 };
 
-it('预设严格对应七个语义色及主题背景类', () => {
+it('预设严格对应七个语义色及主题背景类，实心图标取配对前景', () => {
   assert.deepEqual(Object.keys(colors), presets);
-  for (const color of presets) assert.equal(colors[color], `bg-${color}`);
+  for (const color of presets) assert.equal(colors[color], `bg-${color} text-${color}-foreground`);
 });
 it('插槽与数据驱动模式默认使用 primary', async () => {
   for (const items of [false, true]) assert.match(await render({}, items), /class="[^"]*bg-primary/);

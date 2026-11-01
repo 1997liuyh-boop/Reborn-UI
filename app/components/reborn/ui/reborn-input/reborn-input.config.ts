@@ -148,32 +148,32 @@ export default {
      */
     color: {
       primary: {
-        wrapper: "hover:border-brand-6 focus-within:border-brand-6 focus-within:ring-brand-1",
+        wrapper: "hover:border-primary focus-within:border-primary focus-within:ring-primary-soft",
         separator: "group-focus-within/input:bg-primary",
         input: "caret-primary",
       },
       secondary: {
-        wrapper: "hover:border-secondary-6 focus-within:border-secondary-6 focus-within:ring-secondary-1",
+        wrapper: "hover:border-secondary focus-within:border-secondary focus-within:ring-secondary-soft",
         separator: "group-focus-within/input:bg-secondary",
         input: "caret-secondary",
       },
       success: {
-        wrapper: "hover:border-green-6 focus-within:border-green-6 focus-within:ring-green-1",
+        wrapper: "hover:border-success focus-within:border-success focus-within:ring-success-soft",
         separator: "group-focus-within/input:bg-success",
         input: "caret-success",
       },
       info: {
-        wrapper: "hover:border-blue-6 focus-within:border-blue-6 focus-within:ring-blue-1",
+        wrapper: "hover:border-info focus-within:border-info focus-within:ring-info-soft",
         separator: "group-focus-within/input:bg-info",
         input: "caret-info",
       },
       warning: {
-        wrapper: "hover:border-orange-6 focus-within:border-orange-6 focus-within:ring-orange-1",
+        wrapper: "hover:border-warning focus-within:border-warning focus-within:ring-warning-soft",
         separator: "group-focus-within/input:bg-warning",
         input: "caret-warning",
       },
       error: {
-        wrapper: "hover:border-red-6 focus-within:border-red-6 focus-within:ring-red-1",
+        wrapper: "hover:border-error focus-within:border-error focus-within:ring-error-soft",
         separator: "group-focus-within/input:bg-error",
         input: "caret-error",
       },
@@ -185,8 +185,8 @@ export default {
     },
     error: {
       true: {
-        wrapper: "border-red-5 hover:border-red-5 focus-within:border-red-5 focus-within:ring-red-1",
-        input: "text-red-5 placeholder:text-red-5/50",
+        wrapper: "border-error hover:border-error-hover focus-within:border-error focus-within:ring-error-soft",
+        input: "text-error placeholder:text-error/50",
       },
     },
     /**
@@ -219,6 +219,7 @@ export default {
     },
     /** 外置统计回到文档流，统一 14px；仅当前字数加深颜色，分隔符与上限沿用灰色。 */
     wordLimitPosition: {
+      inside: {},
       outside: {
         root: "gap-0.5",
         count: "static self-end text-base [&>span]:text-gray-8",
@@ -236,11 +237,11 @@ export default {
     },
     /** 有前置块时输入框左侧圆角压平，与 prepend 连体 */
     hasPrepend: {
-      true: { wrapper: "rounded-s-none!" },
+      true: {},
     },
     /** 有后置块时输入框右侧圆角压平，与 append 连体 */
     hasAppend: {
-      true: { wrapper: "rounded-e-none!" },
+      true: {},
     },
   },
   compoundVariants: [
@@ -257,11 +258,13 @@ export default {
     { shape: "square", size: "lg", class: { wrapper: "rounded-lg", prepend: "rounded-s-lg", append: "rounded-e-lg" } },
     // 胶囊外形时前后置块随之取全圆角
     { shape: "circle", class: { prepend: "rounded-s-full", append: "rounded-e-full" } },
-    // 下划线形态必须压平圆角。! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，
-    // 不在 tailwind-merge 的 border-radius 冲突组里；现已改回原生 rounded-*，合并正常。
-    { variant: "underlined", class: { wrapper: "rounded-none!", prepend: "rounded-none!", append: "rounded-none!" } },
+    // 下划线形态在尺寸与形状之后清零圆角，用户 ui 仍可覆盖。
+    { variant: "underlined", class: { wrapper: "rounded-none", prepend: "rounded-none", append: "rounded-none" } },
+    // 连体边缘在形状规则之后压平，避免圆角互相覆盖。
+    { hasPrepend: true, class: { wrapper: "rounded-s-none" } },
+    { hasAppend: true, class: { wrapper: "rounded-e-none" } },
     // borderless 形态没有描边宽度，错误态需要补一圈，否则完全不可见
-    { variant: "borderless", error: true, class: { wrapper: "border-1 border-red-5" } },
+    { variant: "borderless", error: true, class: { wrapper: "border-1 border-error" } },
     // 禁用态优先于悬停与聚焦配色，尾部插槽获得焦点也不会出现聚焦外圈。
     { disabled: true, class: { wrapper: "hover:border-gray-4 focus-within:border-gray-4 focus-within:ring-0" } },
   ] as any,

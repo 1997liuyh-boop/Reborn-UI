@@ -1,0 +1,6 @@
+{
+  "extends": "../../.nuxt/tsconfig.app.json",
+  "include": ["./contracts.types.ts"],
+  "exclude": [],
+  "compilerOptions": { "noEmit": true }
+}

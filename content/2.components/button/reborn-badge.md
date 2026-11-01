@@ -34,14 +34,14 @@ Badge 用于展示条目的状态、数量或分类标识，Web 与 UniApp 两�
 
 ### 变体矩阵
 
-`color` 与 `variant` 独立组合；下表说明 Web 数字色阶，UniApp 的 secondary 与 neutral 有调色板差异。
+`color` 与 `variant` 独立组合；下表说明 Web 配色，UniApp 的 secondary 与 neutral 有调色板差异。Web 实心背景与语义文字跟随主题角色；默认 `primary` 为蓝色、`secondary` 为薄荷绿，UniApp 保持红色主色与灰色次色。
 
 | 风格 | 背景 / 边框 / 文字 | 典型用途 |
 | --- | --- | --- |
-| `filled` | 6 阶背景 / 无 / gray-1 | 强调状态 |
-| `outlined` | 透明 / 4 阶 / 6 阶 | 密集列表 |
-| `soft` | 2 阶 / 无 / 6 阶 | 轻量分类 |
-| `subtle` | 2 阶 / 4 阶 / 6 阶 | 需要边界的状态标签 |
+| `filled` | 语义背景（默认 6 阶）/ 无 / 配套语义前景 | 强调状态 |
+| `outlined` | 透明 / 4 阶 / 语义文字 | 密集列表 |
+| `soft` | 2 阶 / 无 / 语义文字 | 轻量分类 |
+| `subtle` | 2 阶 / 4 阶 / 语义文字 | 需要边界的状态标签 |
 
 Web 的 neutral 非实心文字使用 gray-9。`size` 三档高度为 `h-4.5` / `h-6` / `h-8`，水平内边距为 `px-1.5`，默认根字号下对应 18 / 24 / 32px 高、6px 内边距，随 Tailwind `--spacing` 缩放；字号仍为固定 12 / 12 / 14px。UniApp 尺寸按独立的 rpx 令牌取值。
 
@@ -198,7 +198,7 @@ const confirmClose = () => window.confirm('确认关闭标签？')
 | 键名           | 说明                                                                                                                                                                                      |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `root`         | 最外层动画容器（`RebornTransition`）。默认 `reborn-badge cursor-pointer`，显隐过渡与外边距、定位加在这里。`class` 不会落到这一层，要给容器加类只能用 `ui.root`。                                                                                |
-| `base`         | 徽标主体（标签名由 `as` 决定）。默认 `inline-flex items-center justify-center font-medium whitespace-nowrap overflow-hidden`，底色、圆角、内边距、字号都在这里，尺寸/配色变体也作用于它。 |
+| `base`         | 徽标主体（标签名由 `as` 决定）。默认 `inline-flex items-center justify-center font-medium whitespace-nowrap overflow-hidden`，底色、圆角、内边距、字号都在这里，尺寸/配色变体也作用于它；普通 `rounded-*`、宽高类可覆盖形状默认值。 |
 | `label`        | 文本包裹层，默认 `inline-flex items-center justify-center truncate max-w-full min-w-0`。**仅有 label（包括数字 0）或 default 插槽时渲染，节点在 default 插槽外层**，因此填充 default 插槽后它依然存在，`ui.label` 仍生效。             |
 | `leadingIcon`  | 前置图标类名。模板本身不渲染前置图标，需要在 `leading` 插槽里自行取用：`<template #leading="{ ui }">`，再把 `ui.leadingIcon()` 挂到你的图标上。                                           |
 | `trailingIcon` | 后置图标类名，用法同 `leadingIcon`，通过 `trailing` 插槽的作用域参数取用。                                                                                                                |

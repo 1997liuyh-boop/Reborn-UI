@@ -1,10 +1,37 @@
 <script setup lang="ts">
+import type { NoticeBarUI } from './reborn-notice-bar.config';
 import { useResizeObserver } from '@vueuse/core';
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue';
 import { cn } from '@/lib/utils';
-import { rebornNoticeBar, type NoticeBarUI } from './reborn-notice-bar.config';
+import { rebornNoticeBar } from './reborn-notice-bar.config';
 
 defineOptions({ name: 'RebornNoticeBar' });
+
+const props = withDefaults(defineProps<RebornNoticeBarProps>(), {
+  text: '',
+  speed: 60,
+  scrollable: true,
+  wrapable: false,
+  disabled: false,
+  direction: 'horizontal',
+  interval: 3000,
+  customClass: '',
+  customStyle: '',
+  ui: () => ({}),
+});
+
+const emit = defineEmits<{
+  (e: 'click'): void;
+  (e: 'close'): void;
+  (e: 'replay'): void;
+  (e: 'change', index: number): void;
+}>();
+
+const slots = defineSlots<{
+  default: (props: { item?: string; index?: number }) => any;
+  'left-icon': () => any;
+  'right-icon': () => any;
+}>();
 
 type NoticeBarDirection = 'horizontal' | 'vertical';
 
@@ -38,34 +65,6 @@ interface RebornNoticeBarProps {
   /** 自定义样式，追加在 color / background 之后 */
   customStyle?: string;
 }
-
-const props = withDefaults(defineProps<RebornNoticeBarProps>(), {
-  text: '',
-  speed: 60,
-  background: '#F7F7F9',
-  color: '#888A8C',
-  scrollable: true,
-  wrapable: false,
-  disabled: false,
-  direction: 'horizontal',
-  interval: 3000,
-  customClass: '',
-  customStyle: '',
-  ui: () => ({}),
-});
-
-const emit = defineEmits<{
-  (e: 'click'): void;
-  (e: 'close'): void;
-  (e: 'replay'): void;
-  (e: 'change', index: number): void;
-}>();
-
-const slots = defineSlots<{
-  default(props: { item?: string; index?: number }): any;
-  'left-icon'(): any;
-  'right-icon'(): any;
-}>();
 
 const textRef = useTemplateRef<HTMLElement>('textRef');
 const wrapperRef = useTemplateRef<HTMLElement>('wrapperRef');
@@ -278,11 +277,13 @@ defineExpose({
       </div>
 
       <!-- 水平滚动模式：key 随重播自增，节点重建后动画从头开始 -->
-      <div v-else ref="textRef" :key="replayKey" :class="[
-        styles.text(),
-        shouldScroll ? 'animate-notice-bar-scroll' : '',
-        !props.scrollable && !props.wrapable ? 'truncate w-full' : ''
-      ]" :style="textStyle">
+      <div
+        v-else ref="textRef" :key="replayKey" :class="[
+          styles.text(),
+          shouldScroll ? 'animate-notice-bar-scroll' : '',
+          !props.scrollable && !props.wrapable ? 'truncate w-full' : ''
+        ]" :style="textStyle"
+      >
         <slot>
           <template v-if="hasMultipleText">
             <span v-for="(item, index) in textList" :key="index" class="mr-6 last:mr-0">

@@ -71,10 +71,8 @@ export default {
                 trigger: "border-0 bg-transparent",
             },
             underlined: {
-                // 压平圆角。! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，不在
-                // tailwind-merge 的 border-radius 冲突组里，rounded-none 与它会共存。
-                // 现在已改回原生 rounded-*，合并正常，! 保留是为了不动既有覆盖顺序。
-                trigger: "rounded-none! border-0 border-b border-gray-4 bg-transparent",
+                // 下划线形态压平圆角：size 轴不带圆角，这里的 rounded-none 经合并直接替换 trigger 槽位默认的 rounded-md，用户 ui 仍可覆盖。
+                trigger: "rounded-none border-0 border-b border-gray-4 bg-transparent",
             },
         },
         /**
@@ -113,22 +111,22 @@ export default {
          */
         color: {
             primary: {
-                trigger: "hover:border-brand-6 group-focus:border-primary data-[state=open]:border-primary",
+                trigger: "hover:border-primary group-focus:border-primary data-[state=open]:border-primary",
             },
             secondary: {
-                trigger: "hover:border-secondary-6 group-focus:border-secondary data-[state=open]:border-secondary",
+                trigger: "hover:border-secondary group-focus:border-secondary data-[state=open]:border-secondary",
             },
             success: {
-                trigger: "hover:border-green-6 group-focus:border-success data-[state=open]:border-success",
+                trigger: "hover:border-success group-focus:border-success data-[state=open]:border-success",
             },
             info: {
-                trigger: "hover:border-blue-6 group-focus:border-info data-[state=open]:border-info",
+                trigger: "hover:border-info group-focus:border-info data-[state=open]:border-info",
             },
             warning: {
-                trigger: "hover:border-orange-6 group-focus:border-warning data-[state=open]:border-warning",
+                trigger: "hover:border-warning group-focus:border-warning data-[state=open]:border-warning",
             },
             error: {
-                trigger: "hover:border-red-6 group-focus:border-error data-[state=open]:border-error",
+                trigger: "hover:border-error group-focus:border-error data-[state=open]:border-error",
             },
             neutral: {
                 trigger: "hover:border-gray-6 group-focus:border-neutral data-[state=open]:border-neutral",
@@ -159,7 +157,7 @@ export default {
         error: {
             true: {
                 trigger:
-                    "border-red-5 hover:border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
+                    "border-error hover:border-error-hover group-focus:border-error data-[state=open]:border-error",
             },
         },
     },
@@ -167,7 +165,7 @@ export default {
         // borderless 形态本身没有描边宽度，出错时需要补一圈，否则错误态完全不可见
         { variant: "borderless", error: true, class: { trigger: "border" } },
         // underlined 形态只在底边报错，避免补出一整圈与形态语言冲突的红框
-        { variant: "underlined", error: true, class: { trigger: "border-b-red-5" } },
+        { variant: "underlined", error: true, class: { trigger: "border-b-error" } },
     ] as any,
     defaultVariants: {
         size: "md" as (typeof sizes)[number],

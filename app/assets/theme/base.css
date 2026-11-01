@@ -111,35 +111,105 @@
     -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", Roboto,
     Helvetica, Arial, sans-serif;
 
-  /* --- 语义化颜色 (Semantic Colors) --- */
+  /* 默认、悬停、按压统一取 6/5/7 阶；实底文字必须与对应背景角色成对使用。 */
+  --color-on-light: #09090b;
+  --color-on-dark: #ffffff;
   --color-primary: var(--color-brand-6);
-  --color-primary-3: var(--color-brand-3);
-  --color-secondary: var(--color-secondary-6);
-  --color-success: var(--color-green-6);
-  --color-info: var(--color-blue-6);
-  --color-warning: var(--color-orange-6);
-  --color-error: var(--color-red-6);
-  --color-neutral: var(--color-gray-4);
+  --color-primary-hover: var(--color-brand-5);
+  --color-primary-active: var(--color-brand-7);
+  --color-primary-soft: var(--color-brand-1);
+  --color-primary-border: var(--color-brand-2);
+  --color-primary-foreground: var(--color-on-dark);
+  --color-primary-hover-foreground: var(--color-on-light);
+  --color-primary-active-foreground: var(--color-on-dark);
 
-  --color-inverted: #ffffff;
+  --color-secondary: var(--color-secondary-6);
+  --color-secondary-hover: var(--color-secondary-5);
+  --color-secondary-active: var(--color-secondary-7);
+  --color-secondary-soft: var(--color-secondary-1);
+  --color-secondary-border: var(--color-secondary-2);
+  --color-secondary-foreground: var(--color-on-light);
+  --color-secondary-hover-foreground: var(--color-on-light);
+  --color-secondary-active-foreground: var(--color-on-light);
+
+  --color-success: var(--color-green-6);
+  --color-success-hover: var(--color-green-5);
+  --color-success-active: var(--color-green-7);
+  --color-success-soft: var(--color-green-1);
+  --color-success-border: var(--color-green-2);
+  --color-success-foreground: var(--color-on-light);
+  --color-success-hover-foreground: var(--color-on-light);
+  --color-success-active-foreground: var(--color-on-light);
+
+  --color-info: var(--color-blue-6);
+  --color-info-hover: var(--color-blue-5);
+  --color-info-active: var(--color-blue-7);
+  --color-info-soft: var(--color-blue-1);
+  --color-info-border: var(--color-blue-2);
+  --color-info-foreground: var(--color-on-light);
+  --color-info-hover-foreground: var(--color-on-light);
+  --color-info-active-foreground: var(--color-on-light);
+
+  --color-warning: var(--color-orange-6);
+  --color-warning-hover: var(--color-orange-5);
+  --color-warning-active: var(--color-orange-7);
+  --color-warning-soft: var(--color-orange-1);
+  --color-warning-border: var(--color-orange-2);
+  --color-warning-foreground: var(--color-on-light);
+  --color-warning-hover-foreground: var(--color-on-light);
+  --color-warning-active-foreground: var(--color-on-light);
+
+  --color-error: var(--color-red-6);
+  --color-error-hover: var(--color-red-5);
+  --color-error-active: var(--color-red-7);
+  --color-error-soft: var(--color-red-1);
+  --color-error-border: var(--color-red-2);
+  --color-error-foreground: var(--color-on-light);
+  --color-error-hover-foreground: var(--color-on-light);
+  --color-error-active-foreground: var(--color-on-dark);
+
+  --color-neutral: var(--color-gray-6);
+  --color-neutral-hover: var(--color-gray-5);
+  --color-neutral-active: var(--color-gray-7);
+  --color-neutral-soft: var(--color-gray-1);
+  --color-neutral-border: var(--color-gray-2);
+  --color-neutral-foreground: var(--color-on-light);
+  --color-neutral-hover-foreground: var(--color-on-light);
+  --color-neutral-active-foreground: var(--color-on-dark);
+  --color-primary-3: var(--color-brand-3);
+  --color-inverted: var(--color-on-dark);
+
+  /* 社区组件的兼容语义名统一映射到本库角色，随组件库样式入口一起分发。 */
+  --color-background: var(--color-gray-1);
+  --color-foreground: var(--color-gray-9);
+  --color-popover: var(--color-gray-1);
+  --color-popover-foreground: var(--color-gray-9);
+  --color-card: var(--color-gray-1);
+  --color-card-foreground: var(--color-gray-9);
+  --color-muted: var(--color-gray-2);
+  --color-muted-foreground: var(--color-gray-6);
+  --color-accent: var(--color-gray-2);
+  --color-accent-foreground: var(--color-gray-9);
+  --color-border: var(--color-gray-4);
+  --color-input: var(--color-gray-4);
+  --color-ring: var(--color-primary);
+  --color-destructive: var(--color-error);
+  --color-destructive-foreground: var(--color-error-foreground);
+  --color-bg-base: var(--color-gray-1);
+  --color-bg-sub: var(--color-gray-2);
+  --color-text-primary: var(--color-gray-9);
+  --color-text-secondary: var(--color-gray-8);
+  --color-border-divider: var(--color-gray-3);
   --color-default: var(--color-gray-8);
   --color-elevated: var(--color-gray-2);
   --color-accented: var(--color-gray-4);
 }
 
 /*
- * --- 暗色模板 (Dark Mode Palette) ---
- * 取自设计稿「色板示例-Dark Mode」的标注真值，与上方浅色板一一对偶。
- * 注意 colorMode.preference = "dark"，本块即站点默认外观。
- *
- * 与浅色板的两处本质差异：
- * 1. 色阶方向相反：第 1 阶最深、第 10 阶最浅。因此「default = 第 6 阶」在暗底上
- *    自然是浅色，solid 变体须配深色前景（见块末 --color-inverted）。
- * 2. 中性色为纯灰（无蓝调），不同于浅色板的 #1d2129 蓝调系列。
- *
- * 语义色（--color-primary / --color-success 等）仍要在块末重复声明一遍：
- * 它们虽是 var() 引用、会随色阶自动解析成暗色值，但取的阶数不同——
- * 浅色取第 6 阶、暗色取第 5 阶，原因见块末的对比度注释。
+ * 暗色仍使用相同色阶合同，仅翻转色板及与背景配对的前景。
+ * 取自设计稿「色板示例-Dark Mode」的标注真值，与上方浅色板一一对偶，但色阶方向相反：
+ * 第 1 阶最深、第 10 阶最浅，因此第 6 阶在暗底上是浅色块，实底前景改配深色（--color-on-light）。
+ * 中性色为纯灰（无蓝调），不同于浅色板的 #1d2129 蓝调系列。
  */
 .dark {
   /* 红色系 (Red) */
@@ -228,42 +298,105 @@
   --color-secondary-9: #c9fbdd;
   --color-secondary-10: #eefff4;
 
-  /*
-   * 反色前景：暗色板的 default 阶是浅色块，白字对比度不足（如 red-6 配白仅 2.4:1），
-   * 故翻转为最深的中性色。实测 primary 6.25:1、success 12.4:1、warning 8.9:1、info 9.1:1。
-   */
-  --color-primary: var(--color-brand-5);
+  --color-primary: var(--color-brand-6);
+  --color-primary-hover: var(--color-brand-5);
+  --color-primary-active: var(--color-brand-7);
+  --color-primary-soft: var(--color-brand-1);
+  --color-primary-border: var(--color-brand-2);
+  --color-primary-foreground: var(--color-on-light);
+  --color-primary-hover-foreground: var(--color-on-light);
+  --color-primary-active-foreground: var(--color-on-light);
+
+  --color-secondary: var(--color-secondary-6);
+  --color-secondary-hover: var(--color-secondary-5);
+  --color-secondary-active: var(--color-secondary-7);
+  --color-secondary-soft: var(--color-secondary-1);
+  --color-secondary-border: var(--color-secondary-2);
+  --color-secondary-foreground: var(--color-on-light);
+  --color-secondary-hover-foreground: var(--color-on-light);
+  --color-secondary-active-foreground: var(--color-on-light);
+
+  --color-success: var(--color-green-6);
+  --color-success-hover: var(--color-green-5);
+  --color-success-active: var(--color-green-7);
+  --color-success-soft: var(--color-green-1);
+  --color-success-border: var(--color-green-2);
+  --color-success-foreground: var(--color-on-light);
+  --color-success-hover-foreground: var(--color-on-light);
+  --color-success-active-foreground: var(--color-on-light);
+
+  --color-info: var(--color-blue-6);
+  --color-info-hover: var(--color-blue-5);
+  --color-info-active: var(--color-blue-7);
+  --color-info-soft: var(--color-blue-1);
+  --color-info-border: var(--color-blue-2);
+  --color-info-foreground: var(--color-on-light);
+  --color-info-hover-foreground: var(--color-on-light);
+  --color-info-active-foreground: var(--color-on-light);
+
+  --color-warning: var(--color-orange-6);
+  --color-warning-hover: var(--color-orange-5);
+  --color-warning-active: var(--color-orange-7);
+  --color-warning-soft: var(--color-orange-1);
+  --color-warning-border: var(--color-orange-2);
+  --color-warning-foreground: var(--color-on-light);
+  --color-warning-hover-foreground: var(--color-on-light);
+  --color-warning-active-foreground: var(--color-on-light);
+
+  --color-error: var(--color-red-6);
+  --color-error-hover: var(--color-red-5);
+  --color-error-active: var(--color-red-7);
+  --color-error-soft: var(--color-red-1);
+  --color-error-border: var(--color-red-2);
+  --color-error-foreground: var(--color-on-light);
+  --color-error-hover-foreground: var(--color-on-light);
+  --color-error-active-foreground: var(--color-on-light);
+
+  --color-neutral: var(--color-gray-6);
+  --color-neutral-hover: var(--color-gray-5);
+  --color-neutral-active: var(--color-gray-7);
+  --color-neutral-soft: var(--color-gray-1);
+  --color-neutral-border: var(--color-gray-2);
+  --color-neutral-foreground: var(--color-on-light);
+  --color-neutral-hover-foreground: var(--color-on-light);
+  --color-neutral-active-foreground: var(--color-on-light);
   --color-primary-3: var(--color-brand-3);
-  --color-secondary: var(--color-secondary-5);
-  --color-success: var(--color-green-5);
-  --color-info: var(--color-blue-5);
-  --color-warning: var(--color-orange-5);
-  --color-error: var(--color-red-5);
-  --color-neutral: var(--color-gray-5);
-  --color-inverted: var(--color-gray-1);
+  --color-inverted: var(--color-on-light);
+
+  /* 社区组件的兼容语义名统一映射到本库角色，随组件库样式入口一起分发。 */
+  --color-background: var(--color-gray-1);
+  --color-foreground: var(--color-gray-9);
+  --color-popover: var(--color-gray-1);
+  --color-popover-foreground: var(--color-gray-9);
+  --color-card: var(--color-gray-1);
+  --color-card-foreground: var(--color-gray-9);
+  --color-muted: var(--color-gray-2);
+  --color-muted-foreground: var(--color-gray-6);
+  --color-accent: var(--color-gray-2);
+  --color-accent-foreground: var(--color-gray-9);
+  --color-border: var(--color-gray-4);
+  --color-input: var(--color-gray-4);
+  --color-ring: var(--color-primary);
+  --color-destructive: var(--color-error);
+  --color-destructive-foreground: var(--color-error-foreground);
+  --color-bg-base: var(--color-gray-1);
+  --color-bg-sub: var(--color-gray-2);
+  --color-text-primary: var(--color-gray-9);
+  --color-text-secondary: var(--color-gray-8);
+  --color-border-divider: var(--color-gray-3);
+  --color-default: var(--color-gray-8);
+  --color-elevated: var(--color-gray-2);
+  --color-accented: var(--color-gray-4);
 }
 
 /*
- * --- 主题色切换 (Theme Color Override) ---
- * AppThemePicker 把选中的色系名写在 <html data-theme-color="...">（SSR 阶段就写入，首屏不跳色）。
+ * 主题预设覆盖完整品牌色板和主色角色，子树预览也可独立切换。
+ * AppThemePicker 在 SSR 阶段把色系名写到 <html data-theme-color>；色块按钮自己挂同名属性即可预览对应主色。
  *
- * 明暗各写一遍，不能只覆盖一个值：取阶规则与上面两块一致——浅色取第 6 阶、暗色取第 5 阶。
- * 也正因为要跟着明暗走，这里不能像旧实现那样用 element.style 写 --color-primary：
- * 内联样式权重高于 .dark 类选择器，暗色下的第 5 阶会被浅色档的取阶顶掉。
- *
- * 属性选择器不加 :root 前缀，色块按钮自己挂 data-theme-color 就能预览对应主色（所见即所得）。
- * 权重：[data-theme-color] 与 :root / .dark 同为 (0,1,0)，靠源码次序压住浅色默认值；
- * 暗色组用 .dark[...] / .dark [...] 提到 (0,2,0)，稳压同块的浅色规则。
- *
- * 非品牌蓝时整条 brand-1~10 色阶一起改指所选色系：组件里大量直接写 bg-brand-1、text-brand-6、
- * --color-brand-6 等，只换 --color-primary 的话这些地方会停在蓝色。
- * 改指用 var() 而不是写死色值：它按所在元素当时的 orange-* 等取值，暗色下 .dark 已把这些
- * 色板换成暗色值，brand-* 跟着取到暗色值，所以明暗不用各写一份。
- *
- * 品牌蓝反过来要显式写回原色值：自定义属性按「已解析的值」继承，页面选了橙色后，
- * <html> 上的 brand-* 已经是橙色，挂 data-theme-color="brand" 的子元素（如主题选择器里的品牌蓝色块）
- * 继承到的也是橙色，只写 primary: var(--color-brand-6) 会跟着变橙。没有别的变量保留原始蓝，
- * 只能把色值抄一份：下面两块必须与上方 @theme 浅色板、.dark 暗色板里的 brand-1~10 保持一致。
+ * 非品牌蓝时整条 brand-1~10 改指所选色系：组件里仍有 bg-brand-2 等直接取阶的写法，只换主色角色会停在蓝色。
+ * 品牌蓝必须把色值抄一份写回：自定义属性按已解析的值继承，页面选橙色后 <html> 上的 brand-* 已是橙色，
+ * 子元素挂 data-theme-color="brand" 只能靠这里的字面量恢复蓝色。
+ * ⚠️ 下面浅色、暗色两组 brand 字面量必须与 @theme 浅色板、.dark 暗色板里的 brand-1~10 保持一致，改色板时一起改。
  */
 [data-theme-color="brand"] {
   --color-brand-1: #ebf5ff;
@@ -277,7 +410,15 @@
   --color-brand-9: #032277;
   --color-brand-10: #00124d;
   --color-primary: var(--color-brand-6);
+  --color-primary-hover: var(--color-brand-5);
+  --color-primary-active: var(--color-brand-7);
+  --color-primary-soft: var(--color-brand-1);
+  --color-primary-border: var(--color-brand-2);
+  --color-primary-foreground: var(--color-on-dark);
+  --color-primary-hover-foreground: var(--color-on-light);
+  --color-primary-active-foreground: var(--color-on-dark);
   --color-primary-3: var(--color-brand-3);
+  --color-ring: var(--color-primary);
 }
 [data-theme-color="orange"] {
   --color-brand-1: var(--color-orange-1);
@@ -291,7 +432,15 @@
   --color-brand-9: var(--color-orange-9);
   --color-brand-10: var(--color-orange-10);
   --color-primary: var(--color-orange-6);
+  --color-primary-hover: var(--color-orange-5);
+  --color-primary-active: var(--color-orange-7);
+  --color-primary-soft: var(--color-orange-1);
+  --color-primary-border: var(--color-orange-2);
+  --color-primary-foreground: var(--color-on-light);
+  --color-primary-hover-foreground: var(--color-on-light);
+  --color-primary-active-foreground: var(--color-on-light);
   --color-primary-3: var(--color-orange-3);
+  --color-ring: var(--color-primary);
 }
 [data-theme-color="green"] {
   --color-brand-1: var(--color-green-1);
@@ -305,7 +454,15 @@
   --color-brand-9: var(--color-green-9);
   --color-brand-10: var(--color-green-10);
   --color-primary: var(--color-green-6);
+  --color-primary-hover: var(--color-green-5);
+  --color-primary-active: var(--color-green-7);
+  --color-primary-soft: var(--color-green-1);
+  --color-primary-border: var(--color-green-2);
+  --color-primary-foreground: var(--color-on-light);
+  --color-primary-hover-foreground: var(--color-on-light);
+  --color-primary-active-foreground: var(--color-on-light);
   --color-primary-3: var(--color-green-3);
+  --color-ring: var(--color-primary);
 }
 [data-theme-color="red"] {
   --color-brand-1: var(--color-red-1);
@@ -319,9 +476,16 @@
   --color-brand-9: var(--color-red-9);
   --color-brand-10: var(--color-red-10);
   --color-primary: var(--color-red-6);
+  --color-primary-hover: var(--color-red-5);
+  --color-primary-active: var(--color-red-7);
+  --color-primary-soft: var(--color-red-1);
+  --color-primary-border: var(--color-red-2);
+  --color-primary-foreground: var(--color-on-light);
+  --color-primary-hover-foreground: var(--color-on-light);
+  --color-primary-active-foreground: var(--color-on-dark);
   --color-primary-3: var(--color-red-3);
+  --color-ring: var(--color-primary);
 }
-
 .dark[data-theme-color="brand"],
 .dark [data-theme-color="brand"] {
   --color-brand-1: #00124d;
@@ -334,23 +498,85 @@
   --color-brand-8: #97c7fd;
   --color-brand-9: #c3e1fe;
   --color-brand-10: #eff7ff;
-  --color-primary: var(--color-brand-5);
+  --color-primary: var(--color-brand-6);
+  --color-primary-hover: var(--color-brand-5);
+  --color-primary-active: var(--color-brand-7);
+  --color-primary-soft: var(--color-brand-1);
+  --color-primary-border: var(--color-brand-2);
+  --color-primary-foreground: var(--color-on-light);
+  --color-primary-hover-foreground: var(--color-on-light);
+  --color-primary-active-foreground: var(--color-on-light);
   --color-primary-3: var(--color-brand-3);
+  --color-ring: var(--color-primary);
 }
 .dark[data-theme-color="orange"],
 .dark [data-theme-color="orange"] {
-  --color-primary: var(--color-orange-5);
+  --color-brand-1: var(--color-orange-1);
+  --color-brand-2: var(--color-orange-2);
+  --color-brand-3: var(--color-orange-3);
+  --color-brand-4: var(--color-orange-4);
+  --color-brand-5: var(--color-orange-5);
+  --color-brand-6: var(--color-orange-6);
+  --color-brand-7: var(--color-orange-7);
+  --color-brand-8: var(--color-orange-8);
+  --color-brand-9: var(--color-orange-9);
+  --color-brand-10: var(--color-orange-10);
+  --color-primary: var(--color-orange-6);
+  --color-primary-hover: var(--color-orange-5);
+  --color-primary-active: var(--color-orange-7);
+  --color-primary-soft: var(--color-orange-1);
+  --color-primary-border: var(--color-orange-2);
+  --color-primary-foreground: var(--color-on-light);
+  --color-primary-hover-foreground: var(--color-on-light);
+  --color-primary-active-foreground: var(--color-on-light);
   --color-primary-3: var(--color-orange-3);
+  --color-ring: var(--color-primary);
 }
 .dark[data-theme-color="green"],
 .dark [data-theme-color="green"] {
-  --color-primary: var(--color-green-5);
+  --color-brand-1: var(--color-green-1);
+  --color-brand-2: var(--color-green-2);
+  --color-brand-3: var(--color-green-3);
+  --color-brand-4: var(--color-green-4);
+  --color-brand-5: var(--color-green-5);
+  --color-brand-6: var(--color-green-6);
+  --color-brand-7: var(--color-green-7);
+  --color-brand-8: var(--color-green-8);
+  --color-brand-9: var(--color-green-9);
+  --color-brand-10: var(--color-green-10);
+  --color-primary: var(--color-green-6);
+  --color-primary-hover: var(--color-green-5);
+  --color-primary-active: var(--color-green-7);
+  --color-primary-soft: var(--color-green-1);
+  --color-primary-border: var(--color-green-2);
+  --color-primary-foreground: var(--color-on-light);
+  --color-primary-hover-foreground: var(--color-on-light);
+  --color-primary-active-foreground: var(--color-on-light);
   --color-primary-3: var(--color-green-3);
+  --color-ring: var(--color-primary);
 }
 .dark[data-theme-color="red"],
 .dark [data-theme-color="red"] {
-  --color-primary: var(--color-red-5);
+  --color-brand-1: var(--color-red-1);
+  --color-brand-2: var(--color-red-2);
+  --color-brand-3: var(--color-red-3);
+  --color-brand-4: var(--color-red-4);
+  --color-brand-5: var(--color-red-5);
+  --color-brand-6: var(--color-red-6);
+  --color-brand-7: var(--color-red-7);
+  --color-brand-8: var(--color-red-8);
+  --color-brand-9: var(--color-red-9);
+  --color-brand-10: var(--color-red-10);
+  --color-primary: var(--color-red-6);
+  --color-primary-hover: var(--color-red-5);
+  --color-primary-active: var(--color-red-7);
+  --color-primary-soft: var(--color-red-1);
+  --color-primary-border: var(--color-red-2);
+  --color-primary-foreground: var(--color-on-light);
+  --color-primary-hover-foreground: var(--color-on-light);
+  --color-primary-active-foreground: var(--color-on-light);
   --color-primary-3: var(--color-red-3);
+  --color-ring: var(--color-primary);
 }
 
 :root {
@@ -384,10 +610,10 @@ body.layout-admin-shell {
     display: none;
   }
 }
-/* 文本选区：随黑白主色反色，选中文字有明确的「站点态度」 */
+/* 文本选区使用主色及配对前景。 */
 ::selection {
   background-color: var(--color-primary);
-  color: var(--color-gray-1);
+  color: var(--color-primary-foreground);
 }
 
 /* Dialog 弹跳入场关键帧（transition="bounce" 经 animate-[reborn-dialog-bounce_...] 引用） */

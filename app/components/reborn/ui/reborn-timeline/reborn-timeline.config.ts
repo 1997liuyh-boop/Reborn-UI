@@ -86,16 +86,16 @@ export interface TimelineUI {
 
 /**
  * 预设色对应的填充类：圆点与图标底圆都是实心圆，统一用背景色着色。
- * 语义色读取主题令牌，修改主题配置后节点同步更新。
+ * 语义色读取主题令牌，修改主题配置后节点同步更新；图标取与实底配对的前景色。
  */
 export const TIMELINE_PRESET_COLORS: Record<TimelinePresetColor, string> = {
-  primary: "bg-primary",
-  secondary: "bg-secondary",
-  success: "bg-success",
-  info: "bg-info",
-  warning: "bg-warning",
-  error: "bg-error",
-  neutral: "bg-neutral",
+  primary: "bg-primary text-primary-foreground",
+  secondary: "bg-secondary text-secondary-foreground",
+  success: "bg-success text-success-foreground",
+  info: "bg-info text-info-foreground",
+  warning: "bg-warning text-warning-foreground",
+  error: "bg-error text-error-foreground",
+  neutral: "bg-neutral text-neutral-foreground",
 };
 
 /** 空心节点的边框和图标共用语义色，中心背景遮住背后的连接线。 */
@@ -142,6 +142,7 @@ export default {
       lg: { dot: "size-4", icon: "size-2" },
     },
     variant: {
+      // 白色只是自定义 CSS 色值的兜底：预设色由 TIMELINE_PRESET_COLORS 合并在后，换成配对前景。
       solid: { dot: "border-0 text-white" },
       outlined: { dot: "border-solid bg-gray-1" },
     },

@@ -372,9 +372,9 @@ export default {
   },
   /**
    * color × activeType 的配色矩阵。
-   * 选中项统一取语义色（即各色板第 6 阶）；填色类型的文字用 gray-1，
+   * 选中项统一取语义色（即各色板第 6 阶）；填色类型的文字用与实底配对的 *-foreground，
+   * 亮色实底（如浅色模式的 success、warning）配深色字，避免固定浅色字对比度不足。
    * 范围 / 多选的中间项（除首尾）在填色类型下改用色板第 1 阶浅底 + gray-9 正文色。
-   * neutral 的语义色是 gray-4（偏浅，做底色时白字看不清），这里落到 gray-6。
    */
   compoundVariants: [
     // ---- primary ----
@@ -382,7 +382,7 @@ export default {
       color: "primary",
       activeType: "fill",
       class: {
-        dayActive: "bg-primary text-gray-1 hover:bg-primary",
+        dayActive: "bg-primary text-primary-foreground hover:bg-primary",
         dayInRange: "bg-brand-1 text-gray-9 hover:bg-brand-1",
         yearMonthInRange: "bg-brand-1 text-gray-9 hover:bg-brand-1",
       },
@@ -391,7 +391,7 @@ export default {
       color: "primary",
       activeType: "fillRound",
       class: {
-        dayActive: "bg-primary text-gray-1 hover:bg-primary",
+        dayActive: "bg-primary text-primary-foreground hover:bg-primary",
         dayInRange: "bg-brand-1 text-gray-9 hover:bg-brand-1",
         yearMonthInRange: "bg-brand-1 text-gray-9 hover:bg-brand-1",
       },
@@ -419,7 +419,7 @@ export default {
       color: "secondary",
       activeType: "fill",
       class: {
-        dayActive: "bg-secondary text-gray-1 hover:bg-secondary",
+        dayActive: "bg-secondary text-secondary-foreground hover:bg-secondary",
         dayInRange: "bg-secondary-1 text-gray-9 hover:bg-secondary-1",
         yearMonthInRange: "bg-secondary-1 text-gray-9 hover:bg-secondary-1",
       },
@@ -428,7 +428,7 @@ export default {
       color: "secondary",
       activeType: "fillRound",
       class: {
-        dayActive: "bg-secondary text-gray-1 hover:bg-secondary",
+        dayActive: "bg-secondary text-secondary-foreground hover:bg-secondary",
         dayInRange: "bg-secondary-1 text-gray-9 hover:bg-secondary-1",
         yearMonthInRange: "bg-secondary-1 text-gray-9 hover:bg-secondary-1",
       },
@@ -456,7 +456,7 @@ export default {
       color: "success",
       activeType: "fill",
       class: {
-        dayActive: "bg-success text-gray-1 hover:bg-success",
+        dayActive: "bg-success text-success-foreground hover:bg-success",
         dayInRange: "bg-green-1 text-gray-9 hover:bg-green-1",
         yearMonthInRange: "bg-green-1 text-gray-9 hover:bg-green-1",
       },
@@ -465,7 +465,7 @@ export default {
       color: "success",
       activeType: "fillRound",
       class: {
-        dayActive: "bg-success text-gray-1 hover:bg-success",
+        dayActive: "bg-success text-success-foreground hover:bg-success",
         dayInRange: "bg-green-1 text-gray-9 hover:bg-green-1",
         yearMonthInRange: "bg-green-1 text-gray-9 hover:bg-green-1",
       },
@@ -493,7 +493,7 @@ export default {
       color: "info",
       activeType: "fill",
       class: {
-        dayActive: "bg-info text-gray-1 hover:bg-info",
+        dayActive: "bg-info text-info-foreground hover:bg-info",
         dayInRange: "bg-blue-1 text-gray-9 hover:bg-blue-1",
         yearMonthInRange: "bg-blue-1 text-gray-9 hover:bg-blue-1",
       },
@@ -502,7 +502,7 @@ export default {
       color: "info",
       activeType: "fillRound",
       class: {
-        dayActive: "bg-info text-gray-1 hover:bg-info",
+        dayActive: "bg-info text-info-foreground hover:bg-info",
         dayInRange: "bg-blue-1 text-gray-9 hover:bg-blue-1",
         yearMonthInRange: "bg-blue-1 text-gray-9 hover:bg-blue-1",
       },
@@ -526,7 +526,7 @@ export default {
       color: "warning",
       activeType: "fill",
       class: {
-        dayActive: "bg-warning text-gray-1 hover:bg-warning",
+        dayActive: "bg-warning text-warning-foreground hover:bg-warning",
         dayInRange: "bg-orange-1 text-gray-9 hover:bg-orange-1",
         yearMonthInRange: "bg-orange-1 text-gray-9 hover:bg-orange-1",
       },
@@ -535,7 +535,7 @@ export default {
       color: "warning",
       activeType: "fillRound",
       class: {
-        dayActive: "bg-warning text-gray-1 hover:bg-warning",
+        dayActive: "bg-warning text-warning-foreground hover:bg-warning",
         dayInRange: "bg-orange-1 text-gray-9 hover:bg-orange-1",
         yearMonthInRange: "bg-orange-1 text-gray-9 hover:bg-orange-1",
       },
@@ -563,7 +563,7 @@ export default {
       color: "error",
       activeType: "fill",
       class: {
-        dayActive: "bg-error text-gray-1 hover:bg-error",
+        dayActive: "bg-error text-error-foreground hover:bg-error",
         dayInRange: "bg-red-1 text-gray-9 hover:bg-red-1",
         yearMonthInRange: "bg-red-1 text-gray-9 hover:bg-red-1",
       },
@@ -572,7 +572,7 @@ export default {
       color: "error",
       activeType: "fillRound",
       class: {
-        dayActive: "bg-error text-gray-1 hover:bg-error",
+        dayActive: "bg-error text-error-foreground hover:bg-error",
         dayInRange: "bg-red-1 text-gray-9 hover:bg-red-1",
         yearMonthInRange: "bg-red-1 text-gray-9 hover:bg-red-1",
       },
@@ -596,7 +596,7 @@ export default {
       color: "neutral",
       activeType: "fill",
       class: {
-        dayActive: "bg-gray-6 text-gray-1 hover:bg-gray-6",
+        dayActive: "bg-neutral text-neutral-foreground hover:bg-neutral",
         dayInRange: "bg-gray-2 text-gray-9 hover:bg-gray-2",
         yearMonthInRange: "bg-gray-2 text-gray-9 hover:bg-gray-2",
       },
@@ -605,7 +605,7 @@ export default {
       color: "neutral",
       activeType: "fillRound",
       class: {
-        dayActive: "bg-gray-6 text-gray-1 hover:bg-gray-6",
+        dayActive: "bg-neutral text-neutral-foreground hover:bg-neutral",
         dayInRange: "bg-gray-2 text-gray-9 hover:bg-gray-2",
         yearMonthInRange: "bg-gray-2 text-gray-9 hover:bg-gray-2",
       },

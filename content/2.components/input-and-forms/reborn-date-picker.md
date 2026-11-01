@@ -613,7 +613,7 @@ const formRules = z.object({
     type="daterange"
     value-format="YYYY-MM-DD"
     :trigger-ui="{ trigger: 'border-dashed border-2 rounded-2xl h-14', rangeSeparator: 'text-primary' }"
-    :panel-ui="{ dayActive: 'bg-success text-gray-1 rounded-full hover:bg-success' }"
+    :panel-ui="{ dayActive: 'bg-success text-success-foreground rounded-full hover:bg-success' }"
   />
   <RebornDatePicker
     v-model="datesValue"

@@ -214,18 +214,36 @@ importers:
       '@tailwindcss/browser':
         specifier: 4.2.4
         version: 4.2.4
+      '@tailwindcss/node':
+        specifier: 4.2.1
+        version: 4.2.1
+      '@tailwindcss/oxide':
+        specifier: 4.2.1
+        version: 4.2.1
       '@types/three':
         specifier: ^0.182.0
         version: 0.182.0
+      '@vue/compiler-sfc':
+        specifier: 3.5.29
+        version: 3.5.29
+      esbuild:
+        specifier: 0.27.3
+        version: 0.27.3
       eslint-plugin-oxlint:
         specifier: ^1.36.0
         version: 1.51.0
       globals:
         specifier: ^16.5.0
         version: 16.5.0
+      jsdom:
+        specifier: 16.7.0
+        version: 16.7.0
       oxlint:
         specifier: ^1.36.0
         version: 1.51.0
+      playwright-core:
+        specifier: 1.58.2
+        version: 1.58.2
       prettier:
         specifier: ^3.7.4
         version: 3.8.1
@@ -19824,7 +19842,7 @@ snapshots:
       '@babel/types': 7.29.0
       '@vue/babel-helper-vue-transform-on': 1.5.0
       '@vue/babel-plugin-resolve-type': 1.5.0(@babel/core@7.25.2)
-      '@vue/shared': 3.5.29
+      '@vue/shared': 3.5.30
     optionalDependencies:
       '@babel/core': 7.25.2
     transitivePeerDependencies:
@@ -19840,7 +19858,7 @@ snapshots:
       '@babel/types': 7.29.0
       '@vue/babel-helper-vue-transform-on': 2.0.1
       '@vue/babel-plugin-resolve-type': 2.0.1(@babel/core@7.29.0)
-      '@vue/shared': 3.5.29
+      '@vue/shared': 3.5.30
     optionalDependencies:
       '@babel/core': 7.29.0
     transitivePeerDependencies:
@@ -23072,7 +23090,7 @@ snapshots:
       esbuild: 0.25.12
       fontaine: 0.7.0
       jiti: 2.6.1
-      lightningcss: 1.31.1
+      lightningcss: 1.32.0
       magic-string: 0.30.21
       ohash: 2.0.11
       pathe: 2.0.3

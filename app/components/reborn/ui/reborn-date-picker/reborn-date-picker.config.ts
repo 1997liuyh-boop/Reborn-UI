@@ -108,7 +108,7 @@ export default {
          * 未开启 collapse-tags 时由 wrapTags 变体改为逐行铺开、全部可见。
          */
         tagList: "flex min-w-0 flex-1 items-center gap-1 overflow-hidden",
-        tag: "rounded-sm! border-gray-3 bg-gray-2 text-gray-9",
+        tag: "rounded-sm border-gray-3 bg-gray-2 text-gray-9",
         tagLabel: "truncate",
         tagClose: "shrink-0 text-gray-5 transition-colors hover:text-gray-8",
         /** 标签关闭图标的尺寸 */
@@ -148,7 +148,7 @@ export default {
             },
             underlined: {
                 // 压平圆角、抹掉水平内边距，让下划线与文字左右边缘齐平
-                trigger: "rounded-none! border-0 border-b border-gray-4 bg-transparent px-0!",
+                trigger: "rounded-none border-0 border-b border-gray-4 bg-transparent px-0!",
             },
         },
         /**
@@ -197,12 +197,12 @@ export default {
          * 色阶 token 自身已随主题切换，不可再写 dark: 前缀。
          */
         color: {
-            primary: { trigger: "hover:border-brand-6 focus-within:border-primary group-focus:border-primary data-[state=open]:border-primary" },
-            secondary: { trigger: "hover:border-secondary-6 focus-within:border-secondary group-focus:border-secondary data-[state=open]:border-secondary" },
-            success: { trigger: "hover:border-green-6 focus-within:border-success group-focus:border-success data-[state=open]:border-success" },
-            info: { trigger: "hover:border-blue-6 focus-within:border-info group-focus:border-info data-[state=open]:border-info" },
-            warning: { trigger: "hover:border-orange-6 focus-within:border-warning group-focus:border-warning data-[state=open]:border-warning" },
-            error: { trigger: "hover:border-red-6 focus-within:border-error group-focus:border-error data-[state=open]:border-error" },
+            primary: { trigger: "hover:border-primary focus-within:border-primary group-focus:border-primary data-[state=open]:border-primary" },
+            secondary: { trigger: "hover:border-secondary focus-within:border-secondary group-focus:border-secondary data-[state=open]:border-secondary" },
+            success: { trigger: "hover:border-success focus-within:border-success group-focus:border-success data-[state=open]:border-success" },
+            info: { trigger: "hover:border-info focus-within:border-info group-focus:border-info data-[state=open]:border-info" },
+            warning: { trigger: "hover:border-warning focus-within:border-warning group-focus:border-warning data-[state=open]:border-warning" },
+            error: { trigger: "hover:border-error focus-within:border-error group-focus:border-error data-[state=open]:border-error" },
             neutral: { trigger: "hover:border-gray-6 focus-within:border-neutral group-focus:border-neutral data-[state=open]:border-neutral" },
         },
         open: {
@@ -249,7 +249,7 @@ export default {
         },
         error: {
             true: {
-                trigger: "border-red-5 hover:border-red-5 focus-within:border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
+                trigger: "border-error hover:border-error-hover focus-within:border-error group-focus:border-error data-[state=open]:border-error",
             },
         },
     },
@@ -257,7 +257,7 @@ export default {
         // borderless 形态本身没有描边宽度，出错时需要补一圈，否则错误态完全不可见
         { variant: "borderless", error: true, class: { trigger: "border" } },
         // underlined 形态只在底边报错，避免补出一整圈与形态语言冲突的红框
-        { variant: "underlined", error: true, class: { trigger: "border-b-red-5" } },
+        { variant: "underlined", error: true, class: { trigger: "border-b-error" } },
         /**
          * 标签换行态的每档最小高度与纵向内边距，数值与 RebornSelect 相同：
          * 按 (档位高度 - 标签高度) / 2 - 1px 描边 反推，单行时与固定高度档位严格等高。

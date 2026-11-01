@@ -22,10 +22,10 @@ for (const color of buttonColors) {
       const classes = button({ color, variant, disabled: true }).base().split(/\s+/);
       assert.ok(classes.includes('cursor-not-allowed'));
       assert.ok(!classes.includes('opacity-70'));
-      assert.ok(!classes.some((value: string) => /^hover:/.test(value)));
+      assert.ok(!classes.some((value: string) => value.startsWith('hover:')));
       if (variant === 'filled' || variant === 'round') {
         assert.ok(classes.includes(disabledBackgrounds[color]));
-        assert.ok(!classes.some((value: string) => /^dark:bg-/.test(value)));
+        assert.ok(!classes.some((value: string) => value.startsWith('dark:bg-')));
       }
       if (variant === 'outlined' || variant === 'circle') {
         for (const expected of ['bg-gray-2', 'border', 'border-gray-4', 'text-gray-5']) {
@@ -43,9 +43,9 @@ for (const color of buttonColors) {
       const classes = button({ color, variant, disabled: false }).base().split(/\s+/);
       assert.ok(classes.includes('cursor-pointer'));
       assert.ok(!classes.includes('cursor-not-allowed'));
-      assert.ok(classes.some((value: string) => /^enabled:hover:/.test(value)));
-      if (variant === 'round' || variant === 'circle') assert.ok(classes.includes('rounded-full!'));
-      if (variant === 'circle') assert.ok(classes.includes('aspect-square!'));
+      assert.ok(classes.some((value: string) => value.startsWith('enabled:hover:')));
+      if (variant === 'round' || variant === 'circle') assert.ok(classes.includes('rounded-full'));
+      if (variant === 'circle') assert.ok(classes.includes('aspect-square'));
     });
   }
 }

@@ -82,7 +82,7 @@ Web 端只有 `solid` 与 `textDot` 带 `ring-1 ring-gray-1` 外圈，用于区�
 
 ### 颜色：7 种语义色
 
-`color` 统一取色阶的 6 阶：`solid` / `textDot` 用作底色，`outline` / `textOutline` 用作描边与文字色，默认 `primary`。
+`color` 默认映射到色板的 6 阶：`solid` / `textDot` 用作底色，`outline` / `textOutline` 用作描边与文字色，默认 `primary`。Web 使用语义色及配套前景令牌，可随主题整体调整。
 
 | 取值 | 典型用途 |
 | --- | --- |
@@ -210,8 +210,8 @@ const hasUnread = ref(true);
 | `show` | `boolean` | `undefined` | 是否渲染角标节点；未传时可见，显式 `false`、`undefined`、`null` 时隐藏。组件内部不会改写它。 |
 | `inset` | `boolean` | `false` | 为 `true` 时取消向外平移，角标整个落在宿主内部。 |
 | `standalone` | `boolean` | `false` | 只给角标节点追加 `absolute`，而角标节点本身已是 `absolute`，目前没有可见效果。 |
-| `class` | `any` | `-` | 追加到根节点 `root` 的类名。 |
-| `ui` | `object` | `-` | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
+| `class` | `ClassValue` | `-` | 追加到根节点 `root` 的类名，支持字符串、数组与条件对象。 |
+| `ui` | `ChipUI` | `-` | 细粒度样式覆盖，键位见「自定义样式（ui）」；每个键接受 `ClassValue`。 |
 
 :::
 
@@ -259,7 +259,7 @@ const hasUnread = ref(true);
 | --- | --- | --- | --- |
 | `root` | 包裹宿主与角标的 `<span>` | `relative inline-flex items-center justify-center shrink-0 h-fit leading-none` | 始终渲染；`class` 也合并到这里。 |
 | `base` | 角标节点 `<div>` | `absolute rounded-full flex items-center justify-center whitespace-nowrap`，另按 `variant` × `color` 加 `bg-*` 或 `border-*`、按 `variant` × `size` 加尺寸、按 `position` 加 `top-0` / `right-0` 等；`inset` 为 `false` 时再加 `translate-*` 平移 | `show` 为 `false` 时不渲染。 |
-| `label` | 角标内的文本 `<div>` | `font-medium`，另按 `size` 加字号与 `leading-none`；`textDot` 加 `text-white`，`textOutline` 加语义色 `text-*` | 仅 `text` 为真值且变体为 `textDot` / `textOutline` 时渲染。 |
+| `label` | 角标内的文本 `<div>` | `font-medium`，另按 `size` 加字号与 `leading-none`；`textDot` 加配套语义前景色 `text-*-foreground`，`textOutline` 加语义色 `text-*` | 仅 `text` 为真值且变体为 `textDot` / `textOutline` 时渲染。 |
 
 ```vue
 <template>
@@ -281,11 +281,11 @@ const hasUnread = ref(true);
 | 维度 | Web | UniApp |
 | --- | --- | --- |
 | 尺寸单位 | px：圆点 4 / 5 / 6、圆环外径 8 / 12 / 16、文字角标高 16 / 20 / 24 | rpx，数值为 Web 的 2 倍：8 / 10 / 12、16 / 24 / 32、32 / 40 / 48 |
-| 配色来源 | 色阶 6 阶类（`bg-brand-6`、`border-red-6` 等） | 语义色类（`bg-primary`、`border-error` 等），本端语义色即 6 阶 |
+| 配色来源 | 语义色类（`bg-primary`、`border-error` 等），默认对应 6 阶，实心文字使用配套前景令牌 | 语义色类（`bg-primary`、`border-error` 等），本端语义色即 6 阶 |
 | 样式覆盖 | `class` + `ui`（`root` / `base` / `label`） | 只有 `customClass`，作用于定位容器 |
 | 外层结构 | 根节点就是行内的 `<span>` 定位容器 | 定位容器外还包了一层块级 `<view>`，且 `inheritAttrs: false`，写在组件上的其他属性不会透传 |
 | 文本节点 | `<div>` | `<text>` |
-| 类型约束 | `color` / `size` / `position` 额外接受任意字符串 | 只接受配置里列出的取值 |
+| 类型约束 | `color` / `size` / `position` 只接受配置里列出的取值 | 只接受配置里列出的取值 |
 
 ## 注意事项
 

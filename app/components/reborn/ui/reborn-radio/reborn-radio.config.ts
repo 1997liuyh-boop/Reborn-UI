@@ -17,7 +17,7 @@ export const radioDirections = ["horizontal", "vertical"] as const;
 /** 语义色板，与 RebornButton 同一套取值 */
 export const radioColors = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
 
-/** 样式变体：filled 实底（语义色背景 + 白色前景）/ outlined 描边（语义色描边 + 语义色前景，默认） */
+/** 样式变体：filled 实底（语义色背景 + 配对前景）/ outlined 描边（语义色描边 + 语义色前景，默认） */
 export const radioAppearances = ["filled", "outlined"] as const;
 
 /** 单选尺寸类型 */
@@ -210,8 +210,14 @@ export default {
         { variant: "button", appearance: "outlined", checked: true, color: "error", class: { root: "text-error" } },
         { variant: "button", appearance: "outlined", checked: true, color: "neutral", class: { root: "text-neutral" } },
 
-        // 分段按钮风格 · 选中 · filled：语义色实底 + 白色字体；实底同样只在没有滑块时由选项自己画
-        { variant: "button", appearance: "filled", checked: true, class: { root: "text-white" } },
+        // 分段按钮风格 · 选中 · filled：语义色实底 + 配对前景；实底同样只在没有滑块时由选项自己画
+        { variant: "button", appearance: "filled", checked: true, color: "primary", class: { root: "text-primary-foreground" } },
+        { variant: "button", appearance: "filled", checked: true, color: "secondary", class: { root: "text-secondary-foreground" } },
+        { variant: "button", appearance: "filled", checked: true, color: "success", class: { root: "text-success-foreground" } },
+        { variant: "button", appearance: "filled", checked: true, color: "info", class: { root: "text-info-foreground" } },
+        { variant: "button", appearance: "filled", checked: true, color: "warning", class: { root: "text-warning-foreground" } },
+        { variant: "button", appearance: "filled", checked: true, color: "error", class: { root: "text-error-foreground" } },
+        { variant: "button", appearance: "filled", checked: true, color: "neutral", class: { root: "text-neutral-foreground" } },
         { variant: "button", appearance: "filled", checked: true, slider: false, color: "primary", class: { root: "bg-primary shadow-sm" } },
         { variant: "button", appearance: "filled", checked: true, slider: false, color: "secondary", class: { root: "bg-secondary shadow-sm" } },
         { variant: "button", appearance: "filled", checked: true, slider: false, color: "success", class: { root: "bg-success shadow-sm" } },
@@ -260,7 +266,7 @@ export default {
             class: { group: "items-stretch [&>.reborn-radio:not(:first-child)]:-mt-px [&>.reborn-radio_button]:w-full" },
         },
 
-        // 实体按钮拼接 · 首尾圆角：随尺寸取 RebornButton 同款圆角令牌（sm→4px / md→6px / lg→8px），
+        // 实体按钮拼接 · 首尾圆角：所有尺寸统一取 RebornButton 同款 4px 圆角令牌，
         // 水平恢复首左尾右，垂直恢复首顶尾底
         {
             variant: "pure-button",
@@ -272,13 +278,13 @@ export default {
             variant: "pure-button",
             direction: "horizontal",
             size: "md",
-            class: { group: "[&>.reborn-radio:first-child_button]:rounded-s-md [&>.reborn-radio:last-child_button]:rounded-e-md" },
+            class: { group: "[&>.reborn-radio:first-child_button]:rounded-s-sm [&>.reborn-radio:last-child_button]:rounded-e-sm" },
         },
         {
             variant: "pure-button",
             direction: "horizontal",
             size: "lg",
-            class: { group: "[&>.reborn-radio:first-child_button]:rounded-s-lg [&>.reborn-radio:last-child_button]:rounded-e-lg" },
+            class: { group: "[&>.reborn-radio:first-child_button]:rounded-s-sm [&>.reborn-radio:last-child_button]:rounded-e-sm" },
         },
         {
             variant: "pure-button",
@@ -290,13 +296,13 @@ export default {
             variant: "pure-button",
             direction: "vertical",
             size: "md",
-            class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-md [&>.reborn-radio:last-child_button]:rounded-b-md" },
+            class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-sm [&>.reborn-radio:last-child_button]:rounded-b-sm" },
         },
         {
             variant: "pure-button",
             direction: "vertical",
             size: "lg",
-            class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-lg [&>.reborn-radio:last-child_button]:rounded-b-lg" },
+            class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-sm [&>.reborn-radio:last-child_button]:rounded-b-sm" },
         },
     ] as const,
     defaultVariants: {

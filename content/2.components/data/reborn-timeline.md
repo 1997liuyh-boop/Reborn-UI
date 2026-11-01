@@ -111,7 +111,7 @@ const items: TimelineItemData[] = [
 
 | `variant` | 外观 | 典型用途 |
 | --- | --- | --- |
-| `solid` | 语义色填充，图标为白色 | 已完成或需强调的节点 |
+| `solid` | 语义色填充，图标取配对前景色（自定义 CSS 色值时为白色） | 已完成或需强调的节点 |
 | `outlined` | 语义色边框与图标，中心遮住连接线 | 待办或弱化展示的节点 |
 
 ```vue
@@ -282,7 +282,7 @@ const items: TimelineItemData[] = [
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral' \| string` | `'primary'` | 节点颜色：预设色走语义类，其余值作为 CSS 色值走内联样式，取值见「节点颜色」。 |
 | `content` | `string` | - | 节点内容，默认作为文本渲染；默认插槽或 `content` 插槽存在时忽略。 |
 | `dangerouslyUseHTMLString` | `boolean` | `false` | 显式启用 HTML，仅传入已清理的可信内容。 |
-| `icon` | `string \| Component` | - | 字符串按 Iconify 名称渲染，否则按组件渲染；实心图标为白色，空心图标跟随 `color`，`sm` 不渲染。 |
+| `icon` | `string \| Component` | - | 字符串按 Iconify 名称渲染，否则按组件渲染；实心图标取与语义色配对的前景色（自定义 CSS 色值时为白色），空心图标跟随 `color`，`sm` 不渲染。 |
 | `loading` | `boolean` | `false` | 加载中节点：显示旋转的 `lucide:loader-circle`，优先级高于 `icon`；`sm` 隐藏加载图标。 |
 | `labelPosition` | `'left' \| 'right'` | `'right'` | 内容位于轴线的哪一侧，仅 `vertical` 方向生效。 |
 | `placement` | `'left' \| 'right' \| 'top' \| 'bottom'` | `'bottom'` | 时间戳位置：`top` / `bottom` 堆叠在内容上下；`left` / `right` 放到轴线对应一侧，落位规则见「时间戳位置」。 |

@@ -175,17 +175,17 @@ const theme = tv({
   },
   variants: {
     // 主题色：统一控制选中背景/文字、筛选高亮、拖拽指示的用色（复选框色由组件透传给 RebornCheckbox）。
-    // 配方：选中填充取色阶 1 档、拖拽内部放置取 2 档（比选中重一档以示区分）、文字/描边取 6 档；
-    // 语义别名没有数字档位，须写各色阶本名。
+    // 配方：选中填充取 soft 角色（1 档）、拖拽内部放置取色板 2 档（比选中重一档以示区分）、文字/描边取默认强调色（6 档）；
+    // 2 档浅底没有对应的语义角色，直接写色板本名，不借用同阶的 -border 描边角色。
     // 指示线不依赖其他状态，颜色直接挂在本变体上；选中/高亮/内部放置的着色见下方复合变体
     color: {
-      primary: { dropIndicator: "bg-brand-6 after:border-brand-6" },
-      secondary: { dropIndicator: "bg-secondary-6 after:border-secondary-6" },
-      success: { dropIndicator: "bg-green-6 after:border-green-6" },
-      info: { dropIndicator: "bg-blue-6 after:border-blue-6" },
-      warning: { dropIndicator: "bg-orange-6 after:border-orange-6" },
-      error: { dropIndicator: "bg-red-6 after:border-red-6" },
-      // neutral 的强调取 gray-9（正文色）：gray-6 属弱化文本，压不住指示语义
+      primary: { dropIndicator: "bg-primary after:border-primary" },
+      secondary: { dropIndicator: "bg-secondary after:border-secondary" },
+      success: { dropIndicator: "bg-success after:border-success" },
+      info: { dropIndicator: "bg-info after:border-info" },
+      warning: { dropIndicator: "bg-warning after:border-warning" },
+      error: { dropIndicator: "bg-error after:border-error" },
+      // neutral 的强调取 gray-9（正文色）：neutral 角色是 gray-6 弱化灰，压不住指示语义，与内部放置的 ring-gray-9 保持一致
       neutral: { dropIndicator: "bg-gray-9 after:border-gray-9" },
     },
     // 节点占据整行：点击区拉满剩余宽度，悬浮/选中背景铺满整行
@@ -265,28 +265,28 @@ const theme = tv({
   compoundVariants: [
     // ── 选中态：填充 1 档 + 文字 6 档（hover 钉在同一填充色上，避免又跳回灰底） ──
     // neutral 例外：gray-1 是页面/面板底色，选中填充用它会隐形，保留 2 档
-    { selected: true, color: "primary", class: { content: "bg-brand-1 text-brand-6 hover:bg-brand-1" } },
-    { selected: true, color: "secondary", class: { content: "bg-secondary-1 text-secondary-6 hover:bg-secondary-1" } },
-    { selected: true, color: "success", class: { content: "bg-green-1 text-green-6 hover:bg-green-1" } },
-    { selected: true, color: "info", class: { content: "bg-blue-1 text-blue-6 hover:bg-blue-1" } },
-    { selected: true, color: "warning", class: { content: "bg-orange-1 text-orange-6 hover:bg-orange-1" } },
-    { selected: true, color: "error", class: { content: "bg-red-1 text-red-6 hover:bg-red-1" } },
+    { selected: true, color: "primary", class: { content: "bg-primary-soft text-primary hover:bg-primary-soft" } },
+    { selected: true, color: "secondary", class: { content: "bg-secondary-soft text-secondary hover:bg-secondary-soft" } },
+    { selected: true, color: "success", class: { content: "bg-success-soft text-success hover:bg-success-soft" } },
+    { selected: true, color: "info", class: { content: "bg-info-soft text-info hover:bg-info-soft" } },
+    { selected: true, color: "warning", class: { content: "bg-warning-soft text-warning hover:bg-warning-soft" } },
+    { selected: true, color: "error", class: { content: "bg-error-soft text-error hover:bg-error-soft" } },
     { selected: true, color: "neutral", class: { content: "bg-gray-2 text-gray-9 hover:bg-gray-2" } },
     // ── 筛选高亮：文字取 6 档（neutral 取 9 档正文色） ──
-    { filtered: true, color: "primary", class: { title: "text-brand-6" } },
-    { filtered: true, color: "secondary", class: { title: "text-secondary-6" } },
-    { filtered: true, color: "success", class: { title: "text-green-6" } },
-    { filtered: true, color: "info", class: { title: "text-blue-6" } },
-    { filtered: true, color: "warning", class: { title: "text-orange-6" } },
-    { filtered: true, color: "error", class: { title: "text-red-6" } },
+    { filtered: true, color: "primary", class: { title: "text-primary" } },
+    { filtered: true, color: "secondary", class: { title: "text-secondary" } },
+    { filtered: true, color: "success", class: { title: "text-success" } },
+    { filtered: true, color: "info", class: { title: "text-info" } },
+    { filtered: true, color: "warning", class: { title: "text-warning" } },
+    { filtered: true, color: "error", class: { title: "text-error" } },
     { filtered: true, color: "neutral", class: { title: "text-gray-9" } },
     // ── 拖拽放入内部：填充 2 档 + 描边 6 档 ──
-    { dropInside: true, color: "primary", class: { content: "bg-brand-2 ring-brand-6" } },
-    { dropInside: true, color: "secondary", class: { content: "bg-secondary-2 ring-secondary-6" } },
-    { dropInside: true, color: "success", class: { content: "bg-green-2 ring-green-6" } },
-    { dropInside: true, color: "info", class: { content: "bg-blue-2 ring-blue-6" } },
-    { dropInside: true, color: "warning", class: { content: "bg-orange-2 ring-orange-6" } },
-    { dropInside: true, color: "error", class: { content: "bg-red-2 ring-red-6" } },
+    { dropInside: true, color: "primary", class: { content: "bg-brand-2 ring-primary" } },
+    { dropInside: true, color: "secondary", class: { content: "bg-secondary-2 ring-secondary" } },
+    { dropInside: true, color: "success", class: { content: "bg-green-2 ring-success" } },
+    { dropInside: true, color: "info", class: { content: "bg-blue-2 ring-info" } },
+    { dropInside: true, color: "warning", class: { content: "bg-orange-2 ring-warning" } },
+    { dropInside: true, color: "error", class: { content: "bg-red-2 ring-error" } },
     { dropInside: true, color: "neutral", class: { content: "bg-gray-2 ring-gray-9" } },
   ],
   defaultVariants: {

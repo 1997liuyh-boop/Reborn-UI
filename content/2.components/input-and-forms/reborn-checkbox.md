@@ -92,13 +92,13 @@ const agreed = ref(false);
 
 ### 尺寸
 
-两端尺寸档位一致，勾选框为正方形、标签字号取全局字号令牌：
+两端尺寸档位一致，勾选框为正方形、标签字号取各端的字号令牌。下表为 Web；UniApp 标签继续使用 `--text-size-24/26/28`，单位为 rpx。
 
 | `size` | 勾选框 | 标签字号 |
 | --- | --- | --- |
-| `sm` | 16px（`size-4`） | `--text-size-24` |
-| `md`（默认） | 20px（`size-5`） | `--text-size-26` |
-| `lg` | 24px（`size-6`） | `--text-size-28` |
+| `sm` | 16px（`size-4`） | 12px（`text-sm`，行高 20px） |
+| `md`（默认） | 20px（`size-5`） | 14px（`text-base`，行高 22px） |
+| `lg` | 24px（`size-6`） | 16px（`text-lg`，行高 24px） |
 
 ```vue
 <template>
@@ -436,7 +436,7 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
 | `control` | 勾选方块 | `rounded-sm border border-gray-4 bg-white`，尺寸 `size-4/5/6`，聚焦时 `ring-2 ring-primary/40`；校验失败 `border-red-5`；禁用 `bg-gray-2` | 填充 `checkbox` 插槽后不渲染。 |
 | `icon` | 对勾 / 横线图标 | `size-4 opacity-0 scale-75 transition-all`，选中或半选时由 `control` 的规则显形；禁用 `text-gray-4` | 填充 `checkbox` 或 `icon` 插槽后不渲染；`outlined` 半选时换成 `dot` 节点。 |
 | `dot` | `outlined` / `shadow` 半选时的实心小方块 | `size-full rounded-sm scale-50`，底色取语义色；禁用 `bg-gray-4` | 仅 `variant="outlined"` 或 `variant="shadow"` 且 `indeterminate` 时渲染；填充 `checkbox` 或 `icon` 插槽后不渲染。 |
-| `label` | 标签文本容器 | `text-gray-9`，字号随 `size` 取 `--text-size-24/26/28` | 仅在传了 `label` 或默认插槽时渲染；组内用 `options` 时始终渲染。 |
+| `label` | 标签文本容器 | `text-gray-9`，字号随 `size` 取 `text-sm` / `text-base` / `text-lg` 及对应行高 | 仅在传了 `label` 或默认插槽时渲染；组内用 `options` 时始终渲染。 |
 | `root` | `RebornCheckboxGroup` 的根 `<div>` | `reborn-checkbox-group flex flex-wrap gap-4`，`direction` 追加 `flex-row items-center` / `flex-col items-start`，带 `role="group"` | 仅写在 `RebornCheckboxGroup` 上生效，是该组件唯一的键；与 `class` 合并时 `ui.root` 在后。 |
 :::
 

@@ -646,12 +646,12 @@ it('父级颜色与尺寸响应式继承，子步骤颜色和 ui 覆盖独立生
   try {
     const markers = () => Array.from(view.root.querySelectorAll('.fixture-marker'));
     const items = () => Array.from(view.root.querySelectorAll('li'));
-    assert.ok(items()[0]!.className.includes('--color-green-6'));
-    assert.ok(items()[1]!.className.includes('--color-red-6'));
+    assert.ok(items()[0]!.className.includes('--color-success'));
+    assert.ok(items()[1]!.className.includes('--color-error'));
     view.props.color = 'warning';
     await nextTick();
-    assert.ok(items()[0]!.className.includes('--color-orange-6'));
-    assert.ok(items()[1]!.className.includes('--color-red-6'));
+    assert.ok(items()[0]!.className.includes('--color-warning'));
+    assert.ok(items()[1]!.className.includes('--color-error'));
     assert.ok(markers().every(element => element.classList.contains('size-10')));
     view.props.size = 'sm';
     await nextTick();

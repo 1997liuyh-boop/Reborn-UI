@@ -6,6 +6,7 @@ export type {
   TransferItem,
   TransferOperationButtonConfig,
   TransferOperationButtons,
+  TransferUI,
   TransferVariant,
 } from './reborn-transfer.config'
 export { defaultTransferFieldNames } from './reborn-transfer.config'

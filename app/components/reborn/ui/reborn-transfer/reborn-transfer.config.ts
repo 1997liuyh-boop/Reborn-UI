@@ -1,3 +1,5 @@
+import type { ClassValue } from 'clsx'
+
 /** 选中框外观：square 方形 | rounded 圆角 | circle 圆形 */
 export const transferCheckShapes = ['square', 'rounded', 'circle'] as const
 export type TransferCheckShape = (typeof transferCheckShapes)[number]
@@ -268,5 +270,8 @@ const config = {
     color: 'primary' as TransferColor,
   },
 } as const
+
+/** 仅允许配置中存在的结构键，类名支持字符串、数组与条件对象。 */
+export type TransferUI = Partial<Record<keyof typeof config.slots, ClassValue>>
 
 export default config

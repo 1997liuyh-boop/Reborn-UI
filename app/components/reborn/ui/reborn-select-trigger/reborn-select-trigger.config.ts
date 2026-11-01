@@ -117,10 +117,10 @@ export default {
         },
     },
     compoundVariants: [
-        { portal: false, placement: "bottom", class: { dropdown: "top-full mt-1" } },
-        { portal: false, placement: "top", class: { dropdown: "bottom-full mb-1" } },
-        { portal: false, placement: "left", class: { dropdown: "right-full top-0 mr-1 w-auto" } },
-        { portal: false, placement: "right", class: { dropdown: "left-full top-0 ml-1 w-auto" } },
+        { portal: false, placement: "bottom" as const, class: { dropdown: "top-full mt-1" } },
+        { portal: false, placement: "top" as const, class: { dropdown: "bottom-full mb-1" } },
+        { portal: false, placement: "left" as const, class: { dropdown: "right-full top-0 mr-1 w-auto" } },
+        { portal: false, placement: "right" as const, class: { dropdown: "left-full top-0 ml-1 w-auto" } },
     ],
     defaultVariants: {
         size: "md" as (typeof sizes)[number],

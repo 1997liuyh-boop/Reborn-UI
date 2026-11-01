@@ -12,6 +12,7 @@ import {  createSSRApp, h } from 'vue'
 let server: ViteDevServer
 let Button: Component
 let Badge: Component
+let Alert: Component
 let formKey: symbol
 
 before(async () => {
@@ -26,6 +27,7 @@ before(async () => {
   })
   Button = (await server.ssrLoadModule('/app/components/reborn/ui/reborn-button/RebornButton.vue')).default
   Badge = (await server.ssrLoadModule('/app/components/reborn/ui/reborn-badge/RebornBadge.vue')).default
+  Alert = (await server.ssrLoadModule('/app/components/reborn/ui/reborn-alert/RebornAlert.vue')).default
   formKey = (await server.ssrLoadModule('/app/composables/useFieldGroup.ts')).FORM_KEY
 })
 
@@ -41,8 +43,8 @@ async function render(component: Component, props: Record<string, unknown>, slot
 
 it('Button 声明独立形状参数，描边圆形不变为实底配色', async () => {
   const html = await render(Button, { variant: 'outlined', circle: true, round: true, label: '加' })
-  assert.match(html, /rounded-full!/)
-  assert.match(html, /w-8!/)
+  assert.match(html, /rounded-full/)
+  assert.match(html, /w-8/)
   assert.doesNotMatch(html, / circle[= >]/)
   assert.doesNotMatch(html, /bg-primary[ "]/)
 })
@@ -51,9 +53,9 @@ it('Button text 圆形及 Badge 圆形继承表单尺寸', async () => {
   for (const [component, name, variant] of [[Button, 'button', 'text'], [Badge, 'badge', 'soft']] as const) {
     const html = await render(component, { circle: true, variant, label: '1' }, undefined, 'lg')
     const step = name === 'button' ? 10 : 8
-    assert.ok(html.includes(`w-${step}!`))
-    assert.ok(html.includes(`h-${step}!`))
-    assert.doesNotMatch(html, /h-auto!/)
+    assert.ok(html.includes(`w-${step}`))
+    assert.ok(html.includes(`h-${step}`))
+    assert.doesNotMatch(html, /h-auto/)
   }
 })
 
@@ -85,7 +87,33 @@ it('圆形 Badge 保留数字零，纯图标不插入空标签', async () => {
   const icon = await render(Badge, { circle: true }, { leading: () => h('svg', { 'data-leading-icon': '' }) })
   assert.match(icon, /data-leading-icon/)
   assert.doesNotMatch(icon, /truncate/)
-  assert.ok(icon.includes('w-6!'))
+  assert.ok(icon.includes('w-6'))
+})
+
+it('Button 尺寸优先级为显式 size、表单、组件默认值', async () => {
+  assert.match(await render(Button, { label: '显式', size: 'sm' }, undefined, 'lg'), /h-6(?: |")/)
+  assert.match(await render(Button, { label: '继承' }, undefined, 'lg'), /h-10(?: |")/)
+  assert.match(await render(Button, { label: '默认' }), /h-8(?: |")/)
+})
+
+it('Button 与 Badge 的形状默认允许普通 ui 类覆盖', async () => {
+  for (const component of [Button, Badge]) {
+    const html = await render(component, { circle: true, label: '1', ui: { base: 'rounded-lg h-12 w-12' } })
+    assert.match(html, /rounded-lg/)
+    assert.doesNotMatch(html, /rounded-full!?/)
+    assert.match(html, /h-12/)
+    assert.match(html, /w-12/)
+  }
+})
+
+it('Alert banner 覆盖 round 默认，普通 ui 仍可覆盖公告形状', async () => {
+  const defaults = await render(Alert, { variant: 'round', banner: true, showIcon: false, title: '公告' })
+  assert.match(defaults, /rounded-none/)
+  assert.doesNotMatch(defaults, /rounded-full/)
+  const custom = await render(Alert, { variant: 'round', banner: true, showIcon: false, ui: { root: 'rounded-lg border-solid' } })
+  assert.match(custom, /rounded-lg/)
+  assert.doesNotMatch(custom, /rounded-none!?/)
+  assert.doesNotMatch(custom, /border-none!?/)
 })
 
 it('Badge 形状不影响默认内容和关闭插槽', async () => {

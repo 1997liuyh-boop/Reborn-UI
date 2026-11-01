@@ -127,7 +127,7 @@ export default {
          * gap 同时作用于主轴与交叉轴，因此换行后的行间距无需额外声明。
          */
         tagList: "flex min-w-0 flex-1 items-center gap-1 overflow-hidden",
-        tag: "rounded-sm!",
+        tag: "rounded-sm",
         tagLabel: "truncate",
         tagClose: "shrink-0",
         /** 标签关闭图标的尺寸 */
@@ -171,7 +171,7 @@ export default {
             underlined: {
                 // 压平圆角、抹掉水平内边距，让下划线与文字左右边缘齐平。
                 // 圆角与内边距均使用原生工具类，! 沿用形态变体的样式优先级。
-                trigger: "rounded-none! border-0 border-b border-gray-4 bg-transparent px-0!",
+                trigger: "rounded-none border-0 border-b border-gray-4 bg-transparent px-0!",
             },
         },
         /**
@@ -229,28 +229,28 @@ export default {
          */
         color: {
             primary: {
-                trigger: "hover:border-brand-6 group-focus:border-primary focus-within:border-primary data-[state=open]:border-primary ring-primary/20",
-                optionActive: "bg-brand-1 text-primary",
+                trigger: "hover:border-primary group-focus:border-primary focus-within:border-primary data-[state=open]:border-primary ring-primary/20",
+                optionActive: "bg-primary-soft text-primary",
             },
             secondary: {
-                trigger: "hover:border-secondary-6 group-focus:border-secondary focus-within:border-secondary data-[state=open]:border-secondary ring-secondary/20",
-                optionActive: "bg-secondary-1 text-secondary-6",
+                trigger: "hover:border-secondary group-focus:border-secondary focus-within:border-secondary data-[state=open]:border-secondary ring-secondary/20",
+                optionActive: "bg-secondary-soft text-secondary",
             },
             success: {
-                trigger: "hover:border-green-6 group-focus:border-success focus-within:border-success data-[state=open]:border-success ring-success/20",
-                optionActive: "bg-green-1 text-green-6",
+                trigger: "hover:border-success group-focus:border-success focus-within:border-success data-[state=open]:border-success ring-success/20",
+                optionActive: "bg-success-soft text-success",
             },
             info: {
-                trigger: "hover:border-blue-6 group-focus:border-info focus-within:border-info data-[state=open]:border-info ring-info/20",
-                optionActive: "bg-blue-1 text-blue-6",
+                trigger: "hover:border-info group-focus:border-info focus-within:border-info data-[state=open]:border-info ring-info/20",
+                optionActive: "bg-info-soft text-info",
             },
             warning: {
-                trigger: "hover:border-orange-6 group-focus:border-warning focus-within:border-warning data-[state=open]:border-warning ring-warning/20",
-                optionActive: "bg-orange-1 text-orange-6",
+                trigger: "hover:border-warning group-focus:border-warning focus-within:border-warning data-[state=open]:border-warning ring-warning/20",
+                optionActive: "bg-warning-soft text-warning",
             },
             error: {
-                trigger: "hover:border-red-6 group-focus:border-error focus-within:border-error data-[state=open]:border-error ring-error/20",
-                optionActive: "bg-red-1 text-red-6",
+                trigger: "hover:border-error group-focus:border-error focus-within:border-error data-[state=open]:border-error ring-error/20",
+                optionActive: "bg-error-soft text-error",
             },
             neutral: {
                 trigger: "hover:border-gray-6 group-focus:border-neutral focus-within:border-neutral data-[state=open]:border-neutral ring-neutral/20",
@@ -283,7 +283,7 @@ export default {
         },
         error: {
             true: {
-                trigger: "border-red-5 hover:border-red-5 group-focus:border-red-5 focus-within:border-red-5 data-[state=open]:border-red-5 ring-error/20",
+                trigger: "border-error hover:border-error-hover group-focus:border-error focus-within:border-error data-[state=open]:border-error ring-error/20",
             },
         },
         /**
@@ -301,7 +301,7 @@ export default {
         // borderless 形态本身没有描边宽度，出错时需要补一圈，否则错误态完全不可见
         { variant: "borderless", error: true, class: { trigger: "border" } },
         // underlined 形态只在底边报错，避免补出一整圈与形态语言冲突的红框
-        { variant: "underlined", error: true, class: { trigger: "border-b-red-5" } },
+        { variant: "underlined", error: true, class: { trigger: "border-b-error" } },
         /**
          * 标签换行态的每档最小高度与纵向内边距。
          * 内边距按 (档位高度 - 标签高度) / 2 - 1px 描边 反推，

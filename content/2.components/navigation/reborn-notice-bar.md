@@ -89,8 +89,8 @@ function pauseBar() {
 | `scrollable` | `boolean` | `true` | 是否开启滚动播放，内容溢出且非垂直滚动时生效 | 通用 |
 | `wrapable` | `boolean` | `false` | 是否开启多行展示 (水平模式生效) | 通用 |
 | `disabled` | `boolean` | `false` | 是否禁用，禁用后不再滚动且样式变淡 | 通用 |
-| `color` | `string` | `-` | 文本颜色，支持 Hex、RGB 等 CSS 颜色格式 | 通用 |
-| `background` | `string` | `-` | 背景色，支持 Hex、RGB 等 CSS 颜色格式 | 通用 |
+| `color` | `string` | Web：`-`；UniApp：`'#888A8C'` | 显式传入时以内联样式覆盖文本色；Web 未传时使用 `text-gray-8` | 通用 |
+| `background` | `string` | Web：`-`；UniApp：`'#F7F7F9'` | 显式传入时以内联样式覆盖背景色；Web 未传时使用 `bg-gray-2` | 通用 |
 | `leftIcon` | `string` | `-` | 左侧图标名称 | 通用 |
 | `rightIcon` | `string` | `-` | 右侧图标名称 | 通用 |
 | `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | 滚动方向 | 通用 |
@@ -128,11 +128,11 @@ function pauseBar() {
 
 ### 自定义样式（ui）
 
-`ui` 属性按以下键覆盖对应节点的类名：
+`ui` 属性按以下键覆盖对应节点的类名。Web 默认颜色由 `ui.root` 中的类名控制，只有显式传入 `color` / `background` 时才写入内联颜色；`customStyle` 最后合并，优先级最高。
 
 | 键名 | 说明 |
 | :--- | :--- |
-| `root` | 根容器 |
+| `root` | 根容器；Web 默认 `bg-gray-2 text-gray-8`，可用同类工具类覆盖；显式 `color` / `background` 的内联颜色优先于类名 |
 | `content` | 预留键：两端都没有对应节点，传入不生效 |
 | `textWrapper` | 文本外层容器（溢出测量基准） |
 | `text` | 滚动文本本体 |

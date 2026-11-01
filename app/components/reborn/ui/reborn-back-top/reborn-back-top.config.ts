@@ -48,28 +48,28 @@ export default {
         /** group 供按钮主体响应键盘焦点；焦点样式画在按钮主体上，外层只负责定位 */
         wrapper: "group fixed right-0 z-50 overflow-visible pointer-none outline-none transition-all duration-300 active:scale-95",
         /** relative 是进度环绝对定位的锚点 */
-        base: "relative flex flex-row items-center justify-center text-white shadow-lg pointer-events-auto cursor-pointer transition-transform duration-300 group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-gray-10",
-        icon: "text-white",
+        base: "relative flex flex-row items-center justify-center shadow-lg pointer-events-auto cursor-pointer transition-transform duration-300 group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-gray-10",
+        icon: "text-current",
         /** 进度环 SVG 根：不拦截点击，交给外层 wrapper */
         progress: "absolute inset-0 pointer-events-none",
         /** 底环 */
-        progressTrack: "fill-none stroke-white/25",
+        progressTrack: "fill-none stroke-current/25",
         /** 进度环本体，长度由 stroke-dashoffset 驱动 */
-        progressBar: "fill-none stroke-white transition-[stroke-dashoffset] duration-150 ease-out [stroke-linecap:round]",
+        progressBar: "fill-none stroke-current transition-[stroke-dashoffset] duration-150 ease-out [stroke-linecap:round]",
     },
     variants: {
         color: {
-            primary: { base: 'bg-primary' },
-            secondary: { base: 'bg-secondary' },
-            success: { base: 'bg-success' },
-            info: { base: 'bg-info' },
-            warning: { base: 'bg-warning' },
-            error: { base: 'bg-error' },
-            neutral: { base: 'bg-neutral' }
+            primary: { base: 'bg-primary text-primary-foreground' },
+            secondary: { base: 'bg-secondary text-secondary-foreground' },
+            success: { base: 'bg-success text-success-foreground' },
+            info: { base: 'bg-info text-info-foreground' },
+            warning: { base: 'bg-warning text-warning-foreground' },
+            error: { base: 'bg-error text-error-foreground' },
+            neutral: { base: 'bg-neutral text-neutral-foreground' }
         },
         size: {
             /** 按钮越小，环在 viewBox 里就要越粗，实际像素宽度才不至于细到看不见 */
-            xs: { base: 'size-6', icon: 'text-xs', progressTrack: '[stroke-width:10]', progressBar: '[stroke-width:10]' },
+            xs: { base: 'size-6', icon: 'text-sm', progressTrack: '[stroke-width:10]', progressBar: '[stroke-width:10]' },
             sm: { base: 'size-8', icon: 'text-sm', progressTrack: '[stroke-width:9]', progressBar: '[stroke-width:9]' },
             md: { base: 'size-10', icon: 'text-base', progressTrack: '[stroke-width:8]', progressBar: '[stroke-width:8]' },
             lg: { base: 'size-12', icon: 'text-lg', progressTrack: '[stroke-width:7]', progressBar: '[stroke-width:7]' }

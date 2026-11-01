@@ -82,7 +82,7 @@ export default {
       true: {
         shell: "p-0!",
         panelWrapper: "h-full",
-        panel: "h-full max-h-none max-w-none rounded-none! border-0 px-[32px] py-[24px]",
+        panel: "h-full max-h-none max-w-none rounded-none border-0 px-[32px] py-[24px]",
         body: "min-h-0 flex-1",
       },
       false: {},

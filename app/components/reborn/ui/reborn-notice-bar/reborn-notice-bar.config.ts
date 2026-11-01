@@ -1,19 +1,20 @@
-import { tv, type VariantProps } from '@/lib/tv';
+import type { VariantProps } from '@/lib/tv';
+import { tv } from '@/lib/tv';
 
-export type NoticeBarUI = {
+export interface NoticeBarUI {
   root?: string;
   textWrapper?: string;
   text?: string;
   icon?: string;
   verticalWrapper?: string;
   verticalItem?: string;
-};
+}
 
 export type NoticeBarVariantProps = VariantProps<typeof rebornNoticeBar>;
 
 export const rebornNoticeBar = tv({
   slots: {
-    root: 'reborn-notice-bar relative flex items-center w-full overflow-hidden p-2 gap-2 rounded-xl',
+    root: 'reborn-notice-bar relative flex items-center w-full overflow-hidden p-2 gap-2 rounded-xl bg-gray-2 text-gray-8',
     textWrapper: 'flex-1 overflow-hidden min-w-0 h-full',
     text: 'inline-block whitespace-nowrap',
     icon: 'shrink-0 flex items-center',

@@ -271,7 +271,7 @@ const rangeStyleValue = shallowRef(["2024-04-09", "2024-04-18"]);
 
 /** 首尾用 dayActive，中间项用 dayInRange；两者都要把 hover 写上，否则悬停会被灰底盖掉 */
 const customRangeUi = {
-  dayActive: "bg-success text-gray-1 rounded-full hover:bg-success",
+  dayActive: "bg-success text-success-foreground rounded-full hover:bg-success",
   dayInRange: "bg-green-1 text-success rounded-none hover:bg-green-1",
 };
 

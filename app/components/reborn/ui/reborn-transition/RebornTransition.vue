@@ -196,7 +196,7 @@ function prepare(el: Element, entering: boolean) {
   el.style.transform = from.transform;
   if (from.height) el.style.height = from.height;
   const timing = el.ownerDocument.defaultView!.getComputedStyle(el).transitionTimingFunction;
-  const curve = timing.match(/cubic-bezier\(([-\d.,\s]+)\)/)?.[1].split(',').map(Number);
+  const curve = timing.match(/cubic-bezier\(([-\d.,\s]+)\)/)?.[1]?.split(',').map(Number);
   const ease: TransitionRun['ease'] = curve?.length === 4
     ? [curve[0]!, curve[1]!, curve[2]!, curve[3]!]
     : entering ? [0.22, 1, 0.36, 1] : [0.4, 0, 0.2, 1];

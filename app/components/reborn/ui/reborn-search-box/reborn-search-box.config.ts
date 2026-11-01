@@ -23,7 +23,7 @@ export const inputTheme = {
         /** 外形轮廓：与 RebornInput 的 shape 取值对齐 */
         shape: {
             circle: { wrapper: "" },
-            square: { wrapper: "rounded-md!" },
+            square: { wrapper: "rounded-md" },
         },
     },
     defaultVariants: {

@@ -72,8 +72,8 @@ export const alertTheme = tv({
       subtle: '',
       // 文字提示：无背景/边框，仅保留语义色文字
       text: '',
-      // 胶囊提示：保留语义色实底与白字（见 compoundVariants）。
-      round: { root: 'rounded-full!' },
+      // 胶囊提示：使用语义色实底与配套前景（见 compoundVariants）。
+      round: { root: 'rounded-full' },
     },
     color: {
       primary: {},
@@ -86,7 +86,7 @@ export const alertTheme = tv({
     },
     /** 顶部公告模式：去除边框和圆角，铺满容器宽度 */
     banner: {
-      true: { root: 'rounded-none! border-none!' },
+      true: { root: 'rounded-none border-none' },
     },
     /** 内容居中显示 */
     center: {
@@ -107,14 +107,14 @@ export const alertTheme = tv({
     // 灰色一阶与页面底色相同，中性提示使用二阶底色保留可见背景。
     { variant: 'filled', color: 'neutral', class: { root: 'bg-gray-2', icon: 'bg-gray-6' } },
 
-    // Round：胶囊形状，语义色实底与白字。
-    { variant: 'round', color: 'primary', class: { root: 'bg-primary text-white' } },
-    { variant: 'round', color: 'secondary', class: { root: 'bg-secondary text-white' } },
-    { variant: 'round', color: 'success', class: { root: 'bg-success text-white' } },
-    { variant: 'round', color: 'info', class: { root: 'bg-info text-white' } },
-    { variant: 'round', color: 'warning', class: { root: 'bg-warning text-white' } },
-    { variant: 'round', color: 'error', class: { root: 'bg-error text-white' } },
-    { variant: 'round', color: 'neutral', class: { root: 'bg-neutral text-white' } },
+    // 胶囊形状：语义色实底与配套前景，随主题保持可读。
+    { variant: 'round', color: 'primary', class: { root: 'bg-primary text-primary-foreground' } },
+    { variant: 'round', color: 'secondary', class: { root: 'bg-secondary text-secondary-foreground' } },
+    { variant: 'round', color: 'success', class: { root: 'bg-success text-success-foreground' } },
+    { variant: 'round', color: 'info', class: { root: 'bg-info text-info-foreground' } },
+    { variant: 'round', color: 'warning', class: { root: 'bg-warning text-warning-foreground' } },
+    { variant: 'round', color: 'error', class: { root: 'bg-error text-error-foreground' } },
+    { variant: 'round', color: 'neutral', class: { root: 'bg-neutral text-neutral-foreground' } },
 
     // Outlined：同 reborn-button 的 outlined（语义色边框 + 文字，透明底）
     { variant: 'outlined', color: 'primary', class: { root: 'bg-transparent border border-primary text-primary' } },

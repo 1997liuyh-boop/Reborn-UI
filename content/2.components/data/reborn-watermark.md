@@ -83,7 +83,8 @@ Watermark 在内容容器上平铺文字或图片标识，Web 与 UniApp 提供�
 | `font` | 文字样式                                 | `Font`              | —                      |
 | `gap` | 水印之间的间距 [x, y]                    | `[number, number]`  | `[100, 100]`           |
 | `offset` | 水印从容器左上角的偏移，默认值为 `gap/2` | `[number, number]`  | `[gap[0]/2, gap[1]/2]` |
-| `customClass` | 追加到根元素的类名，与 `ui.root` 合并 | `any` | — |
+| `customClass` | 追加到根元素的类名，与 `ui.root` 合并；Web 支持字符串、数组与条件对象 | Web：`ClassValue`；UniApp：`any` | — |
+| `ui` | 按内部节点覆盖类名，仅接受 `root` / `watermark`；Web 每个键支持 `ClassValue` | Web：`RebornWatermarkUI`；UniApp：`object` | `{}` |
 
 ### Font Attributes
 

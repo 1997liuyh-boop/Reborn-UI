@@ -211,10 +211,8 @@ export default {
     { shape: "square", size: "sm", class: { wrapper: "rounded-sm" } },
     { shape: "square", size: "md", class: { wrapper: "rounded-md" } },
     { shape: "square", size: "lg", class: { wrapper: "rounded-lg" } },
-    // 下划线形态必须压平圆角。! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，
-    // 不在 tailwind-merge 的 border-radius 冲突组里，rounded-none 与它会共存并由
-    // CSS 源序决定胜负。现在已改回原生 rounded-*，合并正常，! 保留只为不动覆盖顺序。
-    { variant: "underlined", class: { wrapper: "rounded-none!" } },
+    // 下划线形态在尺寸与形状之后清零圆角，用户 ui 仍可覆盖。
+    { variant: "underlined", class: { wrapper: "rounded-none" } },
     // borderless 形态本身没有描边宽度，出错时需要补一圈，否则错误态完全不可见
     { variant: "borderless", error: true, class: { wrapper: "ring-1 ring-red-5" } },
   ] as any,

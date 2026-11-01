@@ -3,12 +3,16 @@ const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'n
 const position = ['top-right', 'bottom-right', 'top-left', 'bottom-left'] as const
 const variant = ['solid', 'outline', 'textDot', 'textOutline'] as const
 
+const solidVariants: Array<(typeof variant)[number]> = ['solid', 'textDot']
+const outlineVariants: Array<(typeof variant)[number]> = ['outline', 'textOutline']
+const textVariants: Array<(typeof variant)[number]> = ['textDot', 'textOutline']
+
 export { color as chipColors, position as chipPositions, size as chipSizes, variant as chipVariants }
 
 /*
  * 配色按「语义色 → 色相族」取 6 阶，与 reborn-badge 的映射一致：
  * primary→brand、secondary→secondary、success→green、info→blue、warning→orange、error→red、neutral→gray。
- * 不直接用 bg-neutral：Web 端 --color-neutral 指向 gray-4，不是 6 阶。
+ * 语义色与前景成对使用，默认均取 6 阶，允许主题整体重映射。
  *
  * 四种变体的尺寸（sm / md / lg）：
  *   solid       实心圆点  4 / 5 / 6px
@@ -30,7 +34,7 @@ export default {
     variant: {
       solid: { base: 'ring-1 ring-gray-1' },
       outline: { base: 'box-content border-solid bg-gray-1' },
-      textDot: { base: 'ring-1 ring-gray-1', label: 'text-white' },
+      textDot: { base: 'ring-1 ring-gray-1' },
       textOutline: { base: 'border border-solid bg-gray-1' }
     },
     /** 只声明维度，配色随变体不同（底色 / 描边 + 文字），交给复合变体 */
@@ -66,22 +70,22 @@ export default {
   },
   compoundVariants: [
     // 实心类变体：底色取 6 阶
-    { variant: ['solid', 'textDot'], color: 'primary' as const, class: { base: 'bg-brand-6' } },
-    { variant: ['solid', 'textDot'], color: 'secondary' as const, class: { base: 'bg-secondary-6' } },
-    { variant: ['solid', 'textDot'], color: 'success' as const, class: { base: 'bg-green-6' } },
-    { variant: ['solid', 'textDot'], color: 'info' as const, class: { base: 'bg-blue-6' } },
-    { variant: ['solid', 'textDot'], color: 'warning' as const, class: { base: 'bg-orange-6' } },
-    { variant: ['solid', 'textDot'], color: 'error' as const, class: { base: 'bg-red-6' } },
-    { variant: ['solid', 'textDot'], color: 'neutral' as const, class: { base: 'bg-gray-6' } },
+    { variant: solidVariants, color: 'primary' as const, class: { base: 'bg-primary', label: 'text-primary-foreground' } },
+    { variant: solidVariants, color: 'secondary' as const, class: { base: 'bg-secondary', label: 'text-secondary-foreground' } },
+    { variant: solidVariants, color: 'success' as const, class: { base: 'bg-success', label: 'text-success-foreground' } },
+    { variant: solidVariants, color: 'info' as const, class: { base: 'bg-info', label: 'text-info-foreground' } },
+    { variant: solidVariants, color: 'warning' as const, class: { base: 'bg-warning', label: 'text-warning-foreground' } },
+    { variant: solidVariants, color: 'error' as const, class: { base: 'bg-error', label: 'text-error-foreground' } },
+    { variant: solidVariants, color: 'neutral' as const, class: { base: 'bg-neutral', label: 'text-neutral-foreground' } },
 
     // 描边类变体：描边与文字取 6 阶
-    { variant: ['outline', 'textOutline'], color: 'primary' as const, class: { base: 'border-brand-6', label: 'text-brand-6' } },
-    { variant: ['outline', 'textOutline'], color: 'secondary' as const, class: { base: 'border-secondary-6', label: 'text-secondary-6' } },
-    { variant: ['outline', 'textOutline'], color: 'success' as const, class: { base: 'border-green-6', label: 'text-green-6' } },
-    { variant: ['outline', 'textOutline'], color: 'info' as const, class: { base: 'border-blue-6', label: 'text-blue-6' } },
-    { variant: ['outline', 'textOutline'], color: 'warning' as const, class: { base: 'border-orange-6', label: 'text-orange-6' } },
-    { variant: ['outline', 'textOutline'], color: 'error' as const, class: { base: 'border-red-6', label: 'text-red-6' } },
-    { variant: ['outline', 'textOutline'], color: 'neutral' as const, class: { base: 'border-gray-6', label: 'text-gray-6' } },
+    { variant: outlineVariants, color: 'primary' as const, class: { base: 'border-primary', label: 'text-primary' } },
+    { variant: outlineVariants, color: 'secondary' as const, class: { base: 'border-secondary', label: 'text-secondary' } },
+    { variant: outlineVariants, color: 'success' as const, class: { base: 'border-success', label: 'text-success' } },
+    { variant: outlineVariants, color: 'info' as const, class: { base: 'border-info', label: 'text-info' } },
+    { variant: outlineVariants, color: 'warning' as const, class: { base: 'border-warning', label: 'text-warning' } },
+    { variant: outlineVariants, color: 'error' as const, class: { base: 'border-error', label: 'text-error' } },
+    { variant: outlineVariants, color: 'neutral' as const, class: { base: 'border-neutral', label: 'text-neutral' } },
 
     // solid：纯圆点
     { variant: 'solid' as const, size: 'sm' as const, class: { base: 'size-1' } },
@@ -98,9 +102,9 @@ export default {
      * 字号用 12 / 16 / 20px 令牌（text-sm / text-lg / text-xl），它们各自带 20 / 24 / 28px 行高，
      * 比圆点还高，所以 leading-none 必须写在字号之后：tailwind-merge 会让后出现的字号类删掉前面的行高类。
      */
-    { variant: ['textDot', 'textOutline'], size: 'sm' as const, class: { base: 'h-4 min-w-4 px-1', label: 'text-sm leading-none' } },
-    { variant: ['textDot', 'textOutline'], size: 'md' as const, class: { base: 'h-5 min-w-5 px-1', label: 'text-lg leading-none' } },
-    { variant: ['textDot', 'textOutline'], size: 'lg' as const, class: { base: 'h-6 min-w-6 px-1', label: 'text-xl leading-none' } },
+    { variant: textVariants, size: 'sm' as const, class: { base: 'h-4 min-w-4 px-1', label: 'text-sm leading-none' } },
+    { variant: textVariants, size: 'md' as const, class: { base: 'h-5 min-w-5 px-1', label: 'text-lg leading-none' } },
+    { variant: textVariants, size: 'lg' as const, class: { base: 'h-6 min-w-6 px-1', label: 'text-xl leading-none' } },
 
     {
       inset: false,

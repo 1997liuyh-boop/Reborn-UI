@@ -196,25 +196,25 @@ export default {
     // 统一取对应色板第 6 阶，子项与进度条继承变量，明暗主题均保持相同档位。
     color: {
       primary: {
-        indicators: "[--carousel-color:var(--color-brand-6)]",
+        indicators: "[--carousel-color:var(--color-primary)] [--carousel-foreground:var(--color-primary-foreground)]",
       },
       secondary: {
-        indicators: "[--carousel-color:var(--color-secondary-6)]",
+        indicators: "[--carousel-color:var(--color-secondary)] [--carousel-foreground:var(--color-secondary-foreground)]",
       },
       success: {
-        indicators: "[--carousel-color:var(--color-green-6)]",
+        indicators: "[--carousel-color:var(--color-success)] [--carousel-foreground:var(--color-success-foreground)]",
       },
       info: {
-        indicators: "[--carousel-color:var(--color-blue-6)]",
+        indicators: "[--carousel-color:var(--color-info)] [--carousel-foreground:var(--color-info-foreground)]",
       },
       warning: {
-        indicators: "[--carousel-color:var(--color-orange-6)]",
+        indicators: "[--carousel-color:var(--color-warning)] [--carousel-foreground:var(--color-warning-foreground)]",
       },
       error: {
-        indicators: "[--carousel-color:var(--color-red-6)]",
+        indicators: "[--carousel-color:var(--color-error)] [--carousel-foreground:var(--color-error-foreground)]",
       },
       neutral: {
-        indicators: "[--carousel-color:var(--color-gray-6)]",
+        indicators: "[--carousel-color:var(--color-neutral)] [--carousel-foreground:var(--color-neutral-foreground)]",
       },
     },
     // 指示器类型变体
@@ -248,7 +248,7 @@ export default {
         // 指示器是 size-5（20px）的圆点，序号要塞进圆内。
         // 10px 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量。
         indicator: "flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer select-none size-5 text-[10px] text-white",
-        indicatorActive: "bg-(--carousel-color) text-white border-transparent",
+        indicatorActive: "bg-(--carousel-color) text-(--carousel-foreground) border-transparent",
         // 描边向内绘制，避免未激活按钮的可见尺寸比激活态多出 2px。
         indicatorInactive: "bg-gray-2 ring-1 ring-inset ring-gray-5 text-gray-5",
       },

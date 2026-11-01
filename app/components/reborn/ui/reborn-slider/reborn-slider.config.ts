@@ -61,16 +61,16 @@ export default {
             md: { value: "text-sm", prefix: "text-base", suffix: "text-base" },
             lg: { value: "text-base", prefix: "text-lg", suffix: "text-lg" },
         },
-        // 外圆跟随语义色，圆环取对应色板第六阶的 20% 透明色，不降低滑块本体与插槽内容的不透明度；
+        // 外圆跟随语义色，圆环取语义默认色的 20% 透明色，不降低滑块本体与插槽内容的不透明度；
         // 轨道节点边框取同色板第 3 阶（语义色未导出 3 阶别名，直接落到具体色板）
         color: {
-            primary: { progress: "bg-primary", thumb: "bg-primary ring-brand-6/20", stopDot: "border-brand-3", markDot: "border-brand-3" },
-            secondary: { progress: "bg-secondary", thumb: "bg-secondary ring-secondary-6/20", stopDot: "border-secondary-3", markDot: "border-secondary-3" },
-            success: { progress: "bg-success", thumb: "bg-success ring-green-6/20", stopDot: "border-green-3", markDot: "border-green-3" },
-            info: { progress: "bg-info", thumb: "bg-info ring-blue-6/20", stopDot: "border-blue-3", markDot: "border-blue-3" },
-            warning: { progress: "bg-warning", thumb: "bg-warning ring-orange-6/20", stopDot: "border-orange-3", markDot: "border-orange-3" },
-            error: { progress: "bg-error", thumb: "bg-error ring-red-6/20", stopDot: "border-red-3", markDot: "border-red-3" },
-            neutral: { progress: "bg-neutral", thumb: "bg-neutral ring-gray-6/20", stopDot: "border-gray-3", markDot: "border-gray-3" },
+            primary: { progress: "bg-primary", thumb: "bg-primary ring-primary/20", stopDot: "border-brand-3", markDot: "border-brand-3" },
+            secondary: { progress: "bg-secondary", thumb: "bg-secondary ring-secondary/20", stopDot: "border-secondary-3", markDot: "border-secondary-3" },
+            success: { progress: "bg-success", thumb: "bg-success ring-success/20", stopDot: "border-green-3", markDot: "border-green-3" },
+            info: { progress: "bg-info", thumb: "bg-info ring-info/20", stopDot: "border-blue-3", markDot: "border-blue-3" },
+            warning: { progress: "bg-warning", thumb: "bg-warning ring-warning/20", stopDot: "border-orange-3", markDot: "border-orange-3" },
+            error: { progress: "bg-error", thumb: "bg-error ring-error/20", stopDot: "border-red-3", markDot: "border-red-3" },
+            neutral: { progress: "bg-neutral", thumb: "bg-neutral ring-neutral/20", stopDot: "border-gray-3", markDot: "border-gray-3" },
         },
         /**
          * 激活节点压在其他滑块之上；单滑块恒为激活节点，
@@ -150,7 +150,7 @@ export default {
         },
         error: {
             true: {
-                track: "ring-1 ring-red-5 dark:ring-red-5",
+                track: "ring-1 ring-error dark:ring-error",
             },
         },
     },

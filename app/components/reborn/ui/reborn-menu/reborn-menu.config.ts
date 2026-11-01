@@ -510,32 +510,32 @@ const theme = tv({
     {
       active: true,
       color: "primary",
-      class: { menuItem: "text-brand-6", menuItemExtra: "text-brand-6" },
+      class: { menuItem: "text-primary", menuItemExtra: "text-primary" },
     },
     {
       active: true,
       color: "secondary",
-      class: { menuItem: "text-secondary-6", menuItemExtra: "text-secondary-6" },
+      class: { menuItem: "text-secondary", menuItemExtra: "text-secondary" },
     },
     {
       active: true,
       color: "success",
-      class: { menuItem: "text-green-6", menuItemExtra: "text-green-6" },
+      class: { menuItem: "text-success", menuItemExtra: "text-success" },
     },
     {
       active: true,
       color: "info",
-      class: { menuItem: "text-blue-6", menuItemExtra: "text-blue-6" },
+      class: { menuItem: "text-info", menuItemExtra: "text-info" },
     },
     {
       active: true,
       color: "warning",
-      class: { menuItem: "text-orange-6", menuItemExtra: "text-orange-6" },
+      class: { menuItem: "text-warning", menuItemExtra: "text-warning" },
     },
     {
       active: true,
       color: "error",
-      class: { menuItem: "text-red-6", menuItemExtra: "text-red-6" },
+      class: { menuItem: "text-error", menuItemExtra: "text-error" },
     },
     // neutral 的文字取 gray-9（正文色），gray-6 在灰阶里属于弱化文本，压不住选中态
     {
@@ -543,7 +543,7 @@ const theme = tv({
       color: "neutral",
       class: { menuItem: "text-gray-9", menuItemExtra: "text-gray-9" },
     },
-    // ── 选中态背景块：取色阶第 2 档，由 showActiveBackground 控制是否给出 ──
+    // ── 选中态背景块：取色阶第 2 档，由 showActiveBackground 控制是否给出；2 档浅底没有语义角色，不借用同阶的 -border 描边角色 ──
     {
       active: true,
       showActiveBackground: true,
@@ -660,7 +660,7 @@ const theme = tv({
     // 用户先前手动展开的其他分支；再加上 defaultExpandAll 一次展开全部，
     // 于是「系统管理 / 名单管理 / 白名单IP管理」这类仅仅是展开着的条目，
     // 和真正被选中的那条祖先链一样上色，看起来就是上一个选中项的高亮没被取消。
-    // ✅ 修复：把字体颜色彻底让给选中态——祖先链用 text-brand-6，叶子另有背景块，
+    // ✅ 修复：把字体颜色彻底让给选中态——祖先链用 text-primary，叶子另有背景块，
     // 展开与否交给箭头旋转表达（见上一条 menuItemArrow: rotate-90 与浮层态的箭头朝向）。
     // 副作用是正向的：同一条祖先无论展开还是收起，现在都是同一个颜色，不再因展开而变色。
     // ── 水平菜单的一级条目：只高亮图标与文字，不要背景块 ──

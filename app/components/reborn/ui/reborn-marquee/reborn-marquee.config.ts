@@ -1,4 +1,6 @@
-import { tv, type VariantProps } from '~/lib/tv'
+import type { ClassValue } from 'clsx'
+import type { VariantProps } from '~/lib/tv'
+import { tv } from '~/lib/tv'
 
 const orientation = ['horizontal', 'vertical'] as const
 
@@ -6,11 +8,11 @@ export { orientation as rebornMarqueeOrientations }
 
 export type RebornMarqueeOrientation = (typeof orientation)[number]
 
-export type RebornMarqueeUI = {
-    root?: string
-    content?: string
-    overlayStart?: string
-    overlayEnd?: string
+export interface RebornMarqueeUI {
+    root?: ClassValue
+    content?: ClassValue
+    overlayStart?: ClassValue
+    overlayEnd?: ClassValue
 }
 
 const rebornMarquee = tv({

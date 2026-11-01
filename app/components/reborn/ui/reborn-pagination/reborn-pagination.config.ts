@@ -173,13 +173,13 @@ export default {
       disabled: true,
       class: { button: "text-gray-5 opacity-100", ellipsis: "text-gray-5 opacity-100" },
     },
-  ] as const,
+  ],
   defaultVariants: {
-    color: "primary",
-    size: "md",
+    color: "primary" as PaginationColor,
+    size: "md" as PaginationSize,
     active: false,
     background: false,
     disabled: false,
     simple: false,
   },
-} as const;
+};

@@ -89,6 +89,10 @@ pnpm kb:check          # 提交前自检：schema / 集合一致性 / overrides 
 
 ## 样式令牌规范
 
+### 颜色、变量与覆盖合同
+
+新增或修改组件样式前阅读 `docs/authoring/design-system.md`。通用 `color` 枚举消费语义角色（默认 6 阶、悬停 5 阶、按下 7 阶）；实底背景与 `*-foreground` 成对使用。默认 config → variant/state → 用户 ui/class，禁止历史圆角提权；公开 UI 使用具名键位与 ClassValue。保留文档明确列出的固定色阶和两端差异。日常运行 `pnpm design:check`、`pnpm test:design`、`pnpm lint:design`。
+
 ### 为什么会乱：两种令牌策略并存
 
 表面看是单位制不同（自建令牌是 px，Tailwind 内置刻度是 rem），真正的根因是**同一套设计体系用了两种令牌策略**：

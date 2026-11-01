@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref, shallowRef } from 'vue';
-import RebornFab from "~/components/reborn/ui/reborn-fab/RebornFab.vue";
 import { fabColors, fabVariants } from "~/components/reborn/ui/reborn-fab/reborn-fab.config";
+import RebornFab from "~/components/reborn/ui/reborn-fab/RebornFab.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -172,7 +172,7 @@ function handleAction(name: string) {
             <div
               v-for="i in 5"
               :key="i"
-              class="bg-success text-inverted flex size-12 cursor-pointer items-center justify-center rounded-full transition-all hover:scale-110 hover:rotate-12 active:scale-95"
+              class="bg-success text-success-foreground flex size-12 cursor-pointer items-center justify-center rounded-full transition-all hover:scale-110 hover:rotate-12 active:scale-95"
               @click="handleAction(`悬浮按钮 ${i}`)"
             >
               <Icon
@@ -204,7 +204,7 @@ function handleAction(name: string) {
               v-for="item in 3"
               :key="item"
               name="lucide:share-2"
-              class="text-inverted size-6"
+              class="size-6"
               @click="handleAction(`胶囊按钮 ${item}`)"
             />
           </RebornFab>
@@ -229,7 +229,7 @@ function handleAction(name: string) {
             <div
               v-for="i in 5"
               :key="i"
-              class="bg-info text-inverted flex size-10 cursor-pointer items-center justify-center rounded-full text-sm font-bold transition-all hover:scale-110 active:scale-95"
+              class="bg-info text-info-foreground flex size-10 cursor-pointer items-center justify-center rounded-full text-sm font-bold transition-all hover:scale-110 active:scale-95"
               @click="handleAction(`环形按钮 ${i}`)"
             >
               {{ i }}

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { badgeColors, badgeSizes, badgeVariants } from './reborn-badge.config';
+import type { ClassValue } from 'clsx';
+import type { badgeColors, badgeSizes, BadgeUI, badgeVariants } from './reborn-badge.config';
 import { computed, getCurrentInstance, onBeforeUpdate, shallowRef } from 'vue'
 import { useFormInject } from '~/composables/useFieldGroup'
 import { tv } from '~/lib/tv'
@@ -34,15 +35,7 @@ type BadgeColor = (typeof badgeColors)[number]
 type BadgeVariant = (typeof badgeVariants)[number]
 type BadgeSize = (typeof badgeSizes)[number]
 
-export interface UiProps {
-    root?: string
-    base?: string
-    label?: string
-    leadingIcon?: string
-    trailingIcon?: string
-    closeButton?: string
-    closeIcon?: string
-}
+export interface UiProps extends BadgeUI {}
 
 export interface BadgeProps {
     /**
@@ -83,16 +76,19 @@ export interface BadgeProps {
      * 关闭前的钩子。返回 false 或返回 rejected 的 promise 将停止关闭。
      */
     beforeClose?: (e: MouseEvent) => boolean | Promise<boolean>
-    class?: any
+    class?: ClassValue
     ui?: UiProps
 }
 
 export interface BadgeSlots {
-    leading: (props: { ui: any }) => any
-    default: (props: { ui: any }) => any
-    trailing: (props: { ui: any }) => any
-    close: (props: { ui: any; close: (e: MouseEvent) => void }) => any
+    leading: (props: { ui: BadgeSlotUi }) => any
+    default: (props: { ui: BadgeSlotUi }) => any
+    trailing: (props: { ui: BadgeSlotUi }) => any
+    close: (props: { ui: BadgeSlotUi; close: (e: MouseEvent) => void }) => any
 }
+
+/** 插槽拿到可调用的节点样式函数，与 ui 覆盖对象使用相同键位。 */
+export type BadgeSlotUi = Record<keyof UiProps, (opts?: { class?: ClassValue }) => string>
 
 /**
  * 是否显示（v-model:show）与可选中模式的选中态（v-model:checked），未传时走内部非受控状态。

@@ -253,7 +253,7 @@ it('color 动态切换联动两种面板、箭头、文字和按钮，清空后�
           panel.append(probe);
           probe.style.color = `var(--color-${value})`;
           const background = getComputedStyle(probe).color;
-          probe.style.color = 'var(--color-gray-1)';
+          probe.style.color = `var(--color-${value}-foreground)`;
           const foreground = getComputedStyle(probe).color;
           probe.remove();
           const arrow = document.querySelector('.fixture-arrow');
@@ -272,14 +272,15 @@ it('color 动态切换联动两种面板、箭头、文字和按钮，清空后�
         assert.equal(actual.arrow, mode === 'popup' ? actual.background : null);
         assert.deepEqual(actual.text, Array.from({ length: 4 }, () => actual.foreground));
         assert.deepEqual(actual.prev, { border: actual.foreground, color: actual.foreground });
-        assert.deepEqual(actual.next, { background: actual.foreground, color: color === 'neutral' ? 'rgb(29, 33, 41)' : actual.background, border: actual.foreground, width: '1px', height: 24 });
+        // 「下一步」反相：前景色作底、面板底色作字，neutral 也不例外。
+        assert.deepEqual(actual.next, { background: actual.foreground, color: actual.background, border: actual.foreground, width: '1px', height: 24 });
       }
     }
     await configure(page, { color: 'primary', indicator: 'dots', mode: 'popup' });
     const dots = await page.locator('.fixture-dot').evaluateAll(elements => elements.map(element => getComputedStyle(element).backgroundColor));
     assert.equal(dots[1], 'rgb(255, 255, 255)');
     assert.equal(dots[0], dots[2]);
-    assert.match(dots[0]!, /\/ 0\.15\)/, '未激活指示点使用灰阶 1 的 15% 透明度');
+    assert.match(dots[0]!, /\/ 0\.15\)/, '未激活指示点使用面板前景色的 15% 透明度');
     await page.getByRole('button', { name: '下一步', exact: true }).click();
     const finish = page.getByRole('button', { name: '完成', exact: true });
     await finish.waitFor();

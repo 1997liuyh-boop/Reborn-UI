@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { ClassValue } from 'clsx'
+import type { RebornMarqueeOrientation, RebornMarqueeUI } from './reborn-marquee.config'
 import { computed } from 'vue'
 import { cn } from '~/lib/utils'
-import rebornMarquee, { type RebornMarqueeOrientation, type RebornMarqueeUI } from './reborn-marquee.config'
+import rebornMarquee from './reborn-marquee.config'
 
 export interface RebornMarqueeProps {
-    class?: any
+    class?: ClassValue
     reverse?: boolean
     pauseOnHover?: boolean
     vertical?: boolean
@@ -25,7 +27,7 @@ const props = withDefaults(defineProps<RebornMarqueeProps>(), {
 })
 
 defineSlots<{
-    default(props: { ui: any }): any
+    default: (props: { ui: Record<keyof RebornMarqueeUI, (opts?: { class?: ClassValue }) => string> }) => any
 }>()
 
 const resolvedOrientation = computed<RebornMarqueeOrientation>(() => {
@@ -44,31 +46,31 @@ const ui = computed(() => {
     })
 
     return {
-        root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.ui.root) }),
-        content: (opts?: { class?: any }) => styles.content({ class: cn(opts?.class, props.ui.content) }),
-        overlayStart: (opts?: { class?: any }) => styles.overlayStart({ class: cn(opts?.class, props.ui.overlayStart) }),
-        overlayEnd: (opts?: { class?: any }) => styles.overlayEnd({ class: cn(opts?.class, props.ui.overlayEnd) }),
+        root: (opts?: { class?: ClassValue }) => styles.root({ class: cn(opts?.class, props.ui.root) }),
+        content: (opts?: { class?: ClassValue }) => styles.content({ class: cn(opts?.class, props.ui.content) }),
+        overlayStart: (opts?: { class?: ClassValue }) => styles.overlayStart({ class: cn(opts?.class, props.ui.overlayStart) }),
+        overlayEnd: (opts?: { class?: ClassValue }) => styles.overlayEnd({ class: cn(opts?.class, props.ui.overlayEnd) }),
     }
 })
 </script>
 
 <template>
+  <div
+    :class="cn(ui.root({ class: props.class }), props.pauseOnHover ? 'cursor-pointer' : '')"
+    :data-orientation="resolvedOrientation"
+  >
     <div
-        :class="cn(ui.root({ class: props.class }), props.pauseOnHover ? 'cursor-pointer' : '')"
-        :data-orientation="resolvedOrientation"
+      v-for="index in repeat"
+      :key="index"
+      :class="ui.content()"
+      :style="contentStyle"
     >
-        <div
-            v-for="index in repeat"
-            :key="index"
-            :class="ui.content()"
-            :style="contentStyle"
-        >
-            <slot :ui="ui" />
-        </div>
-
-        <div v-if="overlay" aria-hidden="true" :class="ui.overlayStart()" />
-        <div v-if="overlay" aria-hidden="true" :class="ui.overlayEnd()" />
+      <slot :ui="ui" />
     </div>
+
+    <div v-if="overlay" aria-hidden="true" :class="ui.overlayStart()" />
+    <div v-if="overlay" aria-hidden="true" :class="ui.overlayEnd()" />
+  </div>
 </template>
 
 <style scoped>

@@ -25,7 +25,7 @@ export default {
     inlineWrap: "grid min-w-0 flex-1 grid-cols-1 self-stretch overflow-hidden rounded-[inherit]",
     /** 两态文案共享网格占位，以较长内容撑宽，在滑块留出的区域内居中；只过渡位移，不切换节点。 */
     inlineActive:
-      "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate text-center transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none text-white leading-none pointer-events-none select-none",
+      "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate text-center transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none leading-none pointer-events-none select-none",
     /** 关态文案向右滑出，开态文案从左滑入；裁剪仅作用于文本容器。 */
     inlineInactive:
       "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate text-center transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none text-gray-1 leading-none pointer-events-none select-none",
@@ -96,24 +96,31 @@ export default {
     color: {
       primary: {
         activeTrack: "bg-primary",
+        inlineActive: "text-primary-foreground",
       },
       secondary: {
         activeTrack: "bg-secondary",
+        inlineActive: "text-secondary-foreground",
       },
       success: {
         activeTrack: "bg-success",
+        inlineActive: "text-success-foreground",
       },
       info: {
         activeTrack: "bg-info",
+        inlineActive: "text-info-foreground",
       },
       warning: {
         activeTrack: "bg-warning",
+        inlineActive: "text-warning-foreground",
       },
       error: {
         activeTrack: "bg-error",
+        inlineActive: "text-error-foreground",
       },
       neutral: {
         activeTrack: "bg-neutral",
+        inlineActive: "text-neutral-foreground",
       },
     },
     active: {
@@ -135,7 +142,7 @@ export default {
     },
     disabled: {
       // 外壳一并换成禁止光标：否则两侧文字标签与间隙仍是手形
-      true: { wrapper: "cursor-not-allowed", inactiveTrack: "bg-gray-2", activeTrack: "bg-gray-2" },
+      true: { wrapper: "cursor-not-allowed", inactiveTrack: "bg-gray-2", activeTrack: "bg-gray-2", inlineActive: "text-gray-5", inlineInactive: "text-gray-5" },
     },
     /** 加载中：外壳显示等待光标；排在 disabled 之后，加载同时禁用时以等待为准 */
     loading: {

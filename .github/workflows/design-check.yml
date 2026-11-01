@@ -1,0 +1,60 @@
+name: design-system-check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "feature/**"
+      - "feature-*"
+      - "fix/**"
+      - "codex/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: design-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: 检出完整比较历史
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 安装 Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: 按锁文件安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 安装真实 Chromium 与系统依赖
+        run: pnpm exec playwright-core install --with-deps chromium
+
+      - name: 校验设计令牌与公开类型契约
+        run: pnpm design:check
+
+      - name: 运行主题槽位和关键组件回归（禁止跳过）
+        run: pnpm test:design
+
+      - name: 检查本次改动源码
+        env:
+          DESIGN_LINT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          # 手动运行或首次分支推送没有有效基线时，比较上一个提交。
+          if [ -z "$DESIGN_LINT_BASE" ] || ! git cat-file -e "$DESIGN_LINT_BASE^{commit}" 2>/dev/null; then
+            export DESIGN_LINT_BASE="$(git rev-parse HEAD^)"
+          fi
+          pnpm lint:design

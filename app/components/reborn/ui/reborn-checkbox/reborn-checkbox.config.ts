@@ -18,7 +18,7 @@ const size = ["sm", "md", "lg"] as const;
 const color = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
 const variant = ["filled", "outlined", "shadow"] as const;
 /** 描边与阴影变体共享选中、半选的配色规则。 */
-const outlinedVariants = ["outlined", "shadow"] as const;
+const outlinedVariants: Array<(typeof variant)[number]> = ["outlined", "shadow"];
 const direction = ["horizontal", "vertical"] as const;
 
 export {
@@ -82,15 +82,15 @@ export default {
     size: {
       sm: {
         control: "size-4",
-        label: "text-[length:var(--text-size-24)]",
+        label: "text-sm",
       },
       md: {
         control: "size-5",
-        label: "text-[length:var(--text-size-26)]",
+        label: "text-base",
       },
       lg: {
         control: "size-6",
-        label: "text-[length:var(--text-size-28)]",
+        label: "text-lg",
       },
     },
     /** 阴影环取对应色板第 1 阶，选中配色由 color × variant 的复合变体给出。 */
@@ -143,7 +143,7 @@ export default {
       class: {
         control:
           "peer-checked:bg-primary peer-checked:border-primary data-[indeterminate=true]:bg-primary data-[indeterminate=true]:border-primary",
-        icon: "text-white",
+        icon: "text-primary-foreground",
       },
     },
     {
@@ -163,7 +163,7 @@ export default {
       class: {
         control:
           "peer-checked:bg-secondary peer-checked:border-secondary data-[indeterminate=true]:bg-secondary data-[indeterminate=true]:border-secondary",
-        icon: "text-white",
+        icon: "text-secondary-foreground",
       },
     },
     {
@@ -183,7 +183,7 @@ export default {
       class: {
         control:
           "peer-checked:bg-success peer-checked:border-success data-[indeterminate=true]:bg-success data-[indeterminate=true]:border-success",
-        icon: "text-white",
+        icon: "text-success-foreground",
       },
     },
     {
@@ -203,7 +203,7 @@ export default {
       class: {
         control:
           "peer-checked:bg-info peer-checked:border-info data-[indeterminate=true]:bg-info data-[indeterminate=true]:border-info",
-        icon: "text-white",
+        icon: "text-info-foreground",
       },
     },
     {
@@ -223,7 +223,7 @@ export default {
       class: {
         control:
           "peer-checked:bg-warning peer-checked:border-warning data-[indeterminate=true]:bg-warning data-[indeterminate=true]:border-warning",
-        icon: "text-white",
+        icon: "text-warning-foreground",
       },
     },
     {
@@ -243,7 +243,7 @@ export default {
       class: {
         control:
           "peer-checked:bg-error peer-checked:border-error data-[indeterminate=true]:bg-error data-[indeterminate=true]:border-error",
-        icon: "text-white",
+        icon: "text-error-foreground",
       },
     },
     {
@@ -263,7 +263,7 @@ export default {
       class: {
         control:
           "peer-checked:bg-neutral peer-checked:border-neutral data-[indeterminate=true]:bg-neutral data-[indeterminate=true]:border-neutral",
-        icon: "text-white",
+        icon: "text-neutral-foreground",
       },
     },
     {

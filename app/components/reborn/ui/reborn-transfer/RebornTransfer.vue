@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ClassValue } from "clsx";
 import type {
   TransferCheckShape,
   TransferColor,
@@ -6,6 +7,7 @@ import type {
   TransferFieldNames,
   TransferOperationButtonConfig,
   TransferOperationButtons,
+  TransferUI,
   TransferVariant,
 } from "./reborn-transfer.config";
 import type { SelectOption } from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
@@ -200,8 +202,8 @@ export interface TransferProps {
    * 支持数字（px）或 CSS 长度，如 320、'20rem'、'50vh'
    */
   height?: string | number;
-  class?: any;
-  ui?: any;
+  class?: ClassValue;
+  ui?: TransferUI;
 }
 
 /** 面板方向：left 为源列表，right 为目标列表 */
@@ -293,7 +295,7 @@ export interface ResolvedOperationButton {
 
 /** 操作按钮插槽作用域 */
 export interface TransferOperationSlotProps {
-  ui: Record<string, (opts?: { class?: any }) => string>;
+  ui: Record<keyof TransferUI, (opts?: { class?: ClassValue }) => string>;
   config: ResolvedOperationButton;
   disabled: boolean;
 }
@@ -1100,10 +1102,10 @@ const ui = computed(() => {
     error: isError.value,
     fixedWidth: isCssSizeSet(props.width),
   });
-  const ov: any = props.ui ?? {};
+  const ov = props.ui ?? {};
   const slot =
     <K extends keyof typeof s>(key: K) =>
-      (opts?: { class?: any }) =>
+      (opts?: { class?: ClassValue }) =>
         s[key]({ class: cn(opts?.class, ov[key]) });
   return {
     root: slot("root"),

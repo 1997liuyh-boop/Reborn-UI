@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { computed, nextTick, shallowRef, useTemplateRef, watch } from "vue";
+/* eslint vue/custom-event-name-casing: ["error", "kebab-case"] -- 保留已发布的连字符事件合同 */
 import type { ClassValue } from "clsx";
-import { cn } from "~/lib/utils";
-import theme, { selectColors, selectSizes, selectVariants } from "./reborn-select.config";
-import type { SelectFieldUI } from "./reborn-select.config";
-import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import type { SelectTriggerProps } from "../reborn-select-trigger/RebornSelectTrigger.vue";
-import { splitTriggerUi } from "../reborn-select-trigger/reborn-select-trigger.config";
-import RebornBadge from "../reborn-badge/RebornBadge.vue";
-import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
-import RebornLoading from "../reborn-loading/RebornLoading.vue";
+import type { selectColors, SelectFieldUI, selectSizes, selectVariants } from "./reborn-select.config";
+import { computed, nextTick, shallowRef, useTemplateRef, watch } from "vue";
+import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
-
+import { cn } from "~/lib/utils";
+import RebornBadge from "../reborn-badge/RebornBadge.vue";
+import RebornLoading from "../reborn-loading/RebornLoading.vue";
+import { splitTriggerUi } from "../reborn-select-trigger/reborn-select-trigger.config";
+import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
+import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
+import theme from "./reborn-select.config";
 
 // 未声明的属性与监听（id、aria-*、data-*、style、@focusin 等）按默认规则透传给根节点 RebornSelectTrigger，
 // 再由它落到带 tabindex 的外层 wrapper 上，aria-* 与测试选择器都作用在可聚焦元素上。
@@ -455,6 +456,8 @@ const emptyText = computed(() =>
   props.allowSearch && searchValue.value.trim() ? "无匹配结果" : "暂无数据",
 );
 
+const displayText = computed(() => selectedOptions.value.map((o) => o.label).join(", ") || "");
+
 /**
  * 搜索框的占位文案。
  * 单选时沿用已选文本，保证输入框顶掉展示文本后用户仍知道当前选的是什么；
@@ -586,7 +589,6 @@ function tagKeyOf(value: any) {
 /**
  * 拼装显示在触发器上的标签文本
  */
-const displayText = computed(() => selectedOptions.value.map((o) => o.label).join(", ") || "");
 
 /** 多选模式下真正渲染成标签的选项：开启 collapseTags 后只保留前 maxCollapseTags 个 */
 const visibleTags = computed(() => {
@@ -883,54 +885,68 @@ function scrollToActive(instant = false) {
 </script>
 
 <template>
-  <RebornSelectTrigger :class="props.class" :is-open="isOpen" :disabled="isDisabled" :size="fieldGroupSize || size"
+  <RebornSelectTrigger
+    :class="props.class" :is-open="isOpen" :disabled="isDisabled" :size="fieldGroupSize || size"
     :ui="overlayUi" :scroll-to-active="scrollToActive" :close-on="closeOn" :portal="portal"
     :auto-adjust-overflow="autoAdjustOverflow" @keydown="onKeydown"
-    @enter="onDropdownEnter" @close="onOutsideClose">
+    @enter="onDropdownEnter" @close="onOutsideClose"
+  >
     <template #trigger>
       <!-- 触发器盒子：样式由本组件的 theme 直接给出，不再借道 RebornFieldTrigger -->
       <div :class="ui.trigger()" :data-state="isOpen ? 'open' : 'closed'" @click="toggle">
         <!-- cover：整体接管触发器内容，连清空按钮与箭头一并交由调用方绘制 -->
-        <slot name="cover" v-if="$slots.cover" :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen"
-          :ui="ui" />
+        <slot
+          v-if="$slots.cover" name="cover" :display-text="displayText" :placeholder="placeholder" :is-open="isOpen"
+          :ui="ui"
+        />
 
         <template v-else>
-          <slot :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="ui">
+          <slot :display-text="displayText" :placeholder="placeholder" :is-open="isOpen" :ui="ui">
             <!-- 多选：已选项以 RebornBadge 呈现，超出部分按 collapse-tags 折叠为 “+N” -->
             <div v-if="multiple && selectedOptions.length" :class="ui.tagList()">
-              <RebornBadge v-for="item in visibleTags" :key="tagKeyOf(item.value)" :label="item.label" color="neutral"
+              <RebornBadge
+                v-for="item in visibleTags" :key="tagKeyOf(item.value)" :label="item.label" color="neutral"
                 variant="subtle" size="sm" :closable="!isDisabled" close-icon="lucide:x" :ui="{
                   root: 'min-w-0 shrink-0 max-w-full',
                   base: ui.tag(),
                   label: ui.tagLabel(),
                   closeButton: ui.tagClose(),
                   closeIcon: ui.tagCloseIcon(),
-                }" @close="removeTag(item.value, $event)" />
+                }" @close="removeTag(item.value, $event)"
+              />
 
               <!-- 徽标根节点自带手型；这里不可点、只有气泡，换成帮助光标 -->
               <RebornTooltip v-if="collapsedTags.length && collapseTagsTooltip" :content="collapsedText">
-                <RebornBadge :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" size="sm" :ui="{
-                  root: 'min-w-0 shrink-0 cursor-help',
-                  base: ui.tag({ class: ui.collapseTag() }),
-                  label: ui.tagLabel(),
-                }" />
+                <RebornBadge
+                  :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" size="sm" :ui="{
+                    root: 'min-w-0 shrink-0 cursor-help',
+                    base: ui.tag({ class: ui.collapseTag() }),
+                    label: ui.tagLabel(),
+                  }"
+                />
               </RebornTooltip>
-              <RebornBadge v-else-if="collapsedTags.length" :label="`+${collapsedTags.length}`" color="neutral"
+              <RebornBadge
+                v-else-if="collapsedTags.length" :label="`+${collapsedTags.length}`" color="neutral"
                 variant="subtle" size="sm" :ui="{
                   root: 'min-w-0 shrink-0',
                   base: ui.tag({ class: ui.collapseTag() }),
                   label: ui.tagLabel(),
-                }" />
+                }"
+              />
 
               <!-- 多选搜索态：输入框跟在标签末尾，随标签换行一起流动 -->
               <!-- 点击不再拦截：交给触发器的 toggle 统一处理（搜索态只回焦点、不收起） -->
-              <input v-if="isSearching" ref="searchInputRef" type="text" :value="searchValue"
-                :placeholder="searchPlaceholder" :class="ui.searchInput()" @input="onSearchInput" />
+              <input
+                v-if="isSearching" ref="searchInputRef" type="text" :value="searchValue"
+                :placeholder="searchPlaceholder" :class="ui.searchInput()" @input="onSearchInput"
+              >
             </div>
 
             <!-- 单选搜索态：输入框顶掉展示文本，已选文本降级为 placeholder 继续提示 -->
-            <input v-else-if="isSearching" ref="searchInputRef" type="text" :value="searchValue"
-              :placeholder="searchPlaceholder" :class="ui.searchInput()" @input="onSearchInput" />
+            <input
+              v-else-if="isSearching" ref="searchInputRef" type="text" :value="searchValue"
+              :placeholder="searchPlaceholder" :class="ui.searchInput()" @input="onSearchInput"
+            >
 
             <span v-else-if="displayText" :class="ui.triggerText()">{{ displayText }}</span>
             <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
@@ -940,11 +956,15 @@ function scrollToActive(instant = false) {
           <div v-if="showArrow || showClearButton || loading" :class="ui.triggerIconWrapper()">
             <!-- 加载中优先占据整格：RebornLoading 替代箭头，此时清空按钮已被 showClearButton 关掉 -->
             <!-- size 必须给 100%：RebornLoading 会把 size 写成行内宽高，行内样式压过 class 上的尺寸 -->
-            <RebornLoading v-if="loading" size="100%"
-              :class="ui.triggerLoadingIcon()" />
+            <RebornLoading
+              v-if="loading" size="100%"
+              :class="ui.triggerLoadingIcon()"
+            />
             <Icon v-else-if="showArrow" :name="icon" :class="ui.arrow()" />
-            <span v-if="showClearButton" :class="ui.clearBtn({ class: showArrow ? undefined : 'static flex' })"
-              @click.stop="clear">
+            <span
+              v-if="showClearButton" :class="ui.clearBtn({ class: showArrow ? undefined : 'static flex' })"
+              @click.stop="clear"
+            >
               <Icon name="lucide:x" class="size-full" />
             </span>
           </div>
@@ -971,21 +991,29 @@ function scrollToActive(instant = false) {
             虚拟模式下占位层按「总条数 × 步长」撑出真实滚动条，窗口层绝对定位并按偏移量平移，
             DOM 里只保留可视区那十几行；非虚拟模式下两层不带任何样式，纯粹是透明的结构层。
           -->
-          <div :class="virtual ? ui.virtualPhantom() : undefined"
-            :style="virtual ? { height: `${virtualTotalHeight}px` } : undefined">
-            <div :class="[ui.optionList(), virtual ? ui.virtualWindow() : '']"
-              :style="virtual ? { transform: `translateY(${virtualOffset}px)` } : undefined">
+          <div
+            :class="virtual ? ui.virtualPhantom() : undefined"
+            :style="virtual ? { height: `${virtualTotalHeight}px` } : undefined"
+          >
+            <div
+              :class="[ui.optionList(), virtual ? ui.virtualWindow() : '']"
+              :style="virtual ? { transform: `translateY(${virtualOffset}px)` } : undefined"
+            >
               <!-- 选中态优先于高亮态，类名组合见 optionClasses -->
               <!-- 下标一律取 row.index（filteredOptions 中的真实下标）：虚拟模式下 DOM 顺序不等于数据顺序 -->
-              <div v-for="row in renderRows" :key="row.key" :data-index="row.index" :class="optionClassOf(row)"
+              <div
+                v-for="row in renderRows" :key="row.key" :data-index="row.index" :class="optionClassOf(row)"
                 :style="virtual ? { height: `${virtualItemHeight - 4}px` } : undefined"
                 :data-disabled="row.option.disabled ? 'true' : 'false'" @click="selectOption(row.option)"
-                   @mouseenter="onOptionMouseEnter(row.index)">
+                @mouseenter="onOptionMouseEnter(row.index)"
+              >
                 <slot name="option" :option="row.option" :active="row.selected">
                   <div :class="ui.optionContent()">
                     <span :class="ui.optionLabel()">{{ row.option.label }}</span>
-                    <Icon v-if="multiple && row.selected" name="lucide:check"
-                      :class="ui.optionActiveIcon()" />
+                    <Icon
+                      v-if="multiple && row.selected" name="lucide:check"
+                      :class="ui.optionActiveIcon()"
+                    />
                   </div>
                 </slot>
               </div>

@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import type { ClassValue } from 'clsx'
 import { computed, onBeforeUnmount, shallowRef, watchEffect } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-watermark.config'
+
+export type RebornWatermarkUI = Partial<Record<keyof typeof theme.slots, ClassValue>>
 
 export interface RebornWatermarkFont {
   color?: string
@@ -25,8 +28,8 @@ export interface RebornWatermarkProps {
   gap?: [number, number]
   offset?: [number, number]
   /** 追加到根元素的类名 */
-  customClass?: any
-  ui?: any
+  customClass?: ClassValue
+  ui?: RebornWatermarkUI
 }
 
 const props = withDefaults(defineProps<RebornWatermarkProps>(), {
@@ -43,8 +46,8 @@ const b = tv(theme)
 const ui = computed(() => {
   const styles = b()
   return {
-    root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.ui.root) }),
-    watermark: (opts?: { class?: any }) => styles.watermark({ class: cn(opts?.class, props.ui.watermark) }),
+    root: (opts?: { class?: ClassValue }) => styles.root({ class: cn(opts?.class, props.ui.root) }),
+    watermark: (opts?: { class?: ClassValue }) => styles.watermark({ class: cn(opts?.class, props.ui.watermark) }),
   }
 })
 
