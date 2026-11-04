@@ -3,7 +3,7 @@
  * AppThemePicker —— 主题色切换
  *
  * 选择器只修改全站状态，常驻插件负责 cookie 与 html 属性。
- * 真正的色值由 app/assets/theme/base.css 的 [data-theme-color] 规则给出。
+ * 真正的色值由 app/assets/theme/theme-presets.css 的 [data-theme-color] 规则给出（仅站点引入）。
  *
  * 不用 element.style 直接写 --color-primary：内联样式权重高于 .dark 类选择器，
  * 而暗色板的主色刻意取第 5 阶（第 6 阶在暗底上对比度不够），

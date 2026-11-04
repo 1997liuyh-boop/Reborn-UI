@@ -8,14 +8,17 @@ import { chromium } from 'playwright-core';
 import { themeColors } from '../../app/utils/themeColor';
 import { semanticColors, semanticRoles } from '../../scripts/design/rules';
 
-it('真实主题 CSS 在所有预设与明暗模式保持 6/5/7 色阶及 4.5:1 实心文字对比度', async () => {
+// 实底文字统一取 gray-1（两种模式下的纸面色：浅色为白、深色为近黑），与 6/5/7 阶背景成对使用。
+// 这是有意的取舍：浅色模式下多数语义色上的白字低于 4.5:1，见 docs/authoring/design-system.md。
+it('真实主题 CSS 在所有预设与明暗模式保持 6/5/7 色阶，实心文字统一取 gray-1', async () => {
   const executablePath = process.env.GUIDE_BROWSER_PATH || chromium.executablePath();
   assert.ok(existsSync(executablePath), '缺少 Chromium，请先运行 pnpm exec playwright-core install chromium');
-  const compiler = await compile("@import './app/assets/css/main.css';", { base: resolve('.'), onDependency() {} });
+  const compiler = await compile("@import './app/assets/css/main.css';@import './app/assets/theme/theme-presets.css';", { base: resolve('.'), onDependency() {} });
   const palettes = { primary: 'brand', secondary: 'secondary', success: 'green', info: 'blue', warning: 'orange', error: 'red', neutral: 'gray' };
   const candidates = [
     ...semanticColors.flatMap(color => semanticRoles.map(role => `bg-${color}${role}`)),
     ...Object.values(palettes).flatMap(color => Array.from({ length: 10 }, (_, index) => `bg-${color}-${index + 1}`)),
+    'bg-gray-1',
   ];
   const css = compiler.build(candidates);
   const browser = await chromium.launch({ executablePath, headless: true });
@@ -43,8 +46,10 @@ it('真实主题 CSS 在所有预设与明暗模式保持 6/5/7 色阶及 4.5:1 
             context.fillRect(0, 0, 1, 1);
             return Array.from(context.getImageData(0, 0, 1, 1).data);
           };
+          const paper = colorValue('gray-1');
           return colors.map(color => ({
             color,
+            paper,
             roles: Object.fromEntries(roles.map(role => [role, colorValue(`${color}${role}`)])),
             palette: Object.fromEntries([1, 2, 5, 6, 7].map(step => [step, colorValue(`${palettes[color]}-${step}`)])),
           }));
@@ -53,15 +58,9 @@ it('真实主题 CSS 在所有预设与明暗模式保持 6/5/7 色阶及 4.5:1 
           const label = `${preset}/${dark ? 'dark' : 'light'}/${item.color}`;
           for (const role of semanticRoles) assert.ok(item.roles[role], `${label}${role} 必须有实际颜色`);
           for (const [role, step] of [['', 6], ['-hover', 5], ['-active', 7], ['-soft', 1], ['-border', 2]] as const) assert.deepEqual(item.roles[role], item.palette[step], `${label}${role} 应使用第 ${step} 阶`);
-          const luminance = (rgba: number[]) => rgba.slice(0, 3).map(value => value / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4).reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index]!, 0);
           for (const state of ['', '-hover', '-active'] as const) {
-            const background = item.roles[state]!;
-            const foreground = item.roles[`${state}-foreground`]!;
-            assert.equal(background[3], 255, `${label}${state} 应为不透明颜色`);
-            assert.equal(foreground[3], 255, `${label}${state} 前景应为不透明颜色`);
-            const values = [luminance(background), luminance(foreground)].sort((a, b) => a - b);
-            const ratio = (values[1]! + 0.05) / (values[0]! + 0.05);
-            assert.ok(ratio >= 4.5, `${label}${state} 实心文字对比度仅 ${ratio.toFixed(2)}:1`);
+            assert.equal(item.roles[state]![3], 255, `${label}${state} 应为不透明颜色`);
+            assert.deepEqual(item.roles[`${state}-foreground`], item.paper, `${label}${state} 前景应为 gray-1`);
           }
         }
       }

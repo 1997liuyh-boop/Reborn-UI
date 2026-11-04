@@ -1,0 +1,195 @@
+/*
+ * 文档站专属：主题色预设，供 AppThemePicker 与色块预览切换主色。
+ * 只由站点入口 app/assets/css/reborn-ui.css 引入，不随组件库分发——
+ * 配置页展示的 main.css / base.css 不含本文件，接入方复制主题时不会带上这些预设。
+ * 依赖 base.css 里的色板（orange-* / green-* / red-* / gray-*），必须在 base.css 之后引入。
+ */
+/*
+ * 主题预设覆盖完整品牌色板和主色角色，子树预览也可独立切换。
+ * AppThemePicker 在 SSR 阶段把色系名写到 <html data-theme-color>；色块按钮自己挂同名属性即可预览对应主色。
+ *
+ * 非品牌蓝时整条 brand-1~10 改指所选色系：组件里仍有 bg-brand-2 等直接取阶的写法，只换主色角色会停在蓝色。
+ * 品牌蓝必须把色值抄一份写回：自定义属性按已解析的值继承，页面选橙色后 <html> 上的 brand-* 已是橙色，
+ * 子元素挂 data-theme-color="brand" 只能靠这里的字面量恢复蓝色。
+ * ⚠️ 下面浅色、暗色两组 brand 字面量必须与 base.css 中 @theme 浅色板、.dark 暗色板里的 brand-1~10 保持一致，改色板时一起改。
+ */
+[data-theme-color="brand"] {
+  --color-brand-1: #ebf5ff;
+  --color-brand-2: #bedefe;
+  --color-brand-3: #96c6fd;
+  --color-brand-4: #6eacfc;
+  --color-brand-5: #5095fb;
+  --color-brand-6: #1b6dfa;
+  --color-brand-7: #1150d0;
+  --color-brand-8: #0937a5;
+  --color-brand-9: #032277;
+  --color-brand-10: #00124d;
+  --color-primary: var(--color-brand-6);
+  --color-primary-hover: var(--color-brand-5);
+  --color-primary-active: var(--color-brand-7);
+  --color-primary-soft: var(--color-brand-1);
+  --color-primary-border: var(--color-brand-2);
+  --color-primary-foreground: var(--color-gray-1);
+  --color-primary-hover-foreground: var(--color-gray-1);
+  --color-primary-active-foreground: var(--color-gray-1);
+  --color-primary-3: var(--color-brand-3);
+  --color-ring: var(--color-primary);
+}
+[data-theme-color="orange"] {
+  --color-brand-1: var(--color-orange-1);
+  --color-brand-2: var(--color-orange-2);
+  --color-brand-3: var(--color-orange-3);
+  --color-brand-4: var(--color-orange-4);
+  --color-brand-5: var(--color-orange-5);
+  --color-brand-6: var(--color-orange-6);
+  --color-brand-7: var(--color-orange-7);
+  --color-brand-8: var(--color-orange-8);
+  --color-brand-9: var(--color-orange-9);
+  --color-brand-10: var(--color-orange-10);
+  --color-primary: var(--color-orange-6);
+  --color-primary-hover: var(--color-orange-5);
+  --color-primary-active: var(--color-orange-7);
+  --color-primary-soft: var(--color-orange-1);
+  --color-primary-border: var(--color-orange-2);
+  --color-primary-foreground: var(--color-gray-1);
+  --color-primary-hover-foreground: var(--color-gray-1);
+  --color-primary-active-foreground: var(--color-gray-1);
+  --color-primary-3: var(--color-orange-3);
+  --color-ring: var(--color-primary);
+}
+[data-theme-color="green"] {
+  --color-brand-1: var(--color-green-1);
+  --color-brand-2: var(--color-green-2);
+  --color-brand-3: var(--color-green-3);
+  --color-brand-4: var(--color-green-4);
+  --color-brand-5: var(--color-green-5);
+  --color-brand-6: var(--color-green-6);
+  --color-brand-7: var(--color-green-7);
+  --color-brand-8: var(--color-green-8);
+  --color-brand-9: var(--color-green-9);
+  --color-brand-10: var(--color-green-10);
+  --color-primary: var(--color-green-6);
+  --color-primary-hover: var(--color-green-5);
+  --color-primary-active: var(--color-green-7);
+  --color-primary-soft: var(--color-green-1);
+  --color-primary-border: var(--color-green-2);
+  --color-primary-foreground: var(--color-gray-1);
+  --color-primary-hover-foreground: var(--color-gray-1);
+  --color-primary-active-foreground: var(--color-gray-1);
+  --color-primary-3: var(--color-green-3);
+  --color-ring: var(--color-primary);
+}
+[data-theme-color="red"] {
+  --color-brand-1: var(--color-red-1);
+  --color-brand-2: var(--color-red-2);
+  --color-brand-3: var(--color-red-3);
+  --color-brand-4: var(--color-red-4);
+  --color-brand-5: var(--color-red-5);
+  --color-brand-6: var(--color-red-6);
+  --color-brand-7: var(--color-red-7);
+  --color-brand-8: var(--color-red-8);
+  --color-brand-9: var(--color-red-9);
+  --color-brand-10: var(--color-red-10);
+  --color-primary: var(--color-red-6);
+  --color-primary-hover: var(--color-red-5);
+  --color-primary-active: var(--color-red-7);
+  --color-primary-soft: var(--color-red-1);
+  --color-primary-border: var(--color-red-2);
+  --color-primary-foreground: var(--color-gray-1);
+  --color-primary-hover-foreground: var(--color-gray-1);
+  --color-primary-active-foreground: var(--color-gray-1);
+  --color-primary-3: var(--color-red-3);
+  --color-ring: var(--color-primary);
+}
+.dark[data-theme-color="brand"],
+.dark [data-theme-color="brand"] {
+  --color-brand-1: #00124d;
+  --color-brand-2: #022178;
+  --color-brand-3: #0d3aa3;
+  --color-brand-4: #1d58cf;
+  --color-brand-5: #317bfa;
+  --color-brand-6: #418cfb;
+  --color-brand-7: #6caafc;
+  --color-brand-8: #97c7fd;
+  --color-brand-9: #c3e1fe;
+  --color-brand-10: #eff7ff;
+  --color-primary: var(--color-brand-6);
+  --color-primary-hover: var(--color-brand-5);
+  --color-primary-active: var(--color-brand-7);
+  --color-primary-soft: var(--color-brand-1);
+  --color-primary-border: var(--color-brand-2);
+  --color-primary-foreground: var(--color-gray-1);
+  --color-primary-hover-foreground: var(--color-gray-1);
+  --color-primary-active-foreground: var(--color-gray-1);
+  --color-primary-3: var(--color-brand-3);
+  --color-ring: var(--color-primary);
+}
+.dark[data-theme-color="orange"],
+.dark [data-theme-color="orange"] {
+  --color-brand-1: var(--color-orange-1);
+  --color-brand-2: var(--color-orange-2);
+  --color-brand-3: var(--color-orange-3);
+  --color-brand-4: var(--color-orange-4);
+  --color-brand-5: var(--color-orange-5);
+  --color-brand-6: var(--color-orange-6);
+  --color-brand-7: var(--color-orange-7);
+  --color-brand-8: var(--color-orange-8);
+  --color-brand-9: var(--color-orange-9);
+  --color-brand-10: var(--color-orange-10);
+  --color-primary: var(--color-orange-6);
+  --color-primary-hover: var(--color-orange-5);
+  --color-primary-active: var(--color-orange-7);
+  --color-primary-soft: var(--color-orange-1);
+  --color-primary-border: var(--color-orange-2);
+  --color-primary-foreground: var(--color-gray-1);
+  --color-primary-hover-foreground: var(--color-gray-1);
+  --color-primary-active-foreground: var(--color-gray-1);
+  --color-primary-3: var(--color-orange-3);
+  --color-ring: var(--color-primary);
+}
+.dark[data-theme-color="green"],
+.dark [data-theme-color="green"] {
+  --color-brand-1: var(--color-green-1);
+  --color-brand-2: var(--color-green-2);
+  --color-brand-3: var(--color-green-3);
+  --color-brand-4: var(--color-green-4);
+  --color-brand-5: var(--color-green-5);
+  --color-brand-6: var(--color-green-6);
+  --color-brand-7: var(--color-green-7);
+  --color-brand-8: var(--color-green-8);
+  --color-brand-9: var(--color-green-9);
+  --color-brand-10: var(--color-green-10);
+  --color-primary: var(--color-green-6);
+  --color-primary-hover: var(--color-green-5);
+  --color-primary-active: var(--color-green-7);
+  --color-primary-soft: var(--color-green-1);
+  --color-primary-border: var(--color-green-2);
+  --color-primary-foreground: var(--color-gray-1);
+  --color-primary-hover-foreground: var(--color-gray-1);
+  --color-primary-active-foreground: var(--color-gray-1);
+  --color-primary-3: var(--color-green-3);
+  --color-ring: var(--color-primary);
+}
+.dark[data-theme-color="red"],
+.dark [data-theme-color="red"] {
+  --color-brand-1: var(--color-red-1);
+  --color-brand-2: var(--color-red-2);
+  --color-brand-3: var(--color-red-3);
+  --color-brand-4: var(--color-red-4);
+  --color-brand-5: var(--color-red-5);
+  --color-brand-6: var(--color-red-6);
+  --color-brand-7: var(--color-red-7);
+  --color-brand-8: var(--color-red-8);
+  --color-brand-9: var(--color-red-9);
+  --color-brand-10: var(--color-red-10);
+  --color-primary: var(--color-red-6);
+  --color-primary-hover: var(--color-red-5);
+  --color-primary-active: var(--color-red-7);
+  --color-primary-soft: var(--color-red-1);
+  --color-primary-border: var(--color-red-2);
+  --color-primary-foreground: var(--color-gray-1);
+  --color-primary-hover-foreground: var(--color-gray-1);
+  --color-primary-active-foreground: var(--color-gray-1);
+  --color-primary-3: var(--color-red-3);
+  --color-ring: var(--color-primary);
+}

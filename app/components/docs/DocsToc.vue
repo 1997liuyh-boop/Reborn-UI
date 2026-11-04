@@ -16,7 +16,7 @@
  *   吸顶 Tab 栏（nav py-2 的 16px + 胶囊 md 的 48px = 64px），要再多让出这一段，
  *   否则滚到位后标题停在 Tab 栏后面。
  * 组件自己算滚动位置，不读 CSS 的 scroll-margin-top，所以偏移只能在这里给；
- * 带 hash 直接打开页面走的是浏览器原生跳转，那一路由 base.css 里的 scroll-margin-top 兜底。
+ * 带 hash 直接打开页面走的是浏览器原生跳转，那一路由 app/assets/css/site-layout.css 里的 scroll-margin-top 兜底。
  */
 import type { AnchorItem } from "~/components/reborn/ui/reborn-anchor/reborn-anchor.config";
 
