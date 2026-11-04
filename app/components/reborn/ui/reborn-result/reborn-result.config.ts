@@ -48,7 +48,8 @@ export const resultTheme = tv({
   slots: {
     // 图标 /（标题 + 描述）/ 额外区三段，段间 gap-6（24px），整体居中
     root: "reborn-result flex w-full flex-col items-center gap-6 text-center",
-    // 72px 圆形底板，默认字形铺满整个图标区域。
+    // 72px 图标区，默认字形铺满整个区域。
+    // 不铺语义色淡底：lucide 圆形字形外沿只到约 66px，淡底会在外圈露出一道浅色环。
     icon: "flex size-18 shrink-0 items-center justify-center rounded-full",
     iconGlyph: "size-full shrink-0",
     // 标题与描述同属一段，段内 gap-2（8px）
@@ -61,10 +62,10 @@ export const resultTheme = tv({
   },
   variants: {
     color: {
-      info: { icon: "bg-info/10 text-info" },
-      success: { icon: "bg-success/10 text-success" },
-      warning: { icon: "bg-warning/10 text-warning" },
-      error: { icon: "bg-error/10 text-error" },
+      info: { icon: "text-info" },
+      success: { icon: "text-success" },
+      warning: { icon: "text-warning" },
+      error: { icon: "text-error" },
     },
     /**
      * icon 传 null、图标区完全由 icon 插槽接管时开启：
@@ -74,14 +75,14 @@ export const resultTheme = tv({
       true: { icon: "size-auto rounded-none bg-transparent" },
     },
   },
-  // 不设 defaultVariants：color 由组件按 icon 推导，icon 为 null 时不传，底板就不着色
+  // 不设 defaultVariants：color 由组件按 icon 推导，icon 为 null 时不传，图标区就不着色
 });
 
 /** 语义化结构键，供 ui 属性按节点覆盖样式 */
 export interface ResultUI {
   /** 根容器：三段纵向布局与居中 */
   root?: string;
-  /** 图标区底板：72px 圆形 + 语义色淡底 */
+  /** 图标区：72px，承载语义色字形，不带淡底 */
   icon?: string;
   /** 图标字形：铺满图标区，默认 72px */
   iconGlyph?: string;

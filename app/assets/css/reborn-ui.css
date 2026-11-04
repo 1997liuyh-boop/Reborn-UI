@@ -4,6 +4,10 @@
 
 @import "../theme/typography.css";
 @import "../theme/base.css";
+/* 文档站专属的主题色预设，须在 base.css 之后，见文件头注释 */
+@import "../theme/theme-presets.css";
+/* 文档站专属的容器宽度与锚点偏移，位置与原先在 base.css 中一致 */
+@import "./site-layout.css";
 @import "../theme/motion.css";
 @import "../../components/reborn/ui/scrollbar/scrollbar.css";
 /* 文档站专属光标，不随组件分发，见文件头注释 */

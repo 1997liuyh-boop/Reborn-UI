@@ -1,0 +1,26 @@
+/*
+ * 文档站专属的版式规则：内容容器宽度、后台式全宽外壳与正文标题锚点偏移。
+ * 只由站点入口 reborn-ui.css 引入，不随组件库分发；接入方复制的 base.css 不含这些规则。
+ */
+:root {
+  /* 容器限制：加宽至 100rem，为组件 demo 提供更大画布（header 与正文共用，保持对齐） */
+  --ui-container: min(100rem, 100%);
+}
+
+/*
+ * 后台管理式全宽外壳：docs 布局的非 root 页面在 body 上挂此类，
+ * 页内所有 UContainer / UHeader（含 AppHeader）随变量一起放开到全宽，
+ * 头部与正文天然保持对齐；root 落地页不挂此类，维持 100rem 居中版式。
+ */
+body.layout-admin-shell {
+  --ui-container: 100%;
+}
+
+/*
+ * 文档正文标题的锚点偏移：带 hash 直接打开页面、或浏览器原生的 hash 跳转时，
+ * 让出吸顶顶栏（--ui-header-height，64px）再留 24px，标题才不会停在顶栏后面。
+ * 右栏目录（RebornAnchor）自己算滚动位置、不读这个值，它的偏移见 DocsToc.vue。
+ */
+.docs-prose :where(h2, h3, h4)[id] {
+  scroll-margin-top: calc(var(--ui-header-height) + 1.5rem);
+}

@@ -4,7 +4,7 @@ const isRoot = useIsRootPage();
 
 /**
  * 后台管理式全宽外壳：非 root 文档页在 body 上挂 layout-admin-shell，
- * 将 --ui-container 覆盖为 100%（见 base.css）——AppHeader /
+ * 将 --ui-container 覆盖为 100%（见 app/assets/css/site-layout.css）——AppHeader /
  * 正文容器全部随变量放开到全宽，无需逐个改容器；root 落地页维持居中版式。
  */
 useHead({

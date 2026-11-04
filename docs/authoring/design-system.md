@@ -19,7 +19,7 @@
 | 悬停实底前景 | `--color-primary-hover-foreground` | `hover:text-primary-hover-foreground` | 与悬停背景配对 |
 | 按下实底前景 | `--color-primary-active-foreground` | `active:text-primary-active-foreground` | 与按下背景配对 |
 
-其余六种语义色同样提供以上八个角色。实底文字必须同时指定背景和配对前景，不能统一写 `text-white`；对比度验收覆盖品牌蓝、橙、绿、红预设以及明暗模式，常规文字至少 4.5:1。
+其余六种语义色同样提供以上八个角色。实底文字必须同时指定背景和配对前景，不能直接写 `text-white` / `text-gray-1`；七种语义色的默认、悬停、按下前景当前统一指向 `gray-1`（浅色模式为白、深色模式为近黑），主题回归验证所有预设与明暗模式下前景都解析为 `gray-1`。
 
 `text-primary` 表示强调色文字，不表示“主正文”；正文使用灰阶或 `text-foreground`。`text-*-foreground` 仅用于对应实底，不能用在固定黑白背景或浅底上。自定义一组语义色时，应一起覆盖其前景、交互态、浅底与描边；只改默认色不会自动推导其他角色。
 
@@ -34,7 +34,7 @@
 - Slider 的刻度边框取第 3 阶；Steps 的中性完成态使用灰色第 2 阶浅底；固定图片遮罩等使用与其实际底色匹配的固定前景。
 - Menu 选中背景块与 Tree 拖拽放入内部的底色取色板第 2 阶，比 soft 角色的第 1 阶重一档。
 - Tree 的 neutral 拖拽指示线取 `gray-9` 正文色，与内部放置的 `ring-gray-9` 一致；neutral 角色是第 6 阶弱化灰，压不住指示语义。
-- 实底的默认、悬停、按下三态各自配对前景，允许字色在状态间黑白翻转（如浅色 primary 悬停时 `brand-5` 底配深色字）。色板较亮，白字在第 5 阶上约 3:1，保持字色一致就必须放弃 4.5:1 或改动取阶；当前选择保留取阶与对比度。
+- 实底的默认、悬停、按下三态前景统一取 `gray-1`，字色在状态间不翻转（2026-11-03 决定，取代此前按 4.5:1 逐态配对黑白字的方案）。代价：色板较亮，浅色模式下白字在多数语义色上低于 4.5:1（如 success 第 6 阶约 1.6:1、warning 约 2.5:1，仅 primary 达标）。如需恢复对比度，只改主题中的 `*-foreground` 角色即可，组件无需改动。
 - Web 主色为品牌蓝、辅助色为薄荷绿；UniApp 主色为红、辅助色为灰。这是当前兼容合同，不通过 Web 主题整改隐式改变另一端品牌。
 
 ## 样式覆盖
@@ -73,4 +73,4 @@ pnpm kb:build
 pnpm kb:check
 ```
 
-设计检查覆盖 Web 旧字号、废弃圆角、`ui?: any`、主题引用闭合、`-border` 角色用于非边框属性，以及同一串类名里语义实底搭配 `text-white` / `text-black` / `text-gray-1`；跨槽位的实底与前景配对由浏览器回归覆盖（Steps、Carousel、Radio、Switch、Slider、Tree、FAB、Guide、Timeline、DatePickerPanel）。浏览器回归验证真实 CSS 的颜色、对比度、字号和覆盖行为。该守卫不宣称完成全部组件的视觉或无障碍审计。涉及新的交互或布局变化时，补充对应组件的行为回归。`design-check.yml` 在 CI 执行前三项，测试被跳过视为失败。
+设计检查覆盖 Web 旧字号、废弃圆角、`ui?: any`、主题引用闭合、`-border` 角色用于非边框属性，以及同一串类名里语义实底搭配 `text-white` / `text-black` / `text-gray-1`；跨槽位的实底与前景配对由浏览器回归覆盖（Steps、Carousel、Radio、Switch、Slider、Tree、FAB、Guide、Timeline、DatePickerPanel）。浏览器回归验证真实 CSS 的颜色、实底前景取值、字号和覆盖行为。该守卫不宣称完成全部组件的视觉或无障碍审计。涉及新的交互或布局变化时，补充对应组件的行为回归。`design-check.yml` 在 CI 执行前三项，测试被跳过视为失败。

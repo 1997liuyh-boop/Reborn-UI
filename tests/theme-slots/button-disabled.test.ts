@@ -50,11 +50,11 @@ for (const color of buttonColors) {
   }
 }
 
-// 主色禁用阶跟随主题色选择，明暗规则均不能退回默认品牌色。
-const baseCss = readFileSync(new URL('../../app/assets/theme/base.css', import.meta.url), 'utf8');
+// 主色禁用阶跟随主题色选择，明暗规则均不能退回默认品牌色。预设只在站点专属的 theme-presets.css 里。
+const presetsCss = readFileSync(new URL('../../app/assets/theme/theme-presets.css', import.meta.url), 'utf8');
 for (const palette of ['brand', 'orange', 'green', 'red']) {
   it(`主色 ${palette} 的明暗主题都映射至第 3 阶`, () => {
-    const blocks = baseCss.split('}').filter(block => block.includes(`[data-theme-color="${palette}"]`));
+    const blocks = presetsCss.split('}').filter(block => block.includes(`[data-theme-color="${palette}"]`));
     assert.equal(blocks.length, 2);
     for (const block of blocks) assert.ok(block.includes(`--color-primary-3: var(--color-${palette}-3);`));
   });
