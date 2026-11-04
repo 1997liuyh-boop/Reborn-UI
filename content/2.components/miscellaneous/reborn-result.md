@@ -60,17 +60,17 @@ badge: New
 
 ### 隐藏图标与自定义图标
 
-`:icon="null"` 把整个图标区去掉，连同它下面的 24px（UniApp 48rpx）间距一起消失。`icon` 插槽只替换字形，圆形底板与语义色淡底仍在；两者一起用时底板退化成无尺寸、无底色的透明容器，插画自己决定大小。
+`:icon="null"` 把整个图标区去掉，连同它下面的 24px（UniApp 48rpx）间距一起消失。`icon` 插槽只替换字形，图标区尺寸与语义色仍在（UniApp 另保留圆形淡底）；两者一起用时底板退化成无尺寸、无底色的透明容器，插画自己决定大小。
 
 ::code-group
 ```vue [Web]
 <template>
   <RebornResult :icon="null" title="已退出登录" sub-title="下次访问需要重新验证身份。" />
 
-  <!-- 保留底板与淡底，只换字形 -->
+  <!-- 保留图标区与语义色，只换字形 -->
   <RebornResult icon="success" title="打款完成">
     <template #icon>
-      <Icon name="lucide:wallet" class="size-8 shrink-0" />
+      <Icon name="lucide:wallet" class="size-full shrink-0" />
     </template>
   </RebornResult>
 
@@ -275,7 +275,7 @@ badge: New
 
 | 插槽名 | 作用域参数 | 描述 |
 | --- | --- | --- |
-| `icon` | - | 图标区内容，替换默认字形。`icon` 不为 `null` 时圆形底板与语义色淡底保留；`icon` 为 `null` 时底板退化为无尺寸透明容器，且该插槽是让图标区继续渲染的唯一途径。 |
+| `icon` | - | 图标区内容，替换默认字形。`icon` 不为 `null` 时图标区尺寸与语义色保留（UniApp 另保留圆形淡底）；`icon` 为 `null` 时底板退化为无尺寸透明容器，且该插槽是让图标区继续渲染的唯一途径。 |
 | `title` | - | 标题内容，存在时 `title` prop 不再渲染。外层节点的 24px 字号与 `text-gray-10` 仍然生效。 |
 | `sub-title` | - | 描述内容，存在时 `sub-title` prop 不再渲染。外层节点的 14px 字号与 `text-gray-7` 仍然生效。 |
 | `extra` | - | 第三段的内容，通常放按钮。不提供该插槽时第三段连同 24px 段间距一起不渲染。 |
@@ -287,7 +287,7 @@ badge: New
 | 键名 | 说明 |
 | --- | --- |
 | `root` | 根容器，默认 `flex w-full flex-col items-center gap-6 text-center`（UniApp `gap-[48rpx]`）。改段间距、改左对齐都在这里。 |
-| `icon` | 图标区底板，默认 `flex size-18 shrink-0 items-center justify-center rounded-full` 加语义色淡底（UniApp `size-[144rpx]`）。`icon` 为 `null` 时默认类名变成 `size-auto rounded-none bg-transparent`。 |
+| `icon` | 图标区，Web 默认 `flex size-18 shrink-0 items-center justify-center rounded-full` 加语义色字色，不带淡底：字形铺满 72px 后，淡底会在 lucide 圆形外沿露出一道浅色环（UniApp `size-[144rpx]`，字形只有 64rpx，仍带语义色淡底）。`icon` 为 `null` 时默认类名变成 `size-auto rounded-none bg-transparent`。 |
 | `iconGlyph` | 图标字形，Web 默认 `size-full shrink-0`，铺满 72px 图标区（UniApp `size-[64rpx]`）。**只管尺寸**：UniApp 端的 `i-lucide-*` 字形类单独挂在节点上，不走这个键。提供 `icon` 插槽时该节点不渲染，此键随之失效。 |
 | `content` | 标题与描述的包裹层，默认 `flex min-w-0 max-w-full flex-col items-center gap-2`（UniApp `gap-[16rpx]`）。标题与描述之间的 8px 在这里改。 |
 | `title` | 标题节点，默认 `text-2xl font-medium leading-[1.5] text-gray-10`（UniApp `text-48 ... text-gray-8 dark:text-gray-1`）。 |
@@ -301,7 +301,7 @@ badge: New
     title="提交成功"
     :ui="{
       root: 'gap-4 items-start text-left',
-      icon: 'bg-primary/10 text-primary',
+      icon: 'text-primary',
       content: 'items-start',
     }"
   />
@@ -318,17 +318,17 @@ badge: New
 | 段间距 | 24px（`gap-6`） | 48rpx（`gap-[48rpx]`） |
 | 标题与描述间距 | 8px（`gap-2`） | 16rpx（`gap-[16rpx]`） |
 | 操作区元素间距 | 12px（`gap-3`） | 24rpx（`gap-[24rpx]`） |
-| 图标底板 / 字形 | 72px / 铺满底板（默认 72px） | 144rpx / 64rpx |
+| 图标区 / 字形 | 72px 无淡底 / 铺满图标区（默认 72px） | 144rpx 圆形淡底 / 64rpx |
 | 标题字号 | 24px（`text-2xl`） | 48rpx（`text-48`） |
 | 描述字号 | 14px（`text-base`，本仓库把 `--text-base` 改写成 14px） | 28rpx（`text-28`） |
 | 文字颜色 | `text-gray-10` / `text-gray-7`，色阶随暗色模式反转，无需 `dark:` | `text-gray-8 dark:text-gray-1` / `text-gray-7 dark:text-gray-4`，色阶静态且止于 `gray-8` |
 
 ## 注意事项
 
-- **七种状态共用同一套 lucide 图标，没有整幅插画**。Arco 的 403 / 404 / 500 是三张手绘 SVG 插图，本组件统一收敛成圆形底板加语义色字形，视觉重量与前四种一致；需要插画请传 `:icon="null"` 并用 `icon` 插槽自己放。
+- **七种状态共用同一套 lucide 图标，没有整幅插画**。Arco 的 403 / 404 / 500 是三张手绘 SVG 插图，本组件统一收敛成语义色字形（UniApp 带圆形淡底），视觉重量与前四种一致；需要插画请传 `:icon="null"` 并用 `icon` 插槽自己放。
 - **`icon` 传 `null` 与不传是两回事**。`withDefaults` 只在 prop 为 `undefined` 时填默认值，显式 `:icon="null"` 会原样传入并整段去掉图标区；漏写 `icon` 得到的是默认的 `info`。
 - **空段不进 DOM，间距不会翻倍**。三段各自带 `v-if`，某段无内容时连同它那份段间距一起消失，所以不必担心缺省时出现双倍空隙；反过来也意味着不能靠 `title=""` 占位来撑高度。
-- **图标配色不可单独配置**。配色由 `icon` 经 `RESULT_ICON_COLOR` 推导，组件没有 `color` prop；要换色用 `ui.icon` 覆盖 `bg-*` / `text-*`，或者直接用 `icon` 插槽接管整块。
+- **图标配色不可单独配置**。配色由 `icon` 经 `RESULT_ICON_COLOR` 推导，组件没有 `color` prop；要换色用 `ui.icon` 覆盖 `text-*`（UniApp 还要覆盖淡底的 `bg-*`），或者直接用 `icon` 插槽接管整块。
 - **组件不派发任何事件，也不暴露实例方法**。`extra` 插槽里的交互由放进去的元素自己承担，别在 Result 上找 `@click` / `@confirm`。
 - **`title` / `sub-title` 只收纯文本**。它们被插值进文本节点，写 HTML 不会被解析；要富文本改用同名插槽，插槽存在时对应 prop 不渲染。
 - **UniApp 端的 `i-lucide-*` 字形类不要写进 `ui.iconGlyph`**。两个图标类叠在同一节点上会各画一层遮罩，组件把字形类单独挂在 `:class` 数组里；`ui.iconGlyph` 只负责尺寸。
