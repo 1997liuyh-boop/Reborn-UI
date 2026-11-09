@@ -235,6 +235,10 @@ server.tool(
   },
 );
 
-// stdio 传输：MCP 客户端以子进程方式拉起本服务
+// stdio 传输：MCP 客户端以子进程方式拉起本服务。
+// 不用顶层 await（仓库 eslint 禁用）：连接失败时打印原因并以非零退出，与此前未捕获拒绝的效果一致
 const transport = new StdioServerTransport();
-await server.connect(transport);
+server.connect(transport).catch((error: unknown) => {
+  console.error(error);
+  process.exit(1);
+});
