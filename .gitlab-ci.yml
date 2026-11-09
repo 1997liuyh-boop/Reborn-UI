@@ -1,0 +1,36 @@
+# GitLab CI/CD：push 到 main 后自动构建并部署到公司机房内网服务器（192.168.20.90，宝塔）
+#
+# 为什么要用「内网 Runner」：GitLab 部署在公网（gitlab.rebornnet.cn），公网 Runner 无法连进
+# 192.168.20.x 内网。因此在目标服务器本机装一个 shell 执行器的 GitLab Runner，由它主动向
+# GitLab 拉取任务，在本机完成构建与发布——不需要开放任何入站 SSH，也不需要在 CI 里存私钥。
+# Runner 的安装与注册见 deploy/intranet/bootstrap-server.sh（只需在服务器上执行一次）。
+#
+# 运行时密钥（会话密码、AI 网关等）只存在服务器本地的 /www/server/reborn-ui/runtime.env，
+# 不进仓库、也不进 GitLab 变量，CI 只负责构建和切换版本。
+
+workflow:
+  rules:
+    # main 分支的推送自动部署；也允许在 GitLab「流水线 → 运行流水线」手动触发
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "web"
+
+stages:
+  - deploy
+
+deploy-intranet:
+  stage: deploy
+  # 只派给内网服务器上的 Runner；注册 Runner 时必须带上这个标签
+  tags:
+    - reborn-intranet
+  # 同一时间只跑一次部署，新的推送排队，绝不并发切换版本
+  resource_group: intranet-deploy
+  # 首次全量安装依赖 + 构建可能超过默认 1 小时
+  timeout: 2h
+  variables:
+    GIT_DEPTH: "20"
+    # 保留 node_modules，避免每次流水线都从零安装依赖；其余未跟踪文件照常清理
+    GIT_CLEAN_FLAGS: -ffdx -e node_modules
+  script:
+    - bash deploy/intranet/ci-deploy.sh
+  environment:
+    name: intranet
