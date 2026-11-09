@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   design:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: 检出完整比较历史
