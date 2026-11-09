@@ -7,6 +7,7 @@
  */
 import type { Component, ShallowRef } from 'vue'
 import { camelize, capitalize, getCurrentInstance } from 'vue'
+import { onceNearViewport } from '~/lib/nearViewport'
 
 interface Props {
   /** PascalCase Overview 组件名，如 RebornButtonOverview */
@@ -40,15 +41,6 @@ function resolveOverview(): Component | false {
   return globalComponents[name] ?? globalComponents[camelName] ?? globalComponents[capitalize(camelName)] ?? false
 }
 
-function isNearViewport(el: HTMLElement) {
-  const rect = el.getBoundingClientRect()
-  const margin = 240
-  const vh = window.innerHeight || document.documentElement.clientHeight || 0
-  const vw = window.innerWidth || document.documentElement.clientWidth || 0
-  if (vh === 0 || vw === 0) return true
-  return rect.bottom >= -margin && rect.top <= vh + margin
-}
-
 function markVisible() {
   if (visible.value) return
   visible.value = true
@@ -57,8 +49,9 @@ function markVisible() {
   }
 }
 
-let observer: IntersectionObserver | undefined
-onBeforeUnmount(() => observer?.disconnect())
+// 进入视口才挂载 Overview：全部卡片共用一个观察器，挂载时不做同步布局测量
+let stopWatching: (() => void) | undefined
+onBeforeUnmount(() => stopWatching?.())
 
 onMounted(() => {
   // 先解析：未注册 Overview 立刻 Glyph，避免 100+ 卡片空转「加载中」
@@ -71,22 +64,7 @@ onMounted(() => {
     markVisible()
     return
   }
-
-  if (typeof IntersectionObserver === 'undefined' || isNearViewport(el)) {
-    markVisible()
-    return
-  }
-
-  observer = new IntersectionObserver(
-    (entries) => {
-      if (entries.some(entry => entry.isIntersecting)) {
-        markVisible()
-        observer?.disconnect()
-      }
-    },
-    { rootMargin: '240px 0px' },
-  )
-  observer.observe(el)
+  stopWatching = onceNearViewport(el, markVisible)
 })
 </script>
 

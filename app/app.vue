@@ -90,6 +90,17 @@ provide("navigation", sharedNavigation);
  * 按钮跟着左移到面板外侧，否则 z-50 的按钮会压在手机模拟器上。
  */
 const { isPanelVisible } = useUniDemoPanel();
+
+/**
+ * 顶栏与页脚跟随「已渲染的页面」而不是目标路由：
+ * 客户端跳转时路由先变、新页面要等异步 setup 完成才替换旧页面，
+ * 直接读 $route.meta 会让新页面的顶栏提前盖在旧页面上（如从首页点进组件总览）。
+ */
+const route = useRoute();
+const shellMeta = shallowRef({ header: route.meta.header, footer: route.meta.footer });
+useNuxtApp().hook("page:finish", () => {
+  shellMeta.value = { header: route.meta.header, footer: route.meta.footer };
+});
 </script>
 
 <template>
@@ -98,11 +109,11 @@ const { isPanelVisible } = useUniDemoPanel();
     <NuxtLoadingIndicator color="var(--ui-primary)" />
 
     <div>
-      <AppHeader v-if="$route.meta.header !== false" />
+      <AppHeader v-if="shellMeta.header !== false" />
       <NuxtLayout>
         <NuxtPage />
       </NuxtLayout>
-      <AppFooter v-if="$route.meta.footer !== false" />
+      <AppFooter v-if="shellMeta.footer !== false" />
     </div>
 
     <!--
@@ -112,11 +123,15 @@ const { isPanelVisible } = useUniDemoPanel();
       BackTop 自己的文档页不挂：页内 demo 有同位置的实例，按钮会叠在一起。
     -->
     <template v-if="!$route.path.endsWith('/reborn-back-top')">
-      <RebornBackTop :bottom="228" show-progress size="md" shape="square" icon="lucide:arrow-big-up"
-        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }" />
-      <RebornBackTop direction="bottom" :bottom="180" show-progress size="md" shape="square"
+      <RebornBackTop
+        :bottom="228" show-progress size="md" shape="square" icon="lucide:arrow-big-up"
+        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }"
+      />
+      <RebornBackTop
+        direction="bottom" :bottom="180" show-progress size="md" shape="square"
         icon="lucide:arrow-big-down"
-        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }" />
+        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }"
+      />
     </template>
 
     <ClientOnly>
