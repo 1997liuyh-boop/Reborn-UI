@@ -1,5 +1,5 @@
 ---
-title: 液态玻璃
+title: LiquidGlass 液态玻璃
 description: 用于以 SVG 位移贴图与通道偏移模拟液态玻璃折射的容器组件。
 category: 特效
 platform: web

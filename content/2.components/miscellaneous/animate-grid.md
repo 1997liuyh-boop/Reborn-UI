@@ -1,5 +1,5 @@
 ---
-title: 动画网格
+title: AnimateGrid 动画网格
 description: 用于以 3D 倾斜透视和发光投影展示 logo 卡片阵列的网格组件。
 category: 卡片
 platform: web

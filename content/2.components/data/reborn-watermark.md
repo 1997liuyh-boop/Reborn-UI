@@ -1,5 +1,5 @@
 ---
-title: 水印 Watermark
+title: Watermark 水印
 description: 用于在内容容器上平铺文本或图片水印的组件。
 category: 数据展示
 platform: both

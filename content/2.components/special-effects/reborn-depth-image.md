@@ -1,5 +1,5 @@
 ---
-title: 深度视差图
+title: DepthImage 深度视差图
 description: 按深度图对透明背景图片做跟随指针的 2.5D 视差与补光，WebGL 渲染，失败时退回静态图。
 category: 特效
 platform: web

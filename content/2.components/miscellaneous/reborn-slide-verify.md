@@ -1,5 +1,5 @@
 ---
-title: 滑块验证
+title: SlideVerify 滑块验证
 description: 用于人机校验的滑块验证组件，向右拖动超过阈值即通过，支持失败回弹与自动重置。
 category: 表单与输入
 platform: uniapp

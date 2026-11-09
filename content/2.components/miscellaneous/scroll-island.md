@@ -1,5 +1,5 @@
 ---
-title: 滚动岛
+title: ScrollIsland 滚动岛
 description: 用于以灵动岛样式悬浮显示页面滚动进度并可展开附加内容的组件。
 category: 导航
 platform: web

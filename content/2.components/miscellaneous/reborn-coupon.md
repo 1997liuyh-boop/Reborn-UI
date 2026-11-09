@@ -1,5 +1,5 @@
 ---
-title: 卡券 Coupon
+title: Coupon 卡券
 description: 用于渲染缺口、撕线、邮票等形态优惠券外观的卡券组件，仅 web 端。
 category: 数据展示
 platform: web

@@ -1,5 +1,5 @@
 ---
-title: 卡片 Card
+title: Card 卡片
 description: 用于分组展示内容区块的基础卡片容器组件，带可选标题，仅 uniapp 端。
 category: 数据展示
 platform: uniapp

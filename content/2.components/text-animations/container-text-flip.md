@@ -1,5 +1,5 @@
 ---
-title: 容器文字翻转
+title: ContainerTextFlip 容器文字翻转
 description: 用于循环翻转一组单词、容器宽度随词宽平滑过渡的文字组件。
 category: 文字动画
 platform: web

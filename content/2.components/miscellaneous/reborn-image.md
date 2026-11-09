@@ -1,5 +1,5 @@
 ---
-title: 图片 Image
+title: Image 图片
 description: 用于展示图片并提供预览、加载/错误状态与多种裁剪模式的双端图片组件。
 category: 通用
 platform: both

@@ -1,5 +1,5 @@
 ---
-title: 聚焦
+title: Focus 聚焦
 description: 用于句子逐词聚焦、其余单词模糊并带边框动画的文字强调组件。
 category: 文字动画
 platform: web

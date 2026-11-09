@@ -1,5 +1,5 @@
 ---
-title: 商品规格 Sku
+title: Sku 商品规格
 description: 用于商品规格（SKU）选择的选项组件，按 options 渲染规格项并以对象形式双向绑定选中结果。
 category: 表单与输入
 platform: web

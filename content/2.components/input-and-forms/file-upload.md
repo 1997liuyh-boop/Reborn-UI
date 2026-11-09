@@ -1,5 +1,5 @@
 ---
-title: 文件上传
+title: FileUpload 文件上传
 description: 用于拖放或点击选择文件、带动效展示区的文件上传入口组件。
 category: 表单与输入
 platform: web

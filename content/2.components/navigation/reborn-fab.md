@@ -1,5 +1,5 @@
 ---
-title: 悬浮按钮 (Fab)
+title: Fab 悬浮按钮
 description: 用于固定位置悬浮操作入口的按钮组件，支持拖拽吸边与展开动作面板，双端可用。
 category: 导航
 platform: both

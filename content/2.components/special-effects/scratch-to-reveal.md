@@ -1,5 +1,5 @@
 ---
-title: 刮刮乐揭示
+title: ScratchToReveal 刮刮乐揭示
 description: 用于刮开渐变涂层后显示隐藏内容的互动刮刮乐组件。
 category: 特效
 platform: web

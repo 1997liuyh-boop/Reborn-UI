@@ -1,5 +1,5 @@
 ---
-title: 页面容器 Page
+title: Page 页面容器
 description: 用于 uniapp 页面最外层的页面容器组件，可配置页面标题与描述文案。
 category: 布局
 platform: uniapp

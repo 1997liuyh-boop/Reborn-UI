@@ -1,5 +1,5 @@
 ---
-title: 图片滑块
+title: ImagesSlider 图片滑块
 description: 用于全屏轮播一组背景图并叠加覆盖层内容的图片滑块组件。
 category: 数据展示
 platform: web

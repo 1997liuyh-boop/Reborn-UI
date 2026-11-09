@@ -1,5 +1,5 @@
 ---
-title: input 输入框
+title: Input 输入框
 description: 用于文本录入的双端输入框组件，支持圆角胶囊样式、多尺寸、清除与密码态。
 category: 表单与输入
 platform: both

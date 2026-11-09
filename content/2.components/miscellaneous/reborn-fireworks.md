@@ -1,5 +1,5 @@
 ---
-title: 礼花
+title: Fireworks 礼花
 description: 用于给容器内元素附加点击礼花/烟花粒子特效的组件，仅 web 端。
 category: 特效
 platform: web

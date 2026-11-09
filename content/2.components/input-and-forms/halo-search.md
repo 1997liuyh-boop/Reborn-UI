@@ -1,5 +1,5 @@
 ---
-title: 光晕搜索框
+title: HaloSearch 光晕搜索框
 description: 发光光环搜索输入框：悬停与聚焦时光环旋转，支持 v-model 绑定关键词与回车 search 事件。
 category: 表单与输入
 platform: web

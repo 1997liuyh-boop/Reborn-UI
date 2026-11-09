@@ -1,5 +1,5 @@
 ---
-title: 翻转单词
+title: FlipWords 翻转单词
 description: 用于句子中一组单词循环翻转切换的内联文字动画组件。
 category: 文字动画
 platform: web

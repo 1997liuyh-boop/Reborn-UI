@@ -1,5 +1,5 @@
 ---
-title: 动画列表
+title: AnimatedList 动画列表
 description: 用于让列表项按固定延迟逐条进场的通知流列表组件。
 category: 数据展示
 platform: web

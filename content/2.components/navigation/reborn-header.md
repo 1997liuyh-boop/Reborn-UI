@@ -1,5 +1,5 @@
 ---
-title: 标题
+title: Header 顶栏
 description: 用于站点顶部导航的响应式头部组件，移动端可切换为弹窗菜单。
 category: 布局
 platform: web

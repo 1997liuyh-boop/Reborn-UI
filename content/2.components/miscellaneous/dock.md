@@ -1,5 +1,5 @@
 ---
-title: Dock
+title: Dock 程序坞
 description: 用于悬停时邻近图标放大的 macOS 风格 Dock 图标栏组件。
 category: 导航
 platform: web

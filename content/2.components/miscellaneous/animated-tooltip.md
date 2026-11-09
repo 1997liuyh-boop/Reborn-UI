@@ -1,5 +1,5 @@
 ---
-title: 动画提示
+title: AnimatedTooltip 动画提示
 description: 用于悬停头像时弹出姓名与职称气泡并跟随鼠标位置的提示组件。
 category: 反馈
 platform: web

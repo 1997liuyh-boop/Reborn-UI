@@ -1,5 +1,5 @@
 ---
-title: 图标云
+title: IconCloud 图标云
 description: 用于以可拖拽旋转的 Canvas 3D 球面展示一组图标的展示组件。
 category: 数据展示
 platform: web

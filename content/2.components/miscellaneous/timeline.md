@@ -1,5 +1,5 @@
 ---
-title: 时间线
+title: Timeline 时间线
 description: 用于纵向展示条目、带粘性标签与滚动渐变动画的时间线组件。
 category: 数据展示
 platform: web

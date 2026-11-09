@@ -1,5 +1,5 @@
 ---
-title: 引导 Guide
+title: Guide 引导
 description: Web 分步引导：自动居中并锁定目标，支持父子步骤、数字或点状进度、封面与整步组件替换。
 category: 反馈
 platform: web

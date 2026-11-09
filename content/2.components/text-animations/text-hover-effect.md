@@ -1,5 +1,5 @@
 ---
-title: 文字悬停效果
+title: TextHoverEffect 文字悬停效果
 description: 用于悬停时跟随鼠标以渐变描边揭示文字的悬停效果组件。
 category: 文字动画
 platform: web
