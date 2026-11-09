@@ -1,5 +1,10 @@
 {
   "description": "用于生成二维码的双端组件，支持前景/背景色、码点样式、中央 Logo 与纠错级别。",
+  "aliases": [
+    "qrcode",
+    "二维码",
+    "qr"
+  ],
   "whenToUse": [
     "分享链接、收款码等需要动态生成二维码的场景。",
     "需要品牌 Logo 居中展示（logo + logoSize/logoMargin）时。",

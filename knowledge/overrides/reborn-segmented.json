@@ -1,4 +1,13 @@
 {
+  "aliases": [
+    "segmented",
+    "分段控制器",
+    "分段选择",
+    "segment control",
+    "切换器",
+    "toggle group",
+    "按钮组切换"
+  ],
   "whenToUse": [
     "列表 / 看板 / 日历这类视图切换：对象选项带 icon，size=\"lg\"。",
     "图表统计周期（日 / 周 / 月）等 2~5 个短选项的筛选：options 直接传字符串数组。",

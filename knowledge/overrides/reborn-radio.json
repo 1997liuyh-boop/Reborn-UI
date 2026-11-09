@@ -1,5 +1,13 @@
 {
   "description": "互斥单选：支持圆点、分段按钮与实体按钮拼接三种形态，提供七种语义色与两种选中填充方式。",
+  "aliases": [
+    "radio",
+    "单选",
+    "单选框",
+    "单选按钮",
+    "radio button",
+    "radio group"
+  ],
   "whenToUse": [
     "通过 RebornRadioGroup 管理互斥选项，options 支持接口数据。",
     "Web 视图切换使用 variant=\"button\"，实体按钮拼接使用 variant=\"pure-button\"。",
@@ -8,7 +16,8 @@
   "whenNotToUse": [
     "可同时选中多项改用 reborn-checkbox。",
     "布尔开关切换改用 reborn-switch。",
-    "选项很多时改用 reborn-select。"
+    "选项很多时改用 reborn-select。",
+    "一排带选中滑块、不带圆点的互斥切换，改用 reborn-segmented。"
   ],
   "pitfalls": [
     "绑定值与 value 严格相等；组级形态与尺寸优先，Web 单项 color/appearance 可覆盖组值。",

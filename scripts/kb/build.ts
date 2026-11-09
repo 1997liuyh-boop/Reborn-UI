@@ -97,6 +97,8 @@ async function main() {
       category: component.category,
       tags: component.tags,
       platforms: component.platforms,
+      // 别名只在非空时写入，没写别名的组件索引条目保持原样
+      ...(component.aliases.length ? { aliases: component.aliases } : {}),
       ...(component.internal ? { internal: true } : {}),
     });
   }

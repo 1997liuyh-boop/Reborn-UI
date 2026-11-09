@@ -1,4 +1,10 @@
 {
+  "aliases": [
+    "mention",
+    "提及",
+    "@ 提及",
+    "at 某人"
+  ],
   "whenToUse": [
     "评论、IM 输入框里 @ 成员：options 给成员列表，选中后插入「@值 」。",
     "同一输入框同时 @ 成员和 # 话题：prefix 传 ['@', '#']，在 search 回调里按第二个参数切换 options。",

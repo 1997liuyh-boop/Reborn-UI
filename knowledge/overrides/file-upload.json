@@ -1,11 +1,17 @@
 {
   "description": "用于拖放或点击选择文件、带动效展示区的文件上传入口组件。",
+  "aliases": [
+    "拖放上传",
+    "上传动效",
+    "dropzone"
+  ],
   "whenToUse": [
     "表单中需要拖拽上传文件的交互入口。",
     "需要配合 FileUploadGrid 网格背景的视觉化上传区块。"
   ],
   "whenNotToUse": [
-    "需要上传进度、文件列表增删等受控管理：组件未提供相关 props / exposes。"
+    "需要上传进度、文件列表增删等受控管理：组件未提供相关 props / exposes。",
+    "需要真正发起上传请求并展示每个文件的进度与结果，改用 reborn-upload：本组件只是带动效的选择入口。"
   ],
   "pitfalls": [
     "仅 web 端可用，依赖 motion-v。",

@@ -1,5 +1,11 @@
 {
   "description": "用于在两种状态间切换的开关组件，支持自定义开关值、加载态与切换前拦截。",
+  "aliases": [
+    "switch",
+    "开关",
+    "toggle",
+    "切换开关"
+  ],
   "whenToUse": [
     "设置项的启用 / 停用切换。",
     "绑定值不是布尔时，用 activeValue / inactiveValue 自定义开与关对应的值。",

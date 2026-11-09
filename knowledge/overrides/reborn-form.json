@@ -1,5 +1,10 @@
 {
   "description": "用于组织表单项并基于 zod schema 校验数据的表单容器组件，双端可用。",
+  "aliases": [
+    "form",
+    "表单",
+    "表单校验"
+  ],
   "whenToUse": [
     "多字段数据录入并需要统一校验（rules 传入 z.ZodObject）。",
     "需要 validate/validateField/resetFields/clearValidate 等程序化表单控制。",

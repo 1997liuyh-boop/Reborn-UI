@@ -1,5 +1,13 @@
 {
   "description": "用于站点侧边或顶部导航的菜单组件，支持垂直/水平模式、折叠、多级子菜单与配置式数据驱动。",
+  "aliases": [
+    "menu",
+    "导航菜单",
+    "侧边菜单",
+    "侧栏",
+    "sidebar",
+    "nav"
+  ],
   "whenToUse": [
     "后台管理系统侧边导航（mode=\"vertical\"，可配 collapse 折叠）。",
     "顶部水平导航栏（mode=\"horizontal\"，可配 ellipsis 折叠溢出条目）。",

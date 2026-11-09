@@ -1,8 +1,8 @@
+import type { KbComponent, KbProp } from "./kb.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { KnowledgeBase, resolveKbDir } from "./kb.js";
-import type { KbComponent } from "./kb.js";
 import { searchComponents } from "./search.js";
 import { readSpec } from "./spec.js";
 
@@ -15,9 +15,19 @@ const kb = new KnowledgeBase(resolveKbDir());
  */
 const instructions = `Reborn-UI 组件库知识库服务。这是一个双端组件库：Web（Nuxt/Vue）与 UniApp 两端同名同构。
 
-选型与写码工作流：search_components 或 list_components 找候选 → get_component 读 props / events / slots 与使用边界（whenToUse / whenNotToUse / pitfalls）→ get_component_example 取示例 → get_install_command 拿安装命令。props / 事件 / 插槽一律以知识库返回为准，不要按同类库的印象推断。
+选型与写码工作流：search_components 或 list_components 找候选 → get_component 读 props / events / slots 与使用边界（whenToUse / whenNotToUse / pitfalls）→ get_component_example 取示例 → get_install_command 拿安装命令。props / 事件 / 插槽一律以知识库返回为准，不要按同类库的印象推断。候选条目的 whenNotToUse 若把当前场景指向了别的组件，先读那个组件再定。search_components 支持同义词与其它组件库的叫法（tag、badge、红点、胶囊标签），按 UI 稿上看到的样子搜即可。
 
-改组件样式（颜色、背景、边框、圆角、尺寸、间距、字体、阴影、hover 态、某个内部部件的外观）依次走：① 已有 prop 取值能表达的直接用 prop（如胶囊按钮用 variant="round"，不写 rounded-full）；② 其余一律用组件的 ui 对象 :ui="{ 键: '类名' }"，最外层元素也用 ui 里的 root / base 键而不是裸 class；③ 只有 ui 里没有对应部件的键时，才退回插槽 + 工具类，并说明该组件没有暴露这个键。可用键看 get_component 返回的 ui 条目描述（「可用键（从源码抽取，以此为准）」，按 Web / UniApp 分端，两端不通用；带 * 的键在填了同名插槽后失效），只能用列出的键，猜的键静默无效。不要用套一层 div/span、:deep()、改组件内部类名的写法改样式——这些绕开了组件的样式接口，组件升级就会失效。
+选型前先按外观对照下表。本库有两处命名与 Element / Ant 相反，最容易选错：
+- 不可点击的小标签：状态、分类、筛选项（Element / Ant 的 Tag，MUI 的 Chip）→ reborn-badge，不是 reborn-button（按钮会被读屏器报成可操作元素）。
+- 图标、头像右上角的红点或数字（Element / Ant / Vuetify 的 Badge）→ reborn-chip，不是 reborn-badge。
+- 一排互斥切换、选中块滑动（Ant 的 Segmented、Element 的 radio-button）→ reborn-segmented，不是 reborn-tabs 或一排 reborn-button。
+- 点选后执行动作的下拉菜单 → reborn-dropdown；从选项里取一个值 → reborn-select；两者不互换。
+- 单句操作反馈 → reborn-toast；屏幕角落、带标题正文的异步通知 → reborn-notification；页内常驻提示条 → reborn-alert。
+- 居中确认弹窗 → reborn-dialog；侧边滑入面板 → reborn-drawer；UniApp 底部弹层 → reborn-popup。
+- 带时间戳的事件记录 → reborn-timeline；用户逐步推进的流程 → reborn-steps；滚动叙事动效 → timeline（无前缀，社区移植）。
+- 页面主操作、提交、确认 → reborn-button；固定位置的悬浮入口 → reborn-fab。
+
+改组件样式（颜色、背景、边框、圆角、尺寸、间距、字体、阴影、hover 态、某个内部部件的外观）依次走：① 已有 prop 取值能表达的直接用 prop（如 Badge 的胶囊形用 round，不写 rounded-full）；② 其余一律用组件的 ui 对象 :ui="{ 键: '类名' }"，最外层元素也用 ui 里的 root / base 键而不是裸 class；③ 只有 ui 里没有对应部件的键时，才退回插槽 + 工具类，并说明该组件没有暴露这个键。可用键看 get_component 返回的 ui 条目描述（「可用键（从源码抽取，以此为准）」，按 Web / UniApp 分端，两端不通用；带 * 的键在填了同名插槽后失效），只能用列出的键，猜的键静默无效。不要用套一层 div/span、:deep()、改组件内部类名的写法改样式——这些绕开了组件的样式接口，组件升级就会失效。
 
 为本组件库编写或修改「组件文档」（content/2.components/**/*.md）与「组件 demo」（app/components/reborn/examples/**、packages/uniapp-project/src/pages/**）时，必须先调 get_authoring_spec 取规范全文再动笔。骨架压缩版：
 
@@ -95,9 +105,9 @@ server.tool(
 
 server.tool(
   "search_components",
-  "按关键词检索组件（id 精确 > 名称 > 标签 > 描述加权），返回按相关度排序的候选列表。",
+  "按关键词检索组件（id 精确 > 名称 > 别名 > 标签 > 描述加权），返回按相关度排序的候选列表。别名含其它组件库的叫法与 UI 稿上的外观描述，按看到的样子搜即可（tag、badge、红点、胶囊标签）。",
   {
-    query: z.string().min(1).describe("检索词，中英文均可，如「按钮」「switch 开关」"),
+    query: z.string().min(1).describe("检索词，中英文均可，如「按钮」「switch 开关」「红点」「Element 的 Tag」"),
     limit: z.number().int().min(1).max(50).optional().describe("返回条数上限，默认 10"),
   },
   async ({ query, limit }) => {
@@ -125,13 +135,22 @@ server.tool(
       .array(z.string())
       .optional()
       .describe("只返回指定字段（如 [\"props\",\"pitfalls\"]），默认返回除示例代码外的全部"),
+    platform: z
+      .enum(["web", "uniapp"])
+      .optional()
+      .describe("只保留该平台通用或专属的 props：两端取值不同的 prop（如 size、ui）按平台并存两条并带 platform 字段，不传则两条都返回"),
   },
-  async ({ id, fields }) => {
+  async ({ id, fields, platform }) => {
     const component = kb.get(id);
     if (!component) {
       return errorResult(`组件不存在：${id}。请先用 search_components 或 list_components 确认 id。`);
     }
-    return jsonResult(pickFields(component, fields));
+    const result = pickFields(component, fields) as Record<string, unknown>;
+    if (platform && Array.isArray(result.props)) {
+      result.props = (result.props as KbProp[]).filter((p) => !p.platform || p.platform === platform);
+      result.platform = platform;
+    }
+    return jsonResult(result);
   },
 );
 

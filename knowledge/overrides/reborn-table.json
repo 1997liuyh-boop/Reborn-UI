@@ -1,4 +1,11 @@
 {
+  "aliases": [
+    "table",
+    "表格",
+    "数据表格",
+    "列表",
+    "data grid"
+  ],
   "whenToUse": [
     "按列比较订单、人员或报销记录时，使用 data 与 columns，或通过 RebornTableColumn 声明列。",
     "长表或宽表需要保留上下文时，使用 height / maxHeight + fixedHeader 固定表头，并为固定列指定 fixed 与 width；文本截断时用 showOverflowTooltip 查看完整内容。",

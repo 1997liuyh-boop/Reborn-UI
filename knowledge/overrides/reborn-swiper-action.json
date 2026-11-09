@@ -1,5 +1,11 @@
 {
   "description": "用于列表项左滑露出右侧操作按钮的滑动单元格组件，支持 push / overlay 模式与同组互斥。",
+  "aliases": [
+    "swipe action",
+    "左滑",
+    "滑动删除",
+    "侧滑操作"
+  ],
   "whenToUse": [
     "消息、待办等列表的左滑删除、置顶操作（rightActions 配置操作条）。",
     "同一列表内只允许一项展开（group 分组互斥，默认组名 'default'）。",

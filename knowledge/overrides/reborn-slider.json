@@ -1,5 +1,11 @@
 {
   "description": "用于在数值区间内拖动取值的滑块组件，支持单值与范围两种模式。",
+  "aliases": [
+    "slider",
+    "滑块",
+    "滑动条",
+    "range"
+  ],
   "whenToUse": [
     "音量、进度、价格等连续数值的调节，需要 min / max / step 控制取值。",
     "区间筛选场景：开启 range 并用 v-model:values 绑定 [起, 止] 数组。",

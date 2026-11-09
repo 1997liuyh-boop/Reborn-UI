@@ -1,5 +1,5 @@
-import path from "node:path";
 import fs from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 // ===== 知识库数据类型（与 scripts/kb/schema.ts 生成的结构对应，此处只声明消费用字段） =====
@@ -11,6 +11,8 @@ export interface KbIndexEntry {
   category?: string;
   tags?: string[];
   platforms?: Array<"web" | "uniapp">;
+  /** 检索别名：其它组件库的叫法、中英文同义词、UI 稿上的外观描述；只用于检索打分 */
+  aliases?: string[];
 }
 
 export interface KbProp {

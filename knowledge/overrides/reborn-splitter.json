@@ -1,5 +1,11 @@
 {
   "description": "用于将区域按水平或垂直方向分隔、可拖动调整各面板大小的布局组件。",
+  "aliases": [
+    "splitter",
+    "分隔面板",
+    "拖拽分栏",
+    "resizable panel"
+  ],
   "whenToUse": [
     "编辑器、控制台等需要用户自由调整左右或上下面板比例的布局。",
     "需要面板可折叠（collapsible，配合 start-collapsible / end-collapsible 插槽自定义折叠按钮）。",

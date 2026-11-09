@@ -1,5 +1,12 @@
 {
   "description": "用于循环播放一组消息通知的通告栏组件，支持水平滚动与垂直轮播。",
+  "aliases": [
+    "notice bar",
+    "通知栏",
+    "通告栏",
+    "公告栏",
+    "滚动公告"
+  ],
   "whenToUse": [
     "页面顶部公告、促销信息循环播报。",
     "多条消息垂直轮播切换（direction=\"vertical\" + interval）。",

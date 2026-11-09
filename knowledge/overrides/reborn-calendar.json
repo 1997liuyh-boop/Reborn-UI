@@ -1,4 +1,10 @@
 {
+  "aliases": [
+    "calendar",
+    "日历",
+    "月历",
+    "日程"
+  ],
   "whenToUse": [
     "排期、值班、会议这类按天归档的事项总览：传 events，有事项的日期自动高亮。",
     "需要在日历上新增、删除事项：在 date-cell 插槽里组合 reborn-context-menu 与 reborn-dialog，自己维护 events。",

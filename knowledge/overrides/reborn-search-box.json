@@ -1,5 +1,11 @@
 {
   "description": "用于带下拉面板的双端搜索框组件，web 端为纯插槽基元：选择器/后置区/面板全部由插槽组合。",
+  "aliases": [
+    "search",
+    "搜索框",
+    "搜索",
+    "search bar"
+  ],
   "whenToUse": [
     "电商、文档站搜索框，需要历史记录与推荐搜索下拉面板时（经 dropdown 插槽构建）。",
     "按商品属性筛选：把 reborn-sku 放进 dropdown 插槽组合使用。",

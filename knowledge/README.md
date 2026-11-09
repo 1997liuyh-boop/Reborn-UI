@@ -43,8 +43,10 @@ pnpm kb:check              # 校验：schema / 集合一致性 / overrides 悬�
 
 配套字段：
 
+- `aliases`：检索别名，**选型命中率的主要来源**。写三类：① 同一外观在其它组件库里的叫法（Badge 写 `tag`，Chip 写 `badge`——本库这两个名字与 Element / Ant 相反，AI 会按它熟悉的叫法搜）；② 中英文同义词（`标签` / `状态标签` / `pill`）；③ UI 稿上看到的样子（`红点` / `未读数` / `胶囊标签`）。只参与 `search_components` 打分，不进文档；`tags` 来自文档 frontmatter，多为 `tailwind` / `css` 这类技术标签，顶不了这个用。别名不要与别的组件的 `title` 完全相同（`kb:check` 会拦），单字别名不参与「查询词包含别名」的匹配。
 - `whenToUse`：2-4 条，具体场景（「表单中需要单选一组互斥选项时」）。
-- `whenNotToUse`：1-3 条，**尽量给出替代组件 id**（「需要多选时改用 reborn-checkbox」）。
+- `whenNotToUse`：1-3 条，**尽量给出替代组件 id**（「需要多选时改用 reborn-checkbox」）。两个易混组件要**互相指向**：只有 A 指向 B 时，AI 先落到 B 就没有任何提示再去看 A。`kb:check` 会把单向指向列为告警。
+- `scripts/kb/check-search.ts` 里有一组「查询词 → 期望组件」的回归用例（「标签」→ `reborn-badge`、「红点」→ `reborn-chip`……），改别名或打分后 `pnpm kb:check` 会跑它；新增一对易混组件时顺手加一条。
 - `pitfalls`：注意事项，只写事实：平台差异（仅 web / 仅 uniapp）、必须的父组件（如 RebornFormItem 需在 RebornForm 内）、已知易错 props 组合。
 
 ## overrides 写法
@@ -52,7 +54,7 @@ pnpm kb:check              # 校验：schema / 集合一致性 / overrides 悬�
 `overrides/<id>.json` 支持的字段与合并规则：
 
 - `title` / `description` / `category`：字符串，整体替换。
-- `tags` / `related` / `whenToUse` / `whenNotToUse` / `pitfalls`：数组，整体替换。
+- `tags` / `aliases` / `related` / `whenToUse` / `whenNotToUse` / `pitfalls`：数组，整体替换。
 - `examples`：数组，**追加**在 demo 示例之后（`source` 自动标为 `manual`）。
 - `props` / `events` / `slots` / `exposes`：数组，按 `name` 匹配后**合并字段**（用于修正描述/类型，不能新增源码中不存在的成员）。
 

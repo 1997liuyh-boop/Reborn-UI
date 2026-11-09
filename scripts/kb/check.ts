@@ -19,6 +19,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { checkSearch, oneWayPointers } from "./check-search.js";
 import { checkUiKeyDrift } from "./check-ui-keys.js";
 import { buildComponent, contentHashOf } from "./merge.js";
 import { componentSchema } from "./schema.js";
@@ -121,7 +122,17 @@ function main() {
   // 5. 文档 ui 键位与源码一致性
   problems.push(...checkUiKeyDrift());
 
+  // 6. 选型检索回归与别名合法性（见 check-search.ts）
+  problems.push(...checkSearch());
+
   if (problems.length > 0) fail(problems);
+
+  // 单向「改用」指向只告警：存量多，逐步补回指
+  const oneWay = oneWayPointers();
+  if (oneWay.length) {
+    console.warn(`⚠ ${oneWay.length} 条「改用」指向是单向的（A 指向 B，B 未指回 A），新增成对关系时请补回指；`
+      + `前 5 条：${oneWay.slice(0, 5).join("；")}`);
+  }
   console.log(`✓ 知识库校验通过（${diskIds.length} 个组件）`);
 }
 

@@ -1,4 +1,12 @@
 {
+  "aliases": [
+    "steps",
+    "步骤条",
+    "步骤",
+    "stepper",
+    "流程步骤",
+    "进度步骤"
+  ],
   "whenToUse": [
     "注册、下单、审批等有序流程：通过 v-model:active 标出当前阶段，并用外部按钮推进。",
     "流程需要展示已完成、处理中或失败阶段：设置 processStatus / finishStatus，必要时用单步 status 覆盖。",

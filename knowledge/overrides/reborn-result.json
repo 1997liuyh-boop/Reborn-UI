@@ -1,5 +1,14 @@
 {
   "description": "操作结果的终态页：图标、标题加描述、操作区三段纵向居中，icon 收 info / success / warning / error 四种语义反馈加 403 / 404 / 500 三种状态码，传 null 则整段去掉图标区。",
+  "aliases": [
+    "result",
+    "结果页",
+    "成功页",
+    "失败页",
+    "404",
+    "状态页",
+    "操作结果"
+  ],
   "whenToUse": [
     "表单、订单、支付流程走完后的独立结果页：icon='success' 配 title 说明结果，extra 插槽放「返回首页」「查看订单」。",
     "失败终态且需要给出补救动作：icon='error'，sub-title 写清失败原因，extra 放「重试」。",

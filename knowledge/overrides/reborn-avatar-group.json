@@ -1,4 +1,9 @@
 {
+  "aliases": [
+    "头像组",
+    "avatar group",
+    "头像叠放"
+  ],
   "whenToUse": [
     "项目卡片展示团队成员：将 RebornAvatar 放入默认插槽。",
     "人数较多时用 collapseAvatars 和 maxCollapseAvatars 控制直接展示数量。",

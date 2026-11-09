@@ -94,6 +94,12 @@ export const componentSchema = z.object({
   description: z.string(), // Agent 友好描述：一句话定位，≤60 字
   category: categoryEnum,
   tags: z.array(z.string()),
+  /**
+   * 检索别名（人工维护于 overrides）：同一外观在其它组件库里的叫法、中英文同义词、
+   * 从 UI 稿上看到的样子（"红点""胶囊标签"）。只参与 search_components 打分，
+   * 不进文档。tags 来自文档 frontmatter，多为「tailwind / css」这类技术标签，顶不了这个用。
+   */
+  aliases: z.array(z.string()),
   platforms: z.array(z.enum(["web", "uniapp"])).min(1),
   /** 内部基础组件（被其他组件复用、不面向用户单独使用），不要求有独立文档 */
   internal: z.boolean().optional(),
@@ -132,6 +138,8 @@ export const indexEntrySchema = z.object({
   category: categoryEnum,
   tags: z.array(z.string()),
   platforms: z.array(z.enum(["web", "uniapp"])),
+  /** 检索别名，仅在非空时写入索引（见 build.ts），search_components 据此匹配同义词 */
+  aliases: z.array(z.string()).optional(),
   /** 内部基础组件标记（选型时应跳过） */
   internal: z.boolean().optional(),
 });

@@ -152,7 +152,7 @@ function objectKeysOfType(text: string): string[] | null {
   const body = text.slice(open + 1, close).replace(/[;\r\n]+/g, ",");
   const keys = new Set<string>();
   for (const member of splitTopLevel(body, ",")) {
-    const m = member.trim().match(/^\[?["']?([A-Za-z_$][\w$]*)["']?\]?\??\s*:/);
+    const m = member.trim().match(/^\[?["']?([A-Z_$][\w$]*)["']?\]?\??\s*:/i);
     if (m) keys.add(m[1]);
   }
   return keys.size > 0 ? [...keys].sort() : null;
@@ -171,6 +171,50 @@ function shouldSplitByPlatform(a: string, b: string): boolean {
   const keysB = objectKeysOfType(b);
   if (!keysA || !keysB) return false;
   return keysA.join(",") !== keysB.join(",");
+}
+
+/** 字符串字面量联合（'a' | 'b'）拆成排序去重后的取值；含别名、泛型等非字面量成员时返回 null */
+function literalUnion(text: string): string[] | null {
+  const parts = splitTopLevel(text, "|").map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 0) return null;
+  const values = new Set<string>();
+  for (const part of parts) {
+    const m = part.match(/^(["'])(.*)\1$/);
+    if (!m) return null;
+    values.add(m[2]);
+  }
+  return [...values].sort();
+}
+
+/** 取一端 prop 的枚举取值：config 常量解析出的 options 优先，其次类型文本里的字面量联合 */
+function enumValues(p: PropInfo): string[] | null {
+  if (p.options && p.options.length > 0) return [...new Set(p.options)].sort();
+  return literalUnion(p.type);
+}
+
+/**
+ * 两端同名枚举 prop 的取值集合是否不同。
+ *
+ * 这是 shouldSplitByPlatform 之外的第二类真实跨端差异：Web 按钮 size 只有 sm/md/lg，
+ * UniApp 却是 xs…2xl 七档。以前只以 UniApp 为主骨架并丢掉 Web 条目，get_component 给 Web
+ * 调用方的就是 UniApp 的取值。两端都读得出取值集合且不相等时才并存两条；任一端是别名、any
+ * 等读不出取值的写法，仍视为无法断言差异，保持单条通用条目。
+ */
+function enumsDiffer(a: PropInfo, b: PropInfo): boolean {
+  const va = enumValues(a);
+  const vb = enumValues(b);
+  if (!va || !vb) return false;
+  return va.join(",") !== vb.join(",");
+}
+
+/** 按平台并存的条目在描述里也写明平台，纯文本消费方不看 platform 字段也能分辨 */
+function annotatePlatformSplits(props: PropInfo[]) {
+  const label = { web: "Web", uniapp: "UniApp" } as const;
+  for (const p of props) {
+    if (!p.platform || p.name === "ui") continue;
+    const note = `本条为 ${label[p.platform]} 端取值，另一端另有同名条目。`;
+    if (!p.description.includes(note)) p.description = [p.description.trim(), note].filter(Boolean).join(" ");
+  }
 }
 
 /** kebab-case → camelCase（文档模板写法与源码 prop 名对齐） */
@@ -287,7 +331,7 @@ function applyOverride(component: ComponentKnowledge, override: Record<string, a
     if (typeof override[key] === "string") (component as any)[key] = override[key];
   }
   if (typeof override.internal === "boolean") component.internal = override.internal;
-  const arrayKeys = ["tags", "related", "whenToUse", "whenNotToUse", "pitfalls"] as const;
+  const arrayKeys = ["tags", "aliases", "related", "whenToUse", "whenNotToUse", "pitfalls"] as const;
   for (const key of arrayKeys) {
     if (Array.isArray(override[key])) (component as any)[key] = override[key];
   }
@@ -373,7 +417,8 @@ export function buildComponent(id: string): {
   const uiKeys = { web: extractUiKeys(id, "web"), uniapp: extractUiKeys(id, "uniapp") };
   const sortedKeys = (r: UiKeysResult) => r.keys.map((k) => k.key).sort().join(",");
 
-  // 以 uniapp 为主骨架（本库跨端组件的 API 基准），web-only 组件用 web
+  // 以 uniapp 为主骨架（本库跨端组件的 API 基准），web-only 组件用 web；
+  // 两端取值或键位不同的同名 prop 不再只留 UniApp 一条，而是按平台并存两条（见下方 split）
   const primary = uniapp.result ?? web.result;
   const secondary = uniapp.result ? web.result : null;
 
@@ -390,15 +435,16 @@ export function buildComponent(id: string): {
         props.push(p);
         continue;
       }
-      // 键位集相同、或无法判定（别名/any）→ 保持一条通用条目，不打平台标记。
+      // 键位集与取值集都相同、或无法判定（别名/any）→ 保持一条通用条目，不打平台标记。
       // ui 两端都抽得到消费键时直接比键集：ui 的类型常写成 any，按类型文本判断会把两套不同的键并成一条，
-      // 这条只留主骨架（UniApp）的描述，Web 端读到的就是 UniApp 的键
+      // 这条只留主骨架（UniApp）的描述，Web 端读到的就是 UniApp 的键。
+      // 枚举 prop 比 config 解析出的取值集：Web 按钮 size 是 sm/md/lg，UniApp 是 xs…2xl，同样要分端保留
       const split =
         p.name === "ui" && uiKeys.web.keys.length > 0 && uiKeys.uniapp.keys.length > 0
           ? sortedKeys(uiKeys.web) !== sortedKeys(uiKeys.uniapp)
-          : shouldSplitByPlatform(same.type, p.type);
+          : shouldSplitByPlatform(same.type, p.type) || enumsDiffer(same, p);
       if (!split) continue;
-      // 键位集确实不同 → 两端 API 有实质差异（典型是 ui 键位两套零重叠），并存两条并标平台
+      // 键位集或取值集确实不同 → 两端 API 有实质差异（典型是 ui 键位两套零重叠、size 档位不同），并存两条并标平台
       same.platform = "uniapp";
       props.push({ ...p, platform: "web" });
     }
@@ -416,6 +462,7 @@ export function buildComponent(id: string): {
   }
 
   annotateUiKeys(props, uiKeys);
+  annotatePlatformSplits(props);
 
   // 演示代码 → examples（只存路径引用，不内联源码，避免改 demo 就重写整份 JSON）
   // 同一端有多份演示时标题带上文件名，否则「Web 演示」重复几条、无从区分
@@ -465,6 +512,7 @@ export function buildComponent(id: string): {
     description: docsResult?.frontmatter.description ?? "",
     category: categoryForDoc(doc),
     tags: docsResult?.frontmatter.tags ?? [],
+    aliases: [],
     platforms,
     props,
     events,

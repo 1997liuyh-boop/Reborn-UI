@@ -1,5 +1,11 @@
 {
   "description": "用于纵向展示条目、带粘性标签与滚动渐变动画的时间线组件。",
+  "aliases": [
+    "时间线动效",
+    "滚动时间线",
+    "sticky timeline",
+    "叙事时间线"
+  ],
   "whenToUse": [
     "版本发布历史、更新日志的分段展示。",
     "公司里程碑、项目进程的长页叙事，需要标签随滚动粘性停留。",
@@ -7,7 +13,8 @@
   ],
   "whenNotToUse": [
     "只需内容侧边的滚动光束装饰，改用 tracing-beam。",
-    "展示多步骤加载状态，改用 multi-step-loader。"
+    "展示多步骤加载状态，改用 multi-step-loader。",
+    "展示审批记录、操作日志等数据节点的时间线（带时间戳、颜色与加载态），改用 reborn-timeline。"
   ],
   "pitfalls": [
     "仅 web 端可用，依赖 motion-v。",

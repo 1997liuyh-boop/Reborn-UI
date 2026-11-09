@@ -1,5 +1,12 @@
 {
   "description": "双端标签页：RebornTabs + RebornTabPane 组合，paneKey 驱动切换，7 种类型 × 4 种尺寸，支持可编辑、懒加载与滚动定位。",
+  "aliases": [
+    "tabs",
+    "标签页",
+    "选项卡",
+    "页签",
+    "tab"
+  ],
   "whenToUse": [
     "页面内多个平级视图之间切换，例如概览/详情/日志。",
     "标签数量随用户操作增减，需要新增与关闭标签（editable + showAddButton）。",
@@ -12,7 +19,8 @@
     "页面底部全局导航，改用 reborn-tabbar（仅 uniapp）。",
     "侧边栏层级式导航、带子菜单，改用 reborn-menu。",
     "内容需要同时展开对比而非互斥切换，改用 reborn-collapse。",
-    "只是二选一的状态开关，改用 reborn-switch 或 reborn-radio。"
+    "只是二选一的状态开关，改用 reborn-switch 或 reborn-radio。",
+    "一条里互斥切换、选中块滑动的短控件（Ant 的 Segmented），改用 reborn-segmented。"
   ],
   "props": [
     {

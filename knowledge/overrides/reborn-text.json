@@ -1,5 +1,12 @@
 {
   "description": "用于展示文本并内置类型格式化、脱敏与多行省略的增强文本组件。",
+  "aliases": [
+    "text",
+    "文本",
+    "省略",
+    "脱敏",
+    "文字"
+  ],
   "whenToUse": [
     "手机号、姓名、卡号、邮箱等敏感信息脱敏展示（type + mask，可配 maskStart / maskEnd / maskChar）。",
     "金额格式化展示（type='amount'，currency 符号与 precision 小数位）。",

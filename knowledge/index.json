@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-30T10:15:11.163Z",
+  "generatedAt": "2026-11-09T02:36:10.307Z",
   "components": [
     {
       "id": "animate-grid",
@@ -29,6 +29,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "圆形进度",
+        "环形进度动画",
+        "circular progress"
       ]
     },
     {
@@ -57,6 +62,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "评价轮播",
+        "用户评价",
+        "testimonial"
       ]
     },
     {
@@ -115,6 +125,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "bento",
+        "便当网格",
+        "功能网格"
       ]
     },
     {
@@ -216,6 +231,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "对比",
+        "before after",
+        "图片对比"
       ]
     },
     {
@@ -287,6 +307,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "mac dock",
+        "程序坞",
+        "图标栏",
+        "放大图标栏"
       ]
     },
     {
@@ -316,6 +342,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "拖放上传",
+        "上传动效",
+        "dropzone"
       ]
     },
     {
@@ -445,6 +476,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "全屏轮播",
+        "背景轮播",
+        "图片轮播"
       ]
     },
     {
@@ -504,6 +540,10 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "放大镜",
+        "magnifier"
       ]
     },
     {
@@ -587,6 +627,10 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "变形标签页",
+        "粘连标签"
       ]
     },
     {
@@ -615,6 +659,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "多步加载",
+        "步骤加载",
+        "step loader",
+        "分步加载"
       ]
     },
     {
@@ -643,6 +693,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "数字滚动",
+        "计数动画",
+        "count up",
+        "数字跳动"
       ]
     },
     {
@@ -711,6 +767,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "affix",
+        "悬浮",
+        "固钉",
+        "悬浮元素"
       ]
     },
     {
@@ -728,6 +790,17 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "alert",
+        "警告",
+        "警告提示",
+        "提示条",
+        "横幅",
+        "banner",
+        "公告",
+        "告警",
+        "页内提示"
       ]
     },
     {
@@ -743,6 +816,13 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "anchor",
+        "锚点",
+        "目录",
+        "toc",
+        "目录导航"
       ]
     },
     {
@@ -758,6 +838,10 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "avatar",
+        "头像"
       ]
     },
     {
@@ -774,6 +858,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "头像组",
+        "avatar group",
+        "头像叠放"
       ]
     },
     {
@@ -791,12 +880,17 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "back top",
+        "返回顶部",
+        "回到顶部"
       ]
     },
     {
       "id": "reborn-badge",
       "title": "Badge 徽章",
-      "description": "双端状态标签：支持四种风格、胶囊、可关闭与可选中；Web 额外支持独立圆形参数。",
+      "description": "双端状态标签（即 Element / Ant 的 Tag、MUI 的 Chip）：四种风格、胶囊、可关闭与可选中；Web 另有圆形。",
       "category": "basic",
       "tags": [
         "css",
@@ -808,6 +902,21 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "tag",
+        "标签",
+        "状态标签",
+        "胶囊标签",
+        "pill",
+        "label",
+        "chip",
+        "筛选标签",
+        "可关闭标签",
+        "element tag",
+        "ant tag",
+        "热门",
+        "VIP 标签"
       ]
     },
     {
@@ -825,6 +934,11 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "breadcrumb",
+        "面包屑",
+        "路径导航"
       ]
     },
     {
@@ -841,6 +955,17 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "button",
+        "按钮",
+        "btn",
+        "操作按钮",
+        "主按钮",
+        "次按钮",
+        "文字按钮",
+        "链接按钮",
+        "加载按钮"
       ]
     },
     {
@@ -857,6 +982,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "calendar",
+        "日历",
+        "月历",
+        "日程"
       ]
     },
     {
@@ -871,6 +1002,11 @@
       ],
       "platforms": [
         "uniapp"
+      ],
+      "aliases": [
+        "card",
+        "卡片",
+        "容器卡片"
       ]
     },
     {
@@ -887,6 +1023,14 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "carousel",
+        "轮播",
+        "轮播图",
+        "走马灯",
+        "swiper",
+        "banner 轮播"
       ]
     },
     {
@@ -904,6 +1048,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "cascader",
+        "级联",
+        "级联选择",
+        "多级选择",
+        "省市区"
       ]
     },
     {
@@ -920,12 +1071,19 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "checkbox",
+        "多选",
+        "复选框",
+        "勾选",
+        "勾选框"
       ]
     },
     {
       "id": "reborn-chip",
       "title": "Chip 角标",
-      "description": "用于在元素角标位置显示提示点或数字标记的组件，双端可用。",
+      "description": "角标（即 Element / Ant / Vuetify 的 Badge）：挂在图标、头像右上角的红点或数字标记，双端可用。",
       "category": "basic",
       "tags": [
         "chip",
@@ -936,6 +1094,27 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "badge",
+        "徽标",
+        "红点",
+        "小红点",
+        "未读",
+        "未读数",
+        "数字角标",
+        "消息数",
+        "sup",
+        "dot",
+        "corner badge",
+        "element badge",
+        "ant badge",
+        "角标数字",
+        "小圆点",
+        "圆点",
+        "提示点",
+        "右上角",
+        "右上角数字"
       ]
     },
     {
@@ -953,6 +1132,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "collapse",
+        "折叠面板",
+        "手风琴",
+        "accordion",
+        "展开收起"
       ]
     },
     {
@@ -968,6 +1154,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "color picker",
+        "取色",
+        "颜色选择",
+        "调色板"
       ]
     },
     {
@@ -978,6 +1170,11 @@
       "tags": [],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "container",
+        "容器",
+        "居中容器"
       ]
     },
     {
@@ -991,6 +1188,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "context menu",
+        "右键菜单",
+        "上下文菜单"
       ]
     },
     {
@@ -1007,6 +1209,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "countdown",
+        "倒计时",
+        "计时器"
       ]
     },
     {
@@ -1020,6 +1227,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "coupon",
+        "卡券",
+        "优惠券",
+        "券"
       ]
     },
     {
@@ -1052,6 +1265,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "date picker",
+        "日期选择",
+        "日期",
+        "日期范围",
+        "选日期"
       ]
     },
     {
@@ -1097,6 +1317,13 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "descriptions",
+        "描述列表",
+        "详情",
+        "键值对",
+        "信息展示"
       ]
     },
     {
@@ -1107,6 +1334,15 @@
       "tags": [],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "dialog",
+        "modal",
+        "对话框",
+        "弹窗",
+        "模态框",
+        "确认框",
+        "弹框"
       ]
     },
     {
@@ -1122,6 +1358,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "draggable",
+        "拖拽排序",
+        "拖动排序",
+        "sortable"
       ]
     },
     {
@@ -1137,6 +1379,14 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "drawer",
+        "抽屉",
+        "侧边栏",
+        "侧滑面板",
+        "侧边面板",
+        "side sheet"
       ]
     },
     {
@@ -1147,6 +1397,14 @@
       "tags": [],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "dropdown",
+        "下拉菜单",
+        "操作菜单",
+        "更多操作",
+        "菜单",
+        "action menu"
       ]
     },
     {
@@ -1179,6 +1437,15 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "empty",
+        "空状态",
+        "暂无数据",
+        "无数据",
+        "空页面",
+        "placeholder",
+        "占位"
       ]
     },
     {
@@ -1194,6 +1461,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "fab",
+        "悬浮按钮",
+        "浮动按钮",
+        "floating action button",
+        "快捷入口"
       ]
     },
     {
@@ -1219,6 +1493,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "fireworks",
+        "礼花",
+        "烟花"
       ]
     },
     {
@@ -1230,6 +1509,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "footer",
+        "底部栏",
+        "底部操作栏",
+        "底部按钮栏"
       ]
     },
     {
@@ -1245,6 +1530,11 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "form",
+        "表单",
+        "表单校验"
       ]
     },
     {
@@ -1260,6 +1550,13 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "guide",
+        "引导",
+        "新手引导",
+        "tour",
+        "分步引导"
       ]
     },
     {
@@ -1273,6 +1570,13 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "header",
+        "顶部导航",
+        "导航栏",
+        "navbar",
+        "页面顶栏"
       ]
     },
     {
@@ -1291,6 +1595,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "image",
+        "图片",
+        "图片预览",
+        "img"
       ]
     },
     {
@@ -1307,6 +1617,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "input",
+        "输入框",
+        "文本框",
+        "text field",
+        "单行输入"
       ]
     },
     {
@@ -1323,6 +1640,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "number input",
+        "数字输入",
+        "数字输入框",
+        "计数器",
+        "加减输入"
       ]
     },
     {
@@ -1340,6 +1664,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "otp",
+        "验证码",
+        "验证码输入",
+        "pin 码",
+        "分格输入"
       ]
     },
     {
@@ -1356,6 +1687,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "layout",
+        "布局",
+        "后台布局",
+        "admin layout"
       ]
     },
     {
@@ -1367,6 +1704,14 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "loading",
+        "加载",
+        "加载中",
+        "spinner",
+        "转圈",
+        "加载遮罩"
       ]
     },
     {
@@ -1377,6 +1722,11 @@
       "tags": [],
       "platforms": [
         "uniapp"
+      ],
+      "aliases": [
+        "load more",
+        "加载更多",
+        "上拉加载"
       ]
     },
     {
@@ -1387,6 +1737,11 @@
       "tags": [],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "main",
+        "主体",
+        "主区域"
       ]
     },
     {
@@ -1401,6 +1756,13 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "marquee",
+        "跑马灯",
+        "滚动字幕",
+        "无限滚动",
+        "ticker"
       ]
     },
     {
@@ -1416,6 +1778,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "mention",
+        "提及",
+        "@ 提及",
+        "at 某人"
       ]
     },
     {
@@ -1426,6 +1794,14 @@
       "tags": [],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "menu",
+        "导航菜单",
+        "侧边菜单",
+        "侧栏",
+        "sidebar",
+        "nav"
       ]
     },
     {
@@ -1437,6 +1813,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "notice bar",
+        "通知栏",
+        "通告栏",
+        "公告栏",
+        "滚动公告"
       ]
     },
     {
@@ -1447,6 +1830,15 @@
       "tags": [],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "notification",
+        "通知",
+        "系统通知",
+        "消息通知",
+        "右上角通知",
+        "notice",
+        "notify"
       ]
     },
     {
@@ -1462,6 +1854,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "overlay",
+        "遮罩",
+        "mask",
+        "蒙层"
       ]
     },
     {
@@ -1476,6 +1874,10 @@
       ],
       "platforms": [
         "uniapp"
+      ],
+      "aliases": [
+        "page",
+        "页面容器"
       ]
     },
     {
@@ -1491,6 +1893,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "page header",
+        "页头",
+        "页面标题",
+        "返回标题栏"
       ]
     },
     {
@@ -1506,6 +1914,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "pagination",
+        "分页",
+        "页码",
+        "翻页"
       ]
     },
     {
@@ -1536,6 +1950,13 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "popconfirm",
+        "气泡确认",
+        "二次确认",
+        "确认气泡",
+        "删除确认"
       ]
     },
     {
@@ -1552,6 +1973,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "popover",
+        "气泡卡片",
+        "气泡",
+        "浮层",
+        "弹出卡片"
       ]
     },
     {
@@ -1566,6 +1994,14 @@
       ],
       "platforms": [
         "uniapp"
+      ],
+      "aliases": [
+        "popup",
+        "弹出层",
+        "底部弹层",
+        "action sheet",
+        "bottom sheet",
+        "半屏弹窗"
       ]
     },
     {
@@ -1581,6 +2017,13 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "progress",
+        "进度条",
+        "进度",
+        "环形进度",
+        "仪表盘"
       ]
     },
     {
@@ -1598,6 +2041,11 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "qrcode",
+        "二维码",
+        "qr"
       ]
     },
     {
@@ -1614,6 +2062,14 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "radio",
+        "单选",
+        "单选框",
+        "单选按钮",
+        "radio button",
+        "radio group"
       ]
     },
     {
@@ -1632,6 +2088,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "rate",
+        "评分",
+        "星级",
+        "star rating",
+        "打分"
       ]
     },
     {
@@ -1649,6 +2112,15 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "result",
+        "结果页",
+        "成功页",
+        "失败页",
+        "404",
+        "状态页",
+        "操作结果"
       ]
     },
     {
@@ -1663,6 +2135,11 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "portal",
+        "teleport",
+        "传送"
       ]
     },
     {
@@ -1680,6 +2157,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "search",
+        "搜索框",
+        "搜索",
+        "search bar"
       ]
     },
     {
@@ -1695,6 +2178,15 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "segmented",
+        "分段控制器",
+        "分段选择",
+        "segment control",
+        "切换器",
+        "toggle group",
+        "按钮组切换"
       ]
     },
     {
@@ -1712,6 +2204,15 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "select",
+        "下拉选择",
+        "选择器",
+        "下拉框",
+        "单选下拉",
+        "多选下拉",
+        "combobox"
       ]
     },
     {
@@ -1739,6 +2240,12 @@
       ],
       "platforms": [
         "uniapp"
+      ],
+      "aliases": [
+        "signature",
+        "签名",
+        "手写签名",
+        "签字"
       ]
     },
     {
@@ -1754,6 +2261,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "sku",
+        "规格选择",
+        "商品规格"
       ]
     },
     {
@@ -1768,6 +2280,12 @@
       ],
       "platforms": [
         "uniapp"
+      ],
+      "aliases": [
+        "slide verify",
+        "滑块验证",
+        "人机验证",
+        "滑动验证"
       ]
     },
     {
@@ -1785,6 +2303,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "slider",
+        "滑块",
+        "滑动条",
+        "range"
       ]
     },
     {
@@ -1800,6 +2324,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "splitter",
+        "分隔面板",
+        "拖拽分栏",
+        "resizable panel"
       ]
     },
     {
@@ -1816,6 +2346,15 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "statistic",
+        "统计",
+        "统计数值",
+        "指标",
+        "数据指标",
+        "数字卡片",
+        "kpi"
       ]
     },
     {
@@ -1832,6 +2371,14 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "steps",
+        "步骤条",
+        "步骤",
+        "stepper",
+        "流程步骤",
+        "进度步骤"
       ]
     },
     {
@@ -1843,6 +2390,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "sticky",
+        "吸顶",
+        "固定顶部",
+        "吸底"
       ]
     },
     {
@@ -1858,6 +2411,12 @@
       ],
       "platforms": [
         "uniapp"
+      ],
+      "aliases": [
+        "swipe action",
+        "左滑",
+        "滑动删除",
+        "侧滑操作"
       ]
     },
     {
@@ -1874,6 +2433,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "switch",
+        "开关",
+        "toggle",
+        "切换开关"
       ]
     },
     {
@@ -1888,6 +2453,12 @@
       ],
       "platforms": [
         "uniapp"
+      ],
+      "aliases": [
+        "tabbar",
+        "底部导航",
+        "底部标签栏",
+        "bottom navigation"
       ]
     },
     {
@@ -1904,6 +2475,13 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "table",
+        "表格",
+        "数据表格",
+        "列表",
+        "data grid"
       ]
     },
     {
@@ -1920,6 +2498,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "tabs",
+        "标签页",
+        "选项卡",
+        "页签",
+        "tab"
       ]
     },
     {
@@ -1938,6 +2523,13 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "text",
+        "文本",
+        "省略",
+        "脱敏",
+        "文字"
       ]
     },
     {
@@ -1954,6 +2546,12 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "textarea",
+        "多行输入",
+        "文本域",
+        "多行文本"
       ]
     },
     {
@@ -1969,6 +2567,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "time picker",
+        "时间选择",
+        "选时间"
       ]
     },
     {
@@ -1984,6 +2587,16 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "timeline",
+        "时间线",
+        "时间轴",
+        "事件流",
+        "活动记录",
+        "操作记录",
+        "审批记录",
+        "日志"
       ]
     },
     {
@@ -1995,6 +2608,16 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "toast",
+        "message",
+        "消息",
+        "消息提示",
+        "轻提示",
+        "全局提示",
+        "snackbar",
+        "操作反馈"
       ]
     },
     {
@@ -2009,6 +2632,13 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "tooltip",
+        "文字提示",
+        "提示气泡",
+        "悬停提示",
+        "hover 提示"
       ]
     },
     {
@@ -2022,6 +2652,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "transfer",
+        "穿梭框",
+        "双列选择"
       ]
     },
     {
@@ -2033,6 +2668,11 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "transition",
+        "过渡",
+        "动画过渡"
       ]
     },
     {
@@ -2048,6 +2688,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "tree",
+        "树",
+        "树形",
+        "目录树"
       ]
     },
     {
@@ -2064,6 +2710,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "tree select",
+        "树选择",
+        "树形下拉"
       ]
     },
     {
@@ -2078,6 +2729,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "typewriter",
+        "打字机",
+        "打字效果"
       ]
     },
     {
@@ -2093,6 +2749,13 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "upload",
+        "上传",
+        "文件上传",
+        "图片上传",
+        "附件"
       ]
     },
     {
@@ -2108,6 +2771,11 @@
       ],
       "platforms": [
         "uniapp"
+      ],
+      "aliases": [
+        "waterfall",
+        "瀑布流",
+        "masonry"
       ]
     },
     {
@@ -2123,6 +2791,10 @@
       "platforms": [
         "web",
         "uniapp"
+      ],
+      "aliases": [
+        "watermark",
+        "水印"
       ]
     },
     {
@@ -2139,6 +2811,15 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "launch",
+        "复古电脑",
+        "电脑动画",
+        "像素电脑",
+        "品牌动画",
+        "logo 动画",
+        "字标动画"
       ]
     },
     {
@@ -2226,6 +2907,10 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "滚动条",
+        "自定义滚动条"
       ]
     },
     {
@@ -2340,6 +3025,11 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "评价轮播",
+        "用户评价",
+        "testimonial"
       ]
     },
     {
@@ -2464,6 +3154,12 @@
       ],
       "platforms": [
         "web"
+      ],
+      "aliases": [
+        "时间线动效",
+        "滚动时间线",
+        "sticky timeline",
+        "叙事时间线"
       ]
     },
     {

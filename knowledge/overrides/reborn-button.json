@@ -1,5 +1,16 @@
 {
   "description": "双端基础按钮：7 种语义色，Web 支持 5 种风格与独立胶囊、圆形参数，以及加载与禁用状态。",
+  "aliases": [
+    "button",
+    "按钮",
+    "btn",
+    "操作按钮",
+    "主按钮",
+    "次按钮",
+    "文字按钮",
+    "链接按钮",
+    "加载按钮"
+  ],
   "whenToUse": [
     "表单提交、确认/取消、保存等常规操作触发。",
     "需要按强度分层的按钮体系：主操作 filled、次操作 outlined、弱操作 text。",
@@ -8,6 +19,9 @@
     "小程序开放能力场景（open-type 获取手机号、客服会话等）。"
   ],
   "whenNotToUse": [
+    "不可点击、只表示状态或分类的小标签（「已完成」「热门」「VIP」，即 Element / Ant 的 Tag），改用 reborn-badge：按钮会被读屏器报成可操作元素，视觉上也会引导用户去点。",
+    "图标、头像或按钮右上角的数字或红点（Element / Ant 的 Badge），改用 reborn-chip。",
+    "一组互斥切换项、选中块滑动（Ant 的 Segmented、Element 的 radio-button），改用 reborn-segmented 或 reborn-radio 的按钮形态。",
     "页面固定位置的悬浮操作入口，改用 reborn-fab。",
     "仅 web 的营销风格按钮特效，可改用 gradient-button、ripple-button 或 shimmer-button。",
     "纯跳转、无副作用的导航链接，优先使用链接语义元素而非按钮。"
