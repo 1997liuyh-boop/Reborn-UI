@@ -144,10 +144,58 @@ export const indexEntrySchema = z.object({
   internal: z.boolean().optional(),
 });
 
+/**
+ * 设计稿节点 → 组件的配方（人工维护于 knowledge/design-patterns.json）
+ *
+ * match 是节点名 / 变体值 / 子节点名里的匹配项：普通字符串按子串（不分大小写）匹配，
+ * 形如 /.../i 的按正则匹配。按文件顺序取第一条命中的规则，所以具体规则要放在通用规则前面。
+ * component 为空只允许两种情况：ignore（图标、素材、分割线这类不是组件的节点）或
+ * custom（本库没有对应组件，按稿面自写）。uses 里列出的成员由 kb:check 对照知识库逐项核对，
+ * 保证 recipe 只描述源码里存在的能力。
+ */
+export const designPatternSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9-]+$/), // 规则标识，回归用例与工具返回里用它定位规则
+    pattern: z.string().min(1), // 给人读的场景描述
+    match: z.array(z.string().min(1)).min(1),
+    component: z.string().nullable(),
+    with: z.array(z.string()).optional(), // 配套组件（签到按钮 + 角标）
+    ignore: z.boolean().optional(),
+    custom: z.boolean().optional(),
+    /** 排版容器：自身不是组件，传了 children 时改按子节点再匹配一次（自动命名的「容器 129642」） */
+    container: z.boolean().optional(),
+    confidence: z.enum(["high", "low"]).optional(), // low：命中后仍要按稿面结构确认是否整体采用
+    minCount: z.number().int().min(1).optional(), // 同名实例至少出现几次才算命中（问答列表）
+    recipe: z.string().optional(), // 怎么用：props 写法、插槽分工、ui 键、禁止的替代实现
+    imports: z.array(z.string()).optional(), // 额外的导入提示
+    uses: z
+      .object({
+        props: z.array(z.string()).optional(),
+        slots: z.array(z.string()).optional(),
+        events: z.array(z.string()).optional(),
+        ui: z.array(z.string()).optional(),
+      })
+      .optional(),
+    pitfalls: z.array(z.string()).optional(),
+  })
+  .refine((p) => p.component !== null || p.ignore === true || p.custom === true, {
+    message: "component 为空时必须标 ignore 或 custom",
+  });
+
+export const designPatternsFileSchema = z.object({
+  schemaVersion: z.literal(1),
+  description: z.string(),
+  patterns: z.array(designPatternSchema).min(1),
+});
+
+export type DesignPattern = z.infer<typeof designPatternSchema>;
+
 export const indexSchema = z.object({
   schemaVersion: z.literal(1),
   generatedAt: z.string(),
   components: z.array(indexEntrySchema),
+  /** 设计稿配方表：随索引一起分发，MCP 与设计工作室据此做节点→组件映射 */
+  designPatterns: z.array(designPatternSchema).optional(),
 });
 
 export type KnowledgeIndex = z.infer<typeof indexSchema>;

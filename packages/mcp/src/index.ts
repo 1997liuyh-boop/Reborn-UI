@@ -3,7 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { KnowledgeBase, resolveKbDir } from "./kb.js";
-import { searchComponents } from "./search.js";
+import { matchDesignNodes, searchComponents } from "./search.js";
 import { readSpec } from "./spec.js";
 
 const kb = new KnowledgeBase(resolveKbDir());
@@ -26,6 +26,12 @@ const instructions = `Reborn-UI 组件库知识库服务。这是一个双端组
 - 居中确认弹窗 → reborn-dialog；侧边滑入面板 → reborn-drawer；UniApp 底部弹层 → reborn-popup。
 - 带时间戳的事件记录 → reborn-timeline；用户逐步推进的流程 → reborn-steps；滚动叙事动效 → timeline（无前缀，社区移植）。
 - 页面主操作、提交、确认 → reborn-button；固定位置的悬浮入口 → reborn-fab。
+
+还原设计稿（MasterGo / Figma 节点 → 页面）时，先把读到的节点名、变体值与子节点名整批传给 match_design_nodes，再按返回的 component / recipe / uses 逐个 get_component 核对，最后 get_component_example 取示例；不要只按节点名的字面意思去猜组件。设计稿里最常漏掉的几组：
+- 一列「缩略图」实例（变体 已选/未选）+ 一张主图 + 左右箭头 = 商品图廊 → 一个 reborn-carousel（thumbs 联动缩略图，#prev / #next 放箭头并加 pointer-events-auto），不是一列 RebornButton + img。
+- 一排页签 + 内容面板 → reborn-tabs + RebornTabPane（title 传稿面文案，选中态由组件按 type / color 管，不在 #title 插槽里手动切颜色；line 类型自带头部分隔线）。RebornTabPane 这类与目录不同名的子组件在 Nuxt pathPrefix: true 下自动导入会改名，须显式 import。
+- 搜索区（站点选择 + 输入 + 搜索键）→ reborn-search-box 的 #leading / #trailing 插槽；数量加减 → reborn-input-number；规格项 → reborn-sku；悬浮操作组 → reborn-fab；图标 / 分割线不是组件，用导出素材或 border。
+写完模板自查：不得残留原生 <button> / <input> / <select>，也不得用 Button + CSS 仿造上面这些复合组件；本库没有的（Web 页脚、卡片容器）才按稿面自写。
 
 改组件样式（颜色、背景、边框、圆角、尺寸、间距、字体、阴影、hover 态、某个内部部件的外观）依次走：① 已有 prop 取值能表达的直接用 prop（如 Badge 的胶囊形用 round，不写 rounded-full）；② 其余一律用组件的 ui 对象 :ui="{ 键: '类名' }"，最外层元素也用 ui 里的 root / base 键而不是裸 class；③ 只有 ui 里没有对应部件的键时，才退回插槽 + 工具类，并说明该组件没有暴露这个键。可用键看 get_component 返回的 ui 条目描述（「可用键（从源码抽取，以此为准）」，按 Web / UniApp 分端，两端不通用；带 * 的键在填了同名插槽后失效），只能用列出的键，猜的键静默无效。不要用套一层 div/span、:deep()、改组件内部类名的写法改样式——这些绕开了组件的样式接口，组件升级就会失效。
 
@@ -207,6 +213,46 @@ server.tool(
   "列出全部组件分类及各分类的组件数量。",
   {},
   async () => jsonResult({ categories: kb.categories() }),
+);
+
+// ===== 设计稿还原 =====
+
+server.tool(
+  "match_design_nodes",
+  "把设计稿（MasterGo / Figma）里的一批节点落到 Reborn 组件：按配方表匹配节点名、变体值与子节点名，返回每个节点该用的组件、配方（props / 插槽 / ui 键写法、禁止的替代实现）、需显式 import 的子组件，以及图廊这类跨节点的整体提示；配方表没覆盖的退回别名检索给候选。还原设计稿时先调它，再对返回的组件逐个 get_component 核对。",
+  {
+    nodes: z
+      .array(
+        z.object({
+          name: z.string().min(1).describe("节点 / 实例名，如「缩略图」「Tab 2」「icon/44/箭头」"),
+          variant: z
+            .union([z.record(z.union([z.string(), z.number(), z.boolean()])), z.string()])
+            .optional()
+            .describe("变体属性对象（{\"属性 1\": \"已选\", \"已登录\": true}）或状态文字，只匹配值"),
+          children: z.array(z.string()).optional().describe("直接子节点名；节点名本身没命中时才参与匹配"),
+          group: z.string().optional().describe("所属区块名或 id；同区块的缩略图、主图、箭头会被合并成图廊提示"),
+          count: z.number().int().min(1).optional().describe("同名实例个数，缺省按本次输入统计"),
+        }),
+      )
+      .min(1)
+      .max(500)
+      .describe("一批节点，建议整页或整块一次传入，图廊这类整体关系才判断得出来"),
+    platform: z
+      .enum(["web", "uniapp"])
+      .optional()
+      .describe("目标端；传了会把仅另一端可用的组件标为不可用并给替代候选"),
+  },
+  async ({ nodes, platform }) => {
+    const result = matchDesignNodes(kb.designPatterns(), kb.list(), nodes, {
+      platform,
+      getComponent: (id) => kb.get(id),
+    });
+    return jsonResult({
+      ...result,
+      nextSteps:
+        "对每个 component（含 with 里的配套组件）调 get_component(id, platform) 核对 props / slots / ui 键，再 get_component_example 取示例；按 recipe 实现，uses 之外的 prop / 插槽 / ui 键一律以 get_component 返回为准。status=search 的候选要先读 whenToUse / whenNotToUse 再决定；ignore 的节点用导出素材；custom / unmapped 的按稿面自写并在实现清单里说明。",
+    });
+  },
 );
 
 // ===== 写作规范 =====

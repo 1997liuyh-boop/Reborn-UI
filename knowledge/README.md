@@ -9,7 +9,8 @@
 | 路径 | 入库 | 说明 |
 |---|---|---|
 | `overrides/<id>.json` | ✅ | 人工覆盖层：描述、whenToUse、pitfalls、精选示例等，**人工维护的唯一来源** |
-| `index.json` | ✅ | 轻量索引（id/title/description/category/tags/platforms）。机器生成但保留入库：它是 `registry:build --strict-kb` 的元数据源，也是 CI 抓「新增/删除组件却没同步知识库」的守卫 |
+| `design-patterns.json` | ✅ | 设计稿节点 → 组件的配方表（人工维护），`kb:build` 把它并入 `index.json` 的 `designPatterns`，MCP 的 `match_design_nodes` 与设计工作室据此映射；见下文「设计稿配方表」 |
+| `index.json` | ✅ | 轻量索引（id/title/description/category/tags/platforms/aliases）+ `designPatterns`。机器生成但保留入库：它是 `registry:build --strict-kb` 的元数据源，也是 CI 抓「新增/删除组件却没同步知识库」的守卫 |
 | `components/<id>.json` | ❌ | 每组件一份知识条目，`pnpm kb:build` 全量重建 |
 | `report.json` | ❌ | 抽取覆盖率与文档-源码偏差报告 |
 | `schema/component.schema.json` | ❌ | 由 `scripts/kb/schema.ts`（zod）生成的 JSON Schema，勿手改 |
@@ -59,3 +60,20 @@ pnpm kb:check              # 校验：schema / 集合一致性 / overrides 悬�
 - `props` / `events` / `slots` / `exposes`：数组，按 `name` 匹配后**合并字段**（用于修正描述/类型，不能新增源码中不存在的成员）。
 
 改完 overrides 后运行 `pnpm kb:build` 使之生效。
+
+## 设计稿配方表（design-patterns.json）
+
+`search_components` 只认「这个东西叫什么」，而设计稿还原的问题是「稿面上这组节点是哪个组件」：
+MasterGo 导出的实例名是 `缩略图` ×7、`image`、`icon/44/箭头`，没有一个叫「轮播」，AI 就把图廊做成了一列
+`RebornButton + img`。配方表把这类**稿面命名 → 组件 + 写法**固定下来，MCP 的 `match_design_nodes`
+按它逐节点给出组件、配方与需显式 import 的子组件，并对图廊这类跨节点的整体做二次提示。
+
+每条规则：
+
+- `match`：节点名 / 变体值 / 子节点名里的匹配项，子串（不分大小写）或 `/正则/i`。**按文件顺序取第一条命中**，具体规则（商品图廊）要放在通用规则（图片、按钮）前面；同一个字面匹配项不能出现在两条规则里，`kb:check` 会拦。
+- `component`：组件 id；为空时必须标 `ignore`（图标、分割线这类不是组件的节点，配 recipe 说明用素材还是 border）或 `custom`（本库没有对应组件，按稿面自写）。`with` 列配套组件（签到按钮 + 角标）。
+- `recipe`：怎么用——props 写法、插槽分工、ui 键、**禁止的替代实现**（「不要用一列 RebornButton + img 自绘缩略图」）。只写源码里存在的能力。
+- `uses`：recipe 点到的 `props / slots / events / ui` 成员清单，`kb:check` 对照知识库与源码逐项核对，写错名字直接红。
+- `minCount`：同名实例至少出现几次才算命中（问答列表要三条以上问句）；`confidence: low` 表示命中后仍要按稿面结构确认是否整体采用（站点头部、卡片容器）。
+
+`scripts/kb/check-design.ts` 用 mastergo-test 两个页面真实导出的节点名跑回归（「缩略图」→ `reborn-carousel`、「计数器」→ `reborn-input-number`、「Tab 2」→ `reborn-tabs` 并提示显式 import `RebornTabPane`……）。设计工作室的实现清单里列出的「待映射组件」名称，就是该往 `match` 里补的词；补完 `pnpm kb:build && pnpm kb:check`。

@@ -48,6 +48,7 @@ claude mcp add reborn-ui -- npx -y reborn-ui-mcp@latest
 | `get_component_example` | 用法示例代码（支持按标题/平台过滤） |
 | `get_install_command` | CLI 安装命令与 npm 依赖清单 |
 | `list_categories` | 全部分类与组件数量 |
+| `match_design_nodes` | 设计稿还原：把 MasterGo / Figma 的一批节点（实例名、变体值、子节点名、所属区块）落到组件，返回每个节点的组件、配方（props / 插槽 / ui 键写法、禁止的替代实现）、需显式 import 的子组件，以及图廊这类跨节点的整体提示；配方表见 [`knowledge/design-patterns.json`](../../knowledge/design-patterns.json) |
 | `get_authoring_spec` | 写作规范全文：`kind="doc"` 组件文档 / `kind="demo"` 组件 demo，`includeTemplate` 附带参考范本 |
 
 ## Agent 推荐工作流
@@ -56,6 +57,8 @@ claude mcp add reborn-ui -- npx -y reborn-ui-mcp@latest
 2. `get_component` 读 `whenToUse` / `whenNotToUse` / `pitfalls` 确认选型与端支持（`platforms`）；
 3. `get_install_command` 安装组件；
 4. `get_component_example` 参照示例写页面，props 用法以知识条目为准。
+
+**还原设计稿**时第 1 步换成 `match_design_nodes`：把读到的节点整页或整块一次传入（`name` / `variant` / `children` / `group`，可带 `platform`），按返回的 `component`、`recipe`、`uses`、`subcomponents` 再走第 2–4 步。设计稿里的实例名往往不叫组件名（一列「缩略图」+ 主图 + 箭头其实是一个带 `thumbs` 的 `reborn-carousel`，「计数器」是 `reborn-input-number`），按节点名的字面意思搜会漏掉这些；配方表没覆盖的节点会退回别名检索并标 `status: "search"`，这类要先读 `whenToUse` / `whenNotToUse` 再决定。
 
 若要**为本组件库编写文档或 demo**（而非用组件写业务页面），先调 `get_authoring_spec` 取规范全文再动笔。压缩版骨架与硬规则已写在 server instructions 里，客户端会自动注入系统提示，无需 tool call 即可看到；全文与唯一参考范本（`reborn-button`）需要本工具。
 

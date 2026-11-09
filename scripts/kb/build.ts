@@ -9,6 +9,7 @@ import type { KnowledgeIndex } from "./schema.js";
 import fs from "node:fs";
 import path from "node:path";
 import { zodToJsonSchema } from "zod-to-json-schema";
+import { loadDesignPatterns } from "./design-patterns.js";
 import { buildComponent } from "./merge.js";
 import { componentSchema } from "./schema.js";
 import { KNOWLEDGE_DIR, listComponentIds } from "./sources.js";
@@ -105,7 +106,24 @@ async function main() {
 
   // 只有全量构建才重写 index 与报告
   if (!only) {
-    const index: KnowledgeIndex = { schemaVersion: 1, generatedAt: now, components: indexEntries };
+    // 设计稿配方表随索引分发：MCP 与设计工作室只读 index.json 就能拿到它，
+    // 配方指向的组件此时必须已经进了索引，否则 match_design_nodes 会给出不存在的 id
+    const designPatterns = loadDesignPatterns();
+    const knownIds = new Set(indexEntries.map((e) => e.id));
+    for (const p of designPatterns) {
+      for (const id of [p.component, ...(p.with ?? [])]) {
+        if (id && !knownIds.has(id)) {
+          console.error(`✗ design-patterns.json 规则 ${p.id} 指向不存在的组件：${id}`);
+          process.exit(1);
+        }
+      }
+    }
+    const index: KnowledgeIndex = {
+      schemaVersion: 1,
+      generatedAt: now,
+      components: indexEntries,
+      ...(designPatterns.length ? { designPatterns } : {}),
+    };
     writeJsonStable(path.join(KNOWLEDGE_DIR, "index.json"), index);
 
     // 覆盖率报告

@@ -6,6 +6,8 @@
  *   3. 组件集合与源码目录、index.json 三方一致
  *   4. overrides 不引用不存在的组件
  *   5. 文档写出的 ui 键位与源码实际消费的一致（见 check-ui-keys.ts）
+ *   6. 选型检索回归与别名合法性（见 check-search.ts）
+ *   7. 设计稿配方表合法、指向真实、节点→组件回归（见 check-design.ts）
  * 任何一项失败即退出码 1
  *
  * 关于各检查项在两种场景下的实际效力（knowledge/components 已不入库，见 .gitignore）：
@@ -19,6 +21,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { checkDesignPatterns } from "./check-design.js";
 import { checkSearch, oneWayPointers } from "./check-search.js";
 import { checkUiKeyDrift } from "./check-ui-keys.js";
 import { buildComponent, contentHashOf } from "./merge.js";
@@ -124,6 +127,9 @@ function main() {
 
   // 6. 选型检索回归与别名合法性（见 check-search.ts）
   problems.push(...checkSearch());
+
+  // 7. 设计稿配方表：规则合法、指向真实、节点→组件回归（见 check-design.ts）
+  problems.push(...checkDesignPatterns());
 
   if (problems.length > 0) fail(problems);
 
