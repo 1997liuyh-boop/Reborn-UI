@@ -1,5 +1,10 @@
 {
   "description": "用于以滑动分割线对比两张图片或两块自定义内容的对比组件。",
+  "aliases": [
+    "对比",
+    "before after",
+    "图片对比"
+  ],
   "whenToUse": [
     "明暗主题、改版前后等两张截图的滑动对比。",
     "通过 first-content / second-content 插槽对比两段代码或任意自定义内容。",

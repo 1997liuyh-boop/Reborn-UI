@@ -1,5 +1,13 @@
 {
   "description": "UniApp 弹出层，支持四向或居中显示、底部手势关闭、圆角与安全区适配。",
+  "aliases": [
+    "popup",
+    "弹出层",
+    "底部弹层",
+    "action sheet",
+    "bottom sheet",
+    "半屏弹窗"
+  ],
   "whenToUse": [
     "position=bottom 构建移动端底部操作面板，swipeClose 支持下滑关闭。",
     "position=left/right 构建侧边选择器。",

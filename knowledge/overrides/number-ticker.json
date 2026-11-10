@@ -1,12 +1,19 @@
 {
   "description": "用于让数字从起点平滑滚动到目标值的数值动画组件。",
+  "aliases": [
+    "数字滚动",
+    "计数动画",
+    "count up",
+    "数字跳动"
+  ],
   "whenToUse": [
     "数据看板、落地页统计数字需要递增动画时。",
     "指标数值变化时需要平滑过渡而非跳变。"
   ],
   "whenNotToUse": [
     "需要环形进度可视化，改用 animated-circular-progressbar。",
-    "静态数字展示无需动画时，直接渲染文本即可。"
+    "静态数字展示无需动画时，直接渲染文本即可。",
+    "带标题、前后缀与精度控制的数字指标卡，改用 reborn-statistic。"
   ],
   "pitfalls": [
     "仅 web 端可用，依赖 @vueuse/core（过渡基于 useTransition）。",

@@ -1,5 +1,13 @@
 {
   "description": "当页面上的操作命令过多时用于收纳操作元素的下拉菜单，点击或移入触点展开，选择后触发 select，仅 web 端。",
+  "aliases": [
+    "dropdown",
+    "下拉菜单",
+    "操作菜单",
+    "更多操作",
+    "菜单",
+    "action menu"
+  ],
   "whenToUse": [
     "把「更多操作」收纳到触发元素的下拉菜单中，通过 options 配置项或 content 插槽（RebornDoption）声明菜单项，select 事件回传选中项的 value。",
     "需要多级菜单（RebornDsubmenu，默认悬停、右上角弹出、可无限嵌套，选中逐级冒泡到最外层）或选项分组标题（RebornDgroup）。",

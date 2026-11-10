@@ -1,4 +1,13 @@
 {
+  "aliases": [
+    "statistic",
+    "统计",
+    "统计数值",
+    "指标",
+    "数据指标",
+    "数字卡片",
+    "kpi"
+  ],
   "whenToUse": [
     "仪表盘展示金额、人数或订单量：用 value 和 title 提供数值与指标名称。",
     "固定小数位或地区分组：用 precision、decimalSeparator、groupSeparator。",
@@ -8,7 +17,8 @@
   "whenNotToUse": [
     "需要持续倒计时，改用 reborn-countdown。",
     "需要编辑数值，改用 reborn-input-number。",
-    "需要图形化进度，改用 reborn-progress。"
+    "需要图形化进度，改用 reborn-progress。",
+    "只要数字从起点滚动到目标值的动效、不需要标题前后缀，改用 number-ticker。"
   ],
   "pitfalls": [
     "formatter 优先于精度和分隔符，返回内容按文本渲染，并关闭计数动画。",

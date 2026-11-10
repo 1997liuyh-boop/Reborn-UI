@@ -1,4 +1,8 @@
 {
+  "aliases": [
+    "avatar",
+    "头像"
+  ],
   "whenToUse": [
     "展示用户照片：用 src 或 srcSet 和有意义的 alt。",
     "无照片时展示图标或姓名首字：用 icon 或默认插槽。",

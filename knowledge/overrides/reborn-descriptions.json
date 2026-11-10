@@ -1,5 +1,12 @@
 {
   "description": "以键值对展示只读信息，支持边框、尺寸、水平或垂直布局、响应式列数及跨行跨列，仅 Web 端。",
+  "aliases": [
+    "descriptions",
+    "描述列表",
+    "详情",
+    "键值对",
+    "信息展示"
+  ],
   "whenToUse": [
     "详情页、信息面板中成组罗列只读字段，数据直接来自接口数组时传 items 即可渲染。",
     "字段值需要图标、状态色、链接等富内容时，用 RebornDescriptionsItem 子组件，或给 item 写 slot 指向 content-{name} 具名插槽。",

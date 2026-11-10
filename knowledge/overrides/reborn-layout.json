@@ -1,5 +1,11 @@
 {
   "description": "由顶栏、侧边栏、主区域、底栏拼装后台页面骨架的 flex 布局容器，排列方向可自动推断。",
+  "aliases": [
+    "layout",
+    "布局",
+    "后台布局",
+    "admin layout"
+  ],
   "whenToUse": [
     "搭建后台管理页面骨架：Header + Aside + Main + Footer 的各种拼版组合。",
     "需要主区域独立滚动、顶栏/侧边栏固定不动的经典管理端布局。",

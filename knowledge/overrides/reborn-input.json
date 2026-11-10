@@ -1,5 +1,12 @@
 {
   "description": "用于文本录入的双端输入框组件，支持圆角胶囊样式、多尺寸、清除与密码态。",
+  "aliases": [
+    "input",
+    "输入框",
+    "文本框",
+    "text field",
+    "单行输入"
+  ],
   "whenToUse": [
     "表单中录入文本、密码等单行内容时。",
     "需要前后缀图标或按钮（prefix/suffix 插槽）时。",
@@ -9,7 +16,8 @@
   "whenNotToUse": [
     "数字步进增减改用 reborn-input-number。",
     "验证码分格输入改用 reborn-input-otp。",
-    "带历史记录、推荐词下拉的搜索改用 reborn-search-box。"
+    "带历史记录、推荐词下拉的搜索改用 reborn-search-box。",
+    "多行文本录入，改用 reborn-textarea。"
   ],
   "pitfalls": [
     "web、uniapp 双端可用。",

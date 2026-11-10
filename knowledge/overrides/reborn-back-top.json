@@ -1,5 +1,10 @@
 {
   "description": "双端返回顶部按钮：滚动超过阈值后淡入；Web 端另有去底部、方形与顺/逆时针滚动进度环。",
+  "aliases": [
+    "back top",
+    "返回顶部",
+    "回到顶部"
+  ],
   "whenToUse": [
     "长文档、长列表需要一键回到顶部时，默认 direction=\"top\"，threshold 按首屏高度调整。",
     "长页面同时需要直达页尾时，再放一个 direction=\"bottom\" 的实例，bottom 比回到顶部小一个按钮边长加间距（仅 web 端）。",

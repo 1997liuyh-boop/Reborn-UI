@@ -690,7 +690,17 @@ export function extractConfigConstants(absPath: string): Map<string, string[]> {
   const parsed = parseTs(source, path.basename(absPath));
   if (!parsed) return map;
 
+  // export { size as chipSizes } 这类重命名导出：组件里写的是导出名，常量却按本地名声明
+  const aliases: Array<[exported: string, local: string]> = [];
   for (const stmt of parsed.program.body ?? []) {
+    if (stmt.type === "ExportNamedDeclaration" && !stmt.declaration) {
+      for (const spec of stmt.specifiers ?? []) {
+        const local = spec.local?.name ?? spec.local?.value;
+        const exported = spec.exported?.name ?? spec.exported?.value;
+        if (local && exported && local !== exported) aliases.push([exported, local]);
+      }
+      continue;
+    }
     const decl = stmt.type === "ExportNamedDeclaration" ? stmt.declaration : stmt;
     if (decl?.type !== "VariableDeclaration") continue;
     for (const d of decl.declarations ?? []) {
@@ -705,12 +715,31 @@ export function extractConfigConstants(absPath: string): Map<string, string[]> {
       let allString = true;
       for (const el of init.elements ?? []) {
         if (el && typeof el.value === "string") values.push(el.value);
+        // [...buttonVariants, "round", "circle"]：展开前面已解析的常量
+        else if (el?.type === "SpreadElement" && el.argument?.type === "Identifier" && map.has(el.argument.name))
+          values.push(...map.get(el.argument.name)!);
         else allString = false;
       }
       if (allString && values.length > 0) map.set(name, values);
     }
   }
+  for (const [exported, local] of aliases) {
+    if (map.has(local) && !map.has(exported)) map.set(exported, map.get(local)!);
+  }
+  // export type SearchBoxSize = (typeof sizes)[number]：别名也指向同一组取值，prop 写别名时同样能解析
+  for (const stmt of parsed.program.body ?? []) {
+    const decl = stmt.type === "ExportNamedDeclaration" ? stmt.declaration : stmt;
+    if (decl?.type !== "TSTypeAliasDeclaration" || !decl.id?.name) continue;
+    const ref = constantOfIndexedType(source.slice(decl.typeAnnotation?.start ?? 0, decl.typeAnnotation?.end ?? 0));
+    if (ref && map.has(ref) && !map.has(decl.id.name)) map.set(decl.id.name, map.get(ref)!);
+  }
   return map;
+}
+
+/** `typeof xxx[number]` 与 `(typeof xxx)[number]` 两种写法都取出常量名 */
+function constantOfIndexedType(text: string): string | null {
+  const m = text.trim().match(/^\(?\s*typeof\s+(\w+)\s*\)?\[number\]$/);
+  return m ? m[1] : null;
 }
 
 /**
@@ -719,13 +748,12 @@ export function extractConfigConstants(absPath: string): Map<string, string[]> {
  */
 export function applyConfigOptions(props: PropInfo[], constants: Map<string, string[]>) {
   for (const p of props) {
-    const m = p.type.match(/typeof\s+(\w+)\[number\]/);
-    if (m) {
-      const values = constants.get(m[1]);
-      if (values) {
-        p.options = values;
-        p.type = values.map((v) => `'${v}'`).join(" | ");
-      }
+    // 三种写法：typeof sizes[number]、(typeof sizes)[number]、指向常量的类型别名 SearchBoxSize
+    const name = constantOfIndexedType(p.type) ?? p.type.match(/typeof\s+(\w+)\[number\]/)?.[1] ?? (/^\w+$/.test(p.type.trim()) ? p.type.trim() : null);
+    const values = name ? constants.get(name) : undefined;
+    if (values) {
+      p.options = values;
+      p.type = values.map((v) => `'${v}'`).join(" | ");
     }
   }
 }

@@ -1,5 +1,12 @@
 {
   "description": "用于固定位置悬浮操作入口的按钮组件，支持拖拽吸边与展开动作面板，双端可用。",
+  "aliases": [
+    "fab",
+    "悬浮按钮",
+    "浮动按钮",
+    "floating action button",
+    "快捷入口"
+  ],
   "whenToUse": [
     "页面角落固定的快捷操作入口（客服、发布、回到顶部集合等）。",
     "点击/悬停展开多个子动作（items 或 default 插槽），含环形布局（radius/startAngle/totalAngle）。",

@@ -1,5 +1,11 @@
 {
   "description": "用于多行文本输入的输入框组件，支持自动增高、字数统计与键盘行为配置。",
+  "aliases": [
+    "textarea",
+    "多行输入",
+    "文本域",
+    "多行文本"
+  ],
   "whenToUse": [
     "备注、评论、描述等多行文本录入。",
     "需要字数统计与上限（maxlength + showWordLimit，limit 插槽可自定义统计区）。",

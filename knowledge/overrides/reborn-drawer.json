@@ -1,5 +1,13 @@
 {
   "description": "Web 边缘滑入抽屉，支持四向展开、关闭拦截、局部挂载、焦点管理与尺寸调整。",
+  "aliases": [
+    "drawer",
+    "抽屉",
+    "侧边栏",
+    "侧滑面板",
+    "侧边面板",
+    "side sheet"
+  ],
   "whenToUse": [
     "使用 direction 与 size 构建不离开原任务的侧边编辑面板。",
     "使用 beforeClose 在关闭前保存或确认。",

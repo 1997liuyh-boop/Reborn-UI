@@ -1,5 +1,10 @@
 {
   "description": "用于控制内容显隐过渡动画的容器组件，内置 fade、slide、zoom 等动画名称。",
+  "aliases": [
+    "transition",
+    "过渡",
+    "动画过渡"
+  ],
   "whenToUse": [
     "自定义弹层、浮层的进出场动画（show 受控显隐）。",
     "内容首次出现才渲染（lazyRender）或隐藏即销毁（destroy）的显隐容器。",

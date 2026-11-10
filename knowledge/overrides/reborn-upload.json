@@ -1,5 +1,12 @@
 {
   "description": "Web 文件上传组件：负责选择文件、发起上传并展示每个文件的进度与结果，提供 text / picture / picture-card 三种列表形态，支持拖拽、选择文件夹、手动上传、自定义请求与分片断点续传，图片与视频均可显示缩略图；参数、钩子与实例方法对齐 Element Plus 的 el-upload。",
+  "aliases": [
+    "upload",
+    "上传",
+    "文件上传",
+    "图片上传",
+    "附件"
+  ],
   "whenToUse": [
     "表单里附带合同、简历等附件——用默认 listType=\"text\"，失败原因悬停失败图标查看。",
     "上传头像、商品图等需要先看到缩略图的图片——用 listType=\"picture\" 或 \"picture-card\"。",

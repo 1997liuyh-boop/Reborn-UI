@@ -1,5 +1,11 @@
 {
   "description": "用于数据列表分页切换的分页组件，支持布局组合、简洁模式、页码折叠与完整插槽定制。",
+  "aliases": [
+    "pagination",
+    "分页",
+    "页码",
+    "翻页"
+  ],
   "whenToUse": [
     "表格、列表数据量大需要按页浏览时。",
     "需要自定义翻页控件布局（layout 组合 total/jumper/sizes）时。",

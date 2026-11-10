@@ -1,5 +1,13 @@
 {
   "description": "用于给元素或整页添加加载遮罩的组件，提供 v-loading 指令与 showLoading 服务式调用。",
+  "aliases": [
+    "loading",
+    "加载",
+    "加载中",
+    "spinner",
+    "转圈",
+    "加载遮罩"
+  ],
   "whenToUse": [
     "异步请求期间需要在容器或整页显示加载遮罩时。",
     "需要多种加载图标类型（ring/spinner/bars-scale/gooey-balls 等）时。",
@@ -7,7 +15,8 @@
   ],
   "whenNotToUse": [
     "uniapp 列表触底的加载状态提示改用 reborn-loadmore。",
-    "操作结果的短暂反馈改用 reborn-toast。"
+    "操作结果的短暂反馈改用 reborn-toast。",
+    "按步骤序列提示进度的全屏加载，改用 multi-step-loader。"
   ],
   "pitfalls": [
     "web、uniapp 双端可用。",

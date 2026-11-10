@@ -1,17 +1,20 @@
 <script lang="ts" setup>
 /**
  * 组件总览
- * - 头图：浅色舞台卡片，点阵、漂移光晕与跟随鼠标的聚光 / 描边 / 标题着色，参考 prodclub.xyz 的资源头图；
- *   中部是 3D 自行车（OverviewBike），指针靠近解体、离开合体，上下移动调整俯仰
+ * - 整页背景是随滚动逐帧定位的「自由落体」视频（ComponentsScrollBackground）；
+ * - 开场：大标题先落下，说明卡片从左侧、两个系列的数量卡片从右侧飞入；
+ * - 往下：各大区标题、分类标题与组件卡片进入视口时，按所在半屏从左或右飞入（v-fly-in）；
  * - 两大区（Reborn 组件 / 社区移植）+ 区内按分类分块 + 卡片网格（xl 起一行 4 张）；
  *   缩略预览在上、名称与平台在下；卡片悬停时缩略预览向下铺满整张卡片，描边跟随鼠标泛光
  * - 系列与分类规则来自 componentsCatalog，与侧栏同源；组件在分类内按 slug 字母序，与侧栏一致
  */
 import type { DocsCollectionItem } from '@nuxt/content'
+import type { Directive } from 'vue'
 import type { ComponentPlatform } from '~/composables/useDocsPlatform'
 import type { ComponentSeries } from '~/utils/componentsCatalog'
-import { computed, onBeforeUnmount, useTemplateRef } from 'vue'
-import RebornBadge from '~/components/reborn/ui/reborn-badge/RebornBadge.vue'
+import { computed } from 'vue'
+import { vFlyIn } from '~/lib/flyIn'
+import { onceNearViewport } from '~/lib/nearViewport'
 import ComponentsScrollBackground from './ComponentsScrollBackground.vue'
 
 interface Props {
@@ -20,10 +23,14 @@ interface Props {
 
 const { routePath = '/components' } = defineProps<Props>()
 
-const { data: components } = await useAsyncData(() => `components-overview:${routePath}`, async () => {
-  const docs = await queryCollection('docs').all() as DocsCollectionItem[]
+// 懒加载：客户端跳转时不再等数据就绪才切换页面（否则旧页面会一直停在屏幕上），
+// 先渲染头图与卡片占位，数据到达后卡片分批替换占位；服务端渲染仍会等数据，首屏与 SEO 不受影响。
+const { data: components } = useLazyAsyncData(() => `components-overview:${routePath}`, async () => {
+  const prefix = `${routePath.replace(/\/$/, '')}/`
+  // 只查组件分区：浏览器端的内容库查询会把命中的整篇文档（含正文 AST）读进内存
+  const docs = await queryCollection('docs').where('path', 'LIKE', `${prefix}%`).all() as DocsCollectionItem[]
   // 正文只用于推导缩略图名称，避免把整站文档 AST 序列化进卡片 payload。
-  return docs.filter(item => item.path.startsWith(`${routePath.replace(/\/$/, '')}/`)).map(item => ({
+  return docs.filter(item => item.path.startsWith(prefix)).map(item => ({
     id: item.id, path: item.path, title: item.title, description: item.description,
     category: item.category, series: item.series, platform: item.platform,
     badge: item.badge, tags: item.tags, demoName: overviewNameFromItem(item),
@@ -158,55 +165,70 @@ const seriesSections = computed(() =>
   groupBySeriesAndCategory(overviewItems.value, item => ({ series: item.series, category: item.category })),
 )
 
-const totalCount = computed(() => overviewItems.value.length)
+// 数据未到时显示占位符，不显示一个会跳变的 0
+const totalCount = computed(() => (components.value ? overviewItems.value.length : '—'))
 
-/** 头图里的系列计数文案，如「Reborn 组件 80 · 社区移植 73」 */
-const seriesSummary = computed(() =>
-  seriesSections.value.map(section => `${section.title} ${section.count}`).join(' · '),
+/* ── 按需渲染 ─────────────────────────────────────────────────────────── */
+
+/**
+ * 分类区块接近视口（上下 240px 余量）时才渲染真卡片，此前只放同尺寸的卡片占位。
+ * 首屏被头图占满，下面 150+ 张卡片（每张含缩略预览）随滚动逐个分类加载，进入视口时再按之字形飞入；
+ * 跳转进来时不必一次布局全部卡片，内存也只随浏览到的分类增长。
+ * 服务端渲染与水合时全部直出，保证 HTML 完整（SEO、无脚本可读）且水合结果一致。
+ */
+const nuxtApp = useNuxtApp()
+const progressive = import.meta.client && !nuxtApp.isHydrating
+const revealedSections = shallowRef(new Set<string>())
+
+function sectionKey(seriesId: string, name: string) {
+  return `${seriesId}/${name}`
+}
+
+function isSectionRevealed(key: string) {
+  return !progressive || revealedSections.value.has(key)
+}
+
+function revealSection(key: string) {
+  if (revealedSections.value.has(key)) return
+  revealedSections.value = new Set(revealedSections.value).add(key)
+}
+
+const nearStops = new WeakMap<HTMLElement, () => void>()
+
+/** v-near="回调"：元素接近视口时调用一次 */
+const vNear: Directive<HTMLElement, () => void> = {
+  mounted(element, binding) {
+    nearStops.set(element, onceNearViewport(element, binding.value))
+  },
+  unmounted(element) {
+    nearStops.get(element)?.()
+    nearStops.delete(element)
+  },
+}
+
+/** 数据未到时的占位分组：两大区各一组，撑出与真实卡片相同的网格 */
+const PLACEHOLDER_SECTIONS = [10, 10]
+
+/** 头图右侧的系列数量卡片：数据未到时数量显示占位符；当前平台下没有组件的系列不出现 */
+const heroSeries = computed(() =>
+  ([
+    { id: 'reborn', label: 'REBORN 组件' },
+    { id: 'community', label: '社区组件' },
+  ] as const)
+    .map(series => ({ ...series, count: components.value ? overviewItems.value.filter(item => item.series === series.id).length : '—' as const }))
+    .filter(series => series.count !== 0),
 )
 
 /** 卡片平台徽标：Web 用主色、UniApp 用成功色，双端通用的两枚都列 */
-const PLATFORM_BADGES: Record<ComponentPlatform, { label: string, color: 'primary' | 'success' }[]> = {
-  web: [{ label: 'WEB', color: 'primary' }],
-  uniapp: [{ label: 'UNIAPP', color: 'success' }],
-  both: [{ label: 'WEB', color: 'primary' }, { label: 'UNIAPP', color: 'success' }],
+const PLATFORM_BADGES: Record<ComponentPlatform, { label: string, text: string, color: 'primary' | 'success' }[]> = {
+  web: [{ label: 'WEB', text: 'Web', color: 'primary' }],
+  uniapp: [{ label: 'UNIAPP', text: 'UniApp', color: 'success' }],
+  both: [{ label: 'WEB', text: 'Web', color: 'primary' }, { label: 'UNIAPP', text: 'UniApp', color: 'success' }],
 }
 
 /** 标题已含英文名（如「Badge 徽章」）时不再重复追加 */
 function showEnglishName(item: OverviewItem) {
   return !!item.englishName && !item.title.toLowerCase().includes(item.englishName.toLowerCase())
-}
-
-/**
- * 头图光照：鼠标位置写进 --lx / --ly，--lit 控制聚光、亮点、描边与标题着色的显隐；
- * --ox / --oy 是标题相对头图的偏移，标题着色层据此换算到自身坐标。只响应鼠标，触屏不点亮。
- */
-const heroRef = useTemplateRef<HTMLElement>('heroRef')
-const heroTitleRef = useTemplateRef<HTMLElement>('heroTitleRef')
-let heroFrame = 0
-
-function onHeroMove(event: PointerEvent) {
-  if (event.pointerType !== 'mouse') return
-  const { clientX, clientY } = event
-  cancelAnimationFrame(heroFrame)
-  heroFrame = requestAnimationFrame(() => {
-    const hero = heroRef.value
-    if (!hero) return
-    const rect = hero.getBoundingClientRect()
-    hero.style.setProperty('--lx', `${clientX - rect.left}px`)
-    hero.style.setProperty('--ly', `${clientY - rect.top}px`)
-    const title = heroTitleRef.value?.getBoundingClientRect()
-    if (title) {
-      hero.style.setProperty('--ox', `${title.left - rect.left}px`)
-      hero.style.setProperty('--oy', `${title.top - rect.top}px`)
-    }
-    hero.style.setProperty('--lit', '1')
-  })
-}
-
-function onHeroLeave() {
-  cancelAnimationFrame(heroFrame)
-  heroRef.value?.style.setProperty('--lit', '0')
 }
 
 /** 卡片泛光：在网格上统一监听，把鼠标相对卡片的位置写进该卡片的 --mx / --my */
@@ -219,44 +241,27 @@ function onCardMove(event: PointerEvent) {
   card.style.setProperty('--my', `${event.clientY - rect.top}px`)
 }
 
-onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
+
+// 飞入元素的初始隐藏态依赖脚本解除，禁用脚本时直接显示
+useHead({ noscript: [{ textContent: '<style>.fly-in{opacity:1!important;transform:none!important}</style>' }] })
 </script>
 
 <template>
   <div class="components-overview relative isolate w-full mt-10">
     <ComponentsScrollBackground />
-    <!-- 头图：浅色舞台卡片 + 点阵与光照层，文字区在上层 -->
-    <section
-      ref="heroRef" aria-labelledby="components-hero-title" class="overview-hero relative isolate overflow-hidden"
-      @pointermove.passive="onHeroMove" @pointerleave="onHeroLeave"
-    >
-      <div aria-hidden="true" class="hero-rim" />
-      <div aria-hidden="true" class="hero-top-line" />
-      <div aria-hidden="true" class="pointer-events-none absolute inset-0">
-        <div class="hero-glow hero-glow-a" />
-        <div class="hero-glow hero-glow-b" />
-      </div>
-      <div aria-hidden="true" class="pointer-events-none absolute inset-0">
-        <div class="hero-spot" />
-        <div class="hero-dots" />
-        <div class="hero-dots-lit" />
-      </div>
+    <!-- 开场：大标题落下，说明卡片从左、数量卡片从右飞入 -->
+    <section aria-labelledby="components-hero-title" class="overview-hero flex flex-col">
+      <h1 id="components-hero-title" class="overview-hero-title text-center">
+        <span class="hero-line hero-line-a block text-sm tracking-[0.4em] text-gray-8">组件总览</span>
+        <span class="hero-line hero-line-b mt-3 block">Reborn UI 全部组件</span>
+      </h1>
 
-      <div class="relative z-20 grid items-center gap-8 px-6 py-9 sm:px-9 sm:py-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:px-11 lg:py-12">
-        <div class="relative z-10 min-w-0">
-          <h1 id="components-hero-title" class="hero-title">
-            <span ref="heroTitleRef" class="relative inline-block">
-              组件总览<br><span class="hero-title-accent">Reborn UI</span> 全部组件
-              <!-- 着色层：同一段文字换成主色，只在鼠标附近露出 -->
-              <span aria-hidden="true" class="hero-ink-lit absolute inset-0 select-none">
-                组件总览<br><span class="hero-title-accent">Reborn UI</span> 全部组件
-              </span>
-            </span>
-          </h1>
-          <p class="hero-subtitle text-muted mt-4 max-w-[46ch]">
+      <div class="mt-8 grid flex-1 gap-5 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div class="hero-card hero-card-left flex flex-col justify-between gap-10 p-6 sm:p-10">
+          <p class="max-w-[30ch] text-xl leading-relaxed text-gray-9 sm:text-2xl sm:leading-relaxed lg:text-3xl lg:leading-snug">
             Web / UniApp 双端基础与扩展组件，覆盖按钮、表单、导航、反馈与特效；设计与实现持续迭代，欢迎在文档页反馈问题。
           </p>
-          <div class="mt-6">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
             <NuxtLink to="/getting-started" class="hero-cta">
               <span aria-hidden="true" class="hero-cta-disc">
                 <UIcon name="i-lucide-book-open" class="size-4" />
@@ -266,55 +271,56 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
                 <UIcon name="i-lucide-arrow-right" class="size-3.5" />
               </span>
             </NuxtLink>
+            <span class="text-sm text-gray-6">{{ platformLabel }} 端共 {{ totalCount }} 个组件 · 顶栏可切换平台</span>
           </div>
-          <!-- 窄屏没有右侧计数区，计数并入正文 -->
-          <p class="text-muted mt-5 text-xs lg:hidden">
-            {{ platformLabel }} 端共 <span class="text-default font-medium">{{ totalCount }}</span> 个组件 · {{ seriesSummary }} · 顶栏可切换平台
-          </p>
         </div>
 
-        <!-- 右侧：3D 自行车 + 系列锚点 + 组件总数 -->
-        <div class="relative hidden items-center gap-12 self-stretch lg:flex xl:gap-16">
-          <!--
-            自行车舞台上下越过网格的 lg:py-12（3rem），占满头图高度；解体时镜头拉远，散开的零件完整留在头图里。
-            只在 xl 及以上显示：lg 档右侧区左移后会压到正文。指针在整个头图上移动都驱动解体与俯仰。
-            左侧文字区与右侧锚点、总数、署名都是 z-10，舞台 z-0：画布比舞台宽，散开的零件会伸到这些文字附近，从下方穿过而不是盖住文字
-          -->
-          <OverviewBike
-            :trigger="heroRef"
-            class="pointer-events-none absolute right-full -top-12 -bottom-12 z-0 mr-12 hidden aspect-[3/2] xl:block"
-          />
-          <!-- 模型授权 CC BY-SA 4.0 要求署名 -->
+        <nav aria-label="组件系列" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-1 lg:grid-rows-2">
           <a
-            href="https://sketchfab.com/3d-models/carbon-frame-bike-398999b3360b4e6997a9aae253d6acbd"
-            target="_blank" rel="noopener" class="hero-model-credit absolute right-0 -bottom-9 z-10 hidden xl:block"
-          >自行车模型 © Robert Schweier &amp; prefrontal cortex · CC BY-SA 4.0</a>
-          <nav aria-label="组件系列" class="hero-signature relative z-10">
-            <a v-for="series in seriesSections" :key="series.id" :href="`#series-${series.id}`" class="hero-signature-item">
-              <span class="hero-signature-title">{{ series.title }}</span>
-              <span class="hero-signature-copy">{{ series.count }} 个组件</span>
-            </a>
-          </nav>
-          <div class="relative z-10 text-center">
-            <p class="hero-wordmark">
-              {{ totalCount }}
-            </p>
-            <p class="hero-brand-tagline">
-              {{ platformLabel }} 端组件
-            </p>
-            <p class="hero-brand-credit">
-              顶栏可切换平台
-            </p>
-          </div>
-        </div>
+            v-for="(series, index) in heroSeries" :key="series.id" :href="`#series-${series.id}`"
+            class="hero-card hero-card-right group flex flex-col justify-between gap-6 p-6 sm:p-8"
+            :style="{ '--hero-delay': `${0.38 + index * 0.14}s`, '--float-duration': `${6.4 + index * 1.3}s` }"
+          >
+            <span class="flex items-center justify-between gap-4">
+              <span class="text-sm tracking-[0.2em] text-gray-6">{{ series.label }}</span>
+              <UIcon name="i-lucide-arrow-down-right" class="size-5 shrink-0 text-gray-5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:text-primary motion-reduce:transition-none" />
+            </span>
+            <span class="flex items-baseline gap-2 text-gray-10">
+              <span class="text-5xl font-semibold tabular-nums sm:text-6xl">{{ series.count }}</span>
+              <span class="text-base">个组件</span>
+            </span>
+          </a>
+        </nav>
       </div>
+
+      <p class="hero-scroll-hint mt-6 flex items-center justify-center gap-2 text-sm text-gray-8" aria-hidden="true">
+        向下滚动浏览全部组件
+        <UIcon name="i-lucide-chevrons-down" class="size-4" />
+      </p>
     </section>
 
+    <!-- 数据未到：两组卡片占位，撑出与真实网格相同的版面 -->
+    <div v-if="!components" class="mt-16 flex flex-col gap-16 sm:mt-12 sm:gap-20" aria-busy="true" aria-label="组件列表加载中">
+      <section v-for="(count, index) in PLACEHOLDER_SECTIONS" :key="index">
+        <div class="mb-8 border-b border-[#E5E6EB] pb-5 sm:mb-10 dark:border-white/10">
+          <div class="overview-skeleton h-9 w-48 rounded" />
+          <div class="overview-skeleton mt-3 h-5 w-80 max-w-full rounded" />
+        </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <div v-for="card in count" :key="card" class="overview-card overview-card-placeholder rounded-lg p-3">
+            <div class="overview-skeleton min-h-[180px] rounded-lg sm:min-h-[220px]" />
+            <div class="overview-skeleton mt-3 h-6 w-3/5 rounded" />
+            <div class="overview-skeleton mt-2 h-5 w-2/5 rounded" />
+          </div>
+        </div>
+      </section>
+    </div>
+
     <!-- 两大区：Reborn 组件 / 社区移植，锚点与侧栏虚拟节点的 path 对应 -->
-    <div class="mt-10 flex flex-col gap-16 sm:mt-12 sm:gap-20">
+    <div v-else class="mt-16 flex flex-col gap-16 sm:mt-20 sm:gap-20">
       <section v-for="series in seriesSections" :id="`series-${series.id}`" :key="series.id" class="scroll-mt-24">
         <!-- 大区标题：名称 + 总数 + 一句说明，下加分隔线与分类区分层级 -->
-        <div class="mb-8 border-b border-[#E5E6EB] pb-5 sm:mb-10 dark:border-white/10">
+        <div v-fly-in class="fly-in fly-in-title mb-8 border-b border-[#E5E6EB] pb-5 sm:mb-10 dark:border-white/10">
           <div class="flex items-center gap-4">
             <h2 class="text-default text-2xl font-medium tracking-tight sm:text-[32px] sm:leading-[38px]">
               {{ series.title }}
@@ -325,7 +331,7 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
               {{ series.count }}
             </span>
           </div>
-          <p class="text-muted mt-2 text-sm">
+          <p class="mt-2 text-sm text-gray-8">
             {{ series.description }}
           </p>
         </div>
@@ -334,9 +340,9 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
         <div class="flex flex-col gap-12 sm:gap-14">
           <section
             v-for="section in series.categories" :id="`series-${series.id}-${section.name}`" :key="section.name"
-            class="scroll-mt-24"
+            v-near="() => revealSection(sectionKey(series.id, section.name))" class="scroll-mt-24"
           >
-            <div class="mb-5 flex items-center gap-3 sm:mb-6">
+            <div v-fly-in class="fly-in fly-in-title mb-5 flex items-center gap-3 sm:mb-6">
               <h3 class="text-default text-lg font-medium tracking-tight sm:text-[22px] sm:leading-[30px]">
                 {{ section.name }}
               </h3>
@@ -347,43 +353,53 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
               </span>
             </div>
 
-            <!-- 窄屏逐级减列；xl（1280）起固定一行 4 张：再多列时缩略预览会窄到放不下 Overview 内容 -->
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" @pointermove.passive="onCardMove">
-              <NuxtLink
-                v-for="item in section.items" :key="item.id" :to="item.path"
-                class="overview-card group relative isolate flex h-full min-w-0 flex-col rounded-lg p-3"
-              >
-                <!-- 悬停泛光：底色一层 + 描边一层，位置取 --mx / --my -->
-                <span aria-hidden="true" class="card-light card-light-fill" />
-                <span aria-hidden="true" class="card-light card-light-rim" />
-
-                <!-- 占位：在文档流里撑出缩略预览原本的高度，预览本体绝对定位、悬停时向下铺满整张卡片 -->
-                <div class="min-h-[180px] flex-1 sm:min-h-[220px]" />
-
-                <!-- 标题行（24px）与平台行（20px）都定高：缩略预览的底边按这两行算死，见样式里的 --ov-preview-bottom -->
-                <div class="mt-3 flex h-6 min-w-0 items-baseline gap-2">
-                  <span class="truncate text-base text-gray-10">{{ item.title }}</span>
-                  <span v-if="showEnglishName(item)" class="text-dimmed truncate text-sm">{{ item.englishName }}</span>
+            <!-- 窄屏逐级减列；xl（1280）起一行 5 张。卡片按「之」字形入场：偶数行从左、奇数行从右滑入 -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" @pointermove.passive="onCardMove">
+              <template v-for="item in section.items" :key="item.id">
+                <!-- 所在分类尚未接近视口：同尺寸的卡片占位 -->
+                <div v-if="!isSectionRevealed(sectionKey(series.id, section.name))" aria-hidden="true" class="overview-card overview-card-placeholder rounded-lg p-3">
+                  <div class="overview-skeleton min-h-[180px] rounded-lg sm:min-h-[220px]" />
+                  <div class="overview-skeleton mt-3 h-6 w-3/5 rounded" />
+                  <div class="overview-skeleton mt-2 h-5 w-2/5 rounded" />
                 </div>
+                <NuxtLink
+                  v-else v-fly-in="{ zigzag: section.items.indexOf(item) }" :to="item.path"
+                  class="overview-card fly-in group relative isolate flex h-full min-w-0 flex-col rounded-lg p-3"
+                >
+                  <!-- 悬停泛光：底色一层 + 描边一层，位置取 --mx / --my -->
+                  <span aria-hidden="true" class="card-light card-light-fill" />
+                  <span aria-hidden="true" class="card-light card-light-rim" />
 
-                <!-- 平台：每个可用端一枚描边胶囊 -->
-                <div class="mt-2 flex h-5 min-w-0 items-center gap-1.5 text-sm text-gray-5">
-                  <span class="shrink-0">平台：</span>
-                  <RebornBadge
-                    v-for="badge in PLATFORM_BADGES[item.platform]" :key="badge.label"
-                    :label="badge.label" :color="badge.color" variant="outlined" size="sm" round
-                  />
-                </div>
+                  <!-- 占位：在文档流里撑出缩略预览原本的高度，预览本体绝对定位、悬停时向下铺满整张卡片 -->
+                  <div class="min-h-[180px] flex-1 sm:min-h-[220px]" />
 
-                <!-- Overview 缩略预览（视口懒加载；未补齐时回退几何示意） -->
-                <div class="overview-card-preview absolute overflow-hidden rounded-lg">
-                  <ComponentOverviewDemo :demo-name="item.demoName" :category="item.category" />
-                  <Icon
-                    v-if="item.badgeIcon" :name="item.badgeIcon.icon" :aria-label="item.badgeIcon.label"
-                    class="absolute top-3 right-3 z-10 size-8 text-red-5"
-                  />
-                </div>
-              </NuxtLink>
+                  <!-- 标题行（24px）与信息行（20px）都定高：缩略预览的底边按这两行算死，见样式里的 --ov-preview-bottom -->
+                  <div class="mt-3 flex h-6 min-w-0 items-center justify-between gap-2 px-1">
+                    <span class="truncate text-base font-medium text-gray-10">{{ item.title }}</span>
+                    <UIcon name="i-lucide-arrow-up-right" class="overview-card-arrow size-4 shrink-0 text-gray-5" />
+                  </div>
+
+                  <!-- 信息行：英文名（标题已含英文名时改显分类）+ 可用端圆点 -->
+                  <div class="mt-2 flex h-5 min-w-0 items-center justify-between gap-2 px-1 text-sm text-gray-6">
+                    <span class="truncate">{{ showEnglishName(item) ? item.englishName : item.category }}</span>
+                    <span class="flex shrink-0 items-center gap-2.5">
+                      <span v-for="badge in PLATFORM_BADGES[item.platform]" :key="badge.label" class="flex items-center gap-1 text-xs">
+                        <span class="size-1.5 rounded-full" :class="badge.color === 'primary' ? 'bg-primary' : 'bg-success'" />
+                        {{ badge.text }}
+                      </span>
+                    </span>
+                  </div>
+
+                  <!-- Overview 缩略预览（视口懒加载；未补齐时回退几何示意） -->
+                  <div class="overview-card-preview absolute overflow-hidden rounded-lg">
+                    <ComponentOverviewDemo :demo-name="item.demoName" :category="item.category" />
+                    <Icon
+                      v-if="item.badgeIcon" :name="item.badgeIcon.icon" :aria-label="item.badgeIcon.label"
+                      class="absolute top-2.5 right-2.5 z-10 size-6 text-red-5"
+                    />
+                  </div>
+                </NuxtLink>
+              </template>
             </div>
           </section>
         </div>
@@ -399,6 +415,8 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
  * 色值与比例参考 prodclub.xyz 的头图（hero-stage）与资源卡片（hall-card）。
  */
 .components-overview {
+  /* 飞入途中的卡片位于两侧屏外，横向裁掉，避免出现横向滚动条；clip 不建滚动容器，吸顶不受影响 */
+  overflow-x: clip;
   --ov-card: var(--ui-bg);
   --ov-line-strong: color-mix(in oklab, var(--ui-text-highlighted) 16%, transparent);
   --ov-shadow: 0 1px 1px #10201608, 0 2px 6px -2px #1020160d;
@@ -406,15 +424,6 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
   --ov-well: color-mix(in oklab, var(--ui-text-highlighted) 2.5%, transparent);
   --ov-well-line: color-mix(in oklab, var(--ui-text-highlighted) 5%, transparent);
   --ov-ink: var(--ui-text-highlighted);
-  --ov-accent: color-mix(in oklab, var(--color-primary) 70%, var(--ov-ink));
-  --ov-lit-ink: var(--color-primary);
-  --ov-glow: color-mix(in oklab, var(--color-primary) 14%, transparent);
-  --ov-glow-soft: color-mix(in oklab, var(--color-primary) 9%, transparent);
-  --ov-spot: color-mix(in oklab, var(--color-primary) 13%, transparent);
-  --ov-dot: color-mix(in oklab, var(--ui-text-highlighted) 10%, transparent);
-  --ov-dot-lit: color-mix(in oklab, var(--color-primary) 90%, transparent);
-  --ov-rim: color-mix(in oklab, var(--color-primary) 85%, transparent);
-  --ov-top-line: rgb(255 255 255 / 0.7);
   --ov-ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* 回弹曲线：按下缩小后弹回；不支持 linear() 的浏览器整条 transition 失效，退回前一条声明 */
   --ov-spring: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.061 22.1%, 1.072 24.3%, 1.066 27.4%, 1.036 32.8%, 1.009 39.6%, 0.996 46.9%, 0.993 53.8%, 0.998 69.8%, 1);
@@ -427,186 +436,87 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
   --ov-shadow-raised: 0 1px 2px #0006;
   --ov-well: color-mix(in oklab, var(--ui-text-highlighted) 3%, transparent);
   --ov-well-line: color-mix(in oklab, var(--ui-text-highlighted) 6%, transparent);
-  --ov-accent: color-mix(in oklab, var(--color-primary) 75%, var(--ov-ink));
-  --ov-lit-ink: color-mix(in oklab, var(--color-primary) 70%, #fff);
-  --ov-glow: color-mix(in oklab, var(--color-primary) 18%, transparent);
-  --ov-glow-soft: color-mix(in oklab, var(--color-primary) 12%, transparent);
-  --ov-spot: color-mix(in oklab, var(--color-primary) 16%, transparent);
-  --ov-dot: color-mix(in oklab, var(--ui-text-highlighted) 12%, transparent);
-  --ov-dot-lit: color-mix(in oklab, color-mix(in oklab, var(--color-primary) 80%, #fff) 95%, transparent);
-  --ov-rim: color-mix(in oklab, var(--color-primary) 90%, transparent);
-  --ov-top-line: rgb(255 255 255 / 0.08);
 }
 
 /* ─── 头图 ─── */
+/* 占满首屏：视口高度减去顶栏与页面上边距，卡片区随之拉伸 */
 .overview-hero {
-  --lx: -1000px;
-  --ly: -1000px;
-  --lit: 0;
-  --ox: 0px;
-  --oy: 0px;
-  border: 1px solid color-mix(in oklab, var(--ui-text-highlighted) 5%, transparent);
-  border-radius: 1.25rem;
-  background-color: var(--ov-card);
-  box-shadow: var(--ov-shadow);
+  min-height: calc(100svh - var(--ui-header-height) - 2.5rem);
+  padding-bottom: 1.5rem;
 }
 
-/* 顶边高光线 */
-.hero-top-line {
-  pointer-events: none;
-  position: absolute;
-  inset-inline: 2rem;
-  top: 0;
-  z-index: 30;
-  height: 1px;
-  background-image: linear-gradient(to right, transparent, var(--ov-top-line), transparent);
+.hero-scroll-hint {
+  animation: hero-drop 0.9s var(--ov-ease) 1.2s both;
 }
-
-/* 两团缓慢漂移的主色光晕 */
-.hero-glow {
-  position: absolute;
-  border-radius: 9999px;
-}
-
-.hero-glow-a {
-  top: -28%;
-  right: 6%;
-  width: 52%;
-  height: 150%;
-  background-image: radial-gradient(ellipse at center, var(--ov-glow), transparent 68%);
-  animation: hero-drift-a 19s ease-in-out infinite;
-}
-
-.hero-glow-b {
-  bottom: -34%;
-  left: 12%;
-  width: 46%;
-  height: 130%;
-  background-image: radial-gradient(ellipse at center, var(--ov-glow-soft), transparent 70%);
-  animation: hero-drift-b 26s ease-in-out infinite;
-}
-
-@keyframes hero-drift-a {
-  0%,
-  100% {
-    transform: translate(0) scale(1);
-  }
-  50% {
-    transform: translate(-9%, 10%) scale(1.1);
-  }
-}
-
-@keyframes hero-drift-b {
-  0%,
-  100% {
-    transform: translate(0) scale(1);
-  }
-  50% {
-    transform: translate(12%, -8%) scale(0.92);
-  }
-}
-
-/* 点阵：从左侧文字区之后渐显，避免压在标题上 */
-.hero-dots,
-.hero-dots-lit {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  background-position: 9px 9px;
-  background-size: 18px 18px;
-}
-
-.hero-dots {
-  background-image: radial-gradient(circle, var(--ov-dot) 0.9px, transparent 1.4px);
-  mask-image: linear-gradient(90deg, transparent 22%, #000 52%);
-}
-
-/* 鼠标附近的点阵换成主色亮点 */
-.hero-dots-lit {
-  background-image: radial-gradient(circle, var(--ov-dot-lit) 1.3px, transparent 1.8px);
-  mask-image:
-    radial-gradient(240px circle at var(--lx) var(--ly), #000, transparent 72%),
-    linear-gradient(90deg, transparent 22%, #000 52%);
-  mask-composite: intersect;
-  opacity: var(--lit);
-  transition: opacity 0.3s var(--ov-ease);
-}
-
-/* 跟随鼠标的聚光 */
-.hero-spot {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(380px circle at var(--lx) var(--ly), var(--ov-spot), transparent 70%);
-  opacity: var(--lit);
-  transition: opacity 0.3s var(--ov-ease);
-}
-
-/* 跟随鼠标的描边高光：只保留 1px 边框环 */
-.hero-rim {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  z-index: 30;
-  padding: 1px;
-  border-radius: inherit;
-  background: radial-gradient(260px circle at var(--lx) var(--ly), var(--ov-rim), transparent 72%);
-  mask:
-    linear-gradient(#000 0 0) content-box exclude,
-    linear-gradient(#000 0 0);
-  opacity: calc(var(--lit) * 0.72);
-  transition: opacity 0.3s var(--ov-ease);
-}
-
-.hero-title {
-  color: var(--ov-ink);
-  font-size: clamp(1.9rem, 1.4rem + 1.95vw, 2.9rem);
-  font-weight: 600;
-  line-height: 1.16;
-  letter-spacing: -0.03em;
-  text-wrap: balance;
-}
-
-.hero-title-accent {
-  color: var(--ov-accent);
-  letter-spacing: -0.02em;
-}
-
-/* 标题着色层：坐标从头图换算到标题自身 */
-.hero-ink-lit,
-.hero-ink-lit .hero-title-accent {
-  color: var(--ov-lit-ink);
-}
-
-.hero-ink-lit {
-  pointer-events: none;
-  mask-image: radial-gradient(160px circle at calc(var(--lx) - var(--ox)) calc(var(--ly) - var(--oy)), #000, transparent 72%);
-  opacity: var(--lit);
-  transition: opacity 0.3s var(--ov-ease);
-}
-
-.hero-subtitle {
-  font-size: 15px;
-  line-height: 1.6;
-  text-wrap: balance;
-}
-
 /*
- * 自行车解体后零件会从头图文字下方穿过（窄一点的 xl 视口尤其明显），浅色下黑字压在黑色轮胎上看不清。
- * 给这些文字描一圈头图底色的光晕：底下没有零件时与底色融为一体看不出来，有零件时把字和零件隔开。
+ * 开场动画只跑一次：标题两行依次落下，说明卡片从左、数量卡片从右带着纵深飞入。
+ * 卡片在视频背景上用半透明纸面色加模糊，与下方组件卡片同一套圆角与描边。
  */
-@media (min-width: 1280px) {
-  .hero-title,
-  .hero-subtitle,
-  .hero-signature,
-  .hero-wordmark,
-  .hero-brand-tagline,
-  .hero-brand-credit {
-    text-shadow:
-      0 0 2px var(--ov-card),
-      0 0 8px var(--ov-card),
-      0 0 16px var(--ov-card);
-  }
+.overview-hero-title .hero-line-b {
+  font-size: clamp(2.25rem, 5.5vw, 4.25rem);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ui-text-highlighted);
+}
+
+.hero-line {
+  animation: hero-drop 0.9s var(--ov-ease) both;
+}
+
+.hero-line-b {
+  animation-delay: 0.08s;
+}
+
+@keyframes hero-drop {
+  from { opacity: 0; transform: translateY(-28px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+.hero-card {
+  border: 1px solid var(--ov-well-line);
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--ov-card) 82%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 50px rgb(15 30 60 / 0.12);
+  /* 先飞入，落定后像气泡一样缓慢上下漂浮；三张卡片周期不同，不会同步起伏 */
+  animation:
+    1s var(--ov-ease) var(--hero-delay, 0.24s) both var(--hero-fly),
+    hero-float var(--float-duration, 7s) ease-in-out calc(var(--hero-delay, 0.24s) + 1s) infinite alternate;
+}
+
+.hero-card-left {
+  --hero-fly: hero-fly-left;
+  --float-duration: 7.6s;
+}
+
+.hero-card-right {
+  --hero-fly: hero-fly-right;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.hero-card-right:hover {
+  border-color: var(--color-primary);
+}
+
+.hero-card-right:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+@keyframes hero-fly-left {
+  from { opacity: 0; transform: perspective(1200px) translate3d(-42vw, 0, -320px) rotateY(28deg); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes hero-float {
+  from { translate: 0 0; }
+  to { translate: 0 -10px; }
+}
+
+@keyframes hero-fly-right {
+  from { opacity: 0; transform: perspective(1200px) translate3d(42vw, 0, -320px) rotateY(-28deg); }
+  to { opacity: 1; transform: none; }
 }
 
 /* 入门指南胶囊按钮：主色圆片 + 文字 + 尾部箭头 */
@@ -717,81 +627,6 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
   outline-offset: 2px;
 }
 
-/* 右侧系列锚点：竖线 + 小号字距标题 */
-.hero-signature {
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-  border-left: 1px solid var(--ov-line-strong);
-  padding-left: 0.875rem;
-}
-
-.hero-signature-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.hero-signature-title {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.14em;
-  white-space: nowrap;
-  color: var(--ui-text-highlighted);
-  transition: color 0.2s var(--ov-ease);
-}
-
-.hero-signature-copy {
-  font-size: 11px;
-  line-height: 1.4;
-  letter-spacing: 0.08em;
-  color: var(--ui-text-dimmed);
-}
-
-.hero-signature-item:hover .hero-signature-title {
-  color: var(--color-primary);
-}
-
-.hero-model-credit {
-  font-size: 10px;
-  line-height: 1;
-  white-space: nowrap;
-  color: var(--ui-text-dimmed);
-  transition: color 0.2s var(--ov-ease);
-}
-
-.hero-model-credit:hover {
-  color: var(--ui-text-muted);
-}
-
-.hero-wordmark {
-  font-size: 3.25rem;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  color: var(--ov-ink);
-}
-
-.hero-brand-tagline {
-  margin-top: 0.875rem;
-  font-size: 13px;
-  line-height: 1.4;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-  color: var(--ui-text-muted);
-}
-
-.hero-brand-credit {
-  margin-top: 0.375rem;
-  font-size: 11px;
-  line-height: 1;
-  letter-spacing: 0.16em;
-  white-space: nowrap;
-  color: var(--ui-text-dimmed);
-}
-
 /* ─── 卡片网格 ─── */
 .overview-card {
   /*
@@ -799,20 +634,51 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
    * 两行都在模板里定高，所以这里能写死；改了任一行的高度或间距要同步这个值。
    */
   --ov-preview-bottom: 76px;
-  /* 描边取会随明暗反转的 gray-4：浅色下即 #C9CDD4，暗色下自动换成暗色板的同阶灰 */
-  border: 1px solid var(--color-gray-4);
-  background-color: var(--ov-card);
-  box-shadow: var(--ov-shadow);
+  /*
+   * 玻璃卡片：背景视频已经高斯模糊，卡片只需半透明纸面色就有毛玻璃感，
+   * 不再给 150+ 张卡片各自加 backdrop-filter（那会让每次滚动都重新模糊整页）。
+   * 顶边一道亮线 + 半透明描边勾出玻璃边缘，投影偏柔和，让卡片浮在视频之上。
+   */
+  border: 1px solid color-mix(in oklab, var(--ui-text-highlighted) 9%, transparent);
+  border-radius: 14px;
+  background-color: color-mix(in oklab, var(--ov-card) 80%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 70%, transparent),
+    0 8px 24px rgb(15 30 60 / 0.1);
   transition:
-    box-shadow 0.18s var(--ov-ease),
+    box-shadow 0.24s var(--ov-ease),
+    translate 0.32s var(--ov-ease),
     scale 0.6s var(--ov-ease);
   transition:
-    box-shadow 0.18s var(--ov-ease),
+    box-shadow 0.24s var(--ov-ease),
+    translate 0.32s var(--ov-ease),
     scale 0.6s var(--ov-spring);
 }
 
+/* 卡片右上角的箭头：平时淡，悬停时着主色并向右上推一点 */
+.overview-card-arrow {
+  opacity: 0.5;
+  transition: opacity 0.2s, translate 0.25s var(--ov-ease), color 0.2s;
+}
+
+.overview-card:hover .overview-card-arrow {
+  opacity: 1;
+  translate: 2px -2px;
+  color: var(--color-primary);
+}
+
+/* 悬停微微上浮；用独立的 translate 属性，不覆盖飞入用的 transform */
 .overview-card:hover {
-  box-shadow: var(--ov-shadow-raised);
+  translate: 0 -4px;
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 70%, transparent),
+    0 18px 40px rgb(15 30 60 / 0.18);
+}
+
+.dark .overview-card {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 8px 24px rgb(0 0 0 / 0.35);
 }
 
 .overview-card:active {
@@ -834,7 +700,8 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
  */
 .overview-card-preview {
   inset: 12px 12px var(--ov-preview-bottom);
-  background-color: var(--ov-card);
+  border-radius: 10px;
+  background-color: color-mix(in oklab, var(--ov-card) 96%, transparent);
   background-image: linear-gradient(var(--ov-well), var(--ov-well));
   box-shadow: inset 0 0 0 1px var(--ov-well-line);
   transition:
@@ -844,21 +711,21 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
 }
 
 /*
- * 铺满态：圆角取卡片 8px 减去 1px 描边，与卡片内沿严丝合缝；
+ * 铺满态：圆角取卡片 14px 减去 1px 描边，与卡片内沿严丝合缝；
  * 内描边去掉，否则贴着卡片描边会叠出两道线。
  * 只在精确指针设备上展开：触屏点一下就跳转详情，没有悬停可言；键盘聚焦到卡片时同样展开。
  */
 @media (hover: hover) and (pointer: fine) {
   .overview-card:hover .overview-card-preview {
     inset: 0;
-    border-radius: 7px;
+    border-radius: 13px;
     box-shadow: none;
   }
 }
 
 .overview-card:focus-visible .overview-card-preview {
   inset: 0;
-  border-radius: 7px;
+  border-radius: 13px;
   box-shadow: none;
 }
 
@@ -905,12 +772,65 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
   }
 }
 
+/*
+ * 分批渲染的占位：与真卡片同尺寸的静态卡片底。
+ * 不做掠光动画：150 张占位同时动画会让浏览器每帧重绘整页，分批渲染反而被拖慢。
+ */
+.overview-card-placeholder {
+  pointer-events: none;
+}
+
+.overview-skeleton {
+  background: var(--ov-well);
+}
+
+/*
+ * 进入视口飞入（v-fly-in）：初始透明，指令按所在半屏写入 data-fly 方向，
+ * 下一帧加 is-flown 回到原位。过渡只挂在 is-flown 上，写方向那一帧不会产生多余动画。
+ */
+.fly-in {
+  opacity: 0;
+}
+
+.fly-in[data-fly='left'] {
+  transform: perspective(1200px) translate3d(-18vw, 0, -260px) rotateY(18deg);
+}
+
+.fly-in[data-fly='right'] {
+  transform: perspective(1200px) translate3d(18vw, 0, -260px) rotateY(-18deg);
+}
+
+.fly-in-title[data-fly] {
+  transform: translate3d(0, 28px, 0);
+}
+
+.fly-in.is-flown {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.7s var(--ov-ease) var(--fly-delay, 0ms),
+    transform 0.9s var(--ov-ease) var(--fly-delay, 0ms);
+}
+
+/* 飞入结束后交还卡片自己的悬停过渡 */
+.overview-card.fly-in.is-flown:hover {
+  transition-delay: 0ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .hero-glow-a,
-  .hero-glow-b {
+  .hero-line,
+  .hero-card {
     animation: none;
   }
 
+  .fly-in,
+  .fly-in[data-fly] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
   .card-light,
   .overview-card,
   .overview-card-preview {

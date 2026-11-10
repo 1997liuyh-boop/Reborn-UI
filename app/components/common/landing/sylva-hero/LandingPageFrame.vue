@@ -27,10 +27,12 @@ const FRAME_SANDBOX = "allow-downloads allow-forms allow-modals allow-popups all
 
 const frame = useTemplateRef<HTMLIFrameElement>("frame");
 const ready = shallowRef(false);
+/** 已释放：离开页面时换成空白文档，之后的 load 事件不再处理 */
+let released = false;
 
 function handleLoad() {
   const element = frame.value;
-  if (!element) return;
+  if (!element || released) return;
   applyPageCustomization(element, props.customization);
   ready.value = true;
   emit("load", element);
@@ -41,6 +43,15 @@ onMounted(() => {
   const element = frame.value;
   const href = element?.contentWindow?.location.href ?? "";
   if (element?.contentDocument?.readyState === "complete" && href.endsWith(props.sourceUrl)) handleLoad();
+});
+
+// 路由一开始离开就释放内嵌页面：新页面完成异步加载前旧页面仍在渲染，
+// 内嵌页的 three.js 场景与 WebGL 上下文会一直占着 CPU、GPU 和内存，拖慢新页面的加载
+onBeforeRouteLeave(() => {
+  const element = frame.value;
+  if (!element || released) return;
+  released = true;
+  element.src = "about:blank";
 });
 
 // 取值变化时重新追加；load 回调负责首屏

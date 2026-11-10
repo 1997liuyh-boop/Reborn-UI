@@ -1,4 +1,9 @@
 {
+  "aliases": [
+    "countdown",
+    "倒计时",
+    "计时器"
+  ],
   "whenToUse": [
     "活动开始或任务截止前显示剩余时长：value 传入毫秒时间戳或 Dayjs 对象。",
     "显示天数或毫秒：用 format 组合 DD、HH、mm、ss、SSS，文字放入方括号。",

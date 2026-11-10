@@ -1,5 +1,10 @@
 {
   "description": "用于把子节点渲染到页面根节点、脱离当前层级关系的双端传送组件。",
+  "aliases": [
+    "portal",
+    "teleport",
+    "传送"
+  ],
   "whenToUse": [
     "自定义浮层被父容器 overflow/transform 裁剪，需要提升到页面根节点时。",
     "uniapp 端需要脱离当前页面层级的全局浮层内容时。"

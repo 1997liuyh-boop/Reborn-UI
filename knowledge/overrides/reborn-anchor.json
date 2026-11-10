@@ -1,5 +1,12 @@
 {
   "description": "跟随滚动高亮的目录导航：container 指定滚动层，offset / bound 控制落点与触发线，marker 选标记形态（竖条 / 实心圆 / 空心圆 / 不显示），支持水平排布与子链接嵌套。",
+  "aliases": [
+    "anchor",
+    "锚点",
+    "目录",
+    "toc",
+    "目录导航"
+  ],
   "whenToUse": [
     "长文档、详情页的章节导航：container 指向滚动层，每个 href 指到一个区块 id。",
     "设置页、表单分组的侧边目录：默认 type='default' 会画一条轨道线，把分组串成视觉主轴。",

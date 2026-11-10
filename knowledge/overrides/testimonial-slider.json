@@ -1,5 +1,10 @@
 {
   "description": "用于轮播展示用户评价（头像、引言、姓名、职位）的轻量滑块组件。",
+  "aliases": [
+    "评价轮播",
+    "用户评价",
+    "testimonial"
+  ],
   "whenToUse": [
     "落地页客户评价、用户推荐语区块。",
     "需要按固定间隔自动轮播评价内容时（autoRotate + duration）。"

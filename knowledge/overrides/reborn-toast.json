@@ -1,5 +1,15 @@
 {
   "description": "全局命令式消息提示（Message）：五种类型静态方法、Promise 接口、同 key 更新与全局配置；web 端由 Toast 升级而来。",
+  "aliases": [
+    "toast",
+    "message",
+    "消息",
+    "消息提示",
+    "轻提示",
+    "全局提示",
+    "snackbar",
+    "操作反馈"
+  ],
   "whenToUse": [
     "操作反馈的轻量全局提示（success / error / info / warning / loading 五种类型）。",
     "需要 Promise 串联后续动作（message.loading(...).then(...)）或同 key 原位更新（loading → success）。",
@@ -7,7 +17,8 @@
   ],
   "whenNotToUse": [
     "需要用户确认或承载操作按钮的通知，改用 reborn-dialog 或通知类组件。",
-    "需要在消息里渲染自定义 VNode 且目标是 uniapp 端：uniapp 端 MessageNode 仅支持字符串。"
+    "需要在消息里渲染自定义 VNode 且目标是 uniapp 端：uniapp 端 MessageNode 仅支持字符串。",
+    "带标题与正文、要停留到用户处理的屏幕角落通知，改用 reborn-notification。"
   ],
   "pitfalls": [
     "duration 单位是秒且默认 3（旧 Toast API 是毫秒）；设 0 不自动关闭。",

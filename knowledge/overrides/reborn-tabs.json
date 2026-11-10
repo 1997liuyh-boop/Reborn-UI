@@ -1,5 +1,19 @@
 {
   "description": "双端标签页：RebornTabs + RebornTabPane 组合，paneKey 驱动切换，7 种类型 × 4 种尺寸，支持可编辑、懒加载与滚动定位。",
+  "aliases": [
+    "tabs",
+    "标签页",
+    "选项卡",
+    "页签",
+    "tab",
+    "tab 切换",
+    "选项卡切换",
+    "标签切换",
+    "内容切换",
+    "切换栏",
+    "详情切换",
+    "tab pane"
+  ],
   "whenToUse": [
     "页面内多个平级视图之间切换，例如概览/详情/日志。",
     "标签数量随用户操作增减，需要新增与关闭标签（editable + showAddButton）。",
@@ -12,7 +26,8 @@
     "页面底部全局导航，改用 reborn-tabbar（仅 uniapp）。",
     "侧边栏层级式导航、带子菜单，改用 reborn-menu。",
     "内容需要同时展开对比而非互斥切换，改用 reborn-collapse。",
-    "只是二选一的状态开关，改用 reborn-switch 或 reborn-radio。"
+    "只是二选一的状态开关，改用 reborn-switch 或 reborn-radio。",
+    "一条里互斥切换、选中块滑动的短控件（Ant 的 Segmented），改用 reborn-segmented。"
   ],
   "props": [
     {
@@ -37,6 +52,9 @@
     }
   ],
   "pitfalls": [
+    "RebornTabPane 是与目录不同名的子组件文件（reborn-tabs/RebornTabPane.vue）：Nuxt 自动导入在 pathPrefix: true（默认）下会给它加上目录前缀，模板里写 <RebornTabPane> 解析不到、页签头部为空；用 CLI 装进项目后要么显式 import RebornTabPane from '<componentsDir>/reborn-tabs/RebornTabPane.vue'，要么把该目录的 components 配置改成 pathPrefix: false。RebornTabs 本身与目录同名，自动导入不受影响。",
+    "选中态的文字色、字重与指示条由组件按 type 与 color 自己切换：title 直接传文案（或 web 端 #title 插槽只放结构），不要在插槽里按 activeKey 手动切颜色、字重——那会和组件自身的选中态叠加，换 color 或 type 时两套逻辑打架。页签字号改 ui.tabTitle，页签间距改 ui.list（line 类型默认间距 32px），指示条粗细与颜色改 ui.indicator。",
+    "line、card、card-gutter 三种类型自带头部与内容之间的分隔线（画在 ui.nav 上），按设计稿还原时不要再叠加一条分割线素材；内容区高度随当前面板自适应，外层不要写死高度，否则面板文字多一行就被裁掉。",
     "选中标识为 paneKey prop，两端均不再读取 Vue key 作为业务值。v-for 生成的面板须同时传稳定 key、pane-key 与 order 下标，缺 key 时列表中间增删会把面板状态串到相邻项。静态面板不必写 Vue key：web 端按插槽原结构渲染，前面的面板被 v-if 隐藏或前面的 v-for 列表增删，后面面板的实例与状态不变；缺省 paneKey 按书写位置编号（v-if 隐藏的面板仍占一位，嵌套在 v-for / template 内的为“外层-内层”字符串），uniapp 端缺省按登记顺序编号。",
     "组件只派发 add / delete 事件、不改数据：不会自动增删 RebornTabPane，也不会在删掉当前项后自动切换；删除当前项后需使用方自行把 activeKey 重设为相邻标签，否则头部没有选中项。",
     "destroyOnHidden 与 lazyLoad 同时开启时前者优先，lazyLoad 的“挂载后保留”不再成立。子级 RebornTabPane 的 destroyOnHidden 与父级同名参数取或。",

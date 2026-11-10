@@ -1,5 +1,9 @@
 {
   "description": "用于 uniapp 页面最外层的页面容器组件，可配置页面标题与描述文案。",
+  "aliases": [
+    "page",
+    "页面容器"
+  ],
   "whenToUse": [
     "uniapp 页面需要统一的根容器与页面级结构时。",
     "需要通过 header 插槽自定义页面头部区域时。",

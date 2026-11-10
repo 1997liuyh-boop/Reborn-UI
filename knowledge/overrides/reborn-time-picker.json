@@ -1,5 +1,10 @@
 {
   "description": "Web 单点时间录入：支持时分秒六种组合、手动输入、两种中心选中样式，并保留范围与毫秒选择。",
+  "aliases": [
+    "time picker",
+    "时间选择",
+    "选时间"
+  ],
   "whenToUse": [
     "精确到秒的单点录入：format 默认 HH:mm:ss，allowInput 支持手动输入。",
     "按 format 选择 HH、mm、ss、HH:mm 或 mm:ss，减少无关时间列。",

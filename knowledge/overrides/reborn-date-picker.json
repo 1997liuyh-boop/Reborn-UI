@@ -1,5 +1,12 @@
 {
   "description": "双端日期选择器：web 下拉日期面板支持 16 种类型，uniapp 底部弹出滚轮选年月日时分秒与范围。",
+  "aliases": [
+    "date picker",
+    "日期选择",
+    "日期",
+    "日期范围",
+    "选日期"
+  ],
   "whenToUse": [
     "表单中的日期字段，需要与 reborn-select、reborn-input 保持同一套 variant 与 size。",
     "按年、季度、月、周、日或日期时间选择（type），或选择区间（daterange、weekrange 等范围类型，起止相隔远时配 unlinkPanels）；weekrange 的起止自动吸附到整周的周日与周六。",

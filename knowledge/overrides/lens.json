@@ -1,5 +1,9 @@
 {
   "description": "用于在图片等插槽内容上叠加圆形放大镜的局部放大组件。",
+  "aliases": [
+    "放大镜",
+    "magnifier"
+  ],
   "whenToUse": [
     "商品图、设计稿等需要鼠标悬停局部放大查看细节时。",
     "需要固定位置的静态放大展示（isStatic + position）。",

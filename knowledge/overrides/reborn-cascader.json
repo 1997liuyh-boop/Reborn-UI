@@ -1,5 +1,12 @@
 {
   "description": "多层级数据的逐级选择器：Web 端多列面板、父子关联勾选与搜索，UniApp 端底部弹窗。",
+  "aliases": [
+    "cascader",
+    "级联",
+    "级联选择",
+    "多级选择",
+    "省市区"
+  ],
   "whenToUse": [
     "省市区、组织架构等多级联动选择，用 options 传树形数据。",
     "需要一次选多个分支，且勾父节点等于勾下面全部叶子：开 multiple，保持 check-strictly 关闭。",
