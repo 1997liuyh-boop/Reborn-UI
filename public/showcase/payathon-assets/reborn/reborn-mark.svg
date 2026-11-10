@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 72" fill="none">
+  <!-- Reborn UI 字标（与站点顶栏 AppHeaderLogo 同构），白色版，居中放进 5:3 的标志位 -->
+  <g transform="translate(7.5 26) scale(0.625)">
+    <text x="0" y="22" fill="#fff" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="-0.4">Reborn</text>
+    <rect x="78" y="4" width="36" height="24" rx="6" stroke="#fff" stroke-width="1.75"/>
+    <text x="96" y="21" text-anchor="middle" fill="#fff" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="750" letter-spacing="0.8">UI</text>
+    <g fill="#fff">
+      <rect x="124" y="8" width="6" height="6" rx="1.2"/>
+      <rect x="133" y="8" width="6" height="6" rx="1.2" opacity="0.45"/>
+      <rect x="124" y="17" width="6" height="6" rx="1.2" opacity="0.45"/>
+      <rect x="133" y="17" width="6" height="6" rx="1.2"/>
+    </g>
+  </g>
+</svg>

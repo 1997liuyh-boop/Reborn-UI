@@ -155,7 +155,7 @@ Web 组件 config 的常规宽高优先使用 Tailwind 原生刻度，例如 24 
 骨架速查（顺序固定）：
 
 ```
-frontmatter（title / description ≤60 字 / category 取固定分类表 / platform: web|uniapp|both / tags；侧栏与总览按「系列 → 分类」分组，不按目录）
+frontmatter（title 写「English 中文」如 `Button 按钮` / description ≤60 字 / category 取固定分类表 / platform: web|uniapp|both / tags；侧栏与总览按「系列 → 分类」分组，不按目录）
 ::ComponentViewer{... componentId="<id>"}
 ## 简介            三段：一句话定位+双端同构 → 正交维度拆解 → 剩余 API 分组概览
 ### 何时使用        3-5 条，每条点名具体 prop

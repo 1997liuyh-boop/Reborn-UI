@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { addTemplate, addVitePlugin, createResolver, updateTemplates, useNuxt } from "@nuxt/kit";
 import tailwindcss from "@tailwindcss/vite";
@@ -5,6 +6,24 @@ import * as vueCompiler from "vue/compiler-sfc";
 import { extractDemoSections } from "./app/utils/extractDemoSections";
 
 const { resolve } = createResolver(import.meta.url);
+
+/**
+ * 首页页脚「Build in public」显示的构建信息：最近的版本标签、提交号与构建时间，在构建时从 git 读取。
+ * 浅克隆没有标签、或不在 git 仓库里构建时对应字段为空串，页脚只显示读得到的项。
+ */
+function readGit(command: string): string {
+  try {
+    return execSync(command, { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+  }
+  catch {
+    return "";
+  }
+}
+const homeBuild = {
+  version: readGit("git describe --tags --abbrev=0"),
+  sha: readGit("git rev-parse HEAD"),
+  time: new Date().toISOString(),
+};
 
 export default defineNuxtConfig({
   extends: ["docus"],
@@ -244,6 +263,8 @@ export default defineNuxtConfig({
       NUXT_ADSENSE_ACCOUNT: process.env.NUXT_ADSENSE_ACCOUNT,
       // Public site URL used by modules (e.g. i18n) for canonical/hreflang links.
       SITE_URL: process.env.NUXT_PUBLIC_SITE_URL || process.env.SITE_URL,
+      // 首页页脚的构建信息，见文件顶部 homeBuild
+      homeBuild,
     },
   },
   llms: {

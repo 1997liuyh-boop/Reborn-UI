@@ -1,5 +1,5 @@
 ---
-title: 验证码输入
+title: InputOtp 验证码输入
 description: 用于短信验证码、OTP 等固定位数分格输入的双端组件。
 category: 表单与输入
 platform: both

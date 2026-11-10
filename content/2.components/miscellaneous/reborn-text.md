@@ -1,5 +1,5 @@
 ---
-title: 文本 Text
+title: Text 文本
 description: 双端文本组件：按 type 格式化手机号、姓名、金额、银行卡、邮箱并可脱敏，支持多行省略；Web 另有头部 / 中间省略与截断气泡。
 category: 通用
 platform: both

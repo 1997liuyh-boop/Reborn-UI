@@ -1,5 +1,5 @@
 ---
-title: 闪光文字
+title: SparklesText 闪光文字
 description: 用于在文字周围持续生成双色闪光点缀的标题装饰组件。
 category: 文字动画
 platform: web

@@ -1,5 +1,5 @@
 ---
-title: 字符上提
+title: LetterPullup 字符上提
 description: 用于让一段文字逐字符错落上提进场的文字动画组件。
 category: 文字动画
 platform: web

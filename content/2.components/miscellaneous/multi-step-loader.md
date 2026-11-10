@@ -1,5 +1,5 @@
 ---
-title: 多步加载器
+title: MultiStepLoader 多步加载器
 description: 用于按步骤序列展示加载进度、支持异步等待步骤的全屏加载组件。
 category: 反馈
 platform: web

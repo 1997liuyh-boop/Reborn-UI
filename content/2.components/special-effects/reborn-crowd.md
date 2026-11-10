@@ -1,5 +1,5 @@
 ---
-title: 人群漫步
+title: Crowd 人群漫步
 description: 把人物精灵图切格后在 2D 画布上左右随机走过，边走边颠、前后分层，可控人数与速度，用作页脚装饰。
 category: 特效
 platform: web

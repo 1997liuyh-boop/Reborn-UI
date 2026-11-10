@@ -1,5 +1,5 @@
 ---
-title: 对比
+title: Compare 对比
 description: 用于以滑动分割线对比两张图片或两块自定义内容的对比组件。
 category: 数据展示
 platform: web

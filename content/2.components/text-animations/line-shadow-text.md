@@ -1,5 +1,5 @@
 ---
-title: 线条阴影文字
+title: LineShadowText 线条阴影文字
 description: 为文字添加可配置颜色的斜线条纹阴影。
 category: 文字动画
 platform: web

@@ -1,5 +1,5 @@
 ---
-title: 动态评价
+title: AnimatedTestimonials 动态评价
 description: 用于轮播展示用户评价（头像、姓名、职称、引言）并支持自动播放的组件。
 category: 数据展示
 platform: web

@@ -1,5 +1,5 @@
 ---
-title: 二维码 Qrcode
+title: Qrcode 二维码
 description: 用于生成二维码的双端组件，支持前景/背景色、码点样式、中央 Logo 与纠错级别。
 category: 数据展示
 platform: both

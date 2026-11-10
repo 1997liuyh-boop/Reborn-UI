@@ -1,5 +1,5 @@
 ---
-title: 彩色文字
+title: ColourfulText 彩色文字
 description: 用于让文字逐字符循环变换颜色并动画的标题点缀组件。
 category: 文字动画
 platform: web

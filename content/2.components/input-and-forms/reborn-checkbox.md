@@ -1,5 +1,5 @@
 ---
-title: checkbox 多选框
+title: Checkbox 多选框
 description: 用于开关单项或组合多选的多选框组件，双端可用，支持布尔与数组两种绑定。
 category: 表单与输入
 platform: both

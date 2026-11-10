@@ -1,5 +1,5 @@
 ---
-title: 跟踪光束
+title: TracingBeam 跟踪光束
 description: 用于在内容一侧渲染随滚动延伸的渐变光束装饰的容器组件。
 category: 特效
 platform: web

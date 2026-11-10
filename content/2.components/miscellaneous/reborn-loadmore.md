@@ -1,5 +1,5 @@
 ---
-title:  加载更多
+title: Loadmore 加载更多
 description: 用于列表底部展示加载中、加载失败与没有更多状态的 uniapp 组件。
 category: 数据展示
 platform: uniapp

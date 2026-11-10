@@ -1,5 +1,5 @@
 ---
-title: Tree Select 树选择器
+title: TreeSelect 树选择器
 description: Web 层级选值：沿用 select 的三档尺寸与四种形态，下拉复用 tree，支持单选、父子联动或独立勾选的多选，以及清空。
 category: 表单与输入
 platform: web

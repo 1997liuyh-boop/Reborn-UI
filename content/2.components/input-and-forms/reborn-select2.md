@@ -1,5 +1,5 @@
 ---
-title: 下拉选择2
+title: Select2 下拉选择
 description: 自定义下拉选择组件，支持键盘导航和动画过渡。
 category: 表单与输入
 platform: uniapp

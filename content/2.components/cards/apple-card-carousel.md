@@ -1,5 +1,5 @@
 ---
-title: Apple 卡片轮播
+title: AppleCardCarousel 卡片轮播
 description: 用于以 Apple 官网风格横向滚动卡片、点击展开为模态详情的轮播组件。
 category: 卡片
 platform: web

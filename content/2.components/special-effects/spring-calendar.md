@@ -1,5 +1,5 @@
 ---
-title: 弹性日历
+title: SpringCalendar 弹性日历
 description: 用于横向选择日期并以弹簧动画展开当日事件的日历条组件。
 category: 特效
 platform: web

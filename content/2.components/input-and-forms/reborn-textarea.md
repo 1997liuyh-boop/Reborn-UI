@@ -1,5 +1,5 @@
 ---
-title: 多行输入框
+title: Textarea 多行输入框
 description: 用于多行文本输入的输入框组件，支持自动增高、字数统计与键盘行为配置。
 category: 表单与输入
 platform: both

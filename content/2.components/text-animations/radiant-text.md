@@ -1,5 +1,5 @@
 ---
-title: 光辉文字
+title: RadiantText 光辉文字
 description: 用于让高光沿插槽文字循环扫过的文字高亮动画组件。
 category: 文字动画
 platform: web

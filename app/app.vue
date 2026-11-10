@@ -121,8 +121,9 @@ useNuxtApp().hook("page:finish", () => {
       上下两个实例各自显隐、位置固定：回到顶部在上，bottom = 180 + 按钮 40 + 间距 8，
       一个消失时另一个不挪位，指针下的按钮不会突然换成另一个。
       BackTop 自己的文档页不挂：页内 demo 有同位置的实例，按钮会叠在一起。
+      页面 meta 写 backTop: false 的也不挂（首页左侧有固定目录与自己的页脚，回顶按钮叠上去会挡住它们）。
     -->
-    <template v-if="!$route.path.endsWith('/reborn-back-top')">
+    <template v-if="!$route.path.endsWith('/reborn-back-top') && $route.meta.backTop !== false">
       <RebornBackTop
         :bottom="228" show-progress size="md" shape="square" icon="lucide:arrow-big-up"
         :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }"

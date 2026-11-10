@@ -1,5 +1,5 @@
 ---
-title: 跑马灯
+title: Marquee 跑马灯
 description: 用于横向或纵向无限循环滚动内容的跑马灯组件，支持悬停暂停与渐隐遮罩。
 category: 数据展示
 platform: web

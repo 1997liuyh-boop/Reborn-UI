@@ -1,5 +1,5 @@
 ---
-title: 打字机效果
+title: Typewriter 打字机效果
 description: 用于让文本以打字机方式逐字输入与删除的文字动画组件。
 category: 文字动画
 platform: web

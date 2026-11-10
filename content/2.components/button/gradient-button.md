@@ -1,5 +1,5 @@
 ---
-title: 渐变按钮
+title: GradientButton 渐变按钮
 description: 用于带旋转圆锥渐变发光边框的动效按钮组件。
 category: 按钮
 platform: web

@@ -243,22 +243,33 @@ function onCardMove(event: PointerEvent) {
 
 
 // 飞入元素的初始隐藏态依赖脚本解除，禁用脚本时直接显示
-useHead({ noscript: [{ textContent: '<style>.fly-in{opacity:1!important;transform:none!important}</style>' }] })
+// Anton：描边大标题用的窄体字，与首页水印同一来源（首页只在自己的 hero 里加载，这里需自行引入）
+useHead({
+  noscript: [{ textContent: '<style>.fly-in{opacity:1!important;transform:none!important}</style>' }],
+  link: [
+    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+    { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Anton&display=swap' },
+  ],
+})
 </script>
 
 <template>
   <div class="components-overview relative isolate w-full mt-10">
     <ComponentsScrollBackground />
-    <!-- 开场：大标题落下，说明卡片从左、数量卡片从右飞入 -->
-    <section aria-labelledby="components-hero-title" class="overview-hero flex flex-col">
-      <h1 id="components-hero-title" class="overview-hero-title text-center">
-        <span class="hero-line hero-line-a block text-sm tracking-[0.4em] text-gray-8">组件总览</span>
-        <span class="hero-line hero-line-b mt-3 block">Reborn UI 全部组件</span>
+    <!-- 开场：描边大标题落下，说明卡片从左、系列卡片从右飞入；高度随内容，不再占满首屏 -->
+    <section aria-labelledby="components-hero-title" class="overview-hero">
+      <h1 id="components-hero-title" class="flex flex-col items-center text-center">
+        <span class="hero-line block text-sm tracking-[0.4em] text-gray-8">组件总览</span>
+        <!-- 外层负责落下，内层负责漂移：两段动画写在同一元素上会互相覆盖 -->
+        <span class="hero-line hero-line-b mt-1 block max-w-full">
+          <span class="hero-outline block">COMPONENTS</span>
+        </span>
       </h1>
 
-      <div class="mt-8 grid flex-1 gap-5 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div class="hero-card hero-card-left flex flex-col justify-between gap-10 p-6 sm:p-10">
-          <p class="max-w-[30ch] text-xl leading-relaxed text-gray-9 sm:text-2xl sm:leading-relaxed lg:text-3xl lg:leading-snug">
+      <div class="mx-auto mt-6 grid max-w-5xl gap-4 md:grid-cols-2 lg:mt-8">
+        <div class="hero-card hero-card-left flex flex-col justify-between gap-6 p-6">
+          <p class="text-base leading-relaxed text-gray-9 sm:text-lg sm:leading-relaxed">
             Web / UniApp 双端基础与扩展组件，覆盖按钮、表单、导航、反馈与特效；设计与实现持续迭代，欢迎在文档页反馈问题。
           </p>
           <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -271,32 +282,27 @@ useHead({ noscript: [{ textContent: '<style>.fly-in{opacity:1!important;transfor
                 <UIcon name="i-lucide-arrow-right" class="size-3.5" />
               </span>
             </NuxtLink>
-            <span class="text-sm text-gray-6">{{ platformLabel }} 端共 {{ totalCount }} 个组件 · 顶栏可切换平台</span>
+            <span class="text-sm text-gray-6">{{ platformLabel }} 端共 {{ totalCount }} 个组件</span>
           </div>
         </div>
 
-        <nav aria-label="组件系列" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-1 lg:grid-rows-2">
+        <!-- 系列数量合进一张卡片，逐行跳到对应大区；某平台下没有组件的系列不出现 -->
+        <nav aria-label="组件系列" class="hero-card hero-card-right flex flex-col justify-center gap-1 p-2">
           <a
-            v-for="(series, index) in heroSeries" :key="series.id" :href="`#series-${series.id}`"
-            class="hero-card hero-card-right group flex flex-col justify-between gap-6 p-6 sm:p-8"
-            :style="{ '--hero-delay': `${0.38 + index * 0.14}s`, '--float-duration': `${6.4 + index * 1.3}s` }"
+            v-for="series in heroSeries" :key="series.id" :href="`#series-${series.id}`"
+            class="hero-series group flex items-center justify-between gap-4 rounded-lg px-4 py-4"
           >
-            <span class="flex items-center justify-between gap-4">
+            <span class="flex flex-col gap-1">
               <span class="text-sm tracking-[0.2em] text-gray-6">{{ series.label }}</span>
-              <UIcon name="i-lucide-arrow-down-right" class="size-5 shrink-0 text-gray-5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:text-primary motion-reduce:transition-none" />
+              <span class="flex items-baseline gap-1.5 text-gray-10">
+                <span class="text-4xl font-semibold tabular-nums">{{ series.count }}</span>
+                <span class="text-sm">个组件</span>
+              </span>
             </span>
-            <span class="flex items-baseline gap-2 text-gray-10">
-              <span class="text-5xl font-semibold tabular-nums sm:text-6xl">{{ series.count }}</span>
-              <span class="text-base">个组件</span>
-            </span>
+            <UIcon name="i-lucide-arrow-down-right" class="size-5 shrink-0 text-gray-5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:text-primary motion-reduce:transition-none" />
           </a>
         </nav>
       </div>
-
-      <p class="hero-scroll-hint mt-6 flex items-center justify-center gap-2 text-sm text-gray-8" aria-hidden="true">
-        向下滚动浏览全部组件
-        <UIcon name="i-lucide-chevrons-down" class="size-4" />
-      </p>
     </section>
 
     <!-- 数据未到：两组卡片占位，撑出与真实网格相同的版面 -->
@@ -439,25 +445,36 @@ useHead({ noscript: [{ textContent: '<style>.fly-in{opacity:1!important;transfor
 }
 
 /* ─── 头图 ─── */
-/* 占满首屏：视口高度减去顶栏与页面上边距，卡片区随之拉伸 */
+/* 高度随内容：标题 + 一排两张卡片，首屏就能露出下方组件网格 */
 .overview-hero {
-  min-height: calc(100svh - var(--ui-header-height) - 2.5rem);
-  padding-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
 }
 
-.hero-scroll-hint {
-  animation: hero-drop 0.9s var(--ov-ease) 1.2s both;
-}
 /*
- * 开场动画只跑一次：标题两行依次落下，说明卡片从左、数量卡片从右带着纵深飞入。
+ * 开场动画只跑一次：标题两行依次落下，说明卡片从左、系列卡片从右带着纵深飞入。
  * 卡片在视频背景上用半透明纸面色加模糊，与下方组件卡片同一套圆角与描边。
  */
-.overview-hero-title .hero-line-b {
-  font-size: clamp(2.25rem, 5.5vw, 4.25rem);
-  line-height: 1.1;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--ui-text-highlighted);
+
+/*
+ * 描边大标题：沿用首页 REBORN UI 水印的做法（Anton 窄体、只描边不填充、右侧渐隐、左右缓慢漂移）。
+ * 水印是背景装饰，这里是正文标题，所以描边用正文高亮色而非 gray-3，右端只淡到 20% 而不是全隐，保证整词可读。
+ */
+.hero-outline {
+  font-family: Anton, "Arial Narrow", sans-serif;
+  font-size: clamp(56px, 10vw, 136px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--ui-text-highlighted);
+  mask-image: linear-gradient(90deg, #000 45%, rgb(0 0 0 / 0.2) 100%);
+  animation: hero-outline-drift 30s ease-in-out infinite alternate;
+}
+
+/* 漂移幅度比首页小：标题居中且下方紧跟卡片，±1.5vw 已能看出在动 */
+@keyframes hero-outline-drift {
+  from { transform: translateX(-1.5vw); }
+  to { transform: translateX(1.5vw); }
 }
 
 .hero-line {
@@ -492,16 +509,22 @@ useHead({ noscript: [{ textContent: '<style>.fly-in{opacity:1!important;transfor
 
 .hero-card-right {
   --hero-fly: hero-fly-right;
-  transition: border-color 0.2s, background-color 0.2s;
+  --hero-delay: 0.38s;
+  --float-duration: 6.4s;
 }
 
-.hero-card-right:hover {
-  border-color: var(--color-primary);
+/* 系列行：悬停铺一层浅底，键盘聚焦用主色描边 */
+.hero-series {
+  transition: background-color 0.2s;
 }
 
-.hero-card-right:focus-visible {
+.hero-series:hover {
+  background: var(--ov-well);
+}
+
+.hero-series:focus-visible {
   outline: 2px solid var(--color-primary);
-  outline-offset: 3px;
+  outline-offset: -2px;
 }
 
 @keyframes hero-fly-left {
@@ -819,7 +842,8 @@ useHead({ noscript: [{ textContent: '<style>.fly-in{opacity:1!important;transfor
 
 @media (prefers-reduced-motion: reduce) {
   .hero-line,
-  .hero-card {
+  .hero-card,
+  .hero-outline {
     animation: none;
   }
 

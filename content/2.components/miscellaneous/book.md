@@ -1,5 +1,5 @@
 ---
-title: 书本
+title: Book 书本
 description: 用于展示 3D 书本封面并在悬停时播放动画的展示组件。
 category: 卡片
 platform: web
