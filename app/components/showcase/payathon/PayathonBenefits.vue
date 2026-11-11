@@ -4,8 +4,8 @@ import PayathonWord from "~/components/showcase/payathon/PayathonWord.vue";
 import { mountPartnerBenefits } from "~/lib/payathon/partner-benefits";
 
 /**
- * DSH 插件：页面在这里由深转浅，DeepSeek Harness（dsh）桌面端的五个插件卡片随滚动在吸顶的舞台上横向滑过，
- * 卡片带 WebGL 光泽。每张卡片链到插件的 GitHub 仓库。
+ * DSH 插件：页面在这里由深转浅，DeepSeek Harness（dsh）桌面端的插件卡片与一个在线演示随滚动在吸顶的舞台上横向滑过，
+ * 卡片带 WebGL 光泽。插件卡片链到 GitHub 仓库，演示卡片链到内网的演示站。
  *
  * 首尾各放两张副本（data-benefit-loop-copy）给未吸顶时的横向无限循环用：
  * 开头是最后两张、结尾是前两张，副本对读屏隐藏、不可聚焦。
@@ -18,43 +18,48 @@ interface DshPlugin {
   id: string;
   name: string;
   description: string;
-  /** GitHub 仓库名 */
-  repo: string;
+  href: string;
+  /** 简介下方的等宽小字：插件写仓库名，演示写地址 */
+  meta: string;
+  /** 按钮文案 */
+  action: string;
 }
 
 const GITHUB_OWNER = "https://github.com/1997liuyh-boop";
 
-/** 简介依据各仓库 README（studio-library 为私有仓库，依据其公开的同名基础库说明） */
+/** 插件简介依据各仓库 README；演示站依据其页面标题与描述 */
 const PLUGINS: DshPlugin[] = [
   {
     id: "studio-library",
     name: "工作室插件",
-    description: "工作室容器、共享运行时与 SDK，旅行、学习路线、短剧、健身、影音、直播、设计等工作室都跑在它上面。",
-    repo: "dsh-studio-library-private",
+    description: "工作室控制台与共享运行时，管理工作室列表、项目、服务连接、会话和更新；业务工作室按需另装。",
+    href: `${GITHUB_OWNER}/dsh-studio-library`,
+    meta: "dsh-studio-library",
+    action: "前往 GitHub",
   },
   {
     id: "studio-design",
     name: "设计工作室",
     description: "把 MasterGo 设计稿、Reborn UI 组件资料和 dsh 项目会话连在一起，按链接还原页面。",
-    repo: "dsh-studio-design",
+    href: `${GITHUB_OWNER}/dsh-studio-design`,
+    meta: "dsh-studio-design",
+    action: "前往 GitHub",
   },
   {
-    id: "floating-ball",
-    name: "悬浮球",
-    description: "桌面悬浮助手，可对话、切换模型、管理权限。",
-    repo: "dsh-floating-ball",
+    id: "desktop-tools",
+    name: "桌面助手",
+    description: "一个插件包含划词工具栏、悬浮助手、截图、长截图和录屏；截图上的文字识别需另装 dsh-vision-router。",
+    href: `${GITHUB_OWNER}/dsh-desktop-tools`,
+    meta: "dsh-desktop-tools",
+    action: "前往 GitHub",
   },
   {
-    id: "selection-toolbar",
-    name: "划词工具栏",
-    description: "选中文字后弹出工具栏，翻译、提问并展示助手结果。",
-    repo: "dsh-selection-toolbar",
-  },
-  {
-    id: "capture",
-    name: "截图和录屏",
-    description: "区域截图、标注与录屏控制；应用菜单里也有截图入口，不依赖悬浮球。",
-    repo: "dsh-capture",
+    id: "online-demo",
+    name: "在线 DEMO",
+    description: "「重塑 Design」企业设计规范与组件参考站，这里打开的是滚动条页面。地址在公司内网，外网打不开。",
+    href: "http://192.168.20.90:3333/scrollbar",
+    meta: "192.168.20.90:3333/scrollbar",
+    action: "打开演示",
   },
 ];
 
@@ -105,12 +110,12 @@ onBeforeUnmount(() => {
                 <PayathonWord text="DSH PLUGINS" :size="2" />
               </p>
               <h2 id="benefits-title">DSH 插件</h2>
-              <p>给 DeepSeek Harness（dsh）桌面端用的插件，源码托管在 GitHub。</p>
+              <p>DeepSeek Harness（dsh）桌面端的插件，源码在 GitHub；另附一个内网在线演示。</p>
             </div>
           </header>
           <div class="partner-benefits-access">
             <p data-benefits-status role="status">
-              悬浮球、划词工具栏、截图和录屏需要支持 Desktop 扩展 API 1 的 DSH Desktop 分支，在插件管理器里以 Git 仓库安装；两个工作室插件的安装方式见各自仓库。
+              工作室插件与桌面助手需要 DSH Desktop 0.2.2-rc.1 起的版本，在插件管理器里按 Git 仓库安装；设计工作室装在工作室插件之上，步骤见各仓库 README。
             </p>
           </div>
           <div class="benefits-card-stage">
@@ -128,11 +133,11 @@ onBeforeUnmount(() => {
                       class="partner-benefit-logo"
                       :data-partner="card.plugin.id"
                       style="--partner-logo-scale: 1"
-                      :href="`${GITHUB_OWNER}/${card.plugin.repo}`"
+                      :href="card.plugin.href"
                       target="_blank"
                       rel="noopener noreferrer"
                       tabindex="-1"
-                      :aria-label="`在 GitHub 查看${card.plugin.name}（在新标签页打开）`"
+                      :aria-label="`${card.plugin.action}：${card.plugin.name}（在新标签页打开）`"
                     ><img
                       style="--partner-logo-scale: 1"
                       :src="`/showcase/payathon-assets/plugins/${card.plugin.id}.svg`"
@@ -147,23 +152,23 @@ onBeforeUnmount(() => {
                     <h4>{{ card.plugin.name }}</h4>
                     <p>{{ card.plugin.description }}</p>
                     <p class="partner-benefit-repo">
-                      {{ card.plugin.repo }}
+                      {{ card.plugin.meta }}
                     </p>
                   </div>
                   <a
                     class="partner-benefit-claim"
                     :tabindex="card.copy ? -1 : undefined"
                     :data-benefit-claim="card.plugin.id"
-                    :href="`${GITHUB_OWNER}/${card.plugin.repo}`"
+                    :href="card.plugin.href"
                     target="_blank"
                     rel="noopener noreferrer"
-                  >前往 GitHub<span class="partner-sr-only">（在新标签页打开）</span></a>
+                  >{{ card.plugin.action }}<span class="partner-sr-only">（在新标签页打开）</span></a>
                 </article>
               </div>
             </div>
           </div>
           <p class="partner-benefits-note">
-            各插件的构建要求与兼容版本以仓库 README 为准。
+            各插件的安装版本标签与兼容范围以仓库 README 为准。
           </p>
         </div>
       </div>

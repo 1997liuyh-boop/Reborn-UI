@@ -21,37 +21,41 @@ interface AuthUser {
   avatar?: string;
 }
 
-/** dsh 插件：都是 DeepSeek Harness 桌面端的插件，源码在 GitHub */
+/** dsh 插件下拉里的一项：工作室与桌面助手是 DeepSeek Harness 桌面端插件（源码在 GitHub），另有一个内网在线演示 */
 interface PluginLink {
+  /** 图标文件名 */
   id: string;
-  repo: string;
+  /** 大字标题：插件写仓库名 */
+  title: string;
   label: string;
   desc: string;
+  href: string;
 }
+
+const GITHUB_OWNER = "https://github.com/1997liuyh-boop";
 
 const PLUGIN_COLUMNS: Array<{ label: string; items: PluginLink[] }> = [
   {
     label: "工作室",
     items: [
-      { id: "studio-library", repo: "dsh-studio-library-private", label: "工作室插件", desc: "工作室容器、共享运行时与 SDK" },
-      { id: "studio-design", repo: "dsh-studio-design", label: "设计工作室", desc: "MasterGo 设计稿 + Reborn UI 组件" },
+      { id: "studio-library", title: "dsh-studio-library", label: "工作室插件", desc: "工作室控制台与共享运行时", href: `${GITHUB_OWNER}/dsh-studio-library` },
+      { id: "studio-design", title: "dsh-studio-design", label: "设计工作室", desc: "MasterGo 设计稿 + Reborn UI 组件", href: `${GITHUB_OWNER}/dsh-studio-design` },
     ],
   },
   {
     label: "桌面助手",
     items: [
-      { id: "floating-ball", repo: "dsh-floating-ball", label: "悬浮球", desc: "桌面悬浮助手，对话与切换模型" },
-      { id: "selection-toolbar", repo: "dsh-selection-toolbar", label: "划词工具栏", desc: "选中文字后翻译、提问" },
+      { id: "desktop-tools", title: "dsh-desktop-tools", label: "桌面助手", desc: "划词工具栏、悬浮助手、截图与录屏", href: `${GITHUB_OWNER}/dsh-desktop-tools` },
     ],
   },
   {
-    label: "截图",
+    label: "在线 DEMO",
     items: [
-      { id: "capture", repo: "dsh-capture", label: "截图和录屏", desc: "区域截图、标注与录屏" },
+      // 内网地址：公司网络之外打不开，说明里写明
+      { id: "online-demo", title: "重塑 Design", label: "滚动条演示", desc: "内网地址，需在公司网络内打开", href: "http://192.168.20.90:3333/scrollbar" },
     ],
   },
 ];
-const GITHUB_OWNER = "https://github.com/1997liuyh-boop";
 
 /** 胶囊里的普通链接；delay 是展开时逐个出现的延迟，沿用原模板从左到右递减的节奏 */
 const NAV_LINKS = [
@@ -275,7 +279,7 @@ onBeforeUnmount(() => {
                     hidden
                     aria-label="dsh 插件菜单"
                   >
-                    <a class="siteMenuOverview" href="#benefits">dsh 插件一览<span aria-hidden="true">↓</span></a>
+                    <a class="siteMenuOverview" href="#benefits">dsh 插件与演示一览<span aria-hidden="true">↓</span></a>
                     <div class="megaInner megaInner--triple">
                       <div v-for="column in PLUGIN_COLUMNS" :key="column.label" class="megaCol">
                         <p class="megaLabel">{{ column.label }}</p>
@@ -284,7 +288,7 @@ onBeforeUnmount(() => {
                             v-for="plugin in column.items"
                             :key="plugin.id"
                             class="megaResource"
-                            :href="`${GITHUB_OWNER}/${plugin.repo}`"
+                            :href="plugin.href"
                             target="_blank"
                             rel="noopener noreferrer"
                           ><span class="megaResourceLogo" data-product-logo="skill"><img
@@ -299,7 +303,7 @@ onBeforeUnmount(() => {
                             alt
                             width="28"
                             height="28"
-                          ></span><span class="megaResourceTitle">{{ plugin.repo }}<svg
+                          ></span><span class="megaResourceTitle">{{ plugin.title }}<svg
                             class="megaResourceExternalIcon"
                             viewBox="0 0 24 24"
                             fill="none"
