@@ -33,11 +33,11 @@ const COLUMNS: Array<{ heading: FooterLink; items: FooterLink[] }> = [
   {
     heading: { label: "dsh 插件", to: "#benefits" },
     items: [
-      { label: "工作室插件", to: `${GITHUB_OWNER}/dsh-studio-library-private`, external: true },
+      { label: "工作室插件", to: `${GITHUB_OWNER}/dsh-studio-library`, external: true },
       { label: "设计工作室", to: `${GITHUB_OWNER}/dsh-studio-design`, external: true },
-      { label: "悬浮球", to: `${GITHUB_OWNER}/dsh-floating-ball`, external: true },
-      { label: "划词工具栏", to: `${GITHUB_OWNER}/dsh-selection-toolbar`, external: true },
-      { label: "截图和录屏", to: `${GITHUB_OWNER}/dsh-capture`, external: true },
+      { label: "桌面助手", to: `${GITHUB_OWNER}/dsh-desktop-tools`, external: true },
+      // 内网演示站，公司网络之外打不开
+      { label: "在线 DEMO", to: "http://192.168.20.90:3333/scrollbar", external: true },
     ],
   },
 ];
