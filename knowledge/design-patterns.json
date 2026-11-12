@@ -255,11 +255,11 @@
     },
     {
       "id": "menu",
-      "pattern": "侧边导航菜单、多级导航",
-      "match": ["侧边菜单", "側邊菜單", "导航菜单", "導航菜單", "sidebar menu", "side menu", "多级菜单", "多級菜單"],
+      "pattern": "侧边导航菜单、分类列表、多级导航：同一容器里排成一列（或一行）的多个同名实例，变体为 选中 / 未选中，点击切换当前项",
+      "match": ["侧边菜单", "側邊菜單", "侧边导航", "側邊導航", "导航菜单", "導航菜單", "分类列表", "分類列表", "分类导航", "分類導航", "分类菜单", "分類菜單", "类目列表", "類目列表", "多级菜单", "多級菜單", "/\\bside[ -]?(?:bar[ -]?)?(?:menu|nav)\\b/i", "/\\bnav[ -]?(?:menu|list)\\b/i", "/\\bcategory[ -]?(?:list|menu|nav)\\b/i"],
       "component": "reborn-menu",
-      "recipe": "items 给层级数据，mode 取横纵，collapse 收起为图标栏；带子菜单的侧栏用它，而不是 reborn-tabs 或 reborn-dropdown。",
-      "uses": { "props": ["items", "mode", "collapse"] },
+      "recipe": "整组用一个 RebornMenu，不要把每一项写成原生 a / li / button 再自己管选中态：纵向列表 mode=\"vertical\"（顶部横排用 horizontal），color 按稿面取 neutral 或 primary，v-model:selected-keys 绑定当前项（值是从一级到选中项的 index 路径）。单层列表每个实例一个 RebornMenuItem（index 给唯一标识，#extra 放右侧箭头等稿面导出的图标，#icon 放左侧图标）；有下级时传 items 或用 RebornSubMenu，collapse 收起为图标栏；不折叠的列表传 :tooltip=\"false\"。面板底色 / 描边 / 圆角 / 内边距经 ui.root，条目间距经 ui.menu，行高 / 圆角 / 内边距经 ui.menuItem，字号字重经 ui.menuItemTitle，选中项底色用 RebornMenuItem 自己的 ui 按选中态给。条目渲染为没有 tabindex 的 li：需要键盘可聚焦或可新开的链接时，在默认插槽里放 a 并 @click.prevent，点击交给 select 事件或 v-model:selected-keys 接管；router 为真时点击按 index（或 RebornMenuItem 的 route）跳转。带子菜单的侧栏也用它，而不是 reborn-tabs 或 reborn-dropdown。",
+      "uses": { "props": ["items", "mode", "color", "collapse", "selectedKeys", "tooltip", "router"], "slots": ["default", "icon", "extra"], "events": ["select", "update:selectedKeys"], "ui": ["root", "menu", "menuItem", "menuItemTitle"] },
       "pitfalls": ["仅 web 端可用。"]
     },
     {

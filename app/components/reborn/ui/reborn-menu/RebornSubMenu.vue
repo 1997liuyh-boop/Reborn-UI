@@ -9,6 +9,8 @@ import { motionPresets, runMotion, stopMotion } from "@/lib/motion";
 import { resolveFloatingPosition } from "~/lib/floating";
 import { cn } from "~/lib/utils";
 import theme, { getMenuFallbackChar, MENU_INJECTION_KEY, MENU_INLINE_INDENT } from "./reborn-menu.config";
+// 兄弟组件一律显式导入：经 CLI 复制到使用方项目后，不能指望对方的自动导入按同样的名字解析（如 Nuxt 的 pathPrefix）
+import RebornMenuItems from "./RebornMenuItems.vue";
 // RebornMenuItems 由 Nuxt 全局自动注册，不写静态 import 以避免递归组件的 ESM 循环依赖。
 
 /**

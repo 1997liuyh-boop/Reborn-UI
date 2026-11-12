@@ -51,6 +51,11 @@ const DESIGN_CASES: Array<[DesignNodeInput, string | null, "pattern" | "ignore" 
   [{ name: "常见问题" }, "reborn-collapse", "pattern"],
   [{ name: "選擇器" }, "reborn-select", "pattern"],
   [{ name: "頂欄" }, "reborn-header", "pattern"],
+  // Mercari 站点页（3:24505）的分类面板：九个同名实例，变体 選中 / 未選中，曾被逐项手写成 a
+  [{ name: "分類列表", variant: { "属性 1": "選中" }, group: "容器 129628" }, "reborn-menu", "pattern"],
+  [{ name: "分類列表", variant: { "属性 1": "未選中" }, group: "容器 129628" }, "reborn-menu", "pattern"],
+  [{ name: "侧边导航" }, "reborn-menu", "pattern"],
+  [{ name: "sidebar menu" }, "reborn-menu", "pattern"],
   // 子节点兜底：自动命名的容器本身不是组件，靠里面的实例名；没有子节点就按稿面自写
   [{ name: "容器 129651", children: ["搜索", "icon/24/放大镜"] }, "reborn-search-box", "pattern"],
   [{ name: "容器 129642", children: ["缩略图", "缩略图", "缩略图"] }, "reborn-carousel", "pattern"],
@@ -181,6 +186,24 @@ export function checkDesignPatterns(): string[] {
   const tabs = run([{ name: "Tab 2" }]).matches[0];
   if (!tabs.subcomponents?.includes("RebornTabPane") || !tabs.imports?.some((line) => line.includes("pathPrefix"))) {
     problems.push("设计稿回归：reborn-tabs 应给出 RebornTabPane 子组件与显式 import 提示");
+  }
+  // 结构兜底：名字不在配方表里，但同区块同名实例的变体在 选中 / 未选中 之间切换，应提示为一组互斥选择
+  const selection = run([
+    { name: "左侧栏目", variant: { "属性 1": "选中" }, group: "s" },
+    { name: "左侧栏目", variant: { "属性 1": "未选中" }, group: "s" },
+    { name: "左侧栏目", variant: { "属性 1": "未选中" }, group: "s" },
+    { name: "说明文字", variant: { "属性 1": "正常" }, group: "s" },
+  ]);
+  if (
+    !selection.hints.some((h) => h.includes("互斥选择组") && h.includes("reborn-menu"))
+    || !selection.matches.slice(0, 3).every((m) => m.selectionGroup && m.alternatives?.[0]?.id === "reborn-menu")
+    || selection.matches[3].selectionGroup
+  ) {
+    problems.push("设计稿回归：同区块同名实例的变体在 选中 / 未选中 间切换时应提示为互斥选择组并给出 reborn-menu 等候选，只有单一状态的节点不算");
+  }
+  const menu = run([{ name: "分類列表", variant: { "属性 1": "選中" } }]).matches[0];
+  if (!menu.subcomponents?.includes("RebornMenuItem") || menu.selectionGroup) {
+    problems.push("设计稿回归：分類列表 应按名字落到 reborn-menu 并给出 RebornMenuItem 子组件的显式 import 提示，已命中规则的节点不再重复结构提示");
   }
   const uniapp = run([{ name: "轮播" }]);
   const uniappMatch = matchDesignNodes(patterns, entries, [{ name: "轮播" }], { platform: "uniapp", getComponent: loadComponent }).matches[0];

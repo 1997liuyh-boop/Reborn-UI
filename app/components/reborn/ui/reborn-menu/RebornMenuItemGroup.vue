@@ -3,6 +3,8 @@ import type { ItemType, MenuContext, MenuUI } from "./reborn-menu.config";
 import { computed, inject } from "vue";
 import { cn } from "~/lib/utils";
 import theme, { MENU_INJECTION_KEY } from "./reborn-menu.config";
+// 兄弟组件一律显式导入：经 CLI 复制到使用方项目后，不能指望对方的自动导入按同样的名字解析（如 Nuxt 的 pathPrefix）
+import RebornMenuItems from "./RebornMenuItems.vue";
 // RebornMenuItems 由 Nuxt 全局自动注册，不写静态 import 以避免递归组件的 ESM 循环依赖。
 
 /**
