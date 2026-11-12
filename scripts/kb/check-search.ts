@@ -34,6 +34,9 @@ const SEARCH_CASES: Array<[string, string, number?]> = [
   ["分段", "reborn-segmented"],
   // 其余易混组
   ["下拉菜单", "reborn-dropdown"],
+  ["分类列表", "reborn-menu"],
+  ["侧边导航", "reborn-menu"],
+  ["导航菜单", "reborn-menu"],
   ["下拉选择", "reborn-select"],
   ["通知", "reborn-notification"],
   ["消息提示", "reborn-toast"],
