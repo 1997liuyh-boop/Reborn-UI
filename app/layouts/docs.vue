@@ -60,6 +60,9 @@ const { isPanelVisible } = useUniDemoPanel();
 /** 乐谱背景只铺在单个组件的文档页（/components/xxx），组件总览 /components 不显示 */
 const isComponentDoc = computed(() => /^\/components\/.+/.test(route.path));
 
+/** 组件总览放开容器宽度，首屏铺满整个视口 */
+const isComponentsOverview = computed(() => route.path.replace(/\/$/, "") === COMPONENTS_PATH);
+
 /** 像素拼图背景铺在「组合式函数」一节：列表页 /composables 与各 hook 子页 */
 const isComposablesDoc = computed(() => /^\/composables(?:\/|$)/.test(route.path));
 </script>
@@ -71,7 +74,7 @@ const isComposablesDoc = computed(() => /^\/composables(?:\/|$)/.test(route.path
     <DocsScoreBackground v-if="isComponentDoc" />
     <DocsPixelBackground v-if="isComposablesDoc" />
     <!-- 分类导航已并入主顶栏右侧（对齐 Arco header），不再渲染二级 AppHeaderNav -->
-    <UContainer>
+    <UContainer :class="isComponentsOverview ? 'max-w-none px-0 sm:px-0 lg:px-0' : undefined">
       <div class="min-w-0 transition-[padding] duration-200" :class="isPanelVisible ? '2xl:pr-[420px]' : undefined">
         <UPage :ui="isRoot ? undefined : threeColUi" :style="isRoot ? undefined : pageStyle">
           <template v-if="!isRoot" #left>

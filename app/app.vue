@@ -97,9 +97,19 @@ const { isPanelVisible } = useUniDemoPanel();
  * 直接读 $route.meta 会让新页面的顶栏提前盖在旧页面上（如从首页点进组件总览）。
  */
 const route = useRoute();
-const shellMeta = shallowRef({ header: route.meta.header, footer: route.meta.footer });
+
+/** 当前路由的壳层配置；组件总览用 ComponentsOverviewNav 替换 AppHeader */
+function readShellMeta() {
+  return {
+    header: route.meta.header,
+    footer: route.meta.footer,
+    overview: route.path.replace(/\/$/, "") === COMPONENTS_PATH,
+  };
+}
+
+const shellMeta = shallowRef(readShellMeta());
 useNuxtApp().hook("page:finish", () => {
-  shellMeta.value = { header: route.meta.header, footer: route.meta.footer };
+  shellMeta.value = readShellMeta();
 });
 </script>
 
@@ -109,7 +119,10 @@ useNuxtApp().hook("page:finish", () => {
     <NuxtLoadingIndicator color="var(--ui-primary)" />
 
     <div>
-      <AppHeader v-if="shellMeta.header !== false" />
+      <template v-if="shellMeta.header !== false">
+        <ComponentsOverviewNav v-if="shellMeta.overview" />
+        <AppHeader v-else />
+      </template>
       <NuxtLayout>
         <NuxtPage />
       </NuxtLayout>
