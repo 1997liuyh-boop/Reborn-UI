@@ -17,6 +17,13 @@
 # 可重复执行：已完成的步骤会跳过，已有的 runtime.env 不会被覆盖。
 set -euo pipefail
 
+# 也可以不用环境变量，直接把令牌填在下面引号里（例如 glrt-xxxx），再执行 bash bootstrap-server.sh
+RUNNER_TOKEN="${RUNNER_TOKEN:-}"
+
+# 全部输出同时写入日志，便于在宝塔「文件」里打开 /root/bootstrap.log 整体复制
+exec > >(tee -a /root/bootstrap.log) 2>&1
+echo "######## $(date '+%F %T') 开始初始化 ########"
+
 APP_PORT="${APP_PORT:-3100}"
 GITLAB_URL="${GITLAB_URL:-https://gitlab.rebornnet.cn}"
 RUNNER_TAG="reborn-intranet"
@@ -73,17 +80,37 @@ if ! command -v gitlab-runner >/dev/null; then
     x86_64) runner_arch=amd64 ;;
     aarch64) runner_arch=arm64 ;;
   esac
-  curl -fL -o /usr/local/bin/gitlab-runner \
-    "https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-$runner_arch"
-  chmod +x /usr/local/bin/gitlab-runner
+  # 国内机房访问 S3 经常失败：先限时尝试官方二进制，失败再走清华镜像的软件源
+  if ! curl -fL --connect-timeout 10 --max-time 300 -o /usr/local/bin/gitlab-runner \
+    "https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-$runner_arch"; then
+    rm -f /usr/local/bin/gitlab-runner
+    echo "官方下载失败，改用清华镜像安装"
+    if command -v apt-get >/dev/null; then
+      . /etc/os-release
+      # trusted=yes 跳过签名校验：GitLab 公钥地址在国内同样经常不可达
+      echo "deb [trusted=yes] https://mirrors.tuna.tsinghua.edu.cn/gitlab-runner/ubuntu $VERSION_CODENAME main" \
+        > /etc/apt/sources.list.d/gitlab-runner.list
+      apt-get update && apt-get install -y gitlab-runner
+    else
+      cat > /etc/yum.repos.d/gitlab-runner.repo <<'REPO'
+[gitlab-runner]
+name=gitlab-runner
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/gitlab-runner/yum/el$releasever-$basearch/
+gpgcheck=0
+enabled=1
+REPO
+      yum install -y gitlab-runner
+    fi
+  fi
+  [ -f /usr/local/bin/gitlab-runner ] && chmod +x /usr/local/bin/gitlab-runner
 fi
 gitlab-runner --version | head -1
-if ! gitlab-runner status >/dev/null 2>&1; then
-  # 以 root 运行：部署需要写 /www/wwwroot 并操作 root 的 pm2
-  mkdir -p /home/gitlab-runner
-  gitlab-runner install --user=root --working-directory=/home/gitlab-runner || true
-  gitlab-runner start
-fi
+# 必须以 root 运行：部署要写 /www/wwwroot 并操作 root 的 pm2。
+# apt/yum 包默认以 gitlab-runner 用户装服务，因此不论之前怎么装的，都重新以 root 安装一次服务
+mkdir -p /home/gitlab-runner
+gitlab-runner uninstall >/dev/null 2>&1 || true
+gitlab-runner install --user=root --working-directory=/home/gitlab-runner
+gitlab-runner start
 # Ubuntu 的 .bash_logout 会调用 clear_console，在 shell 执行器里导致「准备环境」阶段失败
 if [ -f /root/.bash_logout ] && grep -q clear_console /root/.bash_logout; then
   sed -i 's/^\(.*clear_console.*\)$/# \1/' /root/.bash_logout
@@ -138,7 +165,7 @@ if ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE "[:.]$APP_PORT\$"; then
 fi
 if command -v firewall-cmd >/dev/null && firewall-cmd --state >/dev/null 2>&1; then
   firewall-cmd --permanent --add-port="$APP_PORT/tcp" && firewall-cmd --reload
-elif command -v ufw >/dev/null && ufw status | grep -q active; then
+elif command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then
   ufw allow "$APP_PORT/tcp"
 fi
 echo "提示：若宝塔「安全」页启用了防火墙，也请在那里放行 $APP_PORT"
