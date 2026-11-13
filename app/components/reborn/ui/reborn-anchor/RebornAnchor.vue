@@ -5,8 +5,9 @@ import { computed, nextTick, onBeforeUnmount, onMounted, provide, shallowRef, us
 import { cn } from "~/lib/utils";
 import { tweenScroll } from "~/lib/scroll-tween";
 import theme, { ANCHOR_INJECTION_KEY } from "./reborn-anchor.config";
-// RebornAnchorItems 由 Nuxt 全局自动注册（nuxt.config 的 pathPrefix: false），这里刻意不写静态 import：
-// 它在子级里渲染自己，与 RebornAnchorLink 也互相引用，静态导入会形成 ESM 循环依赖。
+// 兄弟组件一律显式导入：经 CLI 复制到使用方项目后，不能指望对方的自动导入按同样的名字解析（如 Nuxt 的 pathPrefix）
+// RebornAnchorItems 会在子级里渲染自己，与 RebornAnchorLink 也互相引用；<script setup> 下组件只在渲染时才取值，循环导入不会出问题。
+import RebornAnchorItems from "./RebornAnchorItems.vue";
 
 export interface RebornAnchorProps {
   /**

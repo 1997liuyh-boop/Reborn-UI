@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { useEventListener } from "@vueuse/core";
 import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from "vue";
+// 兄弟组件一律显式导入：经 CLI 复制到使用方项目后，不能指望对方的自动导入按同样的名字解析（如 Nuxt 的 pathPrefix）
+import ScrollWord from "./ScrollWord.vue";
 
 interface Props {
   class?: string;

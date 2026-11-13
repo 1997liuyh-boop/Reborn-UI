@@ -17,6 +17,8 @@ import type { TreeConductResult } from "./useTree";
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, reactive, ref, shallowRef, toRaw, useTemplateRef, watch } from "vue";
 import { useMotionList } from '@/composables/useMotionList';
 import { cn } from "~/lib/utils";
+// 兄弟组件一律显式导入：经 CLI 复制到使用方项目后，不能指望对方的自动导入按同样的名字解析（如 Nuxt 的 pathPrefix）
+import RebornCheckbox from "../reborn-checkbox/RebornCheckbox.vue";
 import theme from "./reborn-tree.config";
 import {
   ancestorKeys,

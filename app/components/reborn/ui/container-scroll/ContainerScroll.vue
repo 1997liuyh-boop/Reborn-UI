@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useElementBounding, useMounted, useWindowScroll, useWindowSize } from "@vueuse/core";
 import { computed, useTemplateRef } from "vue";
+// 兄弟组件一律显式导入：经 CLI 复制到使用方项目后，不能指望对方的自动导入按同样的名字解析（如 Nuxt 的 pathPrefix）
+import ContainerScrollCard from "./ContainerScrollCard.vue";
+import ContainerScrollTitle from "./ContainerScrollTitle.vue";
 
 const containerRef = useTemplateRef<HTMLElement>("containerRef");
 

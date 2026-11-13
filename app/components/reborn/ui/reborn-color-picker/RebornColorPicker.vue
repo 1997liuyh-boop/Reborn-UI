@@ -6,6 +6,8 @@ import { FORM_ITEM_KEY, FORM_KEY, useFormInject } from '~/composables/useFieldGr
 import theme from './reborn-color-picker.config'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
+// 兄弟组件一律显式导入：经 CLI 复制到使用方项目后，不能指望对方的自动导入按同样的名字解析（如 Nuxt 的 pathPrefix）
+import RebornPopover from '../reborn-popover/RebornPopover.vue'
 import RebornColorPickerPanel from './RebornColorPickerPanel.vue'
 
 interface Props {

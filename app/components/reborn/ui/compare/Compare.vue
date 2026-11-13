@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from "vue";
 import { useControlledModel } from "~/composables/useControlledModel";
+// 兄弟组件一律显式导入：经 CLI 复制到使用方项目后，不能指望对方的自动导入按同样的名字解析（如 Nuxt 的 pathPrefix）
+import StarField from "./StarField.vue";
 
 interface Props {
   firstImage?: string;

@@ -8,6 +8,7 @@
  *   5. 文档写出的 ui 键位与源码实际消费的一致（见 check-ui-keys.ts）
  *   6. 选型检索回归与别名合法性（见 check-search.ts）
  *   7. 设计稿配方表合法、指向真实、节点→组件回归（见 check-design.ts）
+ *   8. Web 组件模板里用到的本库其它组件都有显式 import（见 check-sibling-imports.ts）
  * 任何一项失败即退出码 1
  *
  * 关于各检查项在两种场景下的实际效力（knowledge/components 已不入库，见 .gitignore）：
@@ -16,6 +17,7 @@
  *     components/，直接跑 pnpm kb:check 仍能抓到「改了源码/文档却没重跑 kb:build」。
  *   - 检查项 2（schema）、3（集合一致性）、4（overrides 悬空引用）两种场景下均有效。
  *   - 检查项 5（ui 键位）两种场景下均有效：它比对源码与入库的文档，不涉及生成物。
+ *   - 检查项 8（兄弟组件导入）两种场景下均有效：它只读组件源码，不涉及生成物。
  *   - 「新增/删除组件却没同步 index.json」由 CI 的 git diff 守卫负责，
  *     见 .github/workflows/kb-check.yml。
  */
@@ -23,6 +25,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { checkDesignPatterns } from "./check-design.js";
 import { checkSearch, oneWayPointers } from "./check-search.js";
+import { checkSiblingImports } from "./check-sibling-imports.js";
 import { checkUiKeyDrift } from "./check-ui-keys.js";
 import { buildComponent, contentHashOf } from "./merge.js";
 import { componentSchema } from "./schema.js";
@@ -34,7 +37,8 @@ function fail(messages: string[]): never {
     `\n共 ${messages.length} 个问题。` +
       `\n· 同步/schema/集合类问题：运行 pnpm kb:bootstrap 重新生成（components/ 等生成物不入库，` +
       `只有 knowledge/overrides/ 与 knowledge/index.json 需要提交）。` +
-      `\n· ui 键位类问题：按提示补改对应的 content/ 文档，源码是唯一事实来源。`,
+      `\n· ui 键位类问题：按提示补改对应的 content/ 文档，源码是唯一事实来源。` +
+      `\n· 兄弟组件导入类问题：按提示在组件脚本里补相对路径的默认导入，不能依赖本仓库的全局自动注册。`,
   );
   process.exit(1);
 }
@@ -130,6 +134,9 @@ function main() {
 
   // 7. 设计稿配方表：规则合法、指向真实、节点→组件回归（见 check-design.ts）
   problems.push(...checkDesignPatterns());
+
+  // 8. 兄弟组件显式导入：模板用到的本库组件必须在脚本里 import（见 check-sibling-imports.ts）
+  problems.push(...checkSiblingImports());
 
   if (problems.length > 0) fail(problems);
 

@@ -7,6 +7,9 @@ import type { PaginationColor, paginationSizes, PaginationUI } from "./reborn-pa
 import { computed, shallowRef, watch } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
+// 兄弟组件一律显式导入：经 CLI 复制到使用方项目后，不能指望对方的自动导入按同样的名字解析（如 Nuxt 的 pathPrefix）
+import RebornInputNumber from "../reborn-input-number/RebornInputNumber.vue";
+import RebornSelect from "../reborn-select/RebornSelect.vue";
 import theme from "./reborn-pagination.config";
 
 const props = withDefaults(defineProps<PaginationProps>(), {
