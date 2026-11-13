@@ -182,9 +182,10 @@ onBeforeUnmount(() => {
           ><span class="reveal-ink" data-astro-cid-45h6wvi2="">走向自定义</span></span>
         </h2>
         <div class="overview-blackhole" data-astro-cid-45h6wvi2="">
+          <!-- 去掉链接下划线 -->
           <a
             href="/getting-started"
-            class="blackhole-button"
+            class="blackhole-button no-underline!"
             aria-label="马上开始"
             data-astro-cid-45h6wvi2=""
           >
@@ -220,8 +221,9 @@ onBeforeUnmount(() => {
         style="--reveal-delay: 640ms"
         data-astro-cid-45h6wvi2=""
       >
-        <span class="reveal-ink" data-astro-cid-45h6wvi2=""><span class="registration-deadline" data-astro-cid-45h6wvi2=""><span
-          class="countdown"
+        <!-- 窄屏下时间缩小字号并允许换行 -->
+        <span class="reveal-ink" data-astro-cid-45h6wvi2=""><span class="registration-deadline max-[641px]:flex-wrap! max-[641px]:gap-y-1.5!" data-astro-cid-45h6wvi2=""><span
+          class="countdown max-[641px]:gap-2! max-[641px]:text-[22px]!"
           data-clock
           role="timer"
           aria-live="off"
@@ -259,22 +261,3 @@ onBeforeUnmount(() => {
   </section>
 </template>
 
-<style>
-/* 「马上开始」由按钮改成了链接：去掉链接默认的下划线 */
-#payathon-page a.blackhole-button {
-  text-decoration: none;
-}
-
-/* 时间比原来的倒计时多出年月日 6 位数字：窄屏下缩小字号，「实时 / 当前时间」放不下时换到下一行 */
-@media (max-width: 640px) {
-  #payathon-page .registration-deadline {
-    flex-wrap: wrap;
-    row-gap: 6px;
-  }
-
-  #payathon-page .registration-deadline .countdown {
-    gap: 8px;
-    font-size: 22px;
-  }
-}
-</style>

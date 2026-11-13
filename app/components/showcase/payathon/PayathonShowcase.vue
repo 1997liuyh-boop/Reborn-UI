@@ -96,6 +96,15 @@ const cards = computed(() =>
 );
 
 const total = computed(() => catalog.value.total);
+
+/** 按分类的卡面色调 */
+const CARD_TONES: Record<string, string> = {
+  neutral: "[--work-track-rgb:212_213_208]! [--work-card-bg:#151514]!",
+  blue: "[--work-track-rgb:128_183_255]! [--work-card-bg:#111419]!",
+  green: "[--work-track-rgb:169_230_182]! [--work-card-bg:#121715]!",
+  violet: "[--work-track-rgb:181_160_255]! [--work-card-bg:#151318]!",
+  orange: "[--work-track-rgb:255_161_126]! [--work-card-bg:#191412]!",
+};
 </script>
 
 <template>
@@ -109,9 +118,10 @@ const total = computed(() => catalog.value.total);
           <h2 id="showcase-title">组件一览</h2>
         </div>
         <div class="showcase-actions">
-          <NuxtLink class="payathon-button" to="/getting-started" data-astro-cid-dmurru2v="">
+          <!-- 去掉链接下划线，实底按钮用深色字 -->
+          <NuxtLink class="payathon-button text-[#10141b]! no-underline!" to="/getting-started" data-astro-cid-dmurru2v="">
             马上开始
-          </NuxtLink><NuxtLink class="showcase-more" to="/components">
+          </NuxtLink><NuxtLink class="showcase-more no-underline!" to="/components">
             全部组件
           </NuxtLink>
         </div>
@@ -132,6 +142,7 @@ const total = computed(() => catalog.value.total);
               <span class="payathon-work-skeleton" aria-hidden="true" />
               <NuxtLink
                 class="payathon-work-card"
+                :class="CARD_TONES[card.tone]"
                 :to="card.path"
                 data-tone="gray"
                 :data-category-tone="card.tone"
@@ -149,7 +160,8 @@ const total = computed(() => catalog.value.total);
                   <span class="payathon-work-track">{{ card.category }}</span>
                   <p>{{ card.description }}</p>
                   <div class="payathon-work-metrics">
-                    <span class="payathon-work-metric" :aria-label="`适用端：${card.platformText}`" :title="`适用端：${card.platformText}`">
+                    <!-- 双端图标并排 -->
+                    <span class="payathon-work-metric [&>svg+svg]:-ml-0.5!" :aria-label="`适用端：${card.platformText}`" :title="`适用端：${card.platformText}`">
                       <svg
                         v-if="card.platform !== 'uniapp'"
                         width="16"
@@ -203,42 +215,3 @@ const total = computed(() => catalog.value.total);
   </section>
 </template>
 
-<style>
-/* 卡面色调：数值与原卡片五条赛道的配色一致，改按分类挂在 data-category-tone 上 */
-#payathon-page .payathon-work-card[data-category-tone="neutral"] {
-  --work-track-rgb: 212 213 208;
-  --work-card-bg: #151514;
-}
-#payathon-page .payathon-work-card[data-category-tone="blue"] {
-  --work-track-rgb: 128 183 255;
-  --work-card-bg: #111419;
-}
-#payathon-page .payathon-work-card[data-category-tone="green"] {
-  --work-track-rgb: 169 230 182;
-  --work-card-bg: #121715;
-}
-#payathon-page .payathon-work-card[data-category-tone="violet"] {
-  --work-track-rgb: 181 160 255;
-  --work-card-bg: #151318;
-}
-#payathon-page .payathon-work-card[data-category-tone="orange"] {
-  --work-track-rgb: 255 161 126;
-  --work-card-bg: #191412;
-}
-
-/*
- * 原「立即报名」是 button，这里换成链接：去掉链接默认的下划线；
- * 区块里「.event-section a」会把链接染成强调色，实底按钮要压回原按钮的深色字
- */
-#payathon-page .showcase-actions a {
-  text-decoration: none;
-}
-#payathon-page .showcase-actions a.payathon-button {
-  color: #10141b;
-}
-
-/* 双端通用时并排两个图标 */
-#payathon-page .payathon-work-metric svg + svg {
-  margin-left: -2px;
-}
-</style>

@@ -169,13 +169,17 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" class="payathon-site-header" data-payathon-header inert aria-hidden="true" data-astro-cid-45h6wvi2="">
+  <!-- 滚到浅色区块时，topbar 给根节点写 data-logo-tone=light -->
+  <div ref="root" class="payathon-site-header group/header" data-payathon-header inert aria-hidden="true" data-astro-cid-45h6wvi2="">
     <header class="topBar compactTopBar">
       <nav id="payathon-mobile-navigation" class="siteMenuNav siteFrame" aria-label="页面导航">
         <div class="siteMenuBrand">
           <a class="brand" href="/" aria-label="Reborn UI 首页">
-            <!-- 与站点顶栏 AppHeaderLogo 同构的字标，颜色跟随 color，浅色区由样式切成深色 -->
-            <svg class="brandLogo brandLogo--reborn" viewBox="0 0 168 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reborn UI">
+            <!-- 字标，浅色区切换为深色 -->
+            <svg
+              class="brandLogo brandLogo--reborn h-[26px]! w-[136.5px]! text-[#f3f4f6]! filter-none! group-data-[logo-tone=light]/header:text-[#111]!"
+              viewBox="0 0 168 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reborn UI"
+            >
               <text
                 x="0"
                 y="22"
@@ -340,7 +344,8 @@ onBeforeUnmount(() => {
             :hidden="!!authUser || (!feishuEnabled && !isDev)"
             @click="onLoginClick"
           ><span>登录</span></a>
-          <div class="navUser" data-nav-user :hidden="!authUser" :data-menu-open="userMenuOpen ? '' : undefined">
+          <!-- 用户菜单，data-menu-open 时展开 -->
+          <div class="navUser group/user" data-nav-user :hidden="!authUser" :data-menu-open="userMenuOpen ? '' : undefined">
             <button
               class="navUserTrigger"
               type="button"
@@ -365,7 +370,10 @@ onBeforeUnmount(() => {
                 />
               </svg>
             </button>
-            <div class="navUserMenu" role="menu" :aria-hidden="!userMenuOpen" data-nav-user-menu>
+            <div
+              class="navUserMenu group-data-[menu-open]/user:pointer-events-auto! group-data-[menu-open]/user:[transform:none]! group-data-[menu-open]/user:opacity-100!"
+              role="menu" :aria-hidden="!userMenuOpen" data-nav-user-menu
+            >
               <button class="navUserMenuItem" type="button" role="menuitem" data-nav-logout @click="logout">
                 退出登录
               </button>
@@ -412,23 +420,3 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
-<style>
-/* Reborn UI 字标：按 168×32 的比例放进原字标位，深色区白字、浅色区（权益区）深字 */
-#payathon-page .brandLogo--reborn {
-  width: 136.5px;
-  height: 26px;
-  color: #f3f4f6;
-  filter: none;
-}
-
-#payathon-page [data-payathon-header][data-logo-tone="light"] .brandLogo--reborn {
-  color: #111;
-}
-
-/* 登录后的用户菜单：点用户名展开 */
-#payathon-page .navUser[data-menu-open] .navUserMenu {
-  opacity: 1;
-  transform: none;
-  pointer-events: auto;
-}
-</style>

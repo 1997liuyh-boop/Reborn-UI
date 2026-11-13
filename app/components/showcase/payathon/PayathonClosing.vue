@@ -19,7 +19,11 @@ import PayathonWord from "~/components/showcase/payathon/PayathonWord.vue";
             <h3 id="join-title" data-astro-cid-45h6wvi2="">下一个界面，从这里开始。</h3>
           </div>
           <div data-astro-cid-45h6wvi2="">
-            <NuxtLink class="payathon-button payathon-button--link" to="/getting-started" data-astro-cid-dmurru2v="">
+            <!--
+              首页复刻样式里有 all: revert，首页的工具类都要带 ! 才生效
+              链接会被区块染成强调色，这里改回深色
+            -->
+            <NuxtLink class="payathon-button payathon-button--link text-[#10141b]! no-underline!" to="/getting-started" data-astro-cid-dmurru2v="">
               马上开始
             </NuxtLink>
           </div>
@@ -29,10 +33,3 @@ import PayathonWord from "~/components/showcase/payathon/PayathonWord.vue";
   </section>
 </template>
 
-<style>
-/* 按钮样式原本写给 <button>；换成链接后，区块里「#payathon-page .event-section a」会把文字染成强调色（与底色相同），这里改回深色并去掉下划线 */
-#payathon-page .event-section .payathon-button--link {
-  color: #10141b;
-  text-decoration: none;
-}
-</style>

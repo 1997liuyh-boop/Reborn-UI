@@ -33,6 +33,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   cleanups.splice(0).reverse().forEach((fn) => fn());
 });
+
+/** 步骤里的命令样式 */
+const GUIDE_CODE = "rounded-[4px]! bg-[#202834]! px-1.5! py-px! font-[ui-monospace,monospace]! text-[13px]! leading-[1.6]! font-medium! text-[#e5e8ed]! box-decoration-clone!";
 </script>
 
 <template>
@@ -45,9 +48,10 @@ onBeforeUnmount(() => {
         <h2 id="guide-title" data-astro-cid-45h6wvi2="">四步用上 Reborn UI</h2>
         <p data-astro-cid-45h6wvi2="">
           Vue 3 与 Nuxt 项目按下面四步接入；UniApp 项目见
-          <NuxtLink class="guide-inline-link" to="/getting-started/tailwind3">Tailwind v3</NuxtLink>
+          <!-- 内联链接：强调色，悬停显示下划线 -->
+          <NuxtLink class="guide-inline-link text-[var(--payathon-accent,#86eaff)]! no-underline! hover:underline!" to="/getting-started/tailwind3">Tailwind v3</NuxtLink>
           与
-          <NuxtLink class="guide-inline-link" to="/getting-started/tailwind4">Tailwind v4</NuxtLink>
+          <NuxtLink class="guide-inline-link text-[var(--payathon-accent,#86eaff)]! no-underline! hover:underline!" to="/getting-started/tailwind4">Tailwind v4</NuxtLink>
           两篇安装指南。
         </p>
       </header>
@@ -64,7 +68,7 @@ onBeforeUnmount(() => {
           <div data-astro-cid-45h6wvi2="">
             <h3 data-astro-cid-45h6wvi2="">初始化配置</h3>
             <p data-astro-cid-45h6wvi2="">
-              运行 <code class="guide-code">npx reborn-ui@latest init</code>，生成脚手架配置。
+              运行 <code class="guide-code" :class="GUIDE_CODE">npx reborn-ui@latest init</code>，生成脚手架配置。
             </p>
           </div>
         </article>
@@ -72,7 +76,7 @@ onBeforeUnmount(() => {
           <span data-astro-cid-45h6wvi2=""> 03 </span>
           <div data-astro-cid-45h6wvi2="">
             <h3 data-astro-cid-45h6wvi2="">安装依赖</h3>
-            <p data-astro-cid-45h6wvi2="">装好 <span class="guide-nowrap">motion-v</span> 等七个辅助库，再按配置页更新 main.css。</p>
+            <p data-astro-cid-45h6wvi2="">装好 <span class="guide-nowrap whitespace-nowrap!">motion-v</span> 等七个辅助库，再按配置页更新 main.css。</p>
           </div>
         </article>
         <article role="listitem" data-astro-cid-45h6wvi2="">
@@ -80,7 +84,7 @@ onBeforeUnmount(() => {
           <div data-astro-cid-45h6wvi2="">
             <h3 data-astro-cid-45h6wvi2="">添加组件</h3>
             <p data-astro-cid-45h6wvi2="">
-              运行 <code class="guide-code">npx reborn-ui@latest add reborn-button</code>，组件源码拷进你的项目。
+              运行 <code class="guide-code" :class="GUIDE_CODE">npx reborn-ui@latest add reborn-button</code>，组件源码拷进你的项目。
             </p>
           </div>
         </article>
@@ -194,15 +198,20 @@ onBeforeUnmount(() => {
         <figure class="event-data-notes guide-wechat guide-repo" data-astro-cid-45h6wvi2="">
           <figcaption data-astro-cid-45h6wvi2="">源码与完整提交记录</figcaption>
           <div class="guide-wechat-content" data-astro-cid-45h6wvi2="">
-            <a class="guide-repo-card" :href="repoUrl" target="_blank" rel="noopener noreferrer">
-              <svg class="guide-repo-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <!-- 仓库卡片 -->
+            <a
+              class="guide-repo-card inline-grid! grid-cols-[auto_auto]! items-center! gap-x-3! gap-y-1! rounded-xl! border! border-solid! border-[#3a4452]! bg-[#1a2029]! px-5! py-4! text-left! no-underline!
+                [transition:border-color_0.18s_ease]! hover:border-[var(--payathon-accent,#86eaff)]! focus-visible:border-[var(--payathon-accent,#86eaff)]!"
+              :href="repoUrl" target="_blank" rel="noopener noreferrer"
+            >
+              <svg class="guide-repo-mark row-span-2! block! size-8!" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path
                   fill="currentColor"
                   d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
                 />
               </svg>
-              <span class="guide-repo-name">{{ repoName }}</span>
-              <span class="guide-repo-hint">在 GitHub 上查看<span class="partner-sr-only">（在新标签页打开）</span> ↗</span>
+              <span class="guide-repo-name font-[ui-monospace,monospace]! text-[15px]! leading-[1.4]! font-medium!">{{ repoName }}</span>
+              <span class="guide-repo-hint text-[13px]! leading-[1.4]! text-[#a4adbc]!">在 GitHub 上查看<span class="partner-sr-only">（在新标签页打开）</span> ↗</span>
             </a>
           </div>
         </figure>
@@ -212,71 +221,8 @@ onBeforeUnmount(() => {
 </template>
 
 <style>
-/* 步骤里的命令与正文里的内联链接 */
-#payathon-page .guide-code {
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: #202834;
-  color: #e5e8ed;
-  font: 500 13px/1.6 ui-monospace, monospace;
-  /* 命令较长，只在空格处换行，背景随行断开 */
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-}
-
-#payathon-page .guide-nowrap {
-  white-space: nowrap;
-}
-
-#payathon-page .guide-inline-link {
-  color: var(--payathon-accent, #86eaff);
-  text-decoration: none;
-}
-
-#payathon-page .guide-inline-link:hover {
-  text-decoration: underline;
-}
-
-/* 日历悬浮提示里的当天提交数：排在版本名后面，用正文灰 */
+/* 日历提示里的提交数：由脚本生成，无法挂类名，保留在样式里 */
 #payathon-page [data-tooltip-phases] > span[data-commit-count] {
   color: #a4adbc;
-}
-
-/* 原先放二维码的位置换成仓库卡片：同样居中、同样的留白。仓库名与图标沿用区块链接的强调色（.event-section a） */
-#payathon-page .guide-repo-card {
-  display: inline-grid;
-  grid-template-columns: auto auto;
-  align-items: center;
-  column-gap: 12px;
-  row-gap: 4px;
-  padding: 16px 20px;
-  border: 1px solid #3a4452;
-  border-radius: 12px;
-  background: #1a2029;
-  text-align: left;
-  text-decoration: none;
-  transition: border-color 0.18s ease;
-}
-
-#payathon-page .guide-repo-card:hover,
-#payathon-page .guide-repo-card:focus-visible {
-  border-color: var(--payathon-accent, #86eaff);
-}
-
-#payathon-page .guide-repo-mark {
-  grid-row: span 2;
-  display: block;
-  width: 32px;
-  height: 32px;
-}
-
-#payathon-page .guide-repo-name {
-  font: 500 15px/1.4 ui-monospace, monospace;
-}
-
-#payathon-page .guide-repo-hint {
-  color: #a4adbc;
-  font-size: 13px;
-  line-height: 1.4;
 }
 </style>

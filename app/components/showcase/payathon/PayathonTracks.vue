@@ -303,6 +303,29 @@ onMounted(() => {
 onBeforeUnmount(() => {
   cleanups.splice(0).reverse().forEach((fn) => fn());
 });
+
+/** 配色键 → 车道色 */
+const TRACK_COLORS: Record<string, string> = {
+  "series-reborn": "[--track-color:var(--payathon-track-vibe)]!",
+  "group-base": "[--track-color:var(--payathon-track-vibe)]!",
+  "series-community": "[--track-color:var(--payathon-track-skill)]!",
+  "group-nav": "[--track-color:var(--payathon-track-skill)]!",
+  "platform-both": "[--track-color:var(--payathon-track-machine)]!",
+  "group-form": "[--track-color:var(--payathon-track-machine)]!",
+  "platform-web": "[--track-color:var(--payathon-track-token)]!",
+  "group-data": "[--track-color:var(--payathon-track-token)]!",
+  "platform-uniapp": "[--track-color:var(--payathon-track-agent)]!",
+  "group-motion": "[--track-color:var(--payathon-track-agent)]!",
+};
+
+/** 光晕相位错开 */
+const GLOW_PHASES: Record<string, string> = {
+  "series-reborn": "[--glow-phase:0s]!",
+  "series-community": "[--glow-phase:-4.8s]!",
+  "platform-both": "[--glow-phase:-3.6s]!",
+  "platform-web": "[--glow-phase:-2.4s]!",
+  "platform-uniapp": "[--glow-phase:-1.2s]!",
+};
 </script>
 
 <template>
@@ -335,7 +358,7 @@ onBeforeUnmount(() => {
               <div class="reward-summary-copy">
                 <h3>
                   两个系列<span class="reward-summary-bars" aria-hidden="true">
-                    <span class="reward-summary-bar" data-track="series-reborn" style="--bar-delay: 0s" /><span class="reward-summary-bar" data-track="series-community" style="--bar-delay: -0.7s" />
+                    <span class="reward-summary-bar" :class="TRACK_COLORS['series-reborn']" data-track="series-reborn" style="--bar-delay: 0s" /><span class="reward-summary-bar" :class="TRACK_COLORS['series-community']" data-track="series-community" style="--bar-delay: -0.7s" />
                   </span>
                 </h3>
                 <p>自研组件按 Web 与 UniApp 同名同构设计；社区移植以动效与展示为主</p>
@@ -345,6 +368,7 @@ onBeforeUnmount(() => {
               v-for="card in seriesCards"
               :key="card.key"
               class="reward-medal-track reward-medal-track--main"
+              :class="[TRACK_COLORS[card.key], GLOW_PHASES[card.key]]"
               :data-track="card.key"
               :data-reward-family="card.family"
               :data-reward-species="card.species"
@@ -387,7 +411,7 @@ onBeforeUnmount(() => {
               <div class="reward-summary-copy">
                 <h3>
                   三种适用端<span class="reward-summary-bars" aria-hidden="true">
-                    <span class="reward-summary-bar" data-track="platform-both" style="--bar-delay: 0s" /><span class="reward-summary-bar" data-track="platform-web" style="--bar-delay: -0.7s" /><span class="reward-summary-bar" data-track="platform-uniapp" style="--bar-delay: -1.4s" />
+                    <span class="reward-summary-bar" :class="TRACK_COLORS['platform-both']" data-track="platform-both" style="--bar-delay: 0s" /><span class="reward-summary-bar" :class="TRACK_COLORS['platform-web']" data-track="platform-web" style="--bar-delay: -0.7s" /><span class="reward-summary-bar" :class="TRACK_COLORS['platform-uniapp']" data-track="platform-uniapp" style="--bar-delay: -1.4s" />
                   </span>
                 </h3>
                 <p>每个组件页都标明适用端，文档顶栏的平台开关按它筛选组件列表。</p>
@@ -397,6 +421,7 @@ onBeforeUnmount(() => {
               v-for="card in platformCards"
               :key="card.key"
               class="reward-medal-track"
+              :class="[TRACK_COLORS[card.key], GLOW_PHASES[card.key]]"
               :data-track="card.key"
               :data-reward-family="card.family"
               :data-reward-species="card.species"
@@ -441,7 +466,8 @@ onBeforeUnmount(() => {
                 <h2 id="medal-egg-title" tabindex="-1" autofocus>奖牌拿不走</h2>
                 <p id="medal-egg-description">组件可以：源码按 MIT 协议开源，用 CLI 装进你的项目。</p>
                 <div class="reward-medal-egg-actions">
-                  <NuxtLink class="payathon-button" to="/getting-started" data-medal-egg-start data-astro-cid-dmurru2v="">
+                  <!-- 去掉链接下划线 -->
+                  <NuxtLink class="payathon-button no-underline!" to="/getting-started" data-medal-egg-start data-astro-cid-dmurru2v="">
                     <span>马上开始</span>
                   </NuxtLink>
                   <button type="button" class="reward-medal-egg-close" data-medal-egg-close>好吧，放回去</button>
@@ -483,6 +509,7 @@ onBeforeUnmount(() => {
               <g
                 v-for="(group, index) in runwayGroups"
                 :key="group.key"
+                :class="TRACK_COLORS[group.key]"
                 :data-track="group.key"
                 :data-lane="index"
                 :data-track-group="index < 2 ? 'main' : 'special'"
@@ -496,6 +523,7 @@ onBeforeUnmount(() => {
             v-for="(group, index) in runwayGroups"
             :key="group.key"
             class="track-panel"
+            :class="TRACK_COLORS[group.key]"
             :data-track="group.key"
             :data-track-group="index < 2 ? 'main' : 'special'"
             :style="LANE_STYLES[index]"
@@ -604,6 +632,7 @@ onBeforeUnmount(() => {
             :key="group.key"
             type="button"
             class="runway-key"
+            :class="TRACK_COLORS[group.key]"
             :data-rhythm-key="index"
             :data-track="group.key"
             :aria-label="`按键 ${index + 1}，${group.title}`"
@@ -616,43 +645,3 @@ onBeforeUnmount(() => {
   </section>
 </template>
 
-<style>
-/* 配色键 → 模板的五种车道色：奖牌卡片按系列与适用端、跑道按场景分组，各占一套键 */
-#payathon-page :is([data-track="series-reborn"], [data-track="group-base"]) {
-  --track-color: var(--payathon-track-vibe);
-}
-#payathon-page :is([data-track="series-community"], [data-track="group-nav"]) {
-  --track-color: var(--payathon-track-skill);
-}
-#payathon-page :is([data-track="platform-both"], [data-track="group-form"]) {
-  --track-color: var(--payathon-track-machine);
-}
-#payathon-page :is([data-track="platform-web"], [data-track="group-data"]) {
-  --track-color: var(--payathon-track-token);
-}
-#payathon-page :is([data-track="platform-uniapp"], [data-track="group-motion"]) {
-  --track-color: var(--payathon-track-agent);
-}
-
-/* 卡片背后光晕的相位错开，避免几张卡片同时明暗 */
-#payathon-page .reward-medal-track[data-track="series-reborn"] {
-  --glow-phase: 0s;
-}
-#payathon-page .reward-medal-track[data-track="series-community"] {
-  --glow-phase: -4.8s;
-}
-#payathon-page .reward-medal-track[data-track="platform-both"] {
-  --glow-phase: -3.6s;
-}
-#payathon-page .reward-medal-track[data-track="platform-web"] {
-  --glow-phase: -2.4s;
-}
-#payathon-page .reward-medal-track[data-track="platform-uniapp"] {
-  --glow-phase: -1.2s;
-}
-
-/* 彩蛋里的「马上开始」改成了链接，去掉链接默认的下划线 */
-#payathon-page a.payathon-button {
-  text-decoration: none;
-}
-</style>

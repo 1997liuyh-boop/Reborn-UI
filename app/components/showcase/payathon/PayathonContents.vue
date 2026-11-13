@@ -45,14 +45,16 @@
           <path d="M330 36V1H345.3L376.5 20.3V1H392V36H376.7L345.5 16.7V36H330Z" fill="#FFFFFF" />
         </svg>
         </span>
-        <span class="contents-brand-year" aria-hidden="true" data-astro-cid-n5yfmqyr=""><svg width="128" height="37" viewBox="0 0 128 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- 字标两段宽度比例 392 : 128 -->
+        <span class="contents-brand-year w-[32.65%]!" aria-hidden="true" data-astro-cid-n5yfmqyr=""><svg width="128" height="37" viewBox="0 0 128 37" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M31 36.8C10.33 36.8 0 30.15 0 16.85V1H15.5V16.35C15.5 22.3167 20.66 25.3 31 25.3C41.33 25.3 46.5 22.3167 46.5 16.35V1H62V16.85C62 30.15 51.66 36.8 31 36.8Z" fill="currentColor" />
           <path d="M66 36V24.4H89.25V12.6H66V1H128V12.6H104.75V24.4H128V36H66Z" fill="currentColor" />
         </svg>
         </span>
       </div>
       <div class="contents-action" data-astro-cid-n5yfmqyr="">
-        <a class="payathon-button" href="/getting-started" data-astro-cid-dmurru2v="">
+        <!-- 去掉链接下划线 -->
+        <a class="payathon-button no-underline!" href="/getting-started" data-astro-cid-dmurru2v="">
           马上开始
         </a>
       </div>
@@ -63,9 +65,3 @@
   </details>
 </template>
 
-<style>
-/* 字标从 PAYATHON / 2026 换成 REBORN / UI，两段的宽度比例随之变成 392 : 128 */
-#payathon-page .contents-brand .contents-brand-year {
-  width: 32.65%;
-}
-</style>

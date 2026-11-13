@@ -151,7 +151,8 @@ onBeforeUnmount(() => {
                   <div class="partner-benefit-copy">
                     <h4>{{ card.plugin.name }}</h4>
                     <p>{{ card.plugin.description }}</p>
-                    <p class="partner-benefit-repo">
+                    <!-- 仓库名 -->
+                    <p class="partner-benefit-repo mt-3! font-[ui-monospace,SFMono-Regular,Menlo,Consolas,monospace]! text-[12px]! leading-[1.6]! text-[var(--partner-muted,#626b78)]!">
                       {{ card.plugin.meta }}
                     </p>
                   </div>
@@ -176,13 +177,3 @@ onBeforeUnmount(() => {
   </section>
 </template>
 
-<style>
-/* 卡片里的仓库名：等宽小字，放在简介下面，方便对照 GitHub 地址 */
-#payathon-page .partner-benefit-copy .partner-benefit-repo {
-  margin-top: 12px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--partner-muted, #626b78);
-}
-</style>

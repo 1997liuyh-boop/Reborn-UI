@@ -90,7 +90,8 @@ onBeforeUnmount(() => {
               <div class="footerNavigationBrand" data-astro-cid-5lqz5vuz="">
                 <a href="/" class="astro-5lqz5vuz" aria-label="Reborn UI 首页" data-astro-cid-5lqz5vuz="">
                   <!-- 与站点顶栏 AppHeaderLogo 同构的字标 -->
-                  <svg class="footerNavigationLogo footerNavigationLogo--reborn" viewBox="0 0 168 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reborn UI">
+                  <!-- Reborn UI 字标 -->
+                  <svg class="footerNavigationLogo footerNavigationLogo--reborn block! h-[26px]! w-[136.5px]! text-[#f3f4f6]! filter-none!" viewBox="0 0 168 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reborn UI">
                     <text
                       x="0"
                       y="22"
@@ -211,7 +212,8 @@ onBeforeUnmount(() => {
           <div v-if="buildSha" data-astro-cid-tnsctvpm>
             <dt data-astro-cid-tnsctvpm>提交号</dt>
             <dd :title="buildSha" data-astro-cid-tnsctvpm>
-              <a :href="`${REPO_URL}/commit/${buildSha}`" target="_blank" rel="noopener noreferrer">{{ buildSha.slice(0, 8) }}</a>
+              <!-- 提交号链接 -->
+              <a :href="`${REPO_URL}/commit/${buildSha}`" target="_blank" rel="noopener noreferrer" class="text-inherit! no-underline!">{{ buildSha.slice(0, 8) }}</a>
             </dd>
           </div>
           <div v-if="buildTimeText" data-astro-cid-tnsctvpm>
@@ -258,19 +260,3 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
-<style>
-/* Reborn UI 字标：按 168×32 的比例放进原字标位，跟随页脚文字色 */
-#payathon-page .footerNavigationLogo--reborn {
-  display: block;
-  width: 136.5px;
-  height: 26px;
-  color: #f3f4f6;
-  filter: none;
-}
-
-/* 提交号做成跳到 GitHub 的链接，沿用所在行的字色 */
-#payathon-page .buildDetails a {
-  color: inherit;
-  text-decoration: none;
-}
-</style>
