@@ -77,3 +77,19 @@ MasterGo 导出的实例名是 `缩略图` ×7、`image`、`icon/44/箭头`，�
 - `minCount`：同名实例至少出现几次才算命中（问答列表要三条以上问句）；`confidence: low` 表示命中后仍要按稿面结构确认是否整体采用（站点头部、卡片容器）。
 
 `scripts/kb/check-design.ts` 用 mastergo-test 两个页面真实导出的节点名跑回归（「缩略图」→ `reborn-carousel`、「计数器」→ `reborn-input-number`、「Tab 2」→ `reborn-tabs` 并提示显式 import `RebornTabPane`……）。设计工作室的实现清单里列出的「待映射组件」名称，就是该往 `match` 里补的词；补完 `pnpm kb:build && pnpm kb:check`。
+
+除按名字匹配的 `patterns` 外，同一个文件里还有三张表，`kb:build` 分别并入 `index.json` 的 `designSignals` / `designTraits` / `designLint`（旧版 MCP 读不到它们时只是相应能力不生效）：
+
+- `signals`——**结构信号规则**。节点名是设计师随手起的（「左侧导航单元」「黄点提示」「按钮内容」「容器 2399」），按名字认不全；
+  读取设计稿的一方（设计工作室预读时）从几何与样式算出结构信号，这张表只负责把信号落到组件。信号名是两边的约定：
+  `underline-field` 只有底边一条线的输入、`corner-badge` 图标或头像角上的数字 / 圆点、`selection-list` 一组同款项里只有一项带底色（`when.orientation` 分纵横）、
+  `accordion` 每行标题 + 展开收起图标且有一行展开着正文、`select-trigger` 文字 + 下拉箭头。
+  `confidence` 不为 `low` 的信号规则**优先于名字规则**并由设计工作室强制执行，所以只登记结构上确凿的场景；`low` 的只作提示、附 `alternatives` 候选。
+  `use` 复用某条名字规则的 recipe / uses / pitfalls；`requires` 是必须写在标签上的属性（`variant="underlined"`），工作室的检查阶段逐项核对。
+- `traits`——**稿面特征 → 组件取值**。「组件有现成的变体，却被 ui 覆盖硬改出来」是还原里最常见的偏差。每个组件一条：
+  `sizes` 是 Web 端 size 档位对应的高度，稿面高度不在档位时取最接近的一档并用 `sizeKey` 指定的 ui 键补 `h-[…]`；
+  `rules` 按描边位置（`border`）、有无底色（`background`）、外形（`shape`：circle / pill / square）、宽度取值方式（`width`）、文字（`text`）定 props，`"$text"` 取节点自身文字。
+- `lint`——**模板用法规则**。登记能从模板静态确认的绕行写法：某个 ui 键的类名同时命中 `classAll`（去掉外框再另画底线）、标签上出现某个属性（按钮上的 `aria-expanded`）、某个 prop 的取值。
+  MCP 的 `check_usage` 与设计工作室的检查阶段执行它，`level: error` 会挡住流程。
+
+三张表里的组件、props、插槽、事件、ui 键、枚举取值与 size 档位同样由 `kb:check` 对照知识库与源码核对；`check-design.ts` 另用帮助中心页（下划线搜索、购物车角标、侧栏、问答列表）的真实节点与当时写错的模板做回归。新增一种结构信号要两边一起改：设计工作室的 `signals.ts` 负责认出结构，这里登记落到哪个组件。

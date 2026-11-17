@@ -182,13 +182,111 @@ export const designPatternSchema = z
     message: "component 为空时必须标 ignore 或 custom",
   });
 
+const usesSchema = z
+  .object({
+    props: z.array(z.string()).optional(),
+    slots: z.array(z.string()).optional(),
+    events: z.array(z.string()).optional(),
+    ui: z.array(z.string()).optional(),
+  })
+  .optional();
+
+/**
+ * 结构信号规则（design-patterns.json 的 signals）
+ *
+ * 节点名是设计师随手起的，按名字认不全；信号由读取设计稿的一方（设计工作室）从几何与样式里算出来，
+ * 这张表只负责把信号落到组件。信号名是两边的约定，见 packages/mcp/src/kb.ts 的 KbDesignSignal。
+ * 非低置信的信号规则优先于名字规则，所以只登记结构上确凿的场景。
+ */
+export const designSignalSchema = z.object({
+  id: z.string().regex(/^[a-z0-9-]+$/),
+  signal: z.string().regex(/^[a-z][a-z-]*$/), // 信号名，如 underline-field
+  pattern: z.string().min(1),
+  /** 进一步限定信号附带的事实，全部相等才命中（如 orientation: vertical） */
+  when: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
+  component: z.string(),
+  with: z.array(z.string()).optional(),
+  confidence: z.enum(["high", "low"]).optional(), // low：只作提示，调用方不做硬性核对
+  alternatives: z.array(z.string()).optional(), // 低置信时一并给出的其它候选组件
+  use: z.string().optional(), // 复用哪条名字规则（patterns 的 id）的 recipe / uses / pitfalls
+  /** 必须出现在组件标签上的写法，形如 variant="underlined"；调用方据此做硬性核对 */
+  requires: z.array(z.string().regex(/^[a-z][A-Za-z-]*(?:="[^"]*")?$/)).optional(),
+  recipe: z.string().optional(),
+  imports: z.array(z.string()).optional(),
+  uses: usesSchema,
+  pitfalls: z.array(z.string()).optional(),
+});
+
+/** 稿面特征的判断条件：给出的键全部满足才算命中 */
+export const traitConditionSchema = z
+  .object({
+    border: z.enum(["all", "bottom", "none"]).optional(),
+    background: z.boolean().optional(),
+    shape: z.enum(["circle", "pill", "square"]).optional(),
+    width: z.enum(["hug", "fixed", "fill"]).optional(),
+    text: z.enum(["digits", "none", "any"]).optional(),
+    signal: z.string().optional(),
+  })
+  .strict();
+
+/**
+ * 稿面特征 → 组件取值（design-patterns.json 的 traits）
+ *
+ * 「组件有现成的变体，却被 ui 覆盖硬改出来」是还原里最常见的偏差。这张表把看到的样子
+ * （只有底线、胶囊圆角、稿面高度）对应到要写的 props；sizes 与 set 里的取值由 kb:check 对照知识库核对。
+ */
+export const designTraitSchema = z.object({
+  component: z.string(),
+  sizes: z.record(z.number().positive()).optional(), // Web 端 size 档位 → 高度 px
+  sizesWhen: traitConditionSchema.optional(), // 档位只在满足条件时适用（角标的高度档位只对文字角标成立）
+  sizeKey: z.string().optional(), // 稿面高度不在档位时，用哪个 ui 键补 h-[…]
+  rules: z
+    .array(
+      z.object({
+        id: z.string().regex(/^[a-z0-9-]+$/),
+        when: traitConditionSchema,
+        set: z.record(z.union([z.string(), z.literal(true)])), // "$text" 取节点自身文字
+        note: z.string().optional(),
+      }),
+    )
+    .optional(),
+});
+
+/**
+ * 模板用法规则（design-patterns.json 的 lint）：登记「绕过组件能力」的写法，
+ * 由 MCP 的 check_usage 与设计工作室的检查阶段对模板执行。只登记能从模板静态确认的写法。
+ */
+export const designLintSchema = z.object({
+  id: z.string().regex(/^[a-z0-9-]+$/),
+  component: z.string(),
+  level: z.enum(["error", "warn"]),
+  when: z
+    .object({
+      attr: z.string().optional(), // 标签上出现这个属性（静态或绑定）
+      prop: z
+        .object({ name: z.string(), in: z.array(z.string()).optional(), notIn: z.array(z.string()).optional() })
+        .optional(),
+      uiKey: z.string().optional(), // 只看这个 ui 键的类名；缺省看全部
+      classAll: z.array(z.string().min(1)).optional(), // 类名里全部命中才算（正则源码）
+    })
+    .strict()
+    .refine((when) => when.attr || when.prop || when.classAll?.length, { message: "when 至少要有 attr / prop / classAll 之一" }),
+  message: z.string().min(1),
+});
+
 export const designPatternsFileSchema = z.object({
   schemaVersion: z.literal(1),
   description: z.string(),
   patterns: z.array(designPatternSchema).min(1),
+  signals: z.array(designSignalSchema).optional(),
+  traits: z.array(designTraitSchema).optional(),
+  lint: z.array(designLintSchema).optional(),
 });
 
 export type DesignPattern = z.infer<typeof designPatternSchema>;
+export type DesignSignal = z.infer<typeof designSignalSchema>;
+export type DesignTrait = z.infer<typeof designTraitSchema>;
+export type DesignLint = z.infer<typeof designLintSchema>;
 
 export const indexSchema = z.object({
   schemaVersion: z.literal(1),
@@ -196,6 +294,10 @@ export const indexSchema = z.object({
   components: z.array(indexEntrySchema),
   /** 设计稿配方表：随索引一起分发，MCP 与设计工作室据此做节点→组件映射 */
   designPatterns: z.array(designPatternSchema).optional(),
+  /** 结构信号规则、稿面特征取值与模板用法规则：后加的三张表，旧版消费端读不到时各自不生效 */
+  designSignals: z.array(designSignalSchema).optional(),
+  designTraits: z.array(designTraitSchema).optional(),
+  designLint: z.array(designLintSchema).optional(),
 });
 
 export type KnowledgeIndex = z.infer<typeof indexSchema>;
