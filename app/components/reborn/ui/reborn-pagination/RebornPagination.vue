@@ -261,9 +261,12 @@ function handleJumperConfirm(value: number | null) {
   jumperValue.value = null;
 }
 
-/** 简洁模式提交页码：清空时保留当前页，输入框始终回显实际页码 */
-function handleSimpleChange(value: number | null) {
-  if (value !== null) jumpTo(value);
+/**
+ * 简洁模式提交页码：清空时保留当前页，输入框始终回显实际页码。
+ * RebornInputNumber 的 v-model 允许 undefined（未绑定时的初始值），这里与 null 一样当作没有输入。
+ */
+function handleSimpleChange(value: number | null | undefined) {
+  if (value !== null && value !== undefined) jumpTo(value);
 }
 
 /** 处理每页条数变化：同步 model 并触发事件，当前页的钳制交给下方唯一的钳制 watcher */
