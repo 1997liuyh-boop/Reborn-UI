@@ -209,6 +209,16 @@ export function checkDesignPatterns(): string[] {
   if (!menu.subcomponents?.includes("RebornMenuItem") || menu.selectionGroup) {
     problems.push("设计稿回归：分類列表 应按名字落到 reborn-menu 并给出 RebornMenuItem 子组件的显式 import 提示，已命中规则的节点不再重复结构提示");
   }
+  // 「faq / 常见问题」只是主题词：帮助中心页的五张分类卡片实例就叫「faq」，按名字强行落到折叠面板是错的。
+  // 仍给出 reborn-collapse 作候选，但标低置信；结构词（折叠、手风琴）才是确定的命中。
+  const topic = run([{ name: "faq" }, { name: "常见问题" }, { name: "折叠面板" }, { name: "FAQ accordion" }]).matches;
+  if (
+    !topic.slice(0, 2).every((m) => m.component === "reborn-collapse" && m.patternId === "faq-topic" && m.confidence === "low")
+    || topic[2].patternId !== "collapse" || topic[2].confidence === "low"
+    || topic[3].patternId !== "collapse"
+  ) {
+    problems.push("设计稿回归：只含主题词的「faq / 常见问题」应低置信地落到 reborn-collapse（规则 faq-topic），含结构词的「折叠面板」「FAQ accordion」才是确定命中");
+  }
   const uniapp = run([{ name: "轮播" }]);
   const uniappMatch = matchDesignNodes(patterns, entries, [{ name: "轮播" }], { platform: "uniapp", getComponent: loadComponent }).matches[0];
   if (uniapp.matches[0].component !== "reborn-carousel" || uniappMatch.component !== null || !uniappMatch.note?.includes("仅")) {
