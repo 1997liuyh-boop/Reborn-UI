@@ -1,4 +1,5 @@
 import type { DesignNodeInput } from "../../packages/mcp/src/search.js";
+import type { DesignRules } from "./design-patterns.js";
 /**
  * 设计稿配方表（knowledge/design-patterns.json）的守卫
  *
@@ -13,7 +14,8 @@ import type { DesignNodeInput } from "../../packages/mcp/src/search.js";
 import fs from "node:fs";
 import path from "node:path";
 import { compileMatcher,  matchDesignNodes } from "../../packages/mcp/src/search.js";
-import { loadDesignPatterns } from "./design-patterns.js";
+import { lintTemplate } from "../../packages/mcp/src/usage.js";
+import { loadDesignRules } from "./design-patterns.js";
 import { extractUiKeys, supportsUi } from "./extract-ui-keys.js";
 import { KNOWLEDGE_DIR } from "./sources.js";
 
@@ -93,9 +95,11 @@ function loadComponent(id: string): any | null {
 /** 配方表守卫，返回失败项 */
 export function checkDesignPatterns(): string[] {
   const problems: string[] = [];
+  let rules: DesignRules;
   let patterns;
   try {
-    patterns = loadDesignPatterns();
+    rules = loadDesignRules();
+    patterns = rules.patterns;
   } catch (error) {
     return [error instanceof Error ? error.message : String(error)];
   }
@@ -210,5 +214,206 @@ export function checkDesignPatterns(): string[] {
   if (uniapp.matches[0].component !== "reborn-carousel" || uniappMatch.component !== null || !uniappMatch.note?.includes("仅")) {
     problems.push("设计稿回归：轮播在 web 端应落到 reborn-carousel，在 uniapp 端应标为不可用");
   }
+  problems.push(...checkDesignRules(rules, index, patterns));
+  return problems;
+}
+
+/** 组件的成员集合：props / slots / events 取自知识条目，ui 键取自源码实际消费点（两端并集） */
+function membersOf(id: string) {
+  const component = loadComponent(id);
+  if (!component) return null;
+  const uiKeys = supportsUi(id)
+    ? new Set([...extractUiKeys(id, "web").keys.map((k) => k.key), ...extractUiKeys(id, "uniapp").keys.map((k) => k.key)])
+    : new Set<string>();
+  return {
+    component,
+    props: new Map<string, any[]>(
+      [...new Set((component.props ?? []).map((x: any) => x.name as string))].map((name) => [name, (component.props ?? []).filter((x: any) => x.name === name)]),
+    ),
+    slots: new Set<string>((component.slots ?? []).map((x: any) => x.name)),
+    events: new Set<string>((component.events ?? []).map((x: any) => x.name)),
+    uiKeys,
+    /** Web 端某个 prop 的可选值；没有枚举时为 undefined */
+    webOptions: (name: string): string[] | undefined =>
+      (component.props ?? []).find((x: any) => x.name === name && (!x.platform || x.platform === "web") && x.options?.length)?.options,
+  };
+}
+
+/**
+ * 结构信号规则、稿面特征取值、模板用法规则三张表的守卫：
+ * 指向的组件、props、插槽、事件、ui 键与枚举取值必须真实存在；再用帮助中心页（MasterGo 72:002278）
+ * 的真实节点做回归——那一页的下划线搜索被做成去掉外框的 RebornSearchBox、购物车角标被拼成碎图、
+ * 问答列表被做成一排按钮，正是这三张表要拦住的偏差。
+ */
+function checkDesignRules(rules: DesignRules, index: ReturnType<typeof loadIndex>, patterns: DesignRules["patterns"]): string[] {
+  const problems: string[] = [];
+  const { signals, traits, lint } = rules;
+  for (const [key, table] of [["designSignals", signals], ["designTraits", traits], ["designLint", lint]] as const) {
+    const indexed = (index as Record<string, unknown>)[key];
+    if (JSON.stringify(Array.isArray(indexed) ? indexed : []) !== JSON.stringify(table)) {
+      problems.push(`index.json 里的 ${key} 与 knowledge/design-patterns.json 不一致，请重新运行 pnpm kb:build`);
+    }
+  }
+  const patternIds = new Set(patterns.map((p) => p.id));
+
+  // 信号规则
+  for (const s of signals) {
+    const where = `design-patterns.json 信号规则 ${s.id}`;
+    for (const id of [s.component, ...(s.with ?? []), ...(s.alternatives ?? [])]) {
+      if (!loadComponent(id)) problems.push(`${where} 指向不存在的组件：${id}`);
+    }
+    if (s.use && !patternIds.has(s.use)) problems.push(`${where} 的 use 指向不存在的名字规则：${s.use}`);
+    const members = membersOf(s.component);
+    if (!members) continue;
+    for (const kind of ["props", "slots", "events"] as const) {
+      for (const name of s.uses?.[kind] ?? []) {
+        if (!members[kind].has(name)) problems.push(`${where}：${s.component} 没有 ${kind} 成员「${name}」，recipe 不能描述源码里不存在的能力`);
+      }
+    }
+    if (members.uiKeys.size) {
+      for (const key of s.uses?.ui ?? []) {
+        if (!members.uiKeys.has(key)) problems.push(`${where}：${s.component} 的 ui 没有键「${key}」`);
+      }
+    }
+    for (const required of s.requires ?? []) {
+      const [name, value] = required.split("=");
+      const prop = name.replace(/-([a-z])/g, (_m, letter: string) => letter.toUpperCase());
+      if (!members.props.has(prop)) problems.push(`${where} 的 requires「${required}」：${s.component} 没有 prop「${prop}」`);
+      const options = members.webOptions(prop);
+      if (value && options && !options.includes(value.replace(/"/g, ""))) problems.push(`${where} 的 requires「${required}」：取值不在 ${options.join(" / ")} 里`);
+    }
+  }
+
+  // 特征取值
+  for (const t of traits) {
+    const where = `design-patterns.json 特征表 ${t.component}`;
+    const members = membersOf(t.component);
+    if (!members) {
+      problems.push(`${where} 指向不存在的组件`);
+      continue;
+    }
+    const sizeOptions = members.webOptions("size");
+    for (const size of Object.keys(t.sizes ?? {})) {
+      if (!sizeOptions?.includes(size)) problems.push(`${where} 的 sizes 档位「${size}」不在 Web 端 size 的可选值里（${sizeOptions?.join(" / ") ?? "无枚举"}）`);
+    }
+    if (t.sizeKey && members.uiKeys.size && !members.uiKeys.has(t.sizeKey)) problems.push(`${where} 的 sizeKey「${t.sizeKey}」不是 ${t.component} 的 ui 键`);
+    for (const rule of t.rules ?? []) {
+      for (const [name, value] of Object.entries(rule.set)) {
+        if (!members.props.has(name)) problems.push(`${where} 规则 ${rule.id}：${t.component} 没有 prop「${name}」`);
+        const options = members.webOptions(name);
+        if (typeof value === "string" && value !== "$text" && options && !options.includes(value)) {
+          problems.push(`${where} 规则 ${rule.id}：${name}="${value}" 不在可选值里（${options.join(" / ")}）`);
+        }
+      }
+    }
+  }
+
+  // 用法规则
+  for (const l of lint) {
+    const where = `design-patterns.json 用法规则 ${l.id}`;
+    const members = membersOf(l.component);
+    if (!members) {
+      problems.push(`${where} 指向不存在的组件：${l.component}`);
+      continue;
+    }
+    if (l.when.prop && !members.props.has(l.when.prop.name)) problems.push(`${where}：${l.component} 没有 prop「${l.when.prop.name}」`);
+    const options = l.when.prop ? members.webOptions(l.when.prop.name) : undefined;
+    for (const value of [...(l.when.prop?.in ?? []), ...(l.when.prop?.notIn ?? [])]) {
+      if (options && !options.includes(value)) problems.push(`${where}：${l.when.prop!.name} 没有取值「${value}」（${options.join(" / ")}）`);
+    }
+    if (l.when.uiKey && members.uiKeys.size && !members.uiKeys.has(l.when.uiKey)) problems.push(`${where}：${l.component} 的 ui 没有键「${l.when.uiKey}」`);
+    for (const pattern of l.when.classAll ?? []) {
+      try {
+        new RegExp(pattern, "i").test("");
+      } catch (error) {
+        problems.push(`${where} 的 classAll「${pattern}」不是合法正则：${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  }
+  if (!signals.length) return problems;
+
+  // 回归：帮助中心页的真实节点（节点名原样取自导出结构）
+  const entries = index.components ?? [];
+  const run = (nodes: DesignNodeInput[], withRules = true) =>
+    matchDesignNodes(patterns, entries, nodes, { getComponent: loadComponent, ...(withRules ? { signals, traits } : {}) });
+  const help = run([
+    { id: "181:308522", name: "搜索", signals: ["underline-field"], text: "Please enter the brand to search", style: { height: 44, border: "bottom", sizing: { width: "fill" } } },
+    { id: "181:222038", name: "黄点提示-自定义", signals: ["corner-badge"], text: "10", style: { width: 16, height: 16 } },
+    { id: "181:221271", name: "icon-顶部导航内容", signals: ["corner-badge"], text: "99", style: { width: 16, height: 16 } },
+    { id: "65:051639", name: "容器 2738", signals: ["selection-list"], facts: { orientation: "vertical", members: 5 } },
+    { id: "65:051146", name: "容器 2740", signals: ["accordion"], facts: { members: 10 } },
+    { id: "3:221801", name: "按钮内容", signals: ["select-trigger"], text: "ALL", style: { width: 144, height: 44, sizing: { width: "fixed" } } },
+    { id: "x:1", name: "容器 9", signals: ["selection-list"], facts: { orientation: "horizontal", members: 4 } },
+    { id: "x:2", name: "选项卡", signals: ["select-trigger"] },
+    { id: "x:3", name: "容器 127", signals: ["select-trigger"], text: "English" },
+  ]).matches;
+  const expect = (ok: boolean, message: string) => {
+    if (!ok) problems.push(`设计稿回归（结构信号）：${message}`);
+  };
+  const [search, cartBadge, avatarBadge, sideNav, faq, siteSelect, row, namedTabs, language] = help;
+  expect(
+    search.component === "reborn-input" && search.source === "signal" && !!search.requires?.includes('variant="underlined"')
+      && !!search.resolved?.attrs.includes('variant="underlined"') && !!search.resolved?.attrs.includes('size="lg"') && !!search.resolved?.ui.includes("group: h-[44px]")
+      && !!search.note?.includes("reborn-search-box"),
+    "只有底线的「搜索」应按结构落到 reborn-input，requires 与 resolved 都给出 variant=\"underlined\"，44px 取 size=\"lg\" 并用 ui.group 补高度，note 说明没有采用按名字命中的 reborn-search-box",
+  );
+  expect(cartBadge.component === "reborn-chip" && !!cartBadge.resolved?.attrs.includes('text="10"') && !!cartBadge.resolved?.attrs.includes('size="sm"'), "图标角上的数字应落到 reborn-chip，并解析出 text=\"10\" 与 size=\"sm\"（16px）");
+  expect(avatarBadge.component === "reborn-chip" && avatarBadge.status === "pattern", "结构是角标的节点即使名字以 icon- 开头，也应落到 reborn-chip 而不是按图标忽略");
+  expect(sideNav.component === "reborn-menu" && !!sideNav.subcomponents?.includes("RebornMenuItem") && sideNav.confidence === "high", "纵向互斥选择应落到 reborn-menu 并带出 RebornMenuItem 的显式 import 提示");
+  expect(faq.component === "reborn-collapse" && !!faq.recipe?.includes("RebornCollapse"), "展开收起列表应落到 reborn-collapse，配方沿用问答列表的每行一个 RebornCollapse");
+  expect(
+    siteSelect.component === "reborn-button" && siteSelect.source === "name" && siteSelect.signal === "select-trigger"
+      && !!siteSelect.note?.includes("reborn-dropdown") && !!siteSelect.resolved?.notes.some((note) => note.includes("144")),
+    "名字已落到 reborn-button 的下拉触发器保持按名字判定，但要把「下拉触发器」的结构提示写进 note，定宽 144px 在 resolved.notes 里说明写死宽度",
+  );
+  expect(
+    language.component === "reborn-dropdown" && language.confidence === "low" && !!language.alternatives?.some((a) => a.id === "reborn-select"),
+    "名字没有落到组件的「文字 + 下拉箭头」应作为低置信提示落到 reborn-dropdown，候选含 reborn-select",
+  );
+  expect(row.component === "reborn-tabs" && row.confidence === "low" && !!row.alternatives?.some((a) => a.id === "reborn-segmented"), "横向互斥选择只作低置信提示：reborn-tabs，候选含 reborn-segmented");
+  expect(namedTabs.component === "reborn-tabs" && namedTabs.source === "name", "低置信的结构信号不应盖过按名字命中的组件");
+  expect(
+    run([{ name: "搜索", signals: ["underline-field"], style: { border: "bottom" } }], false).matches[0].component === "reborn-search-box",
+    "调用方没有传信号规则与特征表时（旧版索引），信号不参与判定，行为与原来一致",
+  );
+  const hints = run([{ id: "181:308522", name: "搜索", signals: ["underline-field"] }]).hints;
+  expect(hints.some((hint) => hint.includes("结构判定") && hint.includes("181:308522") && hint.includes('variant="underlined"')), "结构判定要在 hints 里点名节点与必须写的属性");
+
+  // 回归：帮助中心页当时写出来的模板
+  const kb = { list: () => entries, get: loadComponent, designLint: () => lint };
+  const wrong = lintTemplate(
+    [
+      "<script setup lang=\"ts\">",
+      "const rowUi = { base: 'flex h-auto w-full justify-start', lable: 'text-left' }",
+      "</script>",
+      "<template>",
+      "  <RebornSearchBox v-model=\"keyword\" :show-dropdown=\"false\" :ui=\"{ root: 'w-full', control: 'h-[44px] rounded-none border-0 bg-transparent px-0', inputWrapper: 'px-0' }\" />",
+      "  <RebornButton variant=\"text\" color=\"neutral\" :aria-expanded=\"isOpen(0)\" :ui=\"rowUi\" @click=\"toggle(0)\">问题</RebornButton>",
+      "  <RebornButton variant=\"ghost\" size=\"md\">更多</RebornButton>",
+      "</template>",
+    ].join("\n"),
+    kb,
+  ).findings;
+  const has = (rule: string, tag: string, line: number) => wrong.some((f) => f.rule === rule && f.tag === tag && f.line === line);
+  if (!has("search-box-as-underline", "RebornSearchBox", 5)) problems.push("用法回归：去掉外框与圆角的 RebornSearchBox 应报 search-box-as-underline");
+  if (!has("button-as-collapse", "RebornButton", 6)) problems.push("用法回归：带 aria-expanded 的 RebornButton 应提示 button-as-collapse");
+  if (!has("ui-key", "RebornButton", 6)) problems.push("用法回归：脚本里 :ui 绑定的对象常量写了不存在的键（lable）应报 ui-key");
+  if (!has("prop-value", "RebornButton", 7)) problems.push("用法回归：variant=\"ghost\" 不在可选值里应报 prop-value");
+  const right = lintTemplate(
+    [
+      "<template>",
+      "  <RebornInput v-model=\"keyword\" variant=\"underlined\" size=\"lg\" :ui=\"{ group: 'h-[44px]', input: 'text-[14px]' }\" @keydown=\"submit\">",
+      "    <template #suffix=\"{ ui }\"><img :src=\"icon\" alt=\"\" /></template>",
+      "  </RebornInput>",
+      "  <RebornChip text=\"10\" size=\"sm\"><img :src=\"cart\" alt=\"\" /></RebornChip>",
+      "  <RebornMenu v-model:selected-keys=\"active\" color=\"neutral\" :ui=\"{ root: 'w-[224px]', menuItem: 'h-[40px]' }\">",
+      "    <RebornMenuItem index=\"a\" :ui=\"{ menuItem: 'bg-[#F0F1F5]' }\">A</RebornMenuItem>",
+      "  </RebornMenu>",
+      "  <RebornCollapse v-model=\"open\"><span>题目</span><template #content>答案</template></RebornCollapse>",
+      "</template>",
+    ].join("\n"),
+    kb,
+  );
+  if (right.findings.length || right.checked !== 5) problems.push(`用法回归：按知识库写的模板不应有任何问题，实际 ${right.checked} 个标签、${right.findings.map((f) => `${f.tag}:${f.rule}`).join("、") || "无问题"}`);
   return problems;
 }

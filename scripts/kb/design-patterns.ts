@@ -1,4 +1,4 @@
-import type { DesignPattern } from "./schema.js";
+import type { DesignLint, DesignPattern, DesignSignal, DesignTrait } from "./schema.js";
 /**
  * 设计稿配方表的读取与基本校验（build 与 check 共用）
  *
@@ -12,9 +12,22 @@ import { KNOWLEDGE_DIR } from "./sources.js";
 
 export const DESIGN_PATTERNS_FILE = path.join(KNOWLEDGE_DIR, "design-patterns.json");
 
-/** 读取并校验配方表；文件不存在时返回空数组（允许不带配方表的知识库） */
+/** 配方表文件的四张表：名字规则、结构信号规则、稿面特征取值、模板用法规则 */
+export interface DesignRules {
+  patterns: DesignPattern[];
+  signals: DesignSignal[];
+  traits: DesignTrait[];
+  lint: DesignLint[];
+}
+
+/** 读取并校验配方表里的名字规则；文件不存在时返回空数组（允许不带配方表的知识库） */
 export function loadDesignPatterns(): DesignPattern[] {
-  if (!fs.existsSync(DESIGN_PATTERNS_FILE)) return [];
+  return loadDesignRules().patterns;
+}
+
+/** 读取并校验整份配方表；文件不存在时四张表都为空 */
+export function loadDesignRules(): DesignRules {
+  if (!fs.existsSync(DESIGN_PATTERNS_FILE)) return { patterns: [], signals: [], traits: [], lint: [] };
   const raw = JSON.parse(fs.readFileSync(DESIGN_PATTERNS_FILE, "utf8"));
   const parsed = designPatternsFileSchema.safeParse(raw);
   if (!parsed.success) {
@@ -23,10 +36,19 @@ export function loadDesignPatterns(): DesignPattern[] {
       `knowledge/design-patterns.json 不符合 schema：${issue?.path.join(".")}: ${issue?.message}`,
     );
   }
-  const seen = new Set<string>();
-  for (const p of parsed.data.patterns) {
-    if (seen.has(p.id)) throw new Error(`knowledge/design-patterns.json 规则 id 重复：${p.id}`);
-    seen.add(p.id);
-  }
-  return parsed.data.patterns;
+  const { patterns, signals = [], traits = [], lint = [] } = parsed.data;
+  // 各表内部 id 不能重复；特征表按组件一条、规则 id 在全表内唯一
+  const unique = (label: string, ids: string[]) => {
+    const seen = new Set<string>();
+    for (const id of ids) {
+      if (seen.has(id)) throw new Error(`knowledge/design-patterns.json ${label} id 重复：${id}`);
+      seen.add(id);
+    }
+  };
+  unique("规则", patterns.map((p) => p.id));
+  unique("信号规则", signals.map((s) => s.id));
+  unique("特征表组件", traits.map((t) => t.component));
+  unique("特征规则", traits.flatMap((t) => (t.rules ?? []).map((r) => r.id)));
+  unique("用法规则", lint.map((l) => l.id));
+  return { patterns, signals, traits, lint };
 }
