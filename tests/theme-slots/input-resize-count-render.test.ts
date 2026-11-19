@@ -38,7 +38,7 @@ for (const resize of ['vertical', 'horizontal', 'both']) {
     assert.match(html, /<textarea[^>]*class="[^"]*pb-6/)
     assert.match(html, /<span[^>]*class="[^"]*right-6/)
     assert.ok(html.includes(`resize:${resize}`))
-    assert.match(html, /2 \/ 100/)
+    assert.match(html.replace(/<[^>]+>/g, ''), /2 \/ 100/)
   })
 }
 for (const [name, props] of [
@@ -49,9 +49,16 @@ for (const [name, props] of [
   ['没有字数上限', { maxlength: undefined }],
   ['单行输入框', { type: 'text' }],
 ] as const) {
-  it(`${name} 不启用手柄布局`, async () => {
+  it(`${name} 不预留内置统计手柄区域`, async () => {
     const html = await render(props)
-    assert.doesNotMatch(html, /px-0!|right-6/)
+    assert.doesNotMatch(html, /right-6/)
+    // 无统计或外置统计仍保留拖拽图标与原生手柄的对齐。
+    if (name === '外置统计' || name === '不展示统计' || name === '没有字数上限') {
+      assert.match(html, /px-0!/)
+      assert.match(html, /viewBox="0 0 8 8"/)
+    } else {
+      assert.doesNotMatch(html, /px-0!|viewBox="0 0 8 8"/)
+    }
     // 非拖拽文本域由外框预留统计区域，原生输入元素不需要手柄内边距。
     assert.doesNotMatch(html, /<textarea[^>]*class="[^"]*pb-6/)
   })

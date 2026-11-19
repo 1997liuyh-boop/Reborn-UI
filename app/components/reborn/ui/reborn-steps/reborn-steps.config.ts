@@ -5,7 +5,7 @@ export const stepsDirections = ['horizontal', 'vertical'] as const;
 export const stepsPlacements = ['top', 'bottom', 'left', 'right'] as const;
 export const stepsStatuses = ['wait', 'process', 'finish', 'error', 'success'] as const;
 export const stepsSizes = ['sm', 'md', 'lg'] as const;
-export const stepsTypes = ['default', 'dot', 'text'] as const;
+export const stepsTypes = ['default', 'dot', 'text', 'tabs'] as const;
 export const stepsLineTypes = ['solid', 'dashed', 'arrow'] as const;
 export const stepsColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const;
 export type StepsDirection = (typeof stepsDirections)[number];
@@ -42,7 +42,7 @@ export const stepsTheme = tv({
     // 默认不生成布局盒，保留已有布局；混排时再把标题和描述收为独立内容组。
     content: 'contents',
     marker: 'relative z-1 flex shrink-0 items-center justify-center rounded-full font-medium transition-colors duration-200 motion-reduce:transition-none',
-    // 圆环宽 2px、与节点间隔 3px，向外共扩展 5px；不改变节点与标题、连接线的布局。
+    // 点状和标签导航保留 2px 圆环、3px 间隔；默认节点在外观变体中使用 1px 圆环。
     progressRing: 'pointer-events-none absolute -inset-1.25 size-[calc(100%+--spacing(2.5))] -rotate-90 overflow-visible fill-none stroke-[length:--spacing(0.5)]',
     progressTrack: 'stroke-gray-3',
     progressIndicator: 'stroke-(--step-color) transition-[stroke-dasharray] duration-200 motion-reduce:transition-none',
@@ -82,10 +82,10 @@ export const stepsTheme = tv({
       },
     },
     size: {
-      sm: { marker: 'size-6 text-base', title: 'text-base', description: 'text-sm' },
-      md: { marker: 'size-8 text-lg', title: 'text-lg', description: 'text-base' },
+      sm: { item: '[--reborn-steps-internal-marker-size:--spacing(6)]', marker: 'size-6 text-base', title: 'text-base', description: 'text-sm' },
+      md: { item: '[--reborn-steps-internal-marker-size:--spacing(8)]', marker: 'size-8 text-lg', title: 'text-lg', description: 'text-base' },
       // 用户明确指定大档标题为 18px，七级字号没有同值档位，因此仅此处保留字面量。
-      lg: { marker: 'size-10 text-[18px] leading-[26px]', title: 'text-[18px] leading-[26px]', description: 'text-lg' },
+      lg: { item: '[--reborn-steps-internal-marker-size:--spacing(10)]', marker: 'size-10 text-[18px] leading-[26px]', title: 'text-[18px] leading-[26px]', description: 'text-lg' },
     },
     color: {
       primary: { item: '[--step-color:var(--color-primary)] [--step-soft:var(--color-primary-soft)] [--step-foreground:var(--color-primary-foreground)]' },
@@ -99,12 +99,13 @@ export const stepsTheme = tv({
     },
     status: {
       wait: { marker: 'bg-gray-3 text-gray-7' },
-      process: { marker: 'bg-(--step-color) text-(--step-foreground)', title: 'text-gray-10' },
-      finish: { marker: 'bg-(--step-soft) text-(--step-color)', title: 'text-gray-10' },
+      process: { marker: 'bg-(--step-color) text-gray-3', title: 'text-gray-10', description: 'text-gray-7' },
+      finish: { marker: 'bg-(--step-soft) text-(--step-color)', title: 'text-(--step-color)', description: 'text-(--step-color)' },
       error: { marker: 'bg-error text-error-foreground', title: 'text-gray-10' },
-      success: { marker: 'bg-success text-success-foreground', title: 'text-gray-10' },
+      success: { marker: 'bg-success text-success-foreground', title: 'text-(--step-color)', description: 'text-(--step-color)' },
     },
-    type: { default: {}, dot: {}, text: {} },
+    type: { default: { root: 'has-[[role=progressbar]]:p-0.75', progressRing: '[--reborn-steps-internal-ring-half-stroke:calc(var(--spacing)/8)] -inset-0.5 size-[calc(100%+--spacing(1))] stroke-[length:--spacing(0.25)]' }, dot: {}, text: {}, tabs: {} },
+    progress: { true: {}, false: {} },
     current: { true: {}, false: {} },
     lineType: {
       solid: {},
@@ -123,9 +124,7 @@ export const stepsTheme = tv({
     // 标记跨两行，避免圆形高度撑大标题行后额外增加标题与描述的间距。
     // 标题顶偏移取标记与实际行高之差，根字号变化时仍居中；描述始终接在标题之后。
     { direction: 'horizontal' as const, placement: ['left', 'right'], class: { marker: 'row-span-2 self-start', title: 'self-start', connector: 'self-start' } },
-    { direction: 'horizontal' as const, placement: ['left', 'right'], size: 'sm' as const, class: { title: 'mt-[calc((--spacing(6)-1lh)/2)]', connector: 'mt-2.75' } },
-    { direction: 'horizontal' as const, placement: ['left', 'right'], size: 'md' as const, class: { title: 'mt-[calc((--spacing(8)-1lh)/2)]', connector: 'mt-3.75' } },
-    { direction: 'horizontal' as const, placement: ['left', 'right'], size: 'lg' as const, class: { title: 'mt-[calc((--spacing(10)-1lh)/2)]', connector: 'mt-4.75' } },
+    { direction: 'horizontal' as const, placement: ['left', 'right'], class: { title: 'mt-[calc((var(--reborn-steps-internal-marker-size)-1lh)/2)]', connector: 'mt-[calc((var(--reborn-steps-internal-marker-size)-_--spacing(0.5))/2)]' } },
     // 末项与前面的步骤一同分配可用宽度，避免长描述被压在标题的窄列内。
     { direction: 'horizontal' as const, last: true, placement: ['left', 'right'], spaced: false, class: { item: 'grid-cols-[auto_minmax(0,1fr)]', description: 'pr-0' } },
     { direction: 'horizontal' as const, placement: ['top', 'bottom'], class: {
@@ -133,12 +132,12 @@ export const stepsTheme = tv({
       title: 'col-start-1 row-start-2 mt-2 ml-0 text-center', description: 'col-start-1 row-start-3 ml-0 px-2 text-center',
       connector: 'absolute mx-0 min-w-0',
     } },
-    { direction: 'horizontal' as const, placement: ['top', 'bottom'], size: 'sm' as const, class: { item: 'min-w-22', connector: 'top-3 left-[calc(50%+--spacing(9))] right-[calc(-50%+--spacing(9))] -translate-y-1/2' } },
-    { direction: 'horizontal' as const, placement: ['top', 'bottom'], size: 'md' as const, class: { item: 'min-w-24', connector: 'top-4 left-[calc(50%+--spacing(10))] right-[calc(-50%+--spacing(10))] -translate-y-1/2' } },
-    { direction: 'horizontal' as const, placement: ['top', 'bottom'], size: 'lg' as const, class: { item: 'min-w-26', connector: 'top-5 left-[calc(50%+--spacing(11))] right-[calc(-50%+--spacing(11))] -translate-y-1/2' } },
-    { direction: 'vertical' as const, size: 'sm' as const, class: { item: 'min-h-24', title: 'min-h-6', connector: 'top-8 left-3' } },
-    { direction: 'vertical' as const, size: 'md' as const, class: { item: 'min-h-26', title: 'min-h-8', connector: 'top-10 left-4' } },
-    { direction: 'vertical' as const, size: 'lg' as const, class: { item: 'min-h-28', title: 'min-h-10', connector: 'top-12 left-5' } },
+    { direction: 'horizontal' as const, placement: ['top', 'bottom'], size: 'sm' as const, class: { item: 'min-w-22', connector: 'top-[calc(var(--reborn-steps-internal-marker-size)/2)] left-[calc(50%+var(--reborn-steps-internal-marker-size)/2+--spacing(6))] right-[calc(-50%+var(--reborn-steps-internal-marker-size)/2+--spacing(6))] -translate-y-1/2' } },
+    { direction: 'horizontal' as const, placement: ['top', 'bottom'], size: 'md' as const, class: { item: 'min-w-24', connector: 'top-[calc(var(--reborn-steps-internal-marker-size)/2)] left-[calc(50%+var(--reborn-steps-internal-marker-size)/2+--spacing(6))] right-[calc(-50%+var(--reborn-steps-internal-marker-size)/2+--spacing(6))] -translate-y-1/2' } },
+    { direction: 'horizontal' as const, placement: ['top', 'bottom'], size: 'lg' as const, class: { item: 'min-w-26', connector: 'top-[calc(var(--reborn-steps-internal-marker-size)/2)] left-[calc(50%+var(--reborn-steps-internal-marker-size)/2+--spacing(6))] right-[calc(-50%+var(--reborn-steps-internal-marker-size)/2+--spacing(6))] -translate-y-1/2' } },
+    { direction: 'vertical' as const, size: 'sm' as const, class: { item: 'min-h-24', title: 'min-h-(--reborn-steps-internal-marker-size)', connector: 'top-[calc(var(--reborn-steps-internal-marker-size)+--spacing(2))] left-[calc(var(--reborn-steps-internal-marker-size)/2)]' } },
+    { direction: 'vertical' as const, size: 'md' as const, class: { item: 'min-h-26', title: 'min-h-(--reborn-steps-internal-marker-size)', connector: 'top-[calc(var(--reborn-steps-internal-marker-size)+--spacing(2))] left-[calc(var(--reborn-steps-internal-marker-size)/2)]' } },
+    { direction: 'vertical' as const, size: 'lg' as const, class: { item: 'min-h-28', title: 'min-h-(--reborn-steps-internal-marker-size)', connector: 'top-[calc(var(--reborn-steps-internal-marker-size)+--spacing(2))] left-[calc(var(--reborn-steps-internal-marker-size)/2)]' } },
     { direction: 'vertical' as const, last: true, class: { item: 'min-h-0 pb-0' } },
     { direction: 'horizontal' as const, lineType: 'dashed' as const, class: { line: 'border-t-2' } },
     { direction: 'vertical' as const, lineType: 'dashed' as const, class: { line: 'border-l-2' } },
@@ -148,7 +147,7 @@ export const stepsTheme = tv({
     { type: 'dot' as const, size: 'sm' as const, class: { marker: 'size-1' } },
     { type: 'dot' as const, size: 'md' as const, class: { marker: 'size-1.5' } },
     { type: 'dot' as const, size: 'lg' as const, class: { marker: 'size-2' } },
-    { type: 'dot' as const, status: 'wait' as const, class: { marker: 'border border-gray-5 bg-transparent' } },
+    { type: 'dot' as const, status: 'wait' as const, class: { marker: 'border border-gray-3 bg-transparent' } },
     { type: 'dot' as const, status: ['process', 'finish'], class: { marker: 'bg-(--step-color)' } },
     { type: 'dot' as const, direction: 'horizontal' as const, placement: ['left', 'right'], class: { title: 'mt-0' } },
     { type: 'dot' as const, direction: 'horizontal' as const, placement: ['left', 'right'], size: 'sm' as const, class: { marker: 'mt-[calc((1lh_-_--spacing(1))/2)]', connector: 'mt-[calc((var(--text-base--line-height)_-_--spacing(0.5))/2)]' } },
@@ -167,9 +166,7 @@ export const stepsTheme = tv({
       title: 'col-start-1 ml-0 mr-2', description: 'col-start-1 -col-end-1 ml-0',
     } },
     // 描述跨越整步后扣除节点与 8px 间距，与右侧布局保留相同的换行宽度。
-    { direction: 'horizontal' as const, placement: 'left' as const, size: 'sm' as const, class: { description: 'mr-8' } },
-    { direction: 'horizontal' as const, placement: 'left' as const, size: 'md' as const, class: { description: 'mr-10' } },
-    { direction: 'horizontal' as const, placement: 'left' as const, size: 'lg' as const, class: { description: 'mr-12' } },
+    { direction: 'horizontal' as const, placement: 'left' as const, class: { description: 'mr-[calc(var(--reborn-steps-internal-marker-size)+--spacing(2))]' } },
     { direction: 'horizontal' as const, placement: 'left' as const, type: 'dot' as const, size: 'sm' as const, class: { description: 'mr-3' } },
     { direction: 'horizontal' as const, placement: 'left' as const, type: 'dot' as const, size: 'md' as const, class: { description: 'mr-3.5' } },
     { direction: 'horizontal' as const, placement: 'left' as const, type: 'dot' as const, size: 'lg' as const, class: { description: 'mr-4' } },
@@ -177,9 +174,7 @@ export const stepsTheme = tv({
       item: 'grid-cols-[minmax(0,1fr)_auto]', marker: 'col-start-2',
       title: 'col-start-1 ml-0 mr-2', description: 'col-start-1 ml-0 mr-2', connector: 'left-auto translate-x-1/2',
     } },
-    { direction: 'vertical' as const, placement: 'left' as const, size: 'sm' as const, class: { connector: 'right-3' } },
-    { direction: 'vertical' as const, placement: 'left' as const, size: 'md' as const, class: { connector: 'right-4' } },
-    { direction: 'vertical' as const, placement: 'left' as const, size: 'lg' as const, class: { connector: 'right-5' } },
+    { direction: 'vertical' as const, placement: 'left' as const, class: { connector: 'right-[calc(var(--reborn-steps-internal-marker-size)/2)]' } },
     { direction: 'vertical' as const, placement: 'left' as const, type: 'dot' as const, size: 'sm' as const, class: { connector: 'right-0.5' } },
     { direction: 'vertical' as const, placement: 'left' as const, type: 'dot' as const, size: 'md' as const, class: { connector: 'right-0.75' } },
     { direction: 'vertical' as const, placement: 'left' as const, type: 'dot' as const, size: 'lg' as const, class: { connector: 'right-1' } },
@@ -197,33 +192,33 @@ export const stepsTheme = tv({
     { direction: 'vertical' as const, placement: ['top', 'bottom'], last: true, class: { item: 'grid-rows-[auto_auto_auto] min-h-0 pb-0' } },
     // 存在上下文案的水平步骤共享节点轴；默认左右文案继续使用原有布局。
     { direction: 'horizontal' as const, class: {
-      item: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>&]:row-span-3 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>&]:grid-rows-subgrid',
-      content: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-start-2 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-start-2 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:ml-2 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:grid [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:gap-2 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:self-center',
-      marker: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-start-2 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-span-1 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:mt-0 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:self-center',
-      title: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:col-auto [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:row-auto [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:mt-0 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:ml-0 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:mr-0',
-      description: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:col-auto [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:row-auto [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:mt-0 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:ml-0 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:mr-0 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:px-0',
-      connector: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:relative [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-start-2 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-end-3 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:top-auto [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:bottom-auto [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:mt-0 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:self-center [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:translate-y-0',
+      item: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>&]:row-span-3 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>&]:grid-rows-subgrid',
+      content: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-start-2 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-start-2 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:ml-2 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:grid [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:gap-2 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:self-center',
+      marker: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-start-2 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-span-1 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:mt-0 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:self-center',
+      title: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:col-auto [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:row-auto [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:mt-0 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:ml-0 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:mr-0',
+      description: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:col-auto [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:row-auto [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:mt-0 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:ml-0 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:mr-0 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:px-0',
+      connector: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:relative [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-start-2 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-end-3 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:top-auto [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:bottom-auto [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:mt-0 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:self-center [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:translate-y-0',
     } },
-    { direction: 'horizontal' as const, placement: 'left' as const, class: { content: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-start-1 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:ml-0 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:mr-2' } },
+    { direction: 'horizontal' as const, placement: 'left' as const, class: { content: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-start-1 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:ml-0 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:mr-2' } },
     { direction: 'horizontal' as const, placement: ['top', 'bottom'], class: {
-      content: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-span-full [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-start-1 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:ml-0',
-      description: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:px-2',
-      marker: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-span-full [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:justify-self-center',
-      connector: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:absolute [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-span-full [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:top-1/2 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:-translate-y-1/2',
+      content: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-span-full [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-start-1 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:ml-0',
+      description: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:px-2',
+      marker: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-span-full [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:justify-self-center',
+      connector: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:absolute [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:col-span-full [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:top-1/2 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:-translate-y-1/2',
     } },
-    { direction: 'horizontal' as const, placement: 'top' as const, class: { content: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-start-1 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:mb-2 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:self-end' } },
-    { direction: 'horizontal' as const, placement: 'bottom' as const, class: { content: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-start-3 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:mt-2 [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:self-start' } },
+    { direction: 'horizontal' as const, placement: 'top' as const, class: { content: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-start-1 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:mb-2 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:self-end' } },
+    { direction: 'horizontal' as const, placement: 'bottom' as const, class: { content: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:row-start-3 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:mt-2 [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:self-start' } },
     // 内容位置与步内对齐分别控制；默认让节点、标题和描述共用左缘，不预留半步空白。
     { direction: 'horizontal' as const, placement: ['top', 'bottom'], alignCenter: false, class: {
-      marker: '[.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>&]:justify-self-start',
+      marker: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:justify-self-start',
       title: 'text-left',
-      description: 'text-left [.reborn-steps:has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:px-0',
+      description: 'text-left [.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>div>&]:px-0',
       connector: 'right-6',
     } },
     // 连接器从实际节点边缘起算，两端保留 24px；圆点使用自己的实际尺寸。
-    { direction: 'horizontal' as const, placement: ['top', 'bottom'], alignCenter: false, size: 'sm' as const, class: { connector: 'left-12' } },
-    { direction: 'horizontal' as const, placement: ['top', 'bottom'], alignCenter: false, size: 'md' as const, class: { connector: 'left-14' } },
-    { direction: 'horizontal' as const, placement: ['top', 'bottom'], alignCenter: false, size: 'lg' as const, class: { connector: 'left-16' } },
+    { direction: 'horizontal' as const, placement: ['top', 'bottom'], alignCenter: false, size: 'sm' as const, class: { connector: 'left-[calc(var(--reborn-steps-internal-marker-size)+--spacing(6))]' } },
+    { direction: 'horizontal' as const, placement: ['top', 'bottom'], alignCenter: false, size: 'md' as const, class: { connector: 'left-[calc(var(--reborn-steps-internal-marker-size)+--spacing(6))]' } },
+    { direction: 'horizontal' as const, placement: ['top', 'bottom'], alignCenter: false, size: 'lg' as const, class: { connector: 'left-[calc(var(--reborn-steps-internal-marker-size)+--spacing(6))]' } },
     { direction: 'horizontal' as const, placement: ['top', 'bottom'], alignCenter: false, type: 'dot' as const, size: 'sm' as const, class: { connector: 'left-7' } },
     { direction: 'horizontal' as const, placement: ['top', 'bottom'], alignCenter: false, type: 'dot' as const, size: 'md' as const, class: { connector: 'left-7.5' } },
     { direction: 'horizontal' as const, placement: ['top', 'bottom'], alignCenter: false, type: 'dot' as const, size: 'lg' as const, class: { connector: 'left-8' } },
@@ -261,10 +256,38 @@ export const stepsTheme = tv({
     { direction: 'horizontal' as const, placement: ['left', 'right'], type: 'text' as const, class: {
       title: 'mt-0 ml-0 mr-0', description: 'ml-0 mr-0', connector: 'mt-0 self-center',
     } },
-    // 当前步骤按实际索引着色，显式错误或成功状态仍沿用对应的语义色。
-    { type: 'text' as const, current: true, class: { title: 'text-(--step-color)', description: 'text-(--step-color)' } },
+    // 文本箭头跨越标题与描述整个内容组，在整体高度内垂直居中。
+    { type: 'text' as const, status: 'error' as const, class: { title: 'text-error', description: 'text-error' } },
+    { direction: 'horizontal' as const, type: 'text' as const, lineType: 'arrow' as const, class: {
+      root: 'has-[>[data-placement=top],>[data-placement=bottom]]:flex',
+      item: 'min-w-max grid-cols-[minmax(0,1fr)_auto] grid-rows-1',
+      content: 'col-start-1 row-start-1 grid min-w-0 grid-cols-1 gap-2',
+      title: 'col-start-1 col-end-2 row-start-1 row-end-2 m-0', description: 'col-start-1 col-end-2 row-start-2 row-end-3 m-0 pr-0',
+      connector: 'static col-start-2 row-start-1 row-span-1 mx-6 mt-0 h-auto w-5 min-w-5 self-stretch translate-y-0',
+    } },
+    { direction: 'horizontal' as const, type: 'text' as const, lineType: 'arrow' as const, last: true, class: { item: 'grid-cols-1' } },
+    // 导航分隔符固定占 68px；高亮向前覆盖上一项的分隔符，并避开本项后面的分隔符。
+    // 下边框用伪元素覆盖灰色基线，切换当前步骤时不会改变组件高度。
+    { direction: 'horizontal' as const, type: 'tabs' as const, class: {
+      root: 'items-stretch',
+      item: 'grid-cols-[auto_minmax(0,1fr)_auto] border-b border-gray-3 py-3',
+      connector: 'w-5 min-w-5',
+    } },
+    { direction: 'horizontal' as const, type: 'tabs' as const, current: true, class: {
+      item: 'after:pointer-events-none after:absolute after:-bottom-px after:-left-17 after:right-17 after:border-b-2 after:border-(--step-color) after:content-[""] first:after:left-0 last:after:right-0',
+    } },
+    // 默认节点单独收紧尺寸，点状、文本与标签导航保持现有尺寸。
+    { type: 'default' as const, size: 'sm' as const, class: { marker: 'size-6' } },
+    { type: 'default' as const, size: 'md' as const, class: { item: '[--reborn-steps-internal-marker-size:--spacing(7)]', marker: 'size-7' } },
+    { type: 'default' as const, size: 'lg' as const, class: { item: '[--reborn-steps-internal-marker-size:--spacing(8)]', marker: 'size-8', progressRing: '-inset-0.75 size-[calc(100%+--spacing(1.5))]' } },
+    // 小、中档进度节点各缩小 4px，用外边距保留布局占位，切换进度时连接轴不跳动。
+    { type: 'default' as const, size: 'sm' as const, progress: true, class: { marker: 'size-5 m-0.5' } },
+    { type: 'default' as const, size: 'md' as const, progress: true, class: { marker: 'size-6 m-0.5' } },
+    { type: 'default' as const, size: ['sm', 'md'], progress: true, direction: 'horizontal' as const, class: { marker: '[.reborn-steps:not([data-type=text][data-line-type=arrow]):has(>[data-placement=top],>[data-placement=bottom])>li>&]:mt-0.5' } },
+    { type: 'default' as const, size: ['sm', 'md'], progress: true, direction: 'vertical' as const, placement: 'top' as const, class: { marker: 'mt-2.5' } },
+    { type: 'default' as const, size: ['sm', 'md'], progress: true, direction: 'vertical' as const, placement: 'bottom' as const, class: { marker: 'mt-0.5' } },
   ],
-  defaultVariants: { direction: 'horizontal', placement: 'right', size: 'md', color: 'primary', status: 'wait', type: 'default', current: false, lineType: 'solid', completed: false, alignCenter: false, simple: false, last: false, spaced: false },
+  defaultVariants: { direction: 'horizontal', placement: 'right', size: 'md', color: 'primary', status: 'wait', type: 'default', progress: false, current: false, lineType: 'solid', completed: false, alignCenter: false, simple: false, last: false, spaced: false },
 });
 
 export default stepsTheme;

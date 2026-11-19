@@ -21,7 +21,7 @@ const ui = {
 </script>
 
 <template>
-  <div class="w-[230px] shrink-0 scale-[0.57]">
+  <div class="w-57.5 shrink-0 scale-[0.57]">
     <RebornDatePickerPanel v-model="date" value-format="YYYY-MM-DD" size="sm" border :ui="ui" />
   </div>
 </template>

@@ -47,7 +47,7 @@ export interface AvatarGroupProps {
 
 defineOptions({ name: 'RebornAvatarGroup' });
 const props = withDefaults(defineProps<AvatarGroupProps>(), {
-  gap: 8,
+  gap: 6.4,
   collapseAvatars: false,
   collapseAvatarsTooltip: false,
   maxCollapseAvatars: 1,
@@ -65,7 +65,7 @@ const slots = defineSlots<{
 provide(avatarGroupKey, { size: computed(() => props.size), shape: computed(() => props.shape) });
 /** 数值通过变量交给 Tailwind 消费，避免动态拼接类名导致构建漏掉样式。 */
 const gapStyle = computed(() => ({
-  '--rb-avatar-group-gap': `${Number.isFinite(props.gap) ? Math.max(0, props.gap) : 8}px`,
+  '--rb-avatar-group-gap': `${Number.isFinite(props.gap) ? Math.max(0, props.gap) : 6.4}px`,
 }));
 const styles = computed(() => avatarGroupTheme({
   shape: props.shape ?? 'circle',

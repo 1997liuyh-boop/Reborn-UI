@@ -153,43 +153,43 @@ export default {
     itemThumb: 'size-10 shrink-0 rounded-[2px] object-cover',
     // 名称容器只收缩不伸展：错误图标、暂停提示要紧跟在名称后面，操作按钮组再用 ml-auto 推到最右。
     itemName: 'min-w-0 shrink grow-0',
-    itemStatus: 'flex shrink-0 items-center text-error outline-none',
-    itemActions: 'ml-auto flex shrink-0 items-center gap-[4px]',
+    itemStatus: 'flex shrink-0 items-center text-red-6 outline-none',
+    itemActions: 'ml-auto flex shrink-0 items-center gap-1',
     // 暂停 / 继续 / 重试按钮常驻显示，不像删除按钮那样在 text 形态下悬停才出现。
     itemControl: 'flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-gray-8 transition-[color,background-color] outline-none hover:bg-gray-2 focus-visible:ring-2 focus-visible:ring-primary',
     itemAction: 'flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-gray-8 transition-[color,background-color,opacity] outline-none hover:bg-gray-2 focus-visible:ring-2 focus-visible:ring-primary',
     progress: '',
     card: 'group relative flex size-26 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-4 bg-gray-2',
     cardImage: 'size-22 rounded-[2px] object-cover',
-    cardStatus: 'flex w-full flex-col items-center justify-center gap-[8px] px-[12px] text-sm text-gray-6',
+    cardStatus: 'flex w-full flex-col items-center justify-center gap-2 px-3 text-sm text-gray-6',
     // 遮罩只盖住中间的图片区域：与 cardImage 同为 88px 并同样居中，不盖卡片边框内的留白；
     // 指针落在图片上才出现（遮罩自身 hover），键盘聚焦卡片内按钮时也出现。
-    cardMask: 'absolute inset-0 m-auto flex size-22 items-center justify-center gap-[8px] rounded-[2px] bg-[rgba(25,30,39,0.5)] text-white opacity-0 transition-opacity hover:opacity-100 group-focus-within:opacity-100',
+    cardMask: 'absolute inset-0 m-auto flex size-22 items-center justify-center gap-2 rounded-[2px] bg-[rgba(25,30,39,0.5)] text-white opacity-0 transition-opacity hover:opacity-100 group-focus-within:opacity-100',
     cardAction: 'flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[2px] p-0 outline-none focus-visible:ring-2 focus-visible:ring-white',
   },
   variants: {
     listType: {
       'text': {
-        list: 'mt-[12px] flex flex-col gap-[4px]',
-        item: 'group/item flex h-8 items-center gap-[8px]',
+        list: 'mt-3 flex flex-col gap-1',
+        item: 'group/item flex h-8 items-center gap-2',
         itemIcon: 'size-4',
         // 删除按钮平时隐藏，悬停整行或键盘聚焦时出现；失败的行例外，见下方组合变体。
         itemAction: 'opacity-0 group-hover/item:opacity-100 focus-visible:opacity-100',
         // 进度条贴行底，左端让出 16px 图标与 8px 间距，与文件名左侧对齐（同 picture 形态）；
         // 进度条自带 w-full，须用 w-auto 改由左右偏移决定宽度。
-        progress: 'absolute bottom-0 left-[24px] right-0 w-auto',
+        progress: 'absolute bottom-0 left-6 right-0 w-auto',
       },
       'picture': {
-        list: 'mt-[12px] flex flex-col gap-[8px]',
-        item: 'flex items-center gap-[8px] rounded-sm border border-gray-4 p-[8px]',
+        list: 'mt-3 flex flex-col gap-2',
+        item: 'flex items-center gap-2 rounded-sm border border-gray-4 p-2',
         itemIcon: 'size-10 rounded-[2px] bg-gray-2',
         // 进度条压在名称下方：左侧让出 40px 图标与 8px 间距，右侧让出删除按钮；
         // 进度条自带 w-full，绝对定位下会让 right 失效，须用 w-auto 改由左右偏移决定宽度。
-        progress: 'absolute bottom-[10px] left-[56px] right-[40px] w-auto',
+        progress: 'absolute bottom-2.5 left-14 right-10 w-auto',
       },
       // 卡片与上传入口在同一行平铺：列表本身不占盒子（contents），卡片直接参与根节点的 flex 换行。
       'picture-card': {
-        root: 'flex flex-wrap gap-[16px]',
+        root: 'flex flex-wrap gap-4',
         list: 'contents',
         trigger: 'flex size-26 shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-4 bg-gray-2 text-gray-6 transition-colors',
         tip: 'basis-full -mt-[8px]',
@@ -202,7 +202,7 @@ export default {
       // 暂停时名称后跟一段灰字「已暂停」；进度条转灰由模板通过 RebornProgress 的 ui.root 处理。
       paused: { itemStatus: 'text-sm text-gray-6' },
       success: { item: 'text-primary' },
-      fail: { item: 'text-error', card: 'border-error bg-error-soft' },
+      fail: { item: 'text-red-6', card: 'border-red-6 bg-red-1' },
     },
     drag: {
       true: {},
@@ -215,10 +215,10 @@ export default {
     },
     // 所在表单项校验失败：拖拽区与照片墙入口的虚线描边改为错误色；排在 dragover 之前，拖入文件时仍显示主色高亮。
     error: {
-      true: { dragger: 'border-error', trigger: 'border-error' },
+      true: { dragger: 'border-red-5', trigger: 'border-red-5' },
     },
     dragover: {
-      true: { dragger: 'border-primary bg-primary-soft', trigger: 'border-primary' },
+      true: { dragger: 'border-primary bg-brand-1', trigger: 'border-primary' },
     },
     // 禁用时子元素不接收指针：否则触发区里的图标、自定义按钮会露出各自的光标，盖掉外层的禁用光标。
     // 点击与拖放仍落在触发区本身，由 openPicker / onDrop 里的禁用判断拦下。
@@ -233,17 +233,16 @@ export default {
     { listType: ['text', 'picture'], drag: true, class: { trigger: 'flex w-full' } },
     { listType: ['text', 'picture'], drag: false, class: { tip: 'mt-2' } },
     { listType: ['text', 'picture'], drag: true, class: { tip: 'text-base text-gray-7' } },
-    { drag: true, disabled: false, class: { dragger: 'hover:border-primary' } },
     { listType: 'picture-card', disabled: false, class: { trigger: 'hover:border-primary hover:text-primary focus-visible:border-primary' } },
     { listType: 'picture-card', disabled: true, class: { trigger: 'text-gray-5' } },
     // 失败的行操作按钮标红；text 下失败的行删除按钮常驻，不必悬停就能看到如何清掉它。
-    { listType: ['text', 'picture'], status: 'fail', class: { itemAction: 'text-error', itemControl: 'text-error' } },
+    { listType: ['text', 'picture'], status: 'fail', class: { itemAction: 'text-red-6', itemControl: 'text-red-6' } },
     { listType: 'text', status: 'fail', class: { itemAction: 'opacity-100' } },
-    { listType: 'picture', status: 'fail', class: { item: 'border-error' } },
+    { listType: 'picture', status: 'fail', class: { item: 'border-red-6' } },
     // 加载图标沿用 40px 占位，但不显示普通文件图标的背景。
     { listType: 'picture', status: 'uploading', class: { itemIcon: 'bg-transparent' } },
     // 图片列表的进度条右侧再让出一个 24px 按钮与 4px 间距。
-    { listType: 'picture', chunk: true, class: { progress: 'right-[68px]' } },
+    { listType: 'picture', chunk: true, class: { progress: 'right-17' } },
     { listType: ['text', 'picture'], disabled: false, class: { trigger: 'focus-visible:ring-2 focus-visible:ring-primary rounded-sm' } },
     // 上传中的行与卡片显示等待光标；放在最后，禁用态下也优先于行上的禁用光标。
     { status: 'uploading', class: { item: 'cursor-wait', card: 'cursor-wait' } },

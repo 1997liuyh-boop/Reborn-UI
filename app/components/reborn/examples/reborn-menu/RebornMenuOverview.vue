@@ -16,7 +16,7 @@ const selectedKeys = shallowRef(['1'])
     v-model:selected-keys="selectedKeys"
     mode="vertical"
     color="primary"
-    class="w-[180px]"
+    class="w-45"
   >
     <RebornMenuItem index="1">
       <template #icon>

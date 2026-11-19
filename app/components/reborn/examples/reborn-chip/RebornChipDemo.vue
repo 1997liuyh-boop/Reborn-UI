@@ -348,7 +348,7 @@ const hasUnread = shallowRef(true);
         <div class="flex flex-col items-center gap-3">
           <!-- 未读小红点：不传 text 自动取 solid -->
           <RebornChip color="error" size="lg">
-            <RebornButton color="neutral" variant="circle" size="lg">
+            <RebornButton color="neutral" variant="soft" size="lg" circle>
               <template #leading>
                 <Icon name="lucide:mail" class="size-6" />
               </template>

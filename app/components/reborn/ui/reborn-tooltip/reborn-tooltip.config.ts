@@ -16,10 +16,11 @@ export const rebornTooltip = tv({
   slots: {
     wrapper: '',
     trigger: 'inline-flex max-w-full',
-    contentWrapper: 'fixed left-0 top-0 z-[9999] pointer-events-none flex',
+    // 外层只在退出时淡出，避免预先分层导致面板和箭头在接缝处分别取样。
+    contentWrapper: 'fixed left-0 top-0 z-[9999] pointer-events-none flex will-change-auto!',
     content:
-      'relative inline-flex max-w-60 items-center p-2 text-base rounded-lg whitespace-pre-line wrap-anywhere bg-gray-10 text-gray-1',
-    arrow: 'absolute pointer-events-none bg-gray-10 mask-no-repeat mask-size-[100%_100%]',
+      'relative inline-flex max-w-60 items-center p-2 text-base rounded-lg whitespace-pre-line wrap-anywhere bg-gray-10 text-gray-1 shadow-none',
+    arrow: 'absolute pointer-events-none bg-gray-10 mask-no-repeat mask-size-[100%_100%] [clip-path:var(--rb-tooltip-arrow-clip)]',
   },
   variants: {
     side: {

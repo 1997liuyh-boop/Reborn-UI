@@ -113,7 +113,7 @@ const options = [
 
 ### 竖向排列
 
-`direction="vertical"` 竖排，选中块沿纵向滑动。宽度默认取最宽的选项，配合 `block` 撑满容器宽度。
+`direction="vertical"` 竖排，选项之间固定间隔 4px，选中块沿纵向滑动。宽度默认取最宽的选项，配合 `block` 撑满容器宽度。
 
 | `direction` | 排列 | `block` 的效果 |
 | --- | --- | --- |

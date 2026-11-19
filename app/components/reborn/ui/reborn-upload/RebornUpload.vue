@@ -20,6 +20,7 @@ import { computed, isReadonly, nextTick, onBeforeUnmount, ref, shallowRef, toRaw
 import { useFormInject } from '~/composables/useFieldGroup';
 import { tv } from '~/lib/tv';
 import RebornImage from '../reborn-image/RebornImage.vue';
+import RebornVideoPreview from '../reborn-image/RebornVideoPreview.vue';
 import RebornLoading from '../reborn-loading/RebornLoading.vue';
 import RebornProgress from '../reborn-progress/RebornProgress.vue';
 import RebornText from '../reborn-text/RebornText.vue';
@@ -581,6 +582,8 @@ const triggerAttrs = computed(() => {
 /** 图片预览复用 RebornImage，上传列表只负责选择当前图片与提供同组地址。 */
 const previewImageRef = useTemplateRef<InstanceType<typeof RebornImage>>('previewImageRef');
 const previewSrc = shallowRef('');
+const previewVideo = shallowRef<UploadFile>();
+const previewVideoOpen = shallowRef(false);
 const previewUrls = computed(() => uploadFiles.value.filter(file => file.url && isImage(file)).map(file => file.url!));
 
 function isImage(file: UploadFile) {
@@ -589,12 +592,20 @@ function isImage(file: UploadFile) {
 }
 
 function canPreview(file: UploadFile) {
-  return !!props.onPreview || (!!file.url && isImage(file));
+  return !!props.onPreview || (!!file.url && (isImage(file) || isVideo(file)));
 }
 
 // 图片增删或地址更新时销毁旧预览，避免继续访问已释放的本地地址。
 watch(previewUrls, (urls, previous) => {
   if (urls.length !== previous.length || urls.some((url, index) => url !== previous[index])) previewSrc.value = '';
+});
+
+// 当前视频移除或地址变化时关闭预览，避免继续使用已释放的本地地址。
+watch(() => {
+  const current = previewVideo.value;
+  return !current || uploadFiles.value.some(file => file.uid === current.uid && file.url === current.url);
+}, (exists) => {
+  if (!exists) previewVideoOpen.value = false;
 });
 
 function previewAttrs(file: UploadFile) {
@@ -608,6 +619,11 @@ async function preview(file: UploadFile) {
     return;
   }
   if (!canPreview(file)) return;
+  if (isVideo(file)) {
+    previewVideo.value = { ...file };
+    previewVideoOpen.value = true;
+    return;
+  }
   const src = file.url!;
   previewSrc.value = src;
   await nextTick();
@@ -671,7 +687,7 @@ function videoSrc(url?: string) {
 
 /** 已暂停时进度条转灰，停在已传完的位置。 */
 function progressUi(file: UploadFile) {
-  return { root: file.status === 'paused' ? 'text-gray-5' : undefined, step: 'h-[2px]' };
+  return { root: file.status === 'paused' ? 'text-gray-5' : undefined, step: 'h-0.5' };
 }
 
 const variants = computed(() => ({
@@ -693,6 +709,7 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
 
 <template>
   <div :class="styles.root({ class: [props.class, props.ui?.root] })">
+    <RebornVideoPreview v-if="previewVideo" v-model="previewVideoOpen" :src="previewVideo.url || ''" :title="previewVideo.name" @closed="previewVideo = undefined" />
     <RebornImage
       v-if="previewSrc" :key="previewSrc" ref="previewImageRef" :src="previewSrc" :preview-list="previewUrls"
       custom-class="hidden" aria-hidden="true" :show-loading="false"
@@ -740,7 +757,7 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
                   v-if="canPreview(file)" type="button" :aria-label="`预览 ${file.name}`"
                   :class="styles.cardAction({ class: props.ui?.cardAction })" @click="preview(file)"
                 >
-                  <Icon name="lucide:eye" class="size-4 shrink-0" />
+                  <Icon :name="isVideo(file) ? 'lucide:play' : 'lucide:eye'" class="size-4 shrink-0" />
                 </button>
                 <button
                   v-if="!isDisabled && controlOf(file)" type="button" :aria-label="`${controlOf(file)?.label ?? ''} ${file.name}`"
@@ -786,8 +803,8 @@ defineExpose({ abort, submit, clearFiles, handleStart, handleRemove, pause, resu
         <div v-if="useDragger" :class="styles.dragger({ class: props.ui?.dragger })">
           <slot name="trigger">
             <slot>
-              <span class="mb-4 flex text-gray-8"><Icon name="lucide:upload" class="size-4" /></span>
-              <div class="text-base text-gray-9" :class="slots.tip ? 'mb-2' : undefined">点击或拖拽到此处上传</div>
+              <span class="mb-4 flex text-gray-5"><Icon name="lucide:plus" class="size-4" /></span>
+              <div class="text-base text-gray-5" :class="slots.tip ? 'mb-2' : undefined">点击或拖拽到此处上传</div>
             </slot>
           </slot>
           <div v-if="slots.tip" :class="styles.tip({ class: props.ui?.tip })">

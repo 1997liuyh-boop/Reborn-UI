@@ -14,7 +14,7 @@ badge: New
 
 Popover 是锚定在触发元素上的小型气泡浮层，Web 与 UniApp 两端同名，但 API 并不完全一致（见「两端差异对照」）。默认插槽放触发器，`content` 插槽放气泡内容，气泡里放什么完全由使用方决定。
 
-定位由 `placement` 与 `sideOffset` 两个属性决定：`placement` 是「方向-对齐」写法（`top` / `bottom-start` 等 12 种），方向决定气泡出现在触发器哪一侧，后缀决定与触发器的起点、终点还是中线对齐，取值与 `reborn-popconfirm`、`reborn-tooltip` 完全一致；`sideOffset` 决定与触发器的间距。`arrow` 只负责是否画箭头，箭头落点再跟随对齐方式变化。旧的 `content` 对象写法仍然可用，但已废弃。
+定位由 `placement` 与 `sideOffset` 两个属性决定：`placement` 是「方向-对齐」写法（`top` / `bottom-start` 等 12 种），方向决定气泡出现在触发器哪一侧，后缀决定与触发器的起点、终点还是中线对齐，取值与 `reborn-popconfirm`、`reborn-tooltip` 完全一致；`sideOffset` 决定与触发器的间距。`arrow` 只负责是否画箭头，箭头在各方位均指向触发器中心。旧的 `content` 对象写法仍然可用，但已废弃。
 
 其余 API 按用途分组：触发方式看 `mode`（仅 Web）与 `openDelay` / `closeDelay`；显隐控制看 `v-model:open`、`defaultOpen` 与暴露的 `close()`（UniApp 另有 `open()`）；关闭策略看 `dismissible`（点击外部）、`closeOnScroll`（滚动关闭，仅 Web）与 `modal`（遮罩仅 Web）。UniApp 端额外提供 `title` + `displayMode="menu"` 的轻量菜单模式。
 
@@ -62,7 +62,7 @@ Popover 是锚定在触发元素上的小型气泡浮层，Web 与 UniApp 两端
 | `'left-start'` / `'right-start'` | 与触发器上边缘对齐 | 侧栏里的操作按钮、悬停菜单 |
 | `'left-end'` / `'right-end'` | 与触发器下边缘对齐 | 列表最后一行的操作按钮 |
 
-`sideOffset` 默认 Web `4` / UniApp `0`（px）。Web 显示箭头时从箭头尖端计算间距，隐藏箭头时从面板边缘计算。主轴放不下时自动翻到对侧，箭头随之换边。Web 箭头为圆头曲线：上下方向为 17.5×7px，左右方向为 7×17.5px。上下方向的 `-start` / `-end` 箭头中心距对应端部 25px；左右方向无论如何对齐，箭头均指向触发器的高度中心。箭头始终限制在面板边界内，面板太短时收敛到正中。
+`sideOffset` 默认 Web `4` / UniApp `0`（px）。Web 显示箭头时从箭头尖端计算间距，隐藏箭头时从面板边缘计算。主轴放不下时自动翻到对侧，箭头随之换边。Web 箭头为圆头曲线：上下方向为 17.5×7px，左右方向为 7×17.5px。各方向无论如何对齐，箭头均指向触发器中心；`-start` / `-end` 只决定面板的对齐方式。箭头始终限制在面板边界内，面板太短时收敛到正中。
 
 ```vue
 <template>

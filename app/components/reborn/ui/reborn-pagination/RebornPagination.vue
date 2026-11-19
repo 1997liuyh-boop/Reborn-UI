@@ -312,11 +312,11 @@ const ui = computed(() => {
       }),
     prev: (opts?: { disabled?: boolean; class?: any }) =>
       b({ ...base({ disabled: opts?.disabled ?? props.disabled }) }).button({
-        class: cn(opts?.class, overrides.prev),
+        class: cn(b().prev(), opts?.class, overrides.prev),
       }),
     next: (opts?: { disabled?: boolean; class?: any }) =>
       b({ ...base({ disabled: opts?.disabled ?? props.disabled }) }).button({
-        class: cn(opts?.class, overrides.next),
+        class: cn(b().next(), opts?.class, overrides.next),
       }),
     pagerItem: (opts?: { active?: boolean; disabled?: boolean; class?: any }) =>
       b({ ...base({ active: opts?.active, disabled: opts?.disabled }) }).button({
@@ -458,7 +458,7 @@ defineExpose({
           <slot name="sizes" :page-size="pageSizeModel" :page-sizes="props.pageSizes" :change="handleSizeChange">
             <RebornSelect
               :model-value="pageSizeModel" :options="sizeOptions" :size="props.size"
-              :disabled="props.disabled" :clearable="false" class="w-[110px]" @update:model-value="handleSizeChange"
+              :disabled="props.disabled" :clearable="false" class="w-27.5" @update:model-value="handleSizeChange"
             />
           </slot>
         </div>

@@ -24,7 +24,7 @@ const ui = {
 </script>
 
 <template>
-  <div class="w-[200px]">
+  <div class="w-50">
     <RebornDescriptions
       title="用户信息"
       bordered

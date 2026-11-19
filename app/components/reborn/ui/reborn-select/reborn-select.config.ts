@@ -48,8 +48,7 @@ export default {
          * 清空按钮。默认绝对定位盖在箭头之上且隐藏，
          * 仅在 clearable 变体开启且鼠标悬停整个触发器时显示，避免箭头被永久顶掉。
          */
-        clearBtn:
-            "absolute inset-0 hidden cursor-pointer items-center justify-center text-gray-5 transition-colors hover:text-gray-7",
+        clearBtn: "absolute inset-0 hidden cursor-pointer items-center justify-center transition-colors text-gray-6 hover:text-gray-8 active:text-gray-9",
         /**
          * 触发器内的搜索输入框（allow-search 开启且下拉展开时出现）。
          * [font:inherit] 让输入框直接继承触发器的字号与行高：
@@ -75,7 +74,7 @@ export default {
          * 写 dark: 前缀会二次翻转，深色模式下反而更暗。
          */
         option:
-            "flex cursor-pointer items-center rounded-sm px-[6px] py-[4px] text-base transition-colors data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent",
+            "flex cursor-pointer items-center rounded-sm px-1.5 py-1 text-base transition-colors data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent",
         optionContent: "flex w-full items-center gap-1",
         optionLabel: "truncate",
         optionActive: "",
@@ -88,7 +87,7 @@ export default {
          * 而 border-box 下 height:0 会被内边距撑成一段残留高度，收起时露出一条色块。
          * 圆角 8px 由浮层外壳给出（见 reborn-select-trigger.config.ts）。
          */
-        dropdown: "max-h-60 overflow-y-auto px-[4px] py-[6px] scrollbar-hide space-y-[4px]",
+        dropdown: "max-h-60 overflow-y-auto px-1 py-1.5 scrollbar-hide space-y-1",
         /**
          * 下拉菜单页头 / 页脚。
          * 两者与选项列表是兄弟节点、位于滚动容器之外，因此列表滚动时它们固定不动；
@@ -96,9 +95,9 @@ export default {
          * 字号比选项弱一档：text-sm（12px / 20px 行高）。
          */
         dropdownHeader:
-            "shrink-0 border-b border-gray-3 px-[10px] py-[6px] text-sm text-gray-6",
+            "shrink-0 border-b border-gray-3 px-2.5 py-1.5 text-sm text-gray-6",
         dropdownFooter:
-            "shrink-0 border-t border-gray-3 px-[10px] py-[6px] text-sm text-gray-6",
+            "shrink-0 border-t border-gray-3 px-2.5 py-1.5 text-sm text-gray-6",
         /** 下拉列表的加载中占位，与 empty 同一套排版 */
         loading:
             "flex items-center justify-center gap-2 py-6 text-base text-gray-5",
@@ -112,7 +111,7 @@ export default {
          * 选项被包进了「占位层 → 窗口层」两层结构，dropdown 上的 space-y 只剩一个子节点、已然失效，
          * 因此虚拟与非虚拟两种模式都靠这一条撑起 4px 行距。
          */
-        optionList: "space-y-[4px]",
+        optionList: "space-y-1",
         /** 虚拟列表占位层：高度由 JS 按「总条数 × 步长」写成行内样式，撑出与真实列表等长的滚动条 */
         virtualPhantom: "relative w-full",
         /** 虚拟列表窗口层：脱离文档流贴在占位层顶部，靠行内 translateY 滑到当前区间的位置 */
@@ -129,9 +128,9 @@ export default {
         tagList: "flex min-w-0 flex-1 items-center gap-1 overflow-hidden",
         tag: "rounded-sm",
         tagLabel: "truncate",
-        tagClose: "shrink-0",
+        tagClose: "shrink-0 text-gray-6 hover:text-gray-8 active:text-gray-9",
         /** 标签关闭图标的尺寸 */
-        tagCloseIcon: "size-full",
+        tagCloseIcon: "",
         /** collapse-tags 折叠后的 “+N” 标签 */
         collapseTag: "",
     },
@@ -144,7 +143,7 @@ export default {
          * （二者同属 tailwind-merge 认得的 px 冲突组，后写的胜出）。
          */
         multiple: {
-            true: { trigger: "px-[4px]!" },
+            true: { trigger: "px-1!" },
             false: {},
         },
         /**
@@ -179,28 +178,20 @@ export default {
          * 字号走 7 级字号令牌：sm → text-sm（12px）、md → text-base（14px）、lg → text-lg（16px），
          * 行高用令牌自带的 20/22/24px，不再写 leading-[1.5]：触发器是定高盒子 + items-center 单行居中，
          * 行高只决定文本盒高度、不决定字形位置，18/21/24 与 20/22/24 的差别在视觉上不可见。
-         * 选项与标签跟随同一套档位，标签始终比宿主字号小一档，避免撑破触发器高度；
-         * 标签是 h-4!/h-5!/h-6! 的定高盒子，10px 低于令牌下限只能写字面量。
+         * 选项跟随控件字号；标签及关闭图标直接使用同尺寸 RebornBadge 的默认样式。
          */
         size: {
             sm: {
                 trigger: "h-6 px-2.5 text-sm",
                 triggerIconWrapper: "size-3",
-                tagList: "gap-0.5",
-                tag: "h-4! px-1 text-[10px]",
-                tagClose: "size-2.5",
             },
             md: {
                 trigger: "h-8 px-3 text-base",
                 triggerIconWrapper: "size-4",
-                tag: "h-5! px-1.5 text-sm",
-                tagClose: "size-3",
             },
             lg: {
                 trigger: "h-10 px-4 text-lg",
                 triggerIconWrapper: "size-4",
-                tag: "h-6! px-2 text-base",
-                tagClose: "size-3.5",
             },
         },
         /**
@@ -311,17 +302,17 @@ export default {
         {
             wrapTags: true,
             size: "sm",
-            class: { trigger: "min-h-6 py-[3px]" },
+            class: { trigger: "min-h-6 py-0.5" },
         },
         {
             wrapTags: true,
             size: "md",
-            class: { trigger: "min-h-8 py-[5px]" },
+            class: { trigger: "min-h-8 py-[3px]" },
         },
         {
             wrapTags: true,
             size: "lg",
-            class: { trigger: "min-h-10 py-[7px]" },
+            class: { trigger: "min-h-10 py-[3px]" },
         },
     ] as any,
     defaultVariants: {

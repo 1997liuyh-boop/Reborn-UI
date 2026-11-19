@@ -12,7 +12,7 @@ const page = shallowRef(2)
 </script>
 
 <template>
-  <div class="flex w-full max-w-[210px] justify-center">
+  <div class="flex w-full max-w-52.5 justify-center">
     <RebornPagination
       v-model="page"
       :total="30"

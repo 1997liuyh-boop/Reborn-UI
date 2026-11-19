@@ -113,7 +113,7 @@ it('图标支持字符串和组件，优先于文字插槽，并响应样式覆�
   try {
     assert.equal(view.root.querySelector('svg')?.getAttribute('data-icon'), 'lucide:user-round');
     assert.ok(view.root.querySelector('svg.size-5'));
-    assert.equal(view.root.querySelector('.avatar-class')?.classList.contains('bg-gray-3'), false);
+    assert.equal(view.root.querySelector('.avatar-class')?.classList.contains('bg-gray-5'), false);
     assert.equal(view.root.textContent, '');
     view.props.icon = ComponentIcon; await nextTick();
     assert.ok(view.root.querySelector('svg[data-profile]'));
@@ -154,6 +154,7 @@ it('头像组尺寸与形状响应式继承，子项显式配置优先', async (
     assert.ok(first.classList.contains('size-10'));
     assert.ok(first.classList.contains('rounded-md'));
     assert.ok(first.classList.contains('ring-2'));
+    assert.ok(second.classList.contains('ring-1'));
     assert.ok(second.classList.contains('size-6'));
     assert.ok(second.classList.contains('rounded-full'));
     Object.assign(view.props, { size: 64, shape: 'circle' }); await nextTick();
@@ -277,4 +278,25 @@ it('CLI 安装头像组会带上头像、提示层及提示层的过渡依赖', 
   }));
   const result = resolveDependencies({ registryComponents, targets: ['reborn-avatar-group'], platform: 'web' });
   assert.deepEqual(new Set(result.components), new Set(['reborn-avatar', 'reborn-tooltip', 'reborn-transition']));
+});
+
+it('编辑状态默认关闭，开启后使用原生按钮并透传点击，样式可覆盖', async () => {
+  let clicks = 0;
+  const view = await mount(Avatar, { alt: '更换头像', onClick: () => clicks++ }, { default: () => '林' });
+  try {
+    assert.equal(view.root.firstElementChild?.tagName, 'SPAN');
+    assert.equal(view.root.querySelector('[data-icon="lucide:pencil"]'), null);
+    assert.ok(view.root.firstElementChild?.classList.contains('bg-gray-5'));
+    assert.ok(view.root.firstElementChild?.classList.contains('text-gray-1'));
+    view.props.editable = true; await nextTick();
+    const button = view.root.querySelector('button')!;
+    assert.equal(button.type, 'button');
+    assert.equal(button.getAttribute('aria-label'), '更换头像');
+    assert.equal(button.hasAttribute('role'), false);
+    assert.ok(button.querySelector('[data-icon="lucide:pencil"]'));
+    button.click(); assert.equal(clicks, 1);
+    view.props.ui = { editOverlay: 'opacity-100', editIcon: 'size-5' }; await nextTick();
+    assert.ok(button.querySelector('svg.size-5'));
+    assert.deepEqual(view.warnings, []);
+  } finally { view.stop(); }
 });

@@ -20,7 +20,7 @@ TreeSelect 把层级节点选择收进表单输入框，仅支持 Web，UniApp �
 
 `color` 决定选择框与树的语义色，`variant` 决定描边、填充、无边框或下划线形态，`size` 决定选择框尺寸；三者直接复用 `reborn-select` 的主题。下拉内容由 `reborn-tree` 渲染，不另写一套树节点。
 
-`multiple` 开启复选并默认父子联动，`checkStrictly` 改为逐节点独立勾选，`clearable` 提供清空，`collapseTags` / `collapseTagsTooltip` / `maxCollapseTags` 控制标签折叠，`allowSearch` 默认关闭，开启后按 key 与标题搜索，`searchData` 提供异步搜索；`closeOn` 与 `portal` 控制浮层行为；`fieldNames` 适配标题、唯一标识与子节点字段（绑定值按 `fieldNames.key` 识别节点），`loadData` 支持异步补充子节点并由 `loadedKeys` 记录已加载节点，`height` 与 `virtual` 控制树滚动区，`item` / `empty` 插槽定制内容。
+`maxCount` 限制多选数量，`showWordLimit` 在右侧显示计数；`multiple` 开启复选并默认父子联动，`checkStrictly` 改为逐节点独立勾选，`clearable` 提供清空，`collapseTags` / `collapseTagsTooltip` / `maxCollapseTags` 控制标签折叠，`allowSearch` 默认关闭，开启后按 key 与标题搜索，`searchData` 提供异步搜索；`closeOn` 与 `portal` 控制浮层行为；`fieldNames` 适配标题、唯一标识与子节点字段（绑定值按 `fieldNames.key` 识别节点），`loadData` 支持异步补充子节点并由 `loadedKeys` 记录已加载节点，`height` 与 `virtual` 控制树滚动区，`item` / `empty` 插槽定制内容。
 
 ### 何时使用
 
@@ -151,6 +151,22 @@ const strictValues = ref<(string | number)[]>(["team"]);
 </template>
 ```
 
+### 限制数量
+
+多选时设置 `maxCount` 限制选中节点数量，默认 `0` 表示不限制。计数与实际标签一致，包含联动勾选的父节点和子节点；一次勾选会超过上限时整体取消该次新增，不拆分父子关系。程序化回填不截断，超限后仍可取消选择。
+
+开启 `showWordLimit` 后右侧显示「选中数/最大数」，未设置上限时只显示选中数；单选不显示计数。计数字号12px、灰阶5，与清空图标间隔4px。
+
+```vue
+<RebornTreeSelect
+  v-model="values"
+  :tree-data="treeData"
+  multiple
+  :max-count="4"
+  show-word-limit
+/>
+```
+
 ### 标签折叠
 
 多选时用 `collapseTags` 压缩标签，并通过 `collapseTagsTooltip` 查看隐藏项。
@@ -261,7 +277,9 @@ async function searchData(keyword: string, { signal }: TreeSelectSearchContext) 
 
 ```vue
 <script setup lang="ts">
-const regions = [{ code: '330000', label: '浙江省', children: [{ code: '330100', label: '杭州市' }] }];
+import { ref } from 'vue';
+
+const regions = [{ key: 'zhejiang', code: '330000', label: '浙江省', children: [{ key: 'hangzhou', code: '330100', label: '杭州市' }] }];
 const region = ref('330100');
 </script>
 
@@ -276,12 +294,19 @@ const region = ref('330100');
 
 ```vue
 <script setup lang="ts">
-const treeData = ref([{ key: 'root', title: '总部' }]);
+import type { TreeDataNode } from '~/components/reborn/ui/reborn-tree/reborn-tree.config';
+import { ref } from 'vue';
+
+const value = ref<string>();
+const treeData = ref<TreeDataNode[]>([{ key: 'root', title: '总部' }]);
 const loadedKeys = ref<string[]>([]);
 
 async function loadData(node: TreeDataNode) {
-  const children = await fetchDepartments(node.key);
-  node.children = children.map(item => ({ ...item, isLeaf: !item.hasChildren }));
+  await new Promise(resolve => setTimeout(resolve, 350));
+  node.children = [
+    { key: 'design-dept', title: '设计部', isLeaf: true },
+    { key: 'support-dept', title: '服务部', isLeaf: true },
+  ];
 }
 </script>
 
@@ -303,6 +328,8 @@ async function loadData(node: TreeDataNode) {
 | `treeData`            | `TreeDataNode[]`                                                                       | `[]`       | 〔树〕节点数据，与 tree 的数据格式一致                                           |
 | `fieldNames`          | `TreeFieldNames`                                                                       | -          | 〔共用〕映射 `title`、`key`、`children` 字段；绑定值按映射后的 `key` 识别节点    |
 | `multiple`            | `boolean`                                                                              | `false`    | 〔共用〕开启复选，选后不收起；选择框改为标签回显，树切换为勾选模式，默认父子联动 |
+| `maxCount` | `number` | `0` | 〔共用〕多选最大标签数量，包含联动父子节点；0不限制；正数向下取整；超限新增不生效 |
+| `showWordLimit` | `boolean` | `false` | 〔选择框〕多选时显示选中数量，有上限时追加最大数量 |
 | `checkStrictly`       | `boolean`                                                                              | `false`    | 〔树〕多选时父子勾选互不关联，各节点独立勾选                                     |
 | `collapseTags`        | `boolean`                                                                              | `false`    | 〔选择框〕多选标签超出数量时合并为 +N                                            |
 | `collapseTagsTooltip` | `boolean`                                                                              | `false`    | 〔选择框〕悬浮显示隐藏标签，需开启 collapseTags                                  |
@@ -368,6 +395,8 @@ async function loadData(node: TreeDataNode) {
 | `tagList`     | 多选标签容器；单选或无值时不渲染                 |
 | `collapseTag` | +N 标签样式；仅多选折叠产生隐藏项时渲染          |
 | `tag`         | 标签底色、边框、圆角；单选或无值时不渲染         |
+| `suffix` | 右侧计数与图标容器，默认间隔4px |
+| `count` | 选中数量，默认text-sm text-gray-5；仅multiple且showWordLimit时渲染 |
 
 ```vue
 <RebornTreeSelect
@@ -399,4 +428,4 @@ async function loadData(node: TreeDataNode) {
 - **虚拟滚动依赖树的固定行高**。`item` 插槽避免多行内容，否则滚动切片会错位；需要可变高度时关闭 `virtual` 并谨慎覆盖 `treeUi`。
 - **异步加载不代改数据**。`loadData` 中需由调用方把子节点写入响应式 `treeData`，叶子节点标记 `isLeaf`。下拉收起时内部树会卸载，已加载记录因此保存在选择器上；替换整棵 `treeData` 重新拉取时，要同时清空 `v-model:loaded-keys`，否则旧记录会让节点按已加载处理、不再请求。
 - **唯一标识字段需要显式指定**。`v-model` 默认按 `key` 查找节点，数据以 `code`、`id` 等字段作唯一标识时必须传 `fieldNames.key`，否则绑定值匹配不到节点，只能按原值回显。
-- **选择框样式直接复用 select**。标签、描边与浮层跟随公共主题；仅修改树内容样式时使用 `treeUi`，不要覆盖触发器。
+- **选择框样式直接复用 select**。标签尺寸跟随选择框；多选空态水平内边距与单选一致，选中后左侧变为4px；描边与浮层跟随公共主题；仅修改树内容样式时使用 `treeUi`，不要覆盖触发器。

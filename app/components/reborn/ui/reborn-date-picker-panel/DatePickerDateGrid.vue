@@ -36,7 +36,7 @@ function cellDay(day: GridDay): DatePickerCell {
   </div>
 
   <div :class="ui.days()" @mouseleave="emit('hover', null)">
-    <template v-for="(row, ri) in rows" :key="ri">
+    <div v-for="(row, ri) in rows" :key="ri" :class="ui.weekRow({ class: row.every(day => day.isDisabled) ? ui.dayDisabled() : undefined })" @mouseleave="emit('hover', null)">
       <!-- 周数：按 ISO 8601 计算，以该行的周一为准 -->
       <span v-if="showWeek" :class="ui.weekNumber()">{{ isoWeek(row) }}</span>
       <div
@@ -46,10 +46,10 @@ function cellDay(day: GridDay): DatePickerCell {
           ui.dayCell({
             class: [
               // 带子的取舍见 showRangeBand：起止同一天与双面板补位格都不画
-              day.rangeBand ? ui.dayInRange() : '',
-              day.rangeBand && day.isRangeStart ? ui.dayRangeStart() : '',
-              day.rangeBand && day.isRangeEnd ? ui.dayRangeEnd() : '',
-              // 禁用灰带：范围带子（选中高亮）优先，其余禁用格连成灰带
+              !day.isDisabled && day.rangeBand ? ui.dayInRange() : '',
+              !day.isDisabled && day.rangeBand && day.isRangeStart ? ui.dayRangeStart() : '',
+              !day.isDisabled && day.rangeBand && day.isRangeEnd ? ui.dayRangeEnd() : '',
+              // 禁用带默认透明，保留样式键供用户显式覆盖。
               day.isDisabledBand && !day.rangeBand ? ui.dayDisabledBand() : '',
             ],
           })
@@ -60,13 +60,13 @@ function cellDay(day: GridDay): DatePickerCell {
             ui.day({
               class: [
                 // 补位格不上选中态：真实日期在另一侧面板渲染
-                // 禁用样式排在选中态之前：规则禁用的格若恰为已选值，选中底色胜出以便辨认（整面板禁用时不显示选中态）
+                // 不可选日期仅保留禁用文字色，不显示选中或范围底色。
                 day.isDisabled ? ui.dayDisabled() : '',
-                day.active ? ui.dayActive() : '',
+                !day.isDisabled && day.active ? ui.dayActive() : '',
                 // 补位格淡色文字：未禁用、且没有以选中态显示时才上（双面板补位格不显示选中态）
                 !day.isCurrentMonth && !day.isDisabled && !day.active ? ui.dayOutside() : '',
                 highlightToday && day.isToday && !day.isDisabled && !day.isSelected ? ui.dayToday() : '',
-                day.rangeBand && !day.isSelected ? ui.dayInRange() : '',
+                !day.isDisabled && day.rangeBand && !day.isSelected ? ui.dayInRange() : '',
               ],
             })
           "
@@ -78,6 +78,6 @@ function cellDay(day: GridDay): DatePickerCell {
           </slot>
         </div>
       </div>
-    </template>
+    </div>
   </div>
 </template>

@@ -91,12 +91,12 @@ function resetTask() {
     <Playground v-model="state" :controls="controls" :code="progressCode" component-name="RebornProgress" title="交互演练场" description="切换形态、步骤数、状态和文字设置，实时查看进度变化。">
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
-          <template #leading><span class="icon-[lucide--rotate-ccw] size-[12px]" /></template>
+          <template #leading><span class="icon-[lucide--rotate-ccw] size-3" /></template>
           重置配置
         </RebornButton>
       </template>
       <div class="flex w-full min-w-0 flex-col items-center gap-8 overflow-x-auto py-4">
-        <RebornProgress :percent="state.percent" :type="state.type" :size="state.size" :status="state.status" :steps="state.steps" :text-inside="state.textInside" :show-text="state.showText" :striped="state.striped" :striped-flow="state.stripedFlow" :duration="state.duration" :flow-direction="state.flowDirection" :stroke-color="state.strokeColor || undefined" :format="state.customFormat ? formatPercent : undefined" class="max-w-[360px]" />
+        <RebornProgress :percent="state.percent" :type="state.type" :size="state.size" :status="state.status" :steps="state.steps" :text-inside="state.textInside" :show-text="state.showText" :striped="state.striped" :striped-flow="state.stripedFlow" :duration="state.duration" :flow-direction="state.flowDirection" :stroke-color="state.strokeColor || undefined" :format="state.customFormat ? formatPercent : undefined" class="max-w-90" />
         <DemoNote tone="dimmed" class="font-mono text-xs">当前 {{ state.percent }}% · {{ state.type }} · {{ state.status }} · {{ state.steps || '连续' }}</DemoNote>
       </div>
     </Playground>
@@ -126,11 +126,11 @@ function resetTask() {
 
     <DemoSection title="形态：圆环 circle">
       <template #description>
-        <code>type="circle"</code> 渲染圆环，三档外径为 48px / 76px / 114px，成功与失败状态在中央显示对应图标。
+        <code>type="circle"</code> 渲染圆环，三档外径为 48px / 76px / 114px，描边为 3px / 4px / 6px。成功与失败状态在中央显示对应图标。
       </template>
       <DemoBlock layout="stack" class="gap-6">
         <div v-for="size in progressSizes" :key="size" class="flex flex-wrap items-center gap-8">
-          <DemoNote tone="dimmed" class="w-[30px]">{{ size.toUpperCase() }}</DemoNote>
+          <DemoNote tone="dimmed" class="w-7.5">{{ size.toUpperCase() }}</DemoNote>
           <RebornProgress v-for="status in progressStatuses" :key="status" type="circle" :size="size" :status="status" :percent="status === 'success' ? 100 : 60" />
         </div>
       </DemoBlock>
@@ -142,8 +142,21 @@ function resetTask() {
       </template>
       <DemoBlock layout="stack" class="gap-6">
         <div v-for="size in progressSizes" :key="size" class="flex flex-wrap items-center gap-8">
-          <DemoNote tone="dimmed" class="w-[30px]">{{ size.toUpperCase() }}</DemoNote>
+          <DemoNote tone="dimmed" class="w-7.5">{{ size.toUpperCase() }}</DemoNote>
           <RebornProgress v-for="status in progressStatuses" :key="status" type="dashboard" :size="size" :status="status" :percent="status === 'success' ? 100 : 60" />
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="自定义宽度与粗细">
+      <template #description>
+        <code>width</code> 控制轨道宽度或圆形外径，<code>stroke-width</code> 控制轨道高度或描边。
+      </template>
+      <DemoBlock layout="stack" class="gap-4">
+        <RebornProgress :width="160" :stroke-width="6" :steps="5" :percent="60" />
+        <div class="flex items-center gap-4">
+          <RebornProgress type="circle" :width="24" :stroke-width="3" :percent="60" :show-text="false" />
+          <RebornProgress type="dashboard" :width="80" :stroke-width="4" :percent="60" />
         </div>
       </DemoBlock>
     </DemoSection>
@@ -154,7 +167,7 @@ function resetTask() {
       </template>
       <DemoBlock layout="stack" class="gap-6">
         <div v-for="size in progressSizes" :key="size" class="flex flex-wrap items-center gap-8">
-          <DemoNote tone="dimmed" class="w-[30px]">{{ size.toUpperCase() }}</DemoNote>
+          <DemoNote tone="dimmed" class="w-7.5">{{ size.toUpperCase() }}</DemoNote>
           <RebornProgress :size="size" :steps="5" :percent="60" />
           <RebornProgress :size="size" :steps="5" :percent="60" :stroke-color="stepColors" />
         </div>

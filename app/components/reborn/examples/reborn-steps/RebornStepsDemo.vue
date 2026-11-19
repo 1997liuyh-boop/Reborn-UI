@@ -420,6 +420,18 @@ const firstTwoItems = items.slice(0, 2);
       </DemoBlock>
     </DemoSection>
 
+    <DemoSection title="外观类型">
+      <template #description><code>type</code> 选择数字、点状、文本或标签导航；<code>tabs</code> 的当前下边框包含前一步分隔符。</template>
+      <DemoBlock layout="stack" class="gap-6">
+        <div v-for="type in stepsTypes" :key="type" class="grid w-full gap-3">
+          <p class="text-sm text-gray-7">{{ type }}</p>
+          <RebornSteps :active="1" :type="type" line-type="arrow">
+            <RebornStep v-for="item in items" :key="item.title" :title="item.title" :description="item.description" />
+          </RebornSteps>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
     <DemoSection title="点状步骤">
       <template #description><code>type="dot"</code> 将序号节点替换为圆点，<code>size</code> 同时调整圆点与文字尺寸。</template>
       <DemoBlock layout="stack" class="gap-6">

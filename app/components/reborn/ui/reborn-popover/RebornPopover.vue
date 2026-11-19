@@ -203,8 +203,8 @@ const placementInfo = computed(() => {
   return { side, align, offset: props.sideOffset ?? legacy.sideOffset ?? 4 };
 });
 
-/** 上下方向起止对齐时，箭头中心距面板端部 25px。 */
-const ARROW_INSET = 25;
+/** 箭头底边 17.5px、总高度 7px，中心至少内缩半个底边。 */
+const ARROW_INSET = FLOATING_ARROW_LENGTH / 2;
 const ARROW_HEIGHT = FLOATING_ARROW_DEPTH;
 /** 根部嵌入面板 2px，遮住曲线两端的平直边与抗锯齿接缝。 */
 const ARROW_OVERLAP = 2;
@@ -225,8 +225,8 @@ const arrowPosition = shallowRef({
 });
 
 /**
- * 同步箭头在面板内的坐标。落点规则与 reborn-tooltip 一致：
- * 上下方向的 start / end 停在对齐端的内缩位置；左右方向始终指向触发器的高度中心。
+ * 四个方向的尖角均指向触发器中心，起止对齐只影响面板位置。
+ * 临近视口边缘时仍将箭头约束在面板内，避免尖角越过面板。
  *
  * 箭头绝对定位在带边框的 .content 里，top / left 以内边距盒为原点，
  * 而 position 是面板边框盒的位置，因此要把边框宽度算进面板起点。
@@ -234,21 +234,16 @@ const arrowPosition = shallowRef({
 function syncArrowPosition(
   rect: DOMRect,
   position: FloatingPoint,
-  side: PopoverSide,
-  align: PopoverAlign,
   contentBox: HTMLElement,
 ) {
   // clientLeft / clientTop 即左、上边框宽度，clientWidth / clientHeight 即内边距盒尺寸
-  const isVertical = side === "top" || side === "bottom";
-
   arrowPosition.value = {
     x: `${getArrowCenter({
       panelStart: position.left + contentBox.clientLeft,
       panelExtent: contentBox.clientWidth,
       triggerStart: rect.left,
       triggerExtent: rect.width,
-      // 主轴方向上没有对齐概念，那一轴的值也用不到，按 center 计算即可
-      align: isVertical ? align : "center",
+      align: "center",
       inset: ARROW_INSET,
     })}px`,
     y: `${getArrowCenter({
@@ -257,8 +252,7 @@ function syncArrowPosition(
       triggerStart: rect.top,
       triggerExtent: rect.height,
       align: "center",
-      // 侧向只预留半个底边，避免固定内缩量把矮触发器的中心挤偏。
-      inset: isVertical ? ARROW_INSET : FLOATING_ARROW_LENGTH / 2,
+      inset: ARROW_INSET,
     })}px`,
   };
 }
@@ -286,7 +280,7 @@ function calculatePosition(contentElement?: HTMLElement) {
 
   resolvedSide.value = side;
   resolvedAlign.value = align;
-  syncArrowPosition(rect, position, side, align, contentBox);
+  syncArrowPosition(rect, position, contentBox);
 
   style.value = {
     left: `${position.left}px`,

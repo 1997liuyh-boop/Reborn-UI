@@ -435,6 +435,9 @@ const customRangeUi = {
   dayActive: "bg-success text-success-foreground rounded-full hover:bg-success",
   dayInRange: "bg-green-1 text-success rounded-none hover:bg-green-1",
 };
+const defaultViewDate = ref();
+const prefixDate = ref();
+const slotPrefixDate = ref();
 </script>
 
 <template>
@@ -824,6 +827,12 @@ const customRangeUi = {
     </DemoSection>
 
     <!-- 加载与禁用 -->
+    <DemoSection title="默认展示日期" description="打开后展示指定月份，选择框在选日期前保持为空。">
+      <DemoBlock>
+        <RebornDatePicker v-model="defaultViewDate" default-value="2030-06-01" />
+      </DemoBlock>
+    </DemoSection>
+
     <DemoSection title="加载与禁用">
       <template #description>
         <code>loading</code>
@@ -915,6 +924,15 @@ const customRangeUi = {
     </DemoSection>
 
     <!-- 自定义触发器 -->
+    <DemoSection title="前缀" description="使用图标或前缀插槽，并保留原来的日期输入。">
+      <DemoBlock>
+        <RebornDatePicker v-model="prefixDate" prefix-icon="lucide:calendar-days" />
+        <RebornDatePicker v-model="slotPrefixDate">
+          <template #prefix>起始</template>
+        </RebornDatePicker>
+      </DemoBlock>
+    </DemoSection>
+
     <DemoSection title="自定义触发器" class="relative z-10">
       <template #description>
         <code>default</code>

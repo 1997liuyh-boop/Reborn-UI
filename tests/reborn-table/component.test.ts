@@ -297,7 +297,7 @@ it('三档尺寸的选择列表头和复选框双向居中，不改变普通列�
         while (cell.type !== 'th' && cell.type !== 'td') cell = cell.parent!;
         assert.match(cell.props.class, /(?:^| )align-middle(?: |$)/);
         assert.match(cell.props.class, /(?:^| )text-center(?: |$)/);
-        assert.match(cell.props.class, /(?:^| )px-2(?: |$)/, '48px 选择列应为勾选框留足空间');
+        assert.match(cell.props.class, /(?:^| )px-4(?: |$)/, '选择列左右各保留16px内边距');
         const content = cell.children[0]!;
         for (const token of ['flex', 'items-center', 'justify-center']) {
           assert.ok(content.props.class.split(' ').includes(token), `选择列内容缺少 ${token}`);
@@ -409,10 +409,10 @@ it('相同行键与跨度的数据刷新保留合并格悬停，真正改变行�
   await nextTick();
   t.props.data = t.props.data.map(row => ({ ...row, amount: row.amount + 1 }));
   await nextTick();
-  assert.match(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.match(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_50%,var\(--color-gray-1\)\)\](?: |$)/);
   t.props.data = [...t.props.data].reverse();
   await nextTick();
-  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_50%,var\(--color-gray-1\)\)\](?: |$)/);
   t.stop();
 });
 
@@ -427,22 +427,22 @@ it('合并单元格与覆盖数据行双向联动悬停，且不会扩散到其�
   assert.equal(typeof merged().props.onMouseenter, 'function');
   merged().props.onMouseenter();
   await nextTick();
-  assert.match(rows()[0]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
-  assert.match(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
-  assert.doesNotMatch(rows()[2]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.match(rows()[0]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_50%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.match(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_50%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.doesNotMatch(rows()[2]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_50%,var\(--color-gray-1\)\)\](?: |$)/);
   merged().props.onMouseleave();
   secondName().props.onMouseenter();
   await nextTick();
-  assert.match(merged().props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/, '悬停姓名也必须高亮其覆盖的部门单元格');
-  assert.doesNotMatch(rows()[0]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/, '共享部门单元格高亮不应让另一条姓名行全部高亮');
+  assert.match(merged().props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_50%,var\(--color-gray-1\)\)\](?: |$)/, '悬停姓名也必须高亮其覆盖的部门单元格');
+  assert.doesNotMatch(rows()[0]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_50%,var\(--color-gray-1\)\)\](?: |$)/, '共享部门单元格高亮不应让另一条姓名行全部高亮');
   secondName().props.onMouseleave();
   await nextTick();
-  assert.doesNotMatch(merged().props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
-  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.doesNotMatch(merged().props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_50%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_50%,var\(--color-gray-1\)\)\](?: |$)/);
   t.props.hover = false;
   merged().props.onMouseenter();
   await nextTick();
-  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_30%,var\(--color-gray-1\)\)\](?: |$)/);
+  assert.doesNotMatch(rows()[1]!.props.class, /(?:^| )bg-\[color-mix\(in_srgb,var\(--color-gray-2\)_50%,var\(--color-gray-1\)\)\](?: |$)/);
   t.stop();
 });
 

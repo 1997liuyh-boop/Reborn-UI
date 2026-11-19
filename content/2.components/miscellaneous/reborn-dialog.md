@@ -21,7 +21,7 @@ Dialog 是居中弹出的模态面板，由标题区、正文区和按钮区三�
 
 显隐有两种控制方式：绑定 `v-model` 受控，或者不绑定、把触发按钮放进 `trigger` 插槽由组件自管理，两者可以同时使用。确认按钮只抛出 `confirm` 事件、不会自动关闭，所以"提交成功后再关"的流程不需要额外拦截；取消按钮、右上角关闭、点击遮罩和 `Esc` 则统一走关闭流程，并都经过 `beforeClose`。
 
-除组件用法外，`index.ts` 还导出了 `Modal` 命令式确认框（`Modal.info` / `success` / `warning` / `error` / `confirm`），不需要在模板里预先占位，适合在请求回调、路由守卫这类逻辑里直接弹出。
+除组件用法外，`index.ts` 还导出了 `Modal` 命令式确认框（`Modal.primary` / `info` / `success` / `warning` / `error` / `confirm`），不需要在模板里预先占位，适合在请求回调、路由守卫这类逻辑里直接弹出。
 
 ### 何时使用
 
@@ -40,7 +40,7 @@ Dialog 是居中弹出的模态面板，由标题区、正文区和按钮区三�
 
 ### 命令式调用：Modal 类型方法
 
-`Modal.info` / `success` / `warning` / `error` / `confirm` 按类型带出对应图标并直接打开确认框，默认宽 420、垂直居中、不显示右上角关闭按钮。`confirm` 类型默认带取消按钮，其余类型传了 `cancelText` 才会出现取消按钮。`onBeforeOk` 返回 `false` 可阻断确定，或通过 `done(true)` 异步关闭；`onOk` / `onCancel` 返回 Promise 时 resolve 才关闭。`Modal.destroyAll()` 一次销毁所有存活的确认框。
+`Modal.primary` / `info` / `success` / `warning` / `error` / `confirm` 按类型带出对应图标并直接打开确认框，默认宽 420、垂直居中、不显示右上角关闭按钮。`confirm` 类型默认带取消按钮，其余类型传了 `cancelText` 才会出现取消按钮。`onBeforeOk` 返回 `false` 可阻断确定，或通过 `done(true)` 异步关闭；`onOk` / `onCancel` 返回 Promise 时 resolve 才关闭。`Modal.destroyAll()` 一次销毁所有存活的确认框。
 
 ```ts
 import { Modal } from "~/components/reborn/ui/reborn-dialog";
@@ -61,7 +61,7 @@ Modal.destroyAll();
 
 ### 布局：顶部落位、垂直居中与头尾居中
 
-默认按 `top`（`15vh`）顶部落位；`alignCenter` 改为水平垂直居中，此时 `top` 不再生效；`center` 让标题区与按钮区的内容居中排列，关闭按钮改为绝对定位留在右上角。`width` 传数字按 px 处理，也可传任意 CSS 宽度。
+默认在视口水平垂直居中，设置 `:align-center="false"` 后可用 `top`（默认 `15vh`）指定顶部距离；`center` 让标题区与按钮区的内容居中排列，关闭按钮改为绝对定位留在右上角。`width` 传数字按 px 处理，也可传任意 CSS 宽度。
 
 ```vue
 <template>
@@ -221,7 +221,7 @@ await delayedDialog.open();
 | `draggable`               | `boolean`                                  | `false`      | 是否启用拖拽（按住头部平移，全屏模式下无效）。                                                                                               |
 | `overflow`                | `boolean`                                  | `false`      | 拖动范围是否可以超出可视区；默认拖拽被限制在视口内。                                                                                         |
 | `center`                  | `boolean`                                  | `false`      | header 与 footer 内容是否居中排列。                                                                                                          |
-| `align-center`            | `boolean`                                  | `false`      | 是否水平垂直居中对话框；`false` 时按 `top` 顶部落位。                                                                                        |
+| `align-center`            | `boolean`                                  | `true`      | 是否水平垂直居中对话框；`false` 时按 `top` 顶部落位。                                                                                        |
 | `destroy-on-close`        | `boolean`                                  | `false`      | 关闭时是否销毁其中的元素；`false` 时首开后 DOM 常驻、复用状态。                                                                              |
 | `close-icon`              | `string`                                   | `'lucide:x'` | 自定义关闭按钮图标名。                                                                                                                       |
 | `header-aria-level`       | `string`                                   | `'2'`        | 标题的 `aria-level` 属性。                                                                                                                   |
@@ -269,7 +269,7 @@ await delayedDialog.open();
 
 ### Modal 命令式调用
 
-从 `~/components/reborn/ui/reborn-dialog` 导入 `Modal`，包含 `Modal.info` / `Modal.success` / `Modal.warning` / `Modal.error` / `Modal.confirm` 五个方法。参数为对象，支持除 `cancelBtn` / `confirmBtn` / `beforeClose` 外的全部 Props（驼峰形式），默认值改为 `width: 420`、`alignCenter: true`、`showClose: false`；生命周期事件以 `onBeforeOpen` / `onOpened` / `onBeforeClose` / `onClosed` 传入，另有以下命令式专属项：
+从 `~/components/reborn/ui/reborn-dialog` 导入 `Modal`，包含 `Modal.primary` / `Modal.info` / `Modal.success` / `Modal.warning` / `Modal.error` / `Modal.confirm` 六个方法。参数为对象，支持除 `cancelBtn` / `confirmBtn` / `beforeClose` 外的全部 Props（驼峰形式），默认值改为 `width: 420`、`alignCenter: true`、`showClose: false`；生命周期事件以 `onBeforeOpen` / `onOpened` / `onBeforeClose` / `onClosed` 传入，另有以下命令式专属项：
 
 | 参数             | 类型                                                                               | 描述                                                                                                |
 | :--------------- | :--------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
@@ -298,7 +298,7 @@ await delayedDialog.open();
 | `backdrop`      | 遮罩层，默认 `absolute inset-0 bg-black/45`（刻意不做 backdrop-blur——全屏背景模糊在动画期间每帧重算会严重掉帧）；`modal=false` 时转为 `bg-transparent` 的透明拦截层，`modalPenetrable` 生效时不渲染。                            |
 | `shell`         | 面板定位壳（静态层，不参与动画），默认 `absolute inset-0 flex justify-center px-4 sm:px-6`：`alignCenter` 时加 `items-center` 垂直居中，否则 `items-start` 并按 `top` 写入顶部内边距；点击面板外空白等同点击遮罩。                |
 | `panelWrapper`  | 面板动画包裹层（过渡动画作用在这一层），默认 `flex w-full justify-center pointer-events-none`：只有面板大小，避免整屏尺寸图层参与缩放导致每帧重栅格化。                                                                          |
-| `panel`         | 弹窗面板本体。默认 `pointer-events-auto relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-xl border bg-white p-5 shadow-…`；`fullscreen` 时改为 `h-full`、去掉最大宽度与圆角。`width` prop 与 `class` prop 也作用于该节点。 |
+| `panel`         | 弹窗面板本体。默认 `pointer-events-auto relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-lg border bg-white p-5 shadow-…`；`fullscreen` 时改为 `h-full`、去掉最大宽度与圆角。`width` prop 与 `class` prop 也作用于该节点。 |
 | `header`        | 头部条（无分隔线），默认 `flex items-start justify-between gap-4`，拖拽手柄绑定在它身上。**仅传了 `title` / `describe` 或填充 `header` 插槽时渲染**；`center` 时追加 `justify-center px-[26px]`。                                 |
 | `headerContent` | 头部左侧的文字区容器，默认 `flex min-w-0 flex-1 flex-col gap-[8px]`（标题与描述间隔 8px）；它在 `header` 插槽外层，填充插槽后依然生效。                                                                                          |
 | `title`         | 标题节点（`role="heading"`，层级由 `header-aria-level` 指定），默认 `text-lg font-medium text-gray-10`。**仅在传了 `title` 且未填充 `header` 插槽时渲染**。                                                                       |

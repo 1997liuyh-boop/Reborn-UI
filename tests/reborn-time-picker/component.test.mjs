@@ -79,12 +79,17 @@ it("跟随系统时间透传至单点和范围面板，初始化经过禁用校�
       p.container.firstElementChild.firstElementChild.click(); await nextTick(); await nextTick();
       const selected = [...p.container.querySelectorAll('[role="listbox"]')]
         .map(column => column.querySelector('[aria-selected="true"]').getAttribute("data-value"));
-      assert.deepEqual(selected, isRange ? ["9", "30", "46", "9", "30", "46"] : ["9", "30", "46"]);
+      assert.deepEqual(selected, ["9", "30", "46"]);
       assert.deepEqual(p.model.value, isRange ? [] : "");
       assert.deepEqual(p.events.change, []);
       button(p, "确定").click(); await nextTick();
+      if (isRange) {
+        await nextTick();
+        assert.equal(p.container.querySelector('[data-range-role="end"]').getAttribute('aria-pressed'), 'true');
+        button(p, "确定").click(); await nextTick(); await nextTick();
+      }
       assert.deepEqual(p.model.value, isRange ? ["09:30:46", "09:30:46"] : "09:30:46");
-      assert.equal(p.events.change.length, 1);
+      assert.equal(p.events.change.length, isRange ? 2 : 1);
     }
   } finally { mock.timers.reset(); }
 });
@@ -122,9 +127,48 @@ it("键盘逐秒切换跳过禁用项，此刻及毫秒格式可确认", async (
 it("范围保持数组绑定与起止顺序", async () => {
   const p=mount({isRange:true},["09:00:00","18:00:00"]);
   p.container.firstElementChild.firstElementChild.click(); await nextTick();
-  assert.equal(p.container.querySelectorAll('[role="listbox"]').length,6);
-  p.container.querySelector('[aria-label="开始时"] [data-value="20"]').click(); await nextTick();
+  assert.equal(p.container.querySelectorAll('[role="listbox"]').length,3);
+  p.container.querySelector('[aria-label="时"] [data-value="20"]').click(); await nextTick();
+  assert.deepEqual([...p.model.value],["20:00:00","18:00:00"]);
+  p.container.querySelector('[data-range-role="end"]').click(); await nextTick();
+  button(p,"确定").click(); await nextTick(); await nextTick();
   assert.deepEqual([...p.model.value],["18:00:00","20:00:00"]);
+});
+
+it("单列首次选择自动切换端点，区间清空重置且禁用回调保留真实角色", async () => {
+  const roles = [];
+  const p = mount({ isRange: true, format: 'HH', interaction: 'click', disabledHours: (role, comparing) => { roles.push([role, comparing]); return []; } }, []);
+  p.container.querySelector('[data-range-role="start"]').click(); await nextTick();
+  p.container.querySelector('[data-value="10"]').click(); await nextTick();
+  await new Promise(resolve => setTimeout(resolve, 250)); await nextTick();
+  assert.equal(p.container.querySelector('[data-range-role="end"]').getAttribute('aria-pressed'), 'true');
+  p.container.querySelector('[data-value="18"]').click(); await nextTick();
+  button(p, '确定').click(); await nextTick(); await nextTick();
+  assert.deepEqual([...p.model.value], ['10', '18']);
+  assert.equal(p.events.confirm.length, 1);
+  assert.ok(roles.some(([role, comparing]) => role === 'end' && comparing === '10'));
+  p.container.querySelector('[data-clear]').click(); await nextTick();
+  assert.deepEqual([...p.model.value], []);
+  p.container.querySelector('[data-range-role="end"]').click(); await nextTick();
+  assert.equal(p.container.querySelector('[data-range-role="start"]').getAttribute('aria-pressed'), 'true');
+});
+
+it("区间自定义页脚清空整组，动态禁用规则重新校正当前端点", async () => {
+  const configuration = { isRange: true, format: 'HH', disabledHours: () => [] };
+  const p = mount(configuration, ['10', '18']);
+  p.container.querySelector('[data-range-role="start"]').click(); await nextTick();
+  configuration.disabledHours = role => role === 'start' ? [10] : [];
+  p.model.value = [...p.model.value]; await nextTick(); await nextTick();
+  assert.equal(p.container.querySelector('[aria-selected="true"]').getAttribute('data-value'), '11');
+  const value = ref(['10', '18']); const container = document.createElement('div'); document.body.append(container);
+  const app = createApp({ render: () => h(Picker, { isRange: true, format: 'HH', modelValue: value.value, 'onUpdate:modelValue': next => value.value = next }, {
+    footer: ({ clear }) => h('button', { onClick: clear }, '清空范围'),
+  }) });
+  app.mount(container); mounted.push(() => { app.unmount(); container.remove(); });
+  container.querySelector('[data-range-role="end"]').click(); await nextTick();
+  [...container.querySelectorAll('button')].find(el => el.textContent === '清空范围').click(); await nextTick();
+  assert.deepEqual([...value.value], []);
+  assert.equal(container.querySelector('[data-range-role="start"]').getAttribute('aria-pressed'), 'true');
 });
 
 

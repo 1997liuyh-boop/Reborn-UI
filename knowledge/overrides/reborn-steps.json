@@ -11,7 +11,7 @@
     "注册、下单、审批等有序流程：通过 v-model:active 标出当前阶段，并用外部按钮推进。",
     "流程需要展示已完成、处理中或失败阶段：设置 processStatus / finishStatus，必要时用单步 status 覆盖。",
     "页面空间与信息量不同：用 width 控制整体宽度，direction 与 space 调整排列，placement 选择标题和描述相对节点的上、下、左、右位置，simple 控制描述显示。",
-    "需要区分阶段类型：使用 type=default/dot/text 选择数字、点状或无标记文本，lineType=solid/dashed/arrow 定制连接，单步 icon 与 color 表达业务含义。",
+    "需要区分阶段类型：使用 type=default/dot/text/tabs 选择数字、点状、无标记文本或水平标签导航，lineType=solid/dashed/arrow 定制连接，单步 icon 与 color 表达业务含义。",
     "耗时任务需要阶段内进度：为 RebornStep 单独设置 progress，或用父级 overallProgress 将整体百分比等分折算为完成步骤和当前步骤圆环。"
   ],
   "whenNotToUse": [
@@ -25,9 +25,10 @@
     "RebornStep.progress 和 RebornSteps.overallProgress 的范围为 0～100，超范围限制到边界，非有限值按 0 处理；不传时不显示进度圆环。",
     "overallProgress 优先于 active 决定展示下标；当前 RebornStep 显式设置 progress 时优先使用单步圆环百分比。整体进度不回写 active，也不额外触发 change，100% 时全部步骤完成。",
     "圆环只显示在当前且状态为 process 的节点周围；progress 达到 100% 不会推进步骤，仍需业务更新 active。",
+    "type=default 无环节点 sm/md/lg 为24/28/32px；实际显示圆环的当前节点为20/24/32px，环间隔1/1/2px、线宽均1px（根字号16px）。尺寸与间距随 Tailwind 刻度缩放，点状和标签导航保持既有尺寸。",
     "步骤本身没有点击切换能力，使用外部按钮或业务状态更新 active。",
     "单步 status 优先于父级按 active 推导的状态；错误和成功状态的语义色优先于 color。",
-    "箭头使用 lineType=arrow；type 选择 default、dot 或 text。text 不渲染标记、图标插槽和进度圆环，当前标题与描述使用步骤主题色，错误和成功沿用语义色。dashed 使用原生 CSS 虚线，短段分布由浏览器决定。",
+    "箭头使用 lineType=arrow；type 选择 default、dot、text 或 tabs。text 不渲染标记、图标插槽和进度圆环，处理中标题 gray-10、描述 gray-7，已完成文字使用步骤配色6阶；横向箭头在整体文案高度内居中。tabs 横向固定右侧文案，使用12px上下间距、1px灰色基线和2px当前步骤下边框，下边框包含前一步分隔符；纵向沿用数字布局。tabs 灰色基线和等待圆点边框均为gray-3；type=text时错误标题和描述均使用错误色。dashed 使用原生 CSS 虚线，短段分布由浏览器决定。",
     "实线和虚线的完成覆盖层沿流程方向延展、回退时收回；箭头使用颜色过渡，约 200ms，系统减少动态效果时关闭过渡。",
     "simple 会隐藏 description，包括描述插槽；不适合必须展示辅助说明的流程。",
     "placement 只控制标题与描述相对节点的位置，不改变 direction 的横纵排列；单步 placement 优先于父级 placement，均未指定时，横向 alignCenter=true 回退为 bottom，其余默认为 right。横向 top/bottom 默认沿每步起点左对齐，alignCenter=true 时节点与文字居中；纵向不受 alignCenter 影响，top/bottom 的连接线避开文案并连接内容组边缘。",

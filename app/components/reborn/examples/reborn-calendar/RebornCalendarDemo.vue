@@ -41,6 +41,11 @@ const sampleEvents: CalendarEvent[] = [
   { date: day(27), title: "团队分享：日历组件的周首计算" },
 ];
 
+const disabledValue = ref<Date>();
+function isWeekend(date: Date) {
+  return date.getDay() === 0 || date.getDay() === 6;
+}
+
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
 /** 演练场默认状态，与组件默认值一致 */
@@ -245,6 +250,13 @@ const jumpTargets: { label: string; type: CalendarDateType }[] = [
       <DemoBlock layout="stack">
         <RebornCalendar v-model="basicValue" />
         <DemoNote tone="dimmed">选中：{{ label(basicValue) }}</DemoNote>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="禁用日期">
+      <template #description>使用 <code>disabled-date</code> 禁用周末日期。</template>
+      <DemoBlock layout="stack">
+        <RebornCalendar v-model="disabledValue" size="sm" :disabled-date="isWeekend" />
       </DemoBlock>
     </DemoSection>
 

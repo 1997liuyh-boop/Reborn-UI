@@ -102,7 +102,7 @@ export default {
                 icon: "hidden",
                 dot: "hidden",
                 root: "relative z-[1] justify-center rounded-sm",
-                group: "relative gap-[2px] rounded-md bg-gray-2 p-[2px]",
+                group: "relative gap-0.5 rounded-md bg-gray-2 p-0.5",
             },
             /**
              * 实体按钮拼接风格：每项渲染一个 RebornButton。
@@ -238,20 +238,13 @@ export default {
         // 选中项禁用时整项半透明，滑块跟着淡化，否则会出现一块不透明底衬着半透明文字
         { variant: "button", disabled: true, class: { slider: "opacity-50" } },
 
-        // 分段按钮风格 · 未选中：灰字，悬停预示语义色
+        // 分段按钮风格 · 未选中：保持灰字，仅通过指针提示可点击
         { variant: "button", checked: false, class: { root: "text-gray-6" } },
-        { variant: "button", checked: false, disabled: false, color: "primary", class: { root: "hover:text-primary" } },
-        { variant: "button", checked: false, disabled: false, color: "secondary", class: { root: "hover:text-secondary" } },
-        { variant: "button", checked: false, disabled: false, color: "success", class: { root: "hover:text-success" } },
-        { variant: "button", checked: false, disabled: false, color: "info", class: { root: "hover:text-info" } },
-        { variant: "button", checked: false, disabled: false, color: "warning", class: { root: "hover:text-warning" } },
-        { variant: "button", checked: false, disabled: false, color: "error", class: { root: "hover:text-error" } },
-        { variant: "button", checked: false, disabled: false, color: "neutral", class: { root: "hover:text-neutral" } },
 
         // 分段按钮风格尺寸：高度取 RebornButton 同款令牌（24/32/40px），与 pure-button 对齐
-        { variant: "button", size: "sm", class: { root: "h-6 px-[8px]" } },
-        { variant: "button", size: "md", class: { root: "h-8 px-[12px]" } },
-        { variant: "button", size: "lg", class: { root: "h-10 px-[16px]" } },
+        { variant: "button", size: "sm", class: { root: "h-6 px-2" } },
+        { variant: "button", size: "md", class: { root: "h-8 px-3" } },
+        { variant: "button", size: "lg", class: { root: "h-10 px-4" } },
 
         // 实体按钮拼接风格 · 禁用：视觉交给 RebornButton 的 bg-gray-2/text-gray-5 精确呈现，
         // 压掉根节点的整体半透明，避免二次淡化
@@ -304,6 +297,16 @@ export default {
             size: "lg",
             class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-sm [&>.reborn-radio:last-child_button]:rounded-b-sm" },
         },
+        // 按压圆点时显示对应色板第1阶的2px外圈；禁用态不响应按压。
+        { variant: "radio", disabled: false, color: "primary", class: { icon: "group-active/radio:ring-2 group-active/radio:ring-brand-1" } },
+        { variant: "radio", disabled: false, color: "secondary", class: { icon: "group-active/radio:ring-2 group-active/radio:ring-secondary-1" } },
+        { variant: "radio", disabled: false, color: "success", class: { icon: "group-active/radio:ring-2 group-active/radio:ring-green-1" } },
+        { variant: "radio", disabled: false, color: "info", class: { icon: "group-active/radio:ring-2 group-active/radio:ring-blue-1" } },
+        { variant: "radio", disabled: false, color: "warning", class: { icon: "group-active/radio:ring-2 group-active/radio:ring-orange-1" } },
+        { variant: "radio", disabled: false, color: "error", class: { icon: "group-active/radio:ring-2 group-active/radio:ring-red-1" } },
+        { variant: "radio", disabled: false, color: "neutral", class: { icon: "group-active/radio:ring-2 group-active/radio:ring-gray-1" } },
+        { variant: "radio", disabled: true, class: { root: "opacity-100", icon: "border-gray-4 bg-transparent", dot: "bg-gray-4", label: "text-gray-5" } },
+        { variant: "button", disabled: true, class: { root: "bg-gray-2 text-gray-5 opacity-100", slider: "bg-gray-2 opacity-100" } },
     ] as const,
     defaultVariants: {
         variant: "radio" as RadioVariant,

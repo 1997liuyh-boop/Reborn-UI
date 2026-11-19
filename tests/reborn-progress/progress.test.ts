@@ -25,7 +25,7 @@ it('渐变色标支持乱序、边界钳制与空值', () => {
 });
 
 it('普通圆环和步骤圆环遵循指定外径及厚度', () => {
-  for (const [size, diameter, strokeWidth, stepWidth] of [['sm', 48, 4, 6], ['md', 76, 6, 8], ['lg', 114, 6, 16]] as const) {
+  for (const [size, diameter, strokeWidth, stepWidth] of [['sm', 48, 3, 6], ['md', 76, 4, 8], ['lg', 114, 6, 16]] as const) {
     assert.equal(getArcGeometry('circle', size, false).diameter, diameter);
     assert.equal(getArcGeometry('circle', size, false).strokeWidth, strokeWidth);
     assert.equal(getArcGeometry('dashboard', size, true).strokeWidth, stepWidth);

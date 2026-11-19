@@ -329,12 +329,12 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
             <template #sizes="{ pageSize, change }">
               <RebornSelect
                 :model-value="pageSize" :options="slotPageSizeOptions"
-                size="sm" class="w-[110px]" :clearable="false" @update:model-value="change"
+                size="sm" class="w-27.5" :clearable="false" @update:model-value="change"
               />
             </template>
             <template #jumper="{ current, totalPages, jump }">
               <RebornInput
-                :model-value="String(current)" type="number" size="sm" class="!w-[56px]"
+                :model-value="String(current)" type="number" size="sm" class="!w-14"
                 @keyup.enter="jumpFromInput($event, jump)"
               />
               <span class="text-dimmed text-xs">/ {{ totalPages }} 页</span>

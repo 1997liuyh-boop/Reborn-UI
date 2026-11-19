@@ -24,6 +24,11 @@ export function normalizeSteps(value: number): number {
   return Number.isFinite(value) ? Math.min(1000, Math.max(0, Math.floor(value))) : 0;
 }
 
+/** 尺寸参数使用正数像素，无效值沿用尺寸档位。 */
+export function normalizeSize(value?: number): number | undefined {
+  return value !== undefined && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
 /** 仅对象形式表示渐变，数组保留给步骤颜色。 */
 export function getGradientStops(color?: ProgressStrokeColor): ProgressGradient['stops'] {
   if (!color || typeof color === 'string' || Array.isArray(color)) return [];
@@ -53,14 +58,17 @@ export function getColorRanges(segments: ProgressSegment[], fallback: string): P
 }
 
 /** 仪表盘从左下方顺时针绘制 270 度，保留底部缺口；reverse 方向镜像为右下方逆时针起笔。 */
-export function getArcGeometry(type: ProgressType, size: ProgressSize, stepped: boolean, flow: ProgressFlowDirection = 'normal'): ProgressArcGeometry {
+export function getArcGeometry(type: ProgressType, size: ProgressSize, stepped: boolean, flow: ProgressFlowDirection = 'normal', width?: number, thickness?: number): ProgressArcGeometry {
   const metrics = progressMetrics[size];
-  const strokeWidth = stepped ? metrics.stepWidth : metrics.strokeWidth;
-  const radius = (metrics.diameter - strokeWidth) / 2;
+  const defaultStroke = stepped ? metrics.stepWidth : type === 'dashboard' ? metrics.dashboardStrokeWidth : metrics.strokeWidth;
+  const diameter = width ?? (type === 'dashboard' && size === 'lg' ? 120 : metrics.diameter);
+  // 描边过粗时保留正半径，避免圆弧退化为零长度。
+  const strokeWidth = Math.min(thickness ?? defaultStroke, diameter - Math.min(1, diameter / 2));
+  const radius = (diameter - strokeWidth) / 2;
   const sweep = type === 'dashboard' ? 270 : 360;
   const direction: 1 | -1 = flow === 'reverse' ? -1 : 1;
   const start = type === 'dashboard' ? (direction === 1 ? 135 : 45) : -90;
-  return { diameter: metrics.diameter, strokeWidth, radius, sweep, start, length: 2 * Math.PI * radius * sweep / 360, direction };
+  return { diameter, strokeWidth, radius, sweep, start, length: 2 * Math.PI * radius * sweep / 360, direction };
 }
 
 /** 环形步骤按弧长留出 2px，过密时最多使用半个节点的弧长作为间距。 */

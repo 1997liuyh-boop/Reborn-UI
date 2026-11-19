@@ -110,7 +110,7 @@ Web 端只有 `solid` 与 `textDot` 带 `ring-1 ring-gray-1` 外圈，用于区�
 | --- | --- | --- | --- |
 | `solid` | 直径 4px | 直径 5px | 直径 6px |
 | `outline` | 内径 4px + 描边 2px，外径 8px | 内径 6px + 描边 3px，外径 12px | 内径 8px + 描边 4px，外径 16px |
-| `textDot` / `textOutline` | 高 16px，字号 12px | 高 20px，字号 16px | 高 24px，字号 20px |
+| `textDot` / `textOutline` | 高 16px，字号 12px | 高 20px，字号 14px | 高 24px，字号 16px |
 
 以上是 Web 端像素，UniApp 端按 1px = 2rpx 换算，见「两端差异对照」。
 
@@ -177,7 +177,7 @@ const hasUnread = ref(true);
   </RebornChip>
 
   <RebornChip color="error" size="lg">
-    <RebornButton color="neutral" variant="circle" size="lg">
+    <RebornButton color="neutral" variant="soft" size="lg" circle>
       <template #leading>
         <Icon name="lucide:mail" class="size-6" />
       </template>
@@ -257,7 +257,7 @@ const hasUnread = ref(true);
 
 | 键名 | 对应节点 | 默认类名 | 说明 |
 | --- | --- | --- | --- |
-| `root` | 包裹宿主与角标的 `<span>` | `relative inline-flex items-center justify-center shrink-0 h-fit leading-none` | 始终渲染；`class` 也合并到这里。 |
+| `root` | 包裹宿主与角标的 `<span>` | `relative inline-flex items-center justify-center shrink-0 h-fit align-middle leading-none` | 始终渲染；`class` 也合并到这里。 |
 | `base` | 角标节点 `<div>` | `absolute rounded-full flex items-center justify-center whitespace-nowrap`，另按 `variant` × `color` 加 `bg-*` 或 `border-*`、按 `variant` × `size` 加尺寸、按 `position` 加 `top-0` / `right-0` 等；`inset` 为 `false` 时再加 `translate-*` 平移 | `show` 为 `false` 时不渲染。 |
 | `label` | 角标内的文本 `<div>` | `font-medium`，另按 `size` 加字号与 `leading-none`；`textDot` 加配套语义前景色 `text-*-foreground`，`textOutline` 加语义色 `text-*` | 仅 `text` 为真值且变体为 `textDot` / `textOutline` 时渲染。 |
 
@@ -296,5 +296,5 @@ const hasUnread = ref(true);
 - **`outline` 的外径是内径加两倍描边。** `size` 档位描述的是圆环内径，描边长在外圈，`lg` 实际占 16px。和 `solid` 混排时，两者外径不同，需要对齐时以外径为准。
 - **`v-model:show` 不会被组件改写。** 组件内部没有任何关闭入口，`update:show` 从不触发。「点一下消失」这类逻辑要在宿主的点击事件里自己把绑定值改为 `false`。
 - **`standalone` 目前没有效果。** 它只给角标节点追加 `absolute`，而角标节点的基础类里本就有 `absolute`。没有宿主时角标会相对空的定位容器摆放，不能指望这个属性让角标独立排版。
-- **默认模式下角标会溢出宿主外框。** `inset` 为 `false` 时角标向外平移半个自身尺寸，宿主的祖先如果有 `overflow-hidden`（如卡片、滚动列表），角标会被裁掉一半。遇到这种情况改用 `inset`，或给容器留出内边距。
+- **默认模式下角标会溢出宿主外框。** Web 端 `inset` 为 `false` 时角标通常向外平移半个自身尺寸；长角标向宿主内部覆盖最多为宿主宽度的 60%，垂直交叉为角标高度的一半。UniApp 端仍向外平移半个自身尺寸，宿主的祖先如果有 `overflow-hidden`（如卡片、滚动列表），角标会被裁掉一半。遇到这种情况改用 `inset`，或给容器留出内边距。
 - **UniApp 端外层多一层块级 `<view>`。** 在行内排版里使用时，这层 `<view>` 会独占一行；需要和文字同行时，给父容器设 `flex` 布局。

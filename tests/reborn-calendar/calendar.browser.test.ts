@@ -25,14 +25,15 @@ before(async () => {
     stdin: {
       contents: `
         import Calendar from '~/components/reborn/ui/reborn-calendar/RebornCalendar.vue';
-        import {createApp,h,nextTick,reactive} from 'vue';
+        import {createApp,h,nextTick,reactive,ref} from 'vue';
         const state=reactive({modelValue:'2026-10-20',valueFormat:'YYYY-MM-DD',mode:'month',controllerType:'button',border:false,lunar:false,titleAlign:'right',timezone:'Asia/Shanghai',events:[],customCell:false});
+        const calendar=ref();
         const changes=[];
         const context=[];
         const ui={root:'fixture-calendar',body:'fixture-body',cell:'fixture-cell',cellHeader:'fixture-cell-header',date:'fixture-date',lunar:'fixture-lunar',content:'fixture-content',eventTitle:'fixture-event-title'};
-        window.calendarFixture={configure:props=>Object.assign(state,props),flush:nextTick,state,changes,context,props:Object.keys(Calendar.props),emits:Calendar.emits};
+        window.calendarFixture={configure:props=>Object.assign(state,props),flush:nextTick,state,changes,context,pickDay:value=>calendar.value.pickDay(value),selectDate:value=>calendar.value.selectDate(value),props:Object.keys(Calendar.props),emits:Calendar.emits};
         const app=createApp({render:()=>{const {customCell,...props}=state;return h('section',{style:'width:960px;max-width:100%'},[
-          h(Calendar,{...props,ui,'onUpdate:modelValue':value=>state.modelValue=value,'onUpdate:mode':value=>state.mode=value,onPanelChange:(date,mode)=>changes.push({date:date.toISOString(),mode})},customCell?{
+          h(Calendar,{...props,ref:calendar,ui,'onUpdate:modelValue':value=>state.modelValue=value,'onUpdate:mode':value=>state.mode=value,onPanelChange:(date,mode)=>changes.push({date:date.toISOString(),mode})},customCell?{
             'date-cell':({data,events})=>h('div',{'data-day':data.day,class:'fixture-custom-cell',onContextmenu:event=>{event.preventDefault();context.push({day:data.day,date:data.date.toISOString(),lunar:data.lunar?.text,events:events.map(event=>event.title)})}},data.day+' '+events.map(event=>event.title).join('、'))
           }:undefined)
         ])}});
@@ -102,9 +103,10 @@ function near(actual: number, expected: number, message: string) {
   assert.ok(Math.abs(actual - expected) < 0.2, `${message}：实际 ${actual}，预期 ${expected}`);
 }
 
-it('本日与本月默认不强调，highlightToday 动态控制当前单元格描边且不改变选择', { skip: !browserAvailable }, async () => {
+it('本日与本月默认强调，highlightToday 动态控制当前单元格描边且不改变选择', { skip: !browserAvailable }, async () => {
   await withCalendar(async (page) => {
     await page.addStyleTag({ content: '* { transition: none !important; }' });
+    await page.addScriptTag({ content: 'globalThis.__name = value => value;' });
     const today = (await page.locator('.fixture-calendar').getAttribute('data-calendar-today'))!;
     const [year, month, day] = today.split('-').map(Number);
     for (const mode of ['month', 'year']) {
@@ -123,12 +125,12 @@ it('本日与本月默认不强调，highlightToday 动态控制当前单元格�
           weight: getComputedStyle(element.querySelector('.fixture-date')!).fontWeight,
         }));
         const expected = await page.evaluate(enabled => {
-          const probe = document.createElement('span'); probe.style.color = enabled ? 'var(--color-brand-6)' : 'var(--color-gray-4)'; document.body.append(probe);
+          const probe = document.createElement('span'); probe.style.color = (enabled ?? true) ? 'var(--color-brand-6)' : 'var(--color-gray-4)'; document.body.append(probe);
           const color = getComputedStyle(probe).color; probe.remove(); return color;
         }, enabled);
         assert.equal(style.border, expected, `${mode}/${enabled} 当前单元格顶边`);
         assert.equal(style.shadow, 'none', `${mode}/${enabled} 日期始终不添加描边`);
-        assert.equal(style.weight, enabled ? '500' : '400', `${mode}/${enabled} 日期文字字重随开关变化`);
+        assert.equal(style.weight, (enabled ?? true) ? '500' : '400', `${mode}/${enabled} 日期文字字重随开关变化`);
         assert.equal(await current.getAttribute('aria-current'), 'date', '开关只控制视觉标记');
         assert.equal(await page.evaluate(() => (window as any).calendarFixture.state.modelValue), modelValue);
         assert.equal(await page.evaluate(() => (window as any).calendarFixture.changes.length), before, '开关不派发面板切换');
@@ -137,9 +139,10 @@ it('本日与本月默认不强调，highlightToday 动态控制当前单元格�
   });
 });
 
-it('月年视图在六种配色和明暗主题下悬停只变灰底，选中使用第 1 阶底色与第 6 阶顶边', { skip: !browserAvailable }, async () => {
+it('月年视图在六种配色和明暗主题下悬停只变灰底，选中使用第 1 阶底色且普通顶边保持灰色', { skip: !browserAvailable }, async () => {
   await withCalendar(async (page) => {
     await page.addStyleTag({ content: '* { transition: none !important; }' });
+    await page.addScriptTag({ content: 'globalThis.__name = value => value;' });
     const today = (await page.locator('.fixture-calendar').getAttribute('data-calendar-today'))!;
     const [year, month, day] = today.split('-').map(Number);
     const selectedDay = day === 1 ? 2 : 1;
@@ -165,8 +168,8 @@ it('月年视图在六种配色和明暗主题下悬停只变灰底，选中使�
       const selected = page.locator('[role="gridcell"][aria-selected="true"]');
       for (const [name, cell, expectedBorder, expectedBackground] of [
         ['普通', empty, colors['gray-4'], colors['gray-2']],
-        ['有事项', event, colors[`${token}-6`], colors['gray-2']],
-        ['选中', selected, colors[`${token}-6`], colors[`${token}-1`]],
+        ['有事项', event, colors['gray-4'], colors['gray-2']],
+        ['选中', selected, colors['gray-4'], colors[`${token}-1`]],
       ] as const) {
         await page.mouse.move(0, 0);
         const original = await cell.evaluate(element => getComputedStyle(element).borderTopColor);
@@ -330,5 +333,62 @@ it('年度事项显示完整日期前缀，跨月与跨年时刻按 timezone 落
     assert.deepEqual(await monthTitles(12), [], '上海时区的跨年事项不落入上一年');
     await page.getByRole('button', { name: '下一年', exact: true }).click();
     assert.deepEqual(await monthTitles(1), ['2027-01-01：跨年事项']);
+  });
+});
+
+
+it('日期三档尺寸与星期宽度一致，头部和主体使用指定内边距', { skip: !browserAvailable }, async () => {
+  await withCalendar(async (page) => {
+    for (const [size, expected] of [['sm', 24], ['md', 32], ['lg', 40]] as const) {
+      for (const titleAlign of ['left', 'center', 'right']) {
+        await configure(page, { size, titleAlign });
+        const geometry = await page.locator('.fixture-calendar').evaluate(element => {
+          const weekday = element.querySelector('[role="columnheader"] span')!.getBoundingClientRect();
+          const date = element.querySelector('.fixture-date')!.getBoundingClientRect();
+          return { weekday: weekday.width, width: date.width, height: date.height,
+            centerOffset: date.x + date.width / 2 - weekday.x - weekday.width / 2,
+            header: getComputedStyle(element.firstElementChild!).padding,
+            body: getComputedStyle(element.querySelector('[role="grid"]')!).padding };
+        });
+        near(geometry.width, expected, `${size} 日期宽度`);
+        near(geometry.height, expected, `${size} 日期高度`);
+        near(geometry.weekday, expected, `${size} 星期宽度`);
+        near(geometry.centerOffset, 0, `${size}/${titleAlign} 星期与日期居中对齐`);
+        assert.equal(geometry.header, '12px');
+        assert.equal(geometry.body, '8px 12px');
+      }
+    }
+  });
+});
+
+it('禁用日期的文字与光标优先于选中状态，鼠标及实例方法均不能选择', { skip: !browserAvailable }, async () => {
+  await withCalendar(async (page) => {
+    await page.addStyleTag({ content: '* { transition: none !important; }' });
+    await page.addScriptTag({ content: 'globalThis.__name = value => value;' });
+    const today = (await page.locator('.fixture-calendar').getAttribute('data-calendar-today'))!;
+    await configure(page, { modelValue: today, highlightToday: true });
+    await page.evaluate(() => (window as any).calendarFixture.configure({ disabledDate: () => true }));
+    await page.evaluate(() => (window as any).calendarFixture.flush());
+    const gray = await page.evaluate(() => {
+      const probe = document.createElement('span'); probe.style.color = 'var(--color-gray-5)'; document.body.append(probe);
+      const color = getComputedStyle(probe).color; probe.remove(); return color;
+    });
+    for (const mode of ['month', 'year']) {
+      await configure(page, { mode });
+      const selected = page.locator('[role="gridcell"][aria-selected="true"]');
+      assert.equal(await selected.getAttribute('aria-disabled'), 'true');
+      assert.equal(await selected.locator('button').isDisabled(), true);
+      await selected.hover();
+      const style = await selected.evaluate(element => ({ color: getComputedStyle(element.querySelector('button')!).color, cursor: getComputedStyle(element).cursor, background: getComputedStyle(element).backgroundColor }));
+      assert.deepEqual(style, { color: gray, cursor: 'not-allowed', background: 'rgba(0, 0, 0, 0)' });
+      await selected.click({ force: true, position: { x: 8, y: 60 } });
+      assert.equal(await page.evaluate(() => (window as any).calendarFixture.state.mode), mode, '禁用月份不能下钻');
+      assert.equal(await page.evaluate(() => (window as any).calendarFixture.state.modelValue), today);
+    }
+    await page.evaluate(() => { (window as any).calendarFixture.pickDay('2026-10-21'); (window as any).calendarFixture.selectDate('next-month'); });
+    assert.equal(await page.evaluate(() => (window as any).calendarFixture.state.modelValue), today, '公开选择方法也遵循禁用规则');
+    await page.evaluate(() => (window as any).calendarFixture.configure({ mode: 'month', modelValue: '2026-10-20', disabledDate: undefined }));
+    await page.getByRole('button', { name: '2026-10-21', exact: true }).click();
+    assert.equal(await page.evaluate(() => (window as any).calendarFixture.state.modelValue), '2026-10-21', '移除限制后恢复选择');
   });
 });

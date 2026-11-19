@@ -10,7 +10,7 @@ export default {
     draw: 'mx-auto mt-2 h-1 w-10 rounded-full bg-gray-3',
     header: 'flex items-center justify-between px-4 py-2',
     title: 'text-30 font-medium text-gray-9',
-    closeIcon: 'text-gray-5 cursor-pointer',
+    closeIcon: 'cursor-pointer text-gray-6 hover:text-gray-8 active:text-gray-9',
   },
   variants: {
     position: {

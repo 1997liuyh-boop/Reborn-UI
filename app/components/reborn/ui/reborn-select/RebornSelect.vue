@@ -906,7 +906,7 @@ function scrollToActive(instant = false) {
             <div v-if="multiple && selectedOptions.length" :class="ui.tagList()">
               <RebornBadge
                 v-for="item in visibleTags" :key="tagKeyOf(item.value)" :label="item.label" color="neutral"
-                variant="subtle" size="sm" :closable="!isDisabled" close-icon="lucide:x" :ui="{
+                variant="subtle" :size="fieldGroupSize || size" :closable="!isDisabled" close-icon="lucide:x" :ui="{
                   root: 'min-w-0 shrink-0 max-w-full',
                   base: ui.tag(),
                   label: ui.tagLabel(),
@@ -918,7 +918,7 @@ function scrollToActive(instant = false) {
               <!-- 徽标根节点自带手型；这里不可点、只有气泡，换成帮助光标 -->
               <RebornTooltip v-if="collapsedTags.length && collapseTagsTooltip" :content="collapsedText">
                 <RebornBadge
-                  :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" size="sm" :ui="{
+                  :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" :size="fieldGroupSize || size" :ui="{
                     root: 'min-w-0 shrink-0 cursor-help',
                     base: ui.tag({ class: ui.collapseTag() }),
                     label: ui.tagLabel(),
@@ -927,7 +927,7 @@ function scrollToActive(instant = false) {
               </RebornTooltip>
               <RebornBadge
                 v-else-if="collapsedTags.length" :label="`+${collapsedTags.length}`" color="neutral"
-                variant="subtle" size="sm" :ui="{
+                variant="subtle" :size="fieldGroupSize || size" :ui="{
                   root: 'min-w-0 shrink-0',
                   base: ui.tag({ class: ui.collapseTag() }),
                   label: ui.tagLabel(),

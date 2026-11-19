@@ -331,12 +331,12 @@ function cellBorder(isLastRow: boolean, isLastInRow: boolean) {
 /**
  * 无边框时的行距。这一形态没有网格线，层级全靠留白，所以单元格不吃 size 的行高与上下内边距，
  * 改由行位置给固定值：垂直布局下标签行与紧随其后的内容行隔 4px，项与项之间隔 16px，末行不留尾距。
- * 水平布局下标签与内容在同一格里，那 4px 由格内 flex 的 gap 负责，这里只给项与项的 16px。
+ * 水平布局下标签与内容分格对齐，那 4px 由内容格的左内边距负责，这里只给项与项的 16px。
  */
 function cellGap(isLabelRow: boolean, isLastRow: boolean) {
   if (props.bordered) return undefined;
-  if (isLabelRow) return "pb-[4px]";
-  return isLastRow ? undefined : "pb-[16px]";
+  if (isLabelRow) return "pb-1";
+  return isLastRow ? undefined : "pb-4";
 }
 
 /** 标签单元格的底色只在 bordered 下出现，对应设计规格的 bg-gray-2 */
@@ -352,6 +352,7 @@ const b = tv(theme);
 const ui = computed(() => {
   const s = b({
     size: props.size,
+    layout: props.layout,
     bordered: props.bordered,
     labelAlign: props.labelAlign,
     contentAlign: props.contentAlign,
@@ -395,8 +396,8 @@ const ui = computed(() => {
     <div :class="ui.tableWrapper()">
       <table :class="ui.body()">
         <tbody>
-          <!-- 水平 + 边框：标签与内容各占一格，标签格带底色 -->
-          <template v-if="props.layout === 'horizontal' && props.bordered">
+          <!-- 水平布局按列对齐标签与内容，带边框时标签格另加底色。 -->
+          <template v-if="props.layout === 'horizontal'">
             <tr v-for="(row, rowIndex) in rows" :key="rowIndex">
               <template v-for="(cell, cellIndex) in row" :key="cellIndex">
                 <td
@@ -405,6 +406,7 @@ const ui = computed(() => {
                   :class="
                     cn(
                       ui.cell(),
+                      cellGap(false, rowIndex + 1 === rows.length),
                       cellBorder(
                         rowIndex + 1 === rows.length,
                         cell.colStart + cell.colSpan === effectiveColumn,
@@ -419,6 +421,7 @@ const ui = computed(() => {
                       cn(
                         ui.cell(),
                         ui.label(),
+                        cellGap(false, rowIndex + cell.rowSpan === rows.length),
                         labelFill,
                         cellBorder(rowIndex + cell.rowSpan === rows.length, false),
                         cell.labelClass,
@@ -427,6 +430,7 @@ const ui = computed(() => {
                     :style="labelStyle"
                   >
                     <CellRenderer :content="renderLabel(cell)" />
+                    <span v-if="showColon(cell)" :class="ui.colon()">：</span>
                   </td>
                   <td
                     :rowspan="cell.rowSpan > 1 ? cell.rowSpan : undefined"
@@ -435,6 +439,7 @@ const ui = computed(() => {
                       cn(
                         ui.cell(),
                         ui.content(),
+                        cellGap(false, rowIndex + cell.rowSpan === rows.length),
                         cellBorder(
                           rowIndex + cell.rowSpan === rows.length,
                           cell.colStart + cell.colSpan === effectiveColumn,
@@ -447,29 +452,6 @@ const ui = computed(() => {
                   </td>
                 </template>
               </template>
-            </tr>
-          </template>
-
-          <!-- 水平 + 无边框：标签与内容同格相邻，冒号在此承担分隔职责 -->
-          <template v-else-if="props.layout === 'horizontal'">
-            <tr v-for="(row, rowIndex) in rows" :key="rowIndex">
-              <td
-                v-for="(cell, cellIndex) in row"
-                :key="cellIndex"
-                :rowspan="cell.rowSpan > 1 ? cell.rowSpan : undefined"
-                :colspan="cell.colSpan"
-                :class="cn(ui.cell(), cellGap(false, rowIndex + cell.rowSpan === rows.length))"
-              >
-                <div v-if="!cell.placeholder" class="flex items-baseline gap-[4px]">
-                  <span :class="cn(ui.label(), cell.labelClass)" :style="labelStyle">
-                    <CellRenderer :content="renderLabel(cell)" />
-                    <span v-if="showColon(cell)" :class="ui.colon()">：</span>
-                  </span>
-                  <span :class="cn(ui.content(), cell.contentClass)">
-                    <CellRenderer :content="renderContent(cell)" />
-                  </span>
-                </div>
-              </td>
             </tr>
           </template>
 

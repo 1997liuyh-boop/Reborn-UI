@@ -6,7 +6,7 @@ import { computed, useId } from 'vue';
 import { tv } from '~/lib/tv';
 import { cn } from '~/lib/utils';
 import theme from './reborn-progress.config';
-import { getArcGeometry, getArcPath, getColorRanges, getGradientStops, getStepRanges, normalizePercent, normalizeSteps, roundCoord } from './reborn-progress.utils';
+import { getArcGeometry, getArcPath, getColorRanges, getGradientStops, getStepRanges, normalizePercent, normalizeSize, normalizeSteps, roundCoord } from './reborn-progress.utils';
 
 export interface RebornProgressProps {
   /** 当前百分比，限制在 0–100，非有限数字回退为零。 */
@@ -15,6 +15,10 @@ export interface RebornProgressProps {
   type?: ProgressType;
   /** 三档尺寸，不受内嵌文字影响。 */
   size?: ProgressSize;
+  /** 描边粗细或直线轨道高度，单位 px，默认按 size 决定。 */
+  strokeWidth?: number;
+  /** 圆环和仪表盘的外径，或直线轨道的总宽度，单位 px。 */
+  width?: number;
   /** 显式状态，不随百分比自动切换。 */
   status?: ProgressStatus;
   /** 步骤数量，零表示连续进度，最多 1000 个。 */
@@ -60,8 +64,23 @@ const b = tv(theme);
 const value = computed(() => normalizePercent(props.percent));
 const count = computed(() => normalizeSteps(props.steps));
 const reversed = computed(() => props.flowDirection === 'reverse');
-const styles = computed(() => b({ type: props.type, size: props.size, status: props.status, stepped: count.value > 0, textInside: props.textInside, reversed: reversed.value, stripedFlow: props.striped && props.stripedFlow }));
-const geometry = computed(() => getArcGeometry(props.type, props.size, count.value > 0, props.flowDirection));
+const width = computed(() => normalizeSize(props.width));
+const strokeWidth = computed(() => normalizeSize(props.strokeWidth));
+const lineStep = computed(() => {
+  const gaps = Math.max(0, count.value - 1);
+  const widthPx = width.value;
+  const gap = widthPx && gaps ? Math.min(2, widthPx / gaps / 2) : 2;
+  const stepWidth = widthPx && count.value ? (widthPx - gap * gaps) / count.value : props.size === 'sm' ? 2 : 32;
+  return { gap, stepWidth, trackWidth: widthPx ?? count.value * stepWidth + gap * gaps };
+});
+const dimensions = computed<CSSProperties>(() => ({
+  '--reborn-progress-width': width.value === undefined ? undefined : `${width.value}px`,
+  '--reborn-progress-stroke-width': strokeWidth.value === undefined ? undefined : `${strokeWidth.value}px`,
+  '--reborn-progress-step-width': width.value && count.value && props.type === 'line' ? `${lineStep.value.stepWidth}px` : undefined,
+  '--reborn-progress-step-gap': width.value && count.value && props.type === 'line' ? `${lineStep.value.gap}px` : undefined,
+}));
+const styles = computed(() => b({ customWidth: width.value !== undefined, customStroke: props.type === 'line' && strokeWidth.value !== undefined, type: props.type, size: props.size, status: props.status, stepped: count.value > 0, textInside: props.textInside, reversed: reversed.value, stripedFlow: props.striped && props.stripedFlow }));
+const geometry = computed(() => getArcGeometry(props.type, props.size, count.value > 0, props.flowDirection, width.value, strokeWidth.value));
 const text = computed(() => props.format ? props.format(value.value) : `${value.value}%`);
 const accessibleText = computed(() => props.format ? text.value : `${value.value}%${props.status === 'success' ? '，成功' : props.status === 'error' ? '，失败' : ''}`);
 
@@ -131,10 +150,9 @@ function linePartStyle(cell: { from: number; to: number }, part: { from: number;
   const width = (part.to - part.from) / length * 100;
   // 步骤节点内部保持平端拼接；每个节点裁切同一条完整背景，reverse 方向所有偏移改从右侧计算。
   if (stops) {
-    const stepWidth = props.size === 'sm' ? 2 : 32;
-    const trackWidth = count.value * (stepWidth + 2) - 2;
+    const { stepWidth, gap, trackWidth } = lineStep.value;
     const cellIndex = Math.round(cell.from / length);
-    const offset = reversed.value ? trackWidth - cellIndex * (stepWidth + 2) - stepWidth : cellIndex * (stepWidth + 2);
+    const offset = reversed.value ? trackWidth - cellIndex * (stepWidth + gap) - stepWidth : cellIndex * (stepWidth + gap);
     const clip = reversed.value ? `inset(0 ${left}% 0 ${100 - left - width}%)` : `inset(0 ${100 - left - width}% 0 ${left}%)`;
     return { left: 0, width: '100%', backgroundImage: `linear-gradient(${gradientAngle.value}deg, ${stops})`, backgroundSize: `${trackWidth}px 100%`, backgroundPosition: `${-offset}px 0`, clipPath: clip };
   }
@@ -157,7 +175,7 @@ const insideTextStyle = computed<CSSProperties>(() => reversed.value
 
 <template>
   <div
-    :class="styles.root({ class: [props.class, props.ui?.root] })"
+    :class="styles.root({ class: [props.class, props.ui?.root] })" :style="dimensions"
     role="progressbar" :aria-label="ariaLabel" :aria-valuenow="value" :aria-valuetext="accessibleText"
     :aria-valuemin="0" :aria-valuemax="100" :data-progress-type="type" :data-progress-steps="count"
   >

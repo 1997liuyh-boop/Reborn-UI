@@ -7,7 +7,7 @@ export default {
         container: 'relative text-sm leading-normal shadow-[0_2px_15px_0_rgba(0,0,0,0.1)]',
         inner: 'relative whitespace-nowrap p-3 rounded-md bg-white dark:bg-gray-8',
         arrow: 'absolute w-[9px] h-[9px] bg-white dark:bg-zinc-800 pointer-events-none', // requires rotation in style
-        closeIcon: 'absolute text-[12px] right-[-8px] top-[-10px] scale-50 p-2.5',
+        closeIcon: 'absolute text-[12px] right-[-8px] top-[-10px] scale-50 p-2.5 text-gray-6 hover:text-gray-8 active:text-gray-9',
         menu: 'inline-block px-3 whitespace-nowrap relative rounded-md bg-white dark:bg-zinc-800 z-[500]',
         menuInner: 'relative py-3 flex items-center border-t border-solid border-gray-200 dark:border-gray-700 first:border-0',
     },

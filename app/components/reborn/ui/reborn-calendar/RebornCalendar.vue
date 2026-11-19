@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CalendarColor, CalendarControllerType, CalendarMode, CalendarTitleAlign, CalendarUI } from "./reborn-calendar.config";
+import type { CalendarColor, CalendarControllerType, CalendarMode, CalendarSize, CalendarTitleAlign, CalendarUI } from "./reborn-calendar.config";
 import type { CalendarLunar } from "./reborn-calendar.lunar";
 import type { CalendarCellType, CalendarDateType, CalendarDayCell } from "./reborn-calendar.utils";
 import { computed, onBeforeUnmount, onMounted, shallowRef, useId, useTemplateRef, watch } from "vue";
@@ -75,6 +75,8 @@ export interface CalendarProps {
    * @defaultValue 'right'
    */
   titleAlign?: CalendarTitleAlign;
+  /** 日期标题尺寸：sm 24px、md 32px、lg 40px */
+  size?: CalendarSize;
   /**
    * 边框模式：主体加外框，日期格之间画分隔线，整体成网格
    * @defaultValue false
@@ -82,7 +84,7 @@ export interface CalendarProps {
   border?: boolean;
   /**
    * 强调今天（月视图）或本月（年视图），顶边使用 color 对应色板第 6 阶，日期仅高亮文字
-   * @defaultValue false
+   * @defaultValue true
    */
   highlightToday?: boolean;
   /**
@@ -100,6 +102,8 @@ export interface CalendarProps {
    * 不再经过 Date 的时区换算，提交给接口不会差一天
    */
   valueFormat?: string;
+  /** 返回 true 的日期不可选；Date 为日历时区当天零点 */
+  disabledDate?: (date: Date) => boolean;
   /** 追加到根容器的类名 */
   class?: any;
   /** 按结构键覆盖各节点样式 */
@@ -109,6 +113,7 @@ export interface CalendarProps {
 interface DayCellState extends CalendarDayCell {
   isSelected: boolean;
   isToday: boolean;
+  isDisabled: boolean;
   events: CalendarEvent[];
   lunar?: CalendarLunar;
 }
@@ -119,11 +124,12 @@ interface MonthCellState {
   month: number;
   isSelected: boolean;
   isToday: boolean;
+  isDisabled: boolean;
   events: CalendarEvent[];
 }
 
 /** 单元格的样式状态，相同状态共用同一份类名 */
-interface CellStyleState { hasEvents: boolean; inMonth: boolean; today: boolean; selected: boolean }
+interface CellStyleState { hasEvents: boolean; inMonth: boolean; today: boolean; selected: boolean; disabled: boolean }
 
 defineOptions({
   name: "RebornCalendar",
@@ -133,9 +139,10 @@ const props = withDefaults(defineProps<CalendarProps>(), {
   controllerType: "select",
   events: () => [],
   color: "primary",
+  size: "md",
   titleAlign: "right",
   border: false,
-  highlightToday: false,
+  highlightToday: true,
   lunar: false,
   ui: () => ({}),
 });
@@ -245,8 +252,14 @@ const viewMonth = computed(() => viewDate.value.getMonth());
 const isYearView = computed(() => mode.value === "year" && !inRange.value);
 
 /** 把日历日写回绑定值：有 valueFormat 时写字符串，否则写时区零点的 Date */
+function isDisabled(day: Date) {
+  return !!props.disabledDate?.(toOutput(day));
+}
+
 function commit(day: Date) {
+  if (isDisabled(day)) return false;
   model.value = props.valueFormat ? formatValue(day, props.valueFormat) : toOutput(day);
+  return true;
 }
 
 /** 选择一个具体日期；字符串按 valueFormat 或通用规则解析，Date 按 timezone 换算到当天 */
@@ -346,6 +359,7 @@ const dayCells = computed<DayCellState[]>(() => {
     ...cell,
     isSelected: !!current && isSameDay(cell.date, current),
     isToday: isSameDay(cell.date, today.value),
+    isDisabled: isDisabled(cell.date),
     events: eventsByDay.value.get(cell.day) ?? [],
     lunar: props.lunar ? getLunar(cell.date) : undefined,
   }));
@@ -375,6 +389,7 @@ const quarters = computed(() => {
       month,
       isSelected: !!current && isSameMonth(first, current),
       isToday: isSameMonth(first, today.value),
+      isDisabled: isDisabled(setYearMonth(viewDate.value, viewYear.value, month)),
       events: eventsByMonth.value.get(key) ?? [],
     };
   });
@@ -387,8 +402,8 @@ function toCellData(cell: DayCellState): CalendarDateCellData {
 
 /** 年视图点月份：选中该月的同一天并下钻到月视图 */
 function pickMonth(month: number) {
-  commit(setYearMonth(viewDate.value, viewYear.value, month));
-  mode.value = "month";
+  if (commit(setYearMonth(viewDate.value, viewYear.value, month)))
+    mode.value = "month";
 }
 
 function eventKey(event: CalendarEvent, index: number) {
@@ -414,6 +429,7 @@ const ui = computed(() => {
   const o = props.ui;
   const theme = calendarTheme({
     color: props.color,
+    size: props.size,
     view: isYearView.value ? "year" : "month",
     titleAlign: props.titleAlign,
     border: props.border,
@@ -441,17 +457,17 @@ const ui = computed(() => {
     body: () => theme.body({ class: o.body }),
     row: () => cached("row", () => theme.row({ class: o.row })),
     weekday: () => cached("weekday", () => theme.weekday({ class: o.weekday })),
-    cell: (hasEvents: boolean, selected: boolean, today: boolean) =>
-      cached(`cell:${hasEvents}${selected}${today}`, () => theme.cell({ hasEvents, selected, today, class: o.cell })),
+    cell: (hasEvents: boolean, selected: boolean, today: boolean, disabled: boolean) =>
+      cached(`cell:${hasEvents}${selected}${today}${disabled}`, () => theme.cell({ hasEvents, selected, today, disabled, class: o.cell })),
     cellHeader: () => cached("cellHeader", () => theme.cellHeader({ class: o.cellHeader })),
     date: (state: CellStyleState) =>
-      cached(`date:${state.hasEvents}${state.inMonth}${state.today}${state.selected}`, () => theme.date({ ...state, class: o.date })),
-    lunar: (lunar: CalendarLunar) => cached(`lunar:${!!(lunar.festival || lunar.term)}`, () => theme.lunar({ festival: !!(lunar.festival || lunar.term), class: o.lunar })),
+      cached(`date:${state.hasEvents}${state.inMonth}${state.today}${state.selected}${state.disabled}`, () => theme.date({ ...state, class: o.date })),
+    lunar: (lunar: CalendarLunar, disabled: boolean) => cached(`lunar:${!!(lunar.festival || lunar.term)}${disabled}`, () => theme.lunar({ festival: !!(lunar.festival || lunar.term), disabled, class: o.lunar })),
     content: () => cached("content", () => theme.content({ class: o.content })),
     eventList: () => cached("eventList", () => theme.eventList({ class: o.eventList })),
     event: () => cached("event", () => theme.event({ class: o.event })),
     eventDot: (color?: CalendarColor) => cached(`dot:${color ?? ""}`, () => theme.eventDot({ class: cn(calendarDotTheme({ color: color ?? props.color }), o.eventDot) })),
-    eventTitle: () => cached("eventTitle", () => theme.eventTitle({ class: o.eventTitle })),
+    eventTitle: (disabled: boolean) => cached(`eventTitle:${disabled}`, () => theme.eventTitle({ disabled, class: o.eventTitle })),
   };
 });
 
@@ -506,7 +522,7 @@ defineExpose({
         </div>
 
         <RebornButton
-          size="md" color="neutral" variant="outlined" border-style="solid" :disabled="!todayVisible"
+          size="md" color="neutral" variant="outlined" border-style="solid" :disabled="!todayVisible || isDisabled(today)"
           @click="selectDate('today')"
         >
           {{ isYearView ? '本月' : '今天' }}
@@ -518,13 +534,13 @@ defineExpose({
     <div v-if="isYearView" ref="bodyRef" role="grid" :aria-label="titleText" :class="ui.body()">
       <div v-for="(quarter, index) in quarters" :key="index" role="row" :class="ui.row()">
         <div
-          v-for="cell in quarter" :key="cell.key" role="gridcell" :aria-selected="cell.isSelected"
-          :class="ui.cell(cell.events.length > 0, cell.isSelected, cell.isToday)" @click="pickMonth(cell.month)"
+          v-for="cell in quarter" :key="cell.key" role="gridcell" :aria-selected="cell.isSelected" :aria-disabled="cell.isDisabled || undefined"
+          :class="ui.cell(cell.events.length > 0, cell.isSelected, cell.isToday, cell.isDisabled)" @click="pickMonth(cell.month)"
         >
           <div :class="ui.cellHeader()">
             <button
-              type="button" :aria-current="cell.isToday ? 'date' : undefined"
-              :class="ui.date({ hasEvents: cell.events.length > 0, inMonth: true, today: cell.isToday, selected: cell.isSelected })"
+              type="button" :disabled="cell.isDisabled" :aria-current="cell.isToday ? 'date' : undefined"
+              :class="ui.date({ hasEvents: cell.events.length > 0, inMonth: true, today: cell.isToday, selected: cell.isSelected, disabled: cell.isDisabled })"
             >
               {{ cell.month + 1 }} 月
             </button>
@@ -533,7 +549,7 @@ defineExpose({
             <ul v-if="cell.events.length" :class="ui.eventList()">
               <li v-for="(event, i) in cell.events" :key="eventKey(event, i)" :class="ui.event()" :title="yearEventTitle(event)">
                 <span :class="ui.eventDot(event.color)" />
-                <span :class="ui.eventTitle()">{{ yearEventTitle(event) }}</span>
+                <span :class="ui.eventTitle(cell.isDisabled)">{{ yearEventTitle(event) }}</span>
               </li>
             </ul>
           </div>
@@ -546,35 +562,36 @@ defineExpose({
       <div role="row" :class="ui.row()">
         <div v-for="weekday in CALENDAR_WEEK_DAYS" :key="weekday" role="columnheader" :class="ui.weekday()">
           <!-- 与日期标题同宽，三种对齐下都和日期上下对齐 -->
-          <span class="inline-block min-w-6 text-center">{{ weekday }}</span>
+          <span class="inline-block text-center">{{ weekday }}</span>
         </div>
       </div>
       <div v-for="(week, weekIndex) in weeks" :key="week[0]?.day ?? weekIndex" role="row" :class="ui.row()">
         <div
-          v-for="cell in week" :key="cell.day" role="gridcell" :aria-selected="cell.isSelected"
-          :data-type="cell.type" :class="ui.cell(cell.events.length > 0, cell.isSelected, cell.isToday)" @click="commit(cell.date)"
+          v-for="cell in week" :key="cell.day" role="gridcell" :aria-selected="cell.isSelected" :aria-disabled="cell.isDisabled || undefined"
+          :data-type="cell.type" :class="ui.cell(cell.events.length > 0, cell.isSelected, cell.isToday, cell.isDisabled)" @click="commit(cell.date)"
         >
           <slot name="date-cell" :data="toCellData(cell)" :events="cell.events">
             <div :class="ui.cellHeader()">
               <button
-                type="button" :aria-label="cell.lunar ? `${cell.day} 农历${cell.lunar.monthName}${cell.lunar.dayName}` : cell.day"
+                type="button" :disabled="cell.isDisabled" :aria-label="cell.lunar ? `${cell.day} 农历${cell.lunar.monthName}${cell.lunar.dayName}` : cell.day"
                 :aria-current="cell.isToday ? 'date' : undefined"
                 :class="ui.date({
                   hasEvents: cell.events.length > 0,
                   inMonth: cell.type === 'current-month',
                   today: cell.isToday,
                   selected: cell.isSelected,
+                  disabled: cell.isDisabled,
                 })"
               >
                 {{ cell.date.getDate() }}
               </button>
-              <span v-if="cell.lunar" aria-hidden="true" :class="ui.lunar(cell.lunar)">{{ cell.lunar.text }}</span>
+              <span v-if="cell.lunar" aria-hidden="true" :class="ui.lunar(cell.lunar, cell.isDisabled)">{{ cell.lunar.text }}</span>
             </div>
             <div :class="ui.content()">
               <ul v-if="cell.events.length" :class="ui.eventList()">
                 <li v-for="(event, i) in cell.events" :key="eventKey(event, i)" :class="ui.event()" :title="event.title">
                   <span :class="ui.eventDot(event.color)" />
-                  <span :class="ui.eventTitle()">{{ event.title }}</span>
+                  <span :class="ui.eventTitle(cell.isDisabled)">{{ event.title }}</span>
                 </li>
               </ul>
             </div>

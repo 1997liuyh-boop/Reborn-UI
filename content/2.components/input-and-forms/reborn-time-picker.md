@@ -146,7 +146,7 @@ const error = ref("");
 | `scroll` | 默认；滚动停止后选中并居中，也支持点击 | 滚轮调整时间 |
 | `click` | 滚动只浏览，点击才选中并置顶 | 点选明确的时、分、秒 |
 
-点击模式的选中背景使用对应 `color` 色板第 1 阶，未选项悬停背景为 `gray-2`，选中项悬停保持高亮。视口底部留白使末项也能置顶。滚动模式中心区域通过 `panelVariant` 控制：
+点击模式的选中项在 200ms 内向上滑到列首，打开面板和外部更新值时直接定位；系统启用减少动态效果时立即定位。选中背景使用对应 `color` 色板第 1 阶，未选项悬停背景为 `gray-2`，选中项悬停保持高亮。视口底部留白使末项也能置顶。滚动模式中心区域通过 `panelVariant` 控制：
 
 | panelVariant | 中心区域                                           | 典型用途     |
 | ------------ | -------------------------------------------------- | ------------ |
@@ -223,6 +223,8 @@ const disabledMinutes = (hour: number) => (hour === 12 ? [0, 1, 2] : []);
 ### 范围与步进
 
 `isRange` 的起止值与占位文字均居中显示（`text-center`）。
+
+选择器一次展示一组时间列，先编辑开始时间，选完当前 `format` 最后一个可见单位后自动切到结束时间；例如 `HH:mm` 选完分钟后切换，带毫秒时选完毫秒后切换。触发器底部的 2px 滑块跟随当前端点，已有开始值时可点击任一端点重新编辑。最终点击「确定」关闭并确认完整区间，最终排序后会再次按端点校验禁用规则。需要左对齐时设置 `ui.rangeText='text-left'`，分隔图标通过 `range-separator` 插槽提供。独立 `RebornTimePanel isRange` 仍展示两组时间列。
 
 范围模式、上下按钮和毫秒列继续可用；范围顺序会校正为开始时间不晚于结束时间。
 
@@ -342,7 +344,7 @@ const disabledMinutes = (hour: number) => (hour === 12 ? [0, 1, 2] : []);
 | `disabledMilliseconds` | `(hour, minute, second, role?, comparingValue?) => number[]`                           | `() => []`         | 禁用毫秒                                                                                                  |
 | `bordered`             | `boolean`                                                                              | `true`             | 兼容边框开关                                                                                              |
 | `showArrow`            | `boolean`                                                                              | `true`             | 是否显示尾部图标                                                                                          |
-| `arrowAnimation`       | `boolean`                                                                              | `true`             | 展开时图标旋转                                                                                            |
+| `arrowAnimation`       | `boolean`                                                                              | `false`            | 展开时图标是否旋转；click 模式保持固定                                                                    |
 | `portal`               | `boolean`                                                                              | `true`             | 浮层传送至 body                                                                                           |
 | `autoAdjustOverflow`   | `boolean`                                                                              | `true`             | 自动选择向上或向下展开                                                                                    |
 | `triggerUi`            | `SelectTriggerProps['ui'] & FieldTriggerProps['ui']`                                   | —                  | 共享触发器与浮层样式                                                                                      |
@@ -371,6 +373,7 @@ const disabledMinutes = (hour: number) => (hour === 12 ? [0, 1, 2] : []);
 | `default` | `{ isOpen, toggle, clear, hasValue, rangeDisplay, singleDisplay }` | 自定义触发器内容，替换后不再提供默认文本输入 |
 | `cover`   | 同 `default`                                                       | 覆盖共享触发器内容                           |
 | `footer`  | `{ confirm, clear, now }`                                          | 自定义面板底部，仅 showFooter 为 true 时渲染 |
+| `range-separator` | - | 区间触发器起止时间之间的分隔内容，默认显示 `rangeSeparator` |
 
 ### 自定义样式（ui）
 
@@ -384,6 +387,8 @@ const disabledMinutes = (hour: number) => (hour === 12 ? [0, 1, 2] : []);
 | `placeholder`    | ui           | 范围模式空值占位文字                                                           |
 | `dropdown`       | ui           | 浮层容器，尺寸控制最小宽度                                                     |
 | `rangeText`      | ui           | 范围触发器文字容器                                                             |
+| `rangeSegment`   | ui           | 范围触发器的开始/结束按钮，继承文字对齐方式                                     |
+| `rangeIndicator` | ui           | 当前编辑端点下方的2px滑块，宽度和位移根据实际按钮几何计算                       |
 | `separator`      | ui           | 范围触发器的分隔符                                                             |
 | `body`           | panelUi      | 基础面板内容区，默认 px-1 py-2（横向 4px，纵向 8px），不包含 footer            |
 | `rangeWrapper`   | panelUi      | 范围面板布局容器                                                               |

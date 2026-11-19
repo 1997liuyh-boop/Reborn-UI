@@ -23,6 +23,7 @@ const defaultState = {
   text: '林',
 };
 const state = ref({ ...defaultState });
+const editingIcon = ref(false);
 const lastEvent = shallowRef('尚未发生图片错误');
 const inputProps = { ui: { input: 'w-0' } };
 /** 重置配置和错误回显。 */
@@ -147,6 +148,15 @@ function toggleErrorImage() {
       </DemoBlock>
       <DemoNote tone="dimmed" class="mt-4"><code>scale-down</code> 在大图上与 <code>contain</code> 相同；在小图上保持原始尺寸，不会放大。</DemoNote>
     </DemoSection>
+    <DemoSection title="可编辑头像">
+      <template #description>
+        开启 <code>editable</code> 后，悬停或键盘聚焦显示编辑图标。点击下方头像切换图标。
+      </template>
+      <DemoBlock>
+        <RebornAvatar editable aria-label="更换头像图标" :icon="editingIcon ? 'lucide:smile' : 'lucide:user-round'" @click="editingIcon = !editingIcon" />
+      </DemoBlock>
+    </DemoSection>
+
     <DemoSection title="回退行为">
       <template #description>图片加载失败时先显示 <code>icon</code>，未设置图标则显示默认插槽；更换 <code>src</code> 后自动重试。</template>
       <DemoBlock layout="row" class="gap-6">

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
-import { computed, getCurrentInstance, onBeforeUpdate, shallowRef } from 'vue'
+import { computed, getCurrentInstance, onBeforeUnmount, onBeforeUpdate, onMounted, shallowRef } from 'vue'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
 import theme from './reborn-chip.config'
@@ -12,6 +12,23 @@ const props = withDefaults(defineProps<ChipProps>(), {
   inset: false,
   standalone: false
 })
+
+const root = shallowRef<HTMLElement>()
+const hostWidth = shallowRef(0)
+let resizeObserver: ResizeObserver | undefined
+// 只测量宿主宽度，绝对定位的角标不会参与尺寸计算。
+onMounted(() => {
+  const element = root.value
+  if (!element) return
+  hostWidth.value = element.offsetWidth
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(([entry]) => {
+      if (entry) hostWidth.value = entry.borderBoxSize?.[0]?.inlineSize ?? element.offsetWidth
+    })
+    resizeObserver.observe(element)
+  }
+})
+onBeforeUnmount(() => resizeObserver?.disconnect())
 
 const b = tv(theme)
 
@@ -90,7 +107,7 @@ const ui = computed(() => {
 </script>
 
 <template>
-  <span :class="ui.root()">
+  <span ref="root" :class="ui.root()" :style="{ '--rb-chip-host-width': `${hostWidth}px` }">
     <slot />
     <div v-if="show" :class="ui.base()">
       <div v-if="showLabel" :class="ui.label()">

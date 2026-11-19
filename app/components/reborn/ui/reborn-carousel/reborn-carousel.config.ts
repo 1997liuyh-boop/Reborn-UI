@@ -38,10 +38,9 @@ export default {
     // 箭头组：绝对定位，垂直居中，两端对齐
     arrowGroup:
       "pointer-events-none absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 justify-between max-w-(--ui-container) mx-auto",
-    // 箭头按钮：半透明黑色背景，模糊效果，圆形。
-    // 箭头浮在图片之上，配色不随主题反转，所以用 black/white 而不用会反转的灰阶；描边 #BABCBF 取自设计稿，灰阶令牌里没有对应档位
+    // 箭头默认使用 gray-6 背景与 gray-1 图标，支持通过 arrow.backgroundColor 或 ui 覆盖背景。
     arrow:
-      "pointer-events-auto cursor-pointer size-10 rounded-full inline-flex items-center justify-center bg-black/45 backdrop-blur-3xl border border-[#BABCBF] shadow-lg text-white transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-30",
+      "pointer-events-auto cursor-pointer size-10 rounded-full inline-flex items-center justify-center bg-gray-6 backdrop-blur-3xl shadow-lg text-gray-1 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-30",
     // 指示器包装容器：居中对齐
     indicatorWrapper: "flex justify-center",
     // 指示器组：弹性布局，间距
@@ -75,9 +74,9 @@ export default {
     thumbsTrack: "flex gap-3",
     // 缩略图箭头组：绝对定位，弹性布局
     thumbsArrowGroup: "pointer-events-none absolute z-10 flex items-center gap-2",
-    // 缩略图箭头按钮：半透明黑色背景，模糊效果，圆形（尺寸比主箭头小）
+    // 缩略图箭头与主箭头使用同一背景配置，尺寸比主箭头小。
     thumbsArrow:
-      "pointer-events-auto cursor-pointer size-8 rounded-full inline-flex items-center justify-center bg-black/45 backdrop-blur-3xl border border-[#BABCBF] shadow-lg text-white transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-30",
+      "pointer-events-auto cursor-pointer size-8 rounded-full inline-flex items-center justify-center bg-gray-6 backdrop-blur-3xl shadow-lg text-gray-1 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-30",
     // 缩略图项：相对定位，溢出隐藏，过渡动画
     thumb:
       "group/thumb relative cursor-pointer overflow-hidden transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",

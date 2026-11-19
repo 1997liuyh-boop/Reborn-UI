@@ -31,12 +31,13 @@ Popconfirm 是锚定在触发元素上的小型确认气泡：点击触发器弹
 
 ### 基础用法
 
-默认插槽放触发器，气泡默认在触发器上方居中弹出并带箭头。省略 `description` 时只显示标题；`title` 与 `description` 都不传时文字区整块不渲染，不会留下空隙。
+默认插槽放触发器，气泡默认在触发器上方居中弹出并带箭头。传入 `icon` 可在标题左侧显示 16px 图标，图标与标题垂直居中并间隔 8px。省略 `description` 时只显示标题；`title` 与 `description` 都不传时文字区整块不渲染，不会留下空隙。
 
 ```vue
 <template>
   <RebornPopconfirm
     title="确定删除这条数据吗？"
+    icon="ant-design:question-circle-filled"
     description="删除后不可恢复，关联的引用也会一并失效。"
     @confirm="remove"
     @cancel="onCancel"
@@ -44,7 +45,7 @@ Popconfirm 是锚定在触发元素上的小型确认气泡：点击触发器弹
     <RebornButton size="sm" variant="outlined" color="error">删除</RebornButton>
   </RebornPopconfirm>
 
-  <RebornPopconfirm title="确认提交本次修改？" @confirm="submit">
+  <RebornPopconfirm icon="ant-design:question-circle-filled" title="确认提交本次修改？" @confirm="submit">
     <RebornButton size="sm">仅标题</RebornButton>
   </RebornPopconfirm>
 </template>
@@ -58,7 +59,7 @@ Popconfirm 是锚定在触发元素上的小型确认气泡：点击触发器弹
 
 ```vue
 <template>
-  <RebornPopconfirm title="确定执行该操作吗？" placement="bottom-start" :side-offset="12" :arrow="false">
+  <RebornPopconfirm icon="ant-design:question-circle-filled" title="确定执行该操作吗？" placement="bottom-start" :side-offset="12" :arrow="false">
     <RebornButton size="sm">底部弹出</RebornButton>
   </RebornPopconfirm>
 </template>
@@ -76,7 +77,7 @@ Popconfirm 是锚定在触发元素上的小型确认气泡：点击触发器弹
 
 ```vue
 <template>
-  <RebornPopconfirm
+  <RebornPopconfirm icon="ant-design:question-circle-filled"
     title="确定移除该成员吗？"
     description="移除后对方将立即失去项目访问权限。"
     confirm-color="error"
@@ -86,7 +87,7 @@ Popconfirm 是锚定在触发元素上的小型确认气泡：点击触发器弹
     <RebornButton size="sm" variant="outlined" color="error">危险操作</RebornButton>
   </RebornPopconfirm>
 
-  <RebornPopconfirm title="已阅读并知晓以上提醒？" hide-cancel confirm-text="知道了">
+  <RebornPopconfirm icon="ant-design:question-circle-filled" title="已阅读并知晓以上提醒？" hide-cancel confirm-text="知道了">
     <RebornButton size="sm" variant="outlined" color="neutral">仅确认</RebornButton>
   </RebornPopconfirm>
 </template>
@@ -110,7 +111,7 @@ async function onConfirm() {
 </script>
 
 <template>
-  <RebornPopconfirm
+  <RebornPopconfirm icon="ant-design:question-circle-filled"
     v-model:open="open"
     title="确定删除所选的 3 项吗？"
     description="删除请求完成前请勿关闭页面。"
@@ -137,10 +138,10 @@ async function onConfirm() {
 
 ```vue
 <template>
-  <RebornPopconfirm title="滚动时气泡跟随按钮" :close-on-scroll="false">
+  <RebornPopconfirm icon="ant-design:question-circle-filled" title="滚动时气泡跟随按钮" :close-on-scroll="false">
     <RebornButton size="sm" variant="outlined">滚动时跟随</RebornButton>
   </RebornPopconfirm>
-  <RebornPopconfirm title="必须点按钮才能关闭" :dismissible="false" :close-on-scroll="false">
+  <RebornPopconfirm icon="ant-design:question-circle-filled" title="必须点按钮才能关闭" :dismissible="false" :close-on-scroll="false">
     <RebornButton size="sm" variant="outlined" color="neutral">只能点按钮关闭</RebornButton>
   </RebornPopconfirm>
 </template>
@@ -154,17 +155,14 @@ async function onConfirm() {
 
 ```vue
 <template>
-  <RebornPopconfirm description="发布后将对全部用户可见，可随时在后台下线。">
+  <RebornPopconfirm icon="ant-design:question-circle-filled" description="发布后将对全部用户可见，可随时在后台下线。">
     <template #title>
-      <span class="inline-flex items-center gap-[4px]">
-        <span class="icon-[lucide--rocket] size-[14px] text-primary" />
-        确认发布新版本？
-      </span>
+      确认发布新版本？
     </template>
     <RebornButton size="sm">自定义标题</RebornButton>
   </RebornPopconfirm>
 
-  <RebornPopconfirm title="对本次改动满意吗？">
+  <RebornPopconfirm icon="ant-design:question-circle-filled" title="对本次改动满意吗？">
     <template #footer="{ confirm, cancel }">
       <RebornButton size="sm" variant="text" color="neutral" @click="cancel">不满意</RebornButton>
       <RebornButton size="sm" variant="soft" color="success" @click="confirm">满意</RebornButton>
@@ -183,6 +181,7 @@ async function onConfirm() {
 | 属性名         | 类型                                                  | 默认值      | 描述                                                                                                          |
 | :------------- | :---------------------------------------------------- | :---------- | :------------------------------------------------------------------------------------------------------------ |
 | `title`        | `string`                                              | -           | 标题文字，14px 标题色（gray-10）                                                                              |
+| `icon` | `string` | - | 标题左侧图标名，尺寸为 16px。 |
 | `description`  | `string`                                              | -           | 描述文字，14px 辅助色（gray-8），与标题间隔 8px                                                               |
 | `confirmText`  | `string`                                              | `'确定'`    | 确认按钮文字                                                                                                  |
 | `cancelText`   | `string`                                              | `'取消'`    | 取消按钮文字                                                                                                  |
@@ -227,20 +226,21 @@ async function onConfirm() {
 
 ### 自定义样式（ui）
 
-`ui` 按结构键把类名合并到对应节点（经 `tv` 合并，冲突的 Tailwind 类以传入值为准）。前五个键与 `reborn-popconfirm.config.ts` 的 slots 一一对应；`popover` 是额外的透传键，整体交给底层 `reborn-popover` 的 `ui`。
+`ui` 按结构键把类名合并到对应节点（经 `tv` 合并，冲突的 Tailwind 类以传入值为准）。组件结构键与 `reborn-popconfirm.config.ts` 的对应槽位合并；`popover` 是额外的透传键，整体交给底层 `reborn-popover` 的 `ui`。
 
 | 键名          | 对应节点                                           | 默认 class                                                                                                                                                               | 渲染条件                                                    |
 | :------------ | :------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------- |
 | `body`        | 气泡内容根节点（`data-popconfirm`）                | `flex w-max min-w-[244px] max-w-[280px] flex-col gap-[16px]`                                                                                                            | 随气泡内容渲染                                              |
 | `header`      | 文字区，包裹标题与描述                             | `flex flex-col gap-[8px]`                                                                                                                                                | `title` / `description` 属性或同名插槽至少有一个            |
 | `title`       | 标题（`data-popconfirm-title`）                    | `text-base font-medium text-gray-10`                                                                                                                                     | 传了 `title` 属性或 `title` 插槽                            |
+| `icon` | 标题左侧图标 | `size-4 shrink-0 text-gray-10` | 标题存在且传入 `icon` |
 | `description` | 描述（`data-popconfirm-description`）              | `text-base text-gray-8`                                                                                                                                                  | 传了 `description` 属性或 `description` 插槽                |
 | `footer`      | 按钮区（`data-popconfirm-footer`）                 | `flex items-center justify-end gap-[8px]`                                                                                                                                | 始终渲染；有 `footer` 插槽时内容由插槽接管                  |
 | `popover`     | 底层气泡的 ui 对象（`wrapper` / `trigger` / `contentWrapper` / `content` / `arrow` / `bridge` / `mask`） | 由 `reborn-popover` 定义；组件额外给 `content` 写入 `p-[12px]` 与四周柔光阴影 `shadow-[0_0_8px_rgb(0_0_0/0.12),0_8px_24px_rgb(0_0_0/0.12)]` | 各子键按底层 Popover 的规则渲染；`popover.content` 排在组件默认值之后合并 |
 
 ```vue
 <template>
-  <RebornPopconfirm
+  <RebornPopconfirm icon="ant-design:question-circle-filled"
     title="确认操作？"
     :ui="{
       title: 'font-semibold',

@@ -12,7 +12,7 @@ const value = shallowRef(3)
 </script>
 
 <template>
-  <div class="flex w-full max-w-[210px] justify-center">
+  <div class="flex w-full max-w-52.5 justify-center">
     <RebornInputNumber
       v-model="value"
       size="sm"

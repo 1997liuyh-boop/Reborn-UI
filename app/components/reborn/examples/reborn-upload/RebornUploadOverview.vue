@@ -15,13 +15,13 @@ const files = ref<UploadUserFile[]>([
 
 const ui = {
   root: 'text-sm',
-  dragger: 'gap-[4px] py-[12px] text-sm',
-  list: 'mt-[8px]',
+  dragger: 'gap-1 py-3 text-sm',
+  list: 'mt-2',
 }
 </script>
 
 <template>
-  <div class="w-[200px]">
+  <div class="w-50">
     <RebornUpload
       v-model:file-list="files"
       drag
@@ -29,7 +29,7 @@ const ui = {
     >
       <Icon
         name="lucide:cloud-upload"
-        class="size-[24px] text-gray-6"
+        class="size-6 text-gray-6"
       />
       <div>拖拽文件到此处，或 <span class="text-primary">点击上传</span></div>
     </RebornUpload>

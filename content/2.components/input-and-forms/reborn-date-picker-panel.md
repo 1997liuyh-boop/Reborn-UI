@@ -293,7 +293,7 @@ const shortcuts = [
 </template>
 ```
 
-日期格默认只有 30px 见方，插槽内容多于一行时需自行压缩行高与字号。
+日期格默认只有 32px 见方，插槽内容多于一行时需自行压缩行高与字号。
 
 ### 导航图标
 
@@ -367,7 +367,7 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 | `showToday`            | `boolean`                                                                                                                                                                                                             | `false`        | 面板底部显示「今天」栏，点击选中当前时间所在的单位，见「今天栏」。                                                                                                                                                                                                                     |
 | `highlightToday` | `boolean` | `false` | 是否高亮今天 / 本月 / 本季度 / 今年的文字，与 `showToday` 分别控制；不影响选中样式。 |
 | `defaultValue`         | `Date \| string \| number \| (Date \| string \| number)[]`                                                                                                                                                            | -              | 未选值时面板展示的日期，不写入绑定值；不传时展示当天。字符串按 `valueFormat` 解析，数字按时间戳；数组时第一项定位左面板，`unlinkPanels` 下第二项定位右面板。见「默认展示日期」。 |
-| `size`                 | `'sm' \| 'md' \| 'lg'`                                                                                                                                                                                                | `'md'`         | 尺寸：日期格分别为 26 / 30 / 34px，字号与图标同步缩放。                                                                                                                                                                                                                                                           |
+| `size`                 | `'sm' \| 'md' \| 'lg'`                                                                                                                                                                                                | `'md'`         | 尺寸：日期格分别为 24 / 32 / 40px，字号与图标同步缩放。                                                                                                                                                                                                                                                           |
 | `color`                | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'`                                                                                                                                | `'primary'`    | 选中、范围与今日标识的语义色。                                                                                                                                                                                                                                                                                    |
 | `activeType`           | `'fill' \| 'fillRound' \| 'outline' \| 'text'`                                                                                                                                                                        | `'fill'`       | 选中项的表现形式：`fill` 背景填色（4px 圆角）、`fillRound` 背景填色且为正圆、`outline` 描边加文字、`text` 仅文字变色。未选中格子的悬停圆角也由它给出。                                                                                                                                                            |
 | `width`                | `'auto' \| 'full'`                                                                                                                                                                                                    | `'auto'`       | 宽度模式：`auto` 由内部元素撑开，各视图网格共用同一套最小宽度，切换年 / 月 / 季度视图时宽度不跳动；`full` 占满父容器。                                                                                                                                                                                            |
@@ -438,7 +438,7 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 
 | 键名             | 说明                                                                                                                                                             |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `header`         | 顶部导航行，默认 `flex items-center justify-between px-[20px] pt-[16px] pb-[12px]`。                                                                             |
+| `header`         | 顶部导航行，默认 `flex items-center justify-between px-5 pt-4 pb-3`。                                                                             |
 | `navGroup`       | 单侧翻页按钮组，默认 `flex items-center gap-[8px]`；日期视图同侧有「跨年 + 跨月」两个按钮，间距改这里。                                                          |
 | `navBtn`         | 翻页按钮，默认 `flex items-center rounded-md hover:bg-gray-2 transition-colors cursor-pointer text-gray-6`。                                                     |
 | `navBtnHidden`   | 联动双面板时左侧的「下一页」与右侧的「上一页」按钮，默认 `opacity-0 pointer-events-none`，仍占位以保持标题居中；想彻底去掉占位就在这里加 `hidden`。              |
@@ -450,29 +450,30 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 
 | 键名                            | 说明                                                                                                                                                                                                                                             |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `weekdays`                      | 星期表头容器，默认 `grid grid-cols-7 justify-items-center text-sm text-gray-6 px-[20px] pt-[8px] pb-[12px]`；显示周数时为 8 列。                                                                                                                 |
-| `weekday`                       | 单个星期标签，默认 `size-[30px] flex items-center justify-center`；与日期格同宽同高，两套栅格才逐列对齐。                                                                                                                                        |
-| `weekNumberHeader`              | 周数列的表头「周」，默认 `size-[30px] flex items-center justify-center`。**仅 `showWeekNumber` 且非 `week` / `weekrange` 类型时渲染。**                                                                                                                        |
-| `weekNumber`                    | 每行最左侧的周数格，默认 `flex h-[30px] w-full items-center justify-center text-sm text-gray-5`。渲染条件同 `weekNumberHeader`。                                                                                                                  |
-| `days`                          | 日期网格容器，默认 `grid grid-cols-7 gap-y-[12px] px-[20px] pb-[16px] min-w-[334px]`；列不加 `gap-x`（会切断范围带子），`min-w` 保证每列 ≥ 42px。显示周数时为 8 列，`min-w` 按尺寸取 344 / 376 / 408px。                                         |
-| `dayCell`                       | 日期格外面的格位，默认 `flex h-[38px] my-[-4px] w-full items-center justify-center`：宽度撑满所在列，**范围底色画在这一层**，相邻两列首尾相接连成带子；负外边距把高度压回 30px，带子因此上下各超出日期格 4px。                                   |
-| `dayRangeStart` / `dayRangeEnd` | 范围带子的首端 / 末端，默认 `w-[calc(50%+19px)] ml-auto justify-start pl-[4px]`（末端为镜像的 `mr-auto justify-end pr-[4px]`）：带子只画内侧半列并在端点外侧超出 4px 后封口，封口圆角由 `activeType` 给出。合并进 `dayCell`；起止为同一天时不画。 |
-| `day`                           | 单个日期格，默认 `size-[30px] box-border flex items-center justify-center text-base cursor-pointer transition-colors text-gray-9 hover:bg-gray-2`；圆角由 `activeType` 给出。默认插槽的内容渲染在这一层里面。                                     |
+| `weekdays`                      | 星期表头容器，默认 `grid grid-cols-7 justify-items-center text-sm text-gray-6 px-4 py-2`；显示周数时为 8 列。                                                                                                                 |
+| `weekday`                       | 单个星期标签，默认 `size-8 flex items-center justify-center`；与日期格同宽同高，两套栅格才逐列对齐。                                                                                                                                        |
+| `weekNumberHeader`              | 周数列的表头「周」，默认 `size-8 flex items-center justify-center`。**仅 `showWeekNumber` 且非 `week` / `weekrange` 类型时渲染。**                                                                                                                        |
+| `weekNumber`                    | 每行最左侧的周数格，默认 `flex h-8 w-full items-center justify-center text-sm text-gray-5`。渲染条件同 `weekNumberHeader`。                                                                                                                  |
+| `days`                          | 日期网格容器，默认 `grid grid-cols-7 gap-y-3 px-4 pt-2 pb-3 min-w-83`；列不加 `gap-x`（会切断范围带子），`min-w` 保证每列 ≥ 44px。显示周数时为 8 列，`min-w` 按尺寸取 312 / 376 / 440px。                                         |
+| `weekRow` | 日期行容器，使用 `grid-cols-subgrid` 与日期列对齐；`week` / `weekrange` 整行悬停显示 `bg-gray-2`。 |
+| `dayCell`                       | 日期格外面的格位，默认 `flex h-10 -my-1 w-full items-center justify-center`：宽度撑满所在列，**范围底色画在这一层**，相邻两列首尾相接连成带子；负外边距把高度压回 32px，带子因此上下各超出日期格 4px。                                   |
+| `dayRangeStart` / `dayRangeEnd` | 范围带子的首端 / 末端，默认 `w-[calc(50%+20px)] ml-auto justify-start pl-[4px]`（末端为镜像的 `mr-auto justify-end pr-[4px]`）：带子只画内侧半列并在端点外侧超出 4px 后封口，封口圆角由 `activeType` 给出。合并进 `dayCell`；起止为同一天时不画。 |
+| `day`                           | 单个日期格，默认 `size-8 box-border flex items-center justify-center text-base cursor-pointer transition-colors text-gray-9 hover:bg-gray-2`；圆角由 `activeType` 给出。默认插槽的内容渲染在这一层里面。                                     |
 | `dayActive`                     | 选中日期的附加样式，由 `color` × `activeType` 给出（`primary` + `fill` 时为 `bg-primary text-primary-foreground hover:bg-primary rounded-[4px]`）。**不是独立节点**，合并进 `day`。                                                                          |
 | `dayInRange`                    | 范围内日期的底色，同时并进 `dayCell` 与 `day`：前者铺满整列连成带子，后者负责文字色与悬停。填色与描边类型取同色板第 1 阶浅底加 `gray-9`，`text` 类型只改文字色。                                                                                |
 | `dayToday`                      | 今日标识，默认 `font-medium` 加 `color` 的语义色；仅在今日未被选中时叠加。合并进 `day`。                                                                                                                                                         |
 | `dayDisabled`                   | 越界或被 `disabledMethod` 排除的日期格，默认 `text-gray-5 cursor-not-allowed hover:bg-transparent`。合并进 `day`。                                                                                                                               |
-| `dayDisabledBand`               | 禁用日期的灰底带子，默认 `bg-gray-2`，画在 `dayCell` 上；连续禁用格连成整条灰带，范围高亮优先于灰带。                                                                                                                                            |
+| `dayDisabledBand` | 禁用格外层的兼容样式键，默认空字符串；不可选项仅显示 `text-gray-5`，不绘制背景。 |
 | `dayOutside`                    | 非本月的补位格，默认 `text-gray-5`：只调淡文字，照常可点。`daterange` / `datetimerange` 双面板下补位格不显示选中与范围，只在日期真正归属的一侧高亮。合并进 `day`。                                                                               |
 
 **年 / 月 / 季度网格**
 
 | 键名                                        | 说明                                                                                                                                                                                              |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `grid4Year`                                 | 年份视图的四列网格，默认 `grid grid-cols-4 gap-y-[30px] justify-items-center px-[20px] pb-[16px] min-w-[334px] overflow-auto`；`min-w` 与日期网格一致，切换视图时宽度不跳动。                     |
-| `grid4Month`                                | 月份视图的四列网格，默认 `grid grid-cols-4 gap-y-[30px] justify-items-center px-[20px] pb-[16px] min-w-[334px]`。                                                                                 |
-| `grid2Quarter`                              | 季度视图的两列网格（四个季度排成两行），默认 `grid grid-cols-2 gap-y-[30px] justify-items-center px-[20px] pb-[16px] min-w-[334px]`。                                                             |
-| `yearMonthItem`                             | 单个年 / 月 / 季度格，默认 `h-[30px] box-border flex items-center justify-center cursor-pointer transition-colors text-base text-gray-9 hover:bg-gray-2 w-full`；宽度撑满所在列，范围底色因此连续。 |
+| `grid4Year`                                 | 年份视图的三列网格（键名保留兼容），默认 `grid grid-cols-3 gap-y-7.5 justify-items-center px-4 pt-2 pb-3 min-w-83 overflow-auto`；`min-w` 与日期网格一致，切换视图时宽度不跳动。                     |
+| `grid4Month`                                | 月份视图的三列网格（键名保留兼容），默认 `grid grid-cols-3 gap-y-7.5 justify-items-center px-4 pt-2 pb-3 min-w-83`。                                                                                 |
+| `grid2Quarter`                              | 季度视图的四列网格（键名保留兼容），默认 `grid grid-cols-4 gap-y-7.5 justify-items-center px-4 pt-2 pb-3 min-w-83`。                                                             |
+| `yearMonthItem`                             | 单个年 / 月 / 季度格，默认 `h-8 box-border flex items-center justify-center cursor-pointer transition-colors text-base text-gray-9 hover:bg-gray-2 w-full`；宽度撑满所在列，范围底色因此连续。 |
 | `yearMonthInRange`                          | 范围内的年 / 月 / 季度，配色规则同 `dayInRange`；填色与描边类型额外带 `rounded-none`，中间项才能连成直带。合并进 `yearMonthItem`，首尾两端取 `dayActive`。                                        |
 | `yearMonthRangeStart` / `yearMonthRangeEnd` | 范围两端的封口，填色与描边类型下为 `rounded-r-none` / `rounded-l-none`：内侧圆角压平、外侧保留圆角。合并进 `yearMonthItem`；起止落在同一格时不加。                                                |
 | `yearMonthOutside`                          | 年份视图中不属于当前十年页的年份，默认 `opacity-40`。合并进 `yearMonthItem`。                                                                                                                     |
@@ -489,6 +490,7 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 | 键名                      | 说明                                                                                                                                             |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `dateTimeHeader`          | 「日期段 / 时间段」切换条的容器，默认 `flex items-center justify-center gap-2 w-full`。                                                          |
+| `dateTimeTrigger` | 内嵌时间选择器触发器，默认 `h-auto pt-3`；顶部留 12px。 |
 | `dateTimeSegment`         | 切换条中的单个段落，默认 `ring-1 ring-gray-3 text-sm h-6 leading-6 w-24 text-center rounded-md transition-all text-gray-7 flex-1`。              |
 | `dateTimeSegmentActive`   | 可点击段落的附加样式，默认 `cursor-pointer hover:ring-primary/50 hover:text-primary`。**不是独立节点**，合并进 `dateTimeSegment`。               |
 | `dateTimeSegmentDisabled` | 不可点击段落的附加样式，默认 `cursor-not-allowed`。合并进 `dateTimeSegment`。                                                                    |

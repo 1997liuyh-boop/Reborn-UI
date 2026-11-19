@@ -53,6 +53,8 @@ export default {
     /** 尾部功能区：清除按钮 / 密码开关 / 字数统计 / 后缀 */
     iconBox: "inline-flex shrink-0 items-center gap-2",
     icon: "",
+    /** 后缀文字默认使用第7阶灰色，独立于清空和密码图标。 */
+    suffix: "text-gray-7",
     iconSection: "flex cursor-pointer items-center justify-center text-gray-5 transition-all hover:opacity-80",
     /** 尾部功能区内的竖分割线，聚焦时颜色跟随 color */
     separator: "w-px shrink-0 transition-colors bg-gray-4",
@@ -62,11 +64,13 @@ export default {
      * 换令牌后只有行高从 16px 回到 20px。
      */
     count: "pointer-events-none text-sm text-gray-5 tabular-nums leading-1",
+    /** 装饰原生拖拽手柄，8px 图标与容器内边缘保持 4px。 */
+    resizeHandle: "pointer-events-none absolute bottom-1 right-1 size-2 text-gray-6",
   },
   variants: {
     /**
      * 尺寸直接使用 Tailwind 刻度：高度 h-6 / h-8 / h-10，
-     * 水平内边距 px-2.5 / px-3 / px-4，分隔线高度 h-3 / h-3.5 / h-4。
+     * 水平内边距 px-2 / px-3 / px-3，分隔线高度 h-3 / h-3.5 / h-4。
      * 字号遵循全局 size 锚点：sm 12px（text-sm）/ md 14px（text-base）/ lg 16px（text-lg）。
      * text-* 令牌自带「字号 + 8px」的行高，全部档位都不叠加 leading-*，否则会把令牌行高覆盖掉；
      * 多行模式同样走令牌行高（md 档 14px 字号对应 22px），不再单开比例档。
@@ -76,7 +80,7 @@ export default {
     size: {
       sm: {
         group: "h-6",
-        wrapper: "px-2.5 text-sm",
+        wrapper: "px-2 text-sm",
         input: "text-sm",
         prepend: "text-sm",
         append: "text-sm",
@@ -94,7 +98,7 @@ export default {
       },
       lg: {
         group: "h-10",
-        wrapper: "px-4 text-lg",
+        wrapper: "px-3 text-lg",
         input: "text-lg",
         prepend: "text-lg",
         append: "text-lg",
@@ -120,12 +124,12 @@ export default {
       // 无边框与下划线形态清空水平内边距，原生 px-* 按后写顺序正常合并。
       borderless: {
         wrapper: "bg-transparent border-0 focus-within:border-0 px-0",
-        input: "px-[2px]"
+        input: "px-0.5"
       },
       underlined: {
         wrapper:
           "border-0 border-b-1 border-gray-3 bg-transparent data-[disabled=true]:border-gray-4 px-0",
-        input: "px-[2px]"
+        input: "px-0.5"
       },
     },
     /** 外形轮廓：circle 胶囊；square 的圆角按尺寸在 compoundVariants 中给出 */
@@ -200,7 +204,7 @@ export default {
         // 行高跟随 size 档的 text-* 令牌，不写 leading-：textarea 的可视高度按
         // rows × 行高算，写死比例档会让三档行距各自偏离令牌 0.5~2px
         input: "h-auto resize-none",
-        count: "absolute bottom-1 right-2",
+        count: "absolute bottom-1 right-2 [&>span:first-child]:text-gray-8",
       },
     },
     /** 内置统计占据底部独立区域，避免固定行数与自动高度模式的末行文字被覆盖。 */
@@ -209,11 +213,17 @@ export default {
         wrapper: "pb-6",
       },
     },
-    /** 原生手柄被外层内边距挤入统计区：改由文本域承接内边距，并为统计预留底部与右侧空间。 */
-    resizeWithCount: {
+    /** 文本域承接内边距，原生手柄始终贴近容器右下角。 */
+    resizable: {
       true: {
         wrapper: "px-0! py-0",
-        input: "py-2 pb-6",
+        input: "py-2 [&::-webkit-resizer]:[background:none]",
+      },
+    },
+    /** 内置统计为原生手柄预留底部与右侧空间。 */
+    resizeWithCount: {
+      true: {
+        input: "pb-6",
         count: "right-6",
       },
     },
@@ -247,11 +257,11 @@ export default {
   compoundVariants: [
     // 只给描边与填充形态增加聚焦外圈，保持无边框和下划线形态的轮廓。
     { variant: ["outlined", "filled"], disabled: false, class: { wrapper: "focus-within:ring-2" } },
-    { resizeWithCount: true, size: "sm", class: { input: "px-2.5" } },
-    { resizeWithCount: true, size: "md", class: { input: "px-3" } },
-    { resizeWithCount: true, size: "lg", class: { input: "px-4" } },
-    // 下划线形态保留原有的窄文本边距，不套用描边输入框的尺寸内边距。
-    { resizeWithCount: true, variant: "underlined", class: { input: "px-0.5" } },
+    { resizable: true, size: "sm", class: { input: "px-2" } },
+    { resizable: true, size: "md", class: { input: "px-3" } },
+    { resizable: true, size: "lg", class: { input: "px-3" } },
+    // 无边框与下划线形态保留原有的窄文本边距，不套用描边输入框的尺寸内边距。
+    { resizable: true, variant: ["underlined", "borderless"], class: { input: "px-0.5" } },
     // square 外形的圆角按尺寸取令牌：sm 4px / md 6px / lg 8px
     { shape: "square", size: "sm", class: { wrapper: "rounded-sm", prepend: "rounded-s-sm", append: "rounded-e-sm" } },
     { shape: "square", size: "md", class: { wrapper: "rounded-md", prepend: "rounded-s-md", append: "rounded-e-md" } },

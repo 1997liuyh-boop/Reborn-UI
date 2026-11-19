@@ -10,7 +10,7 @@ import RebornSteps from '~/components/reborn/ui/reborn-steps/RebornSteps.vue'
 </script>
 
 <template>
-  <div class="w-[264px] shrink-0 scale-[0.76]">
+  <div class="w-66 shrink-0 scale-[0.76]">
     <RebornSteps
       :active="1"
       size="sm"

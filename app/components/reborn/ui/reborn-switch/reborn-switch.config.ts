@@ -17,7 +17,7 @@ export default {
       "relative inline-flex items-center rounded-full transition-colors ring-1 ring-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 peer-disabled:cursor-not-allowed data-[loading=true]:cursor-wait data-[loading=true]:opacity-80",
     // 胶囊和圆角型两端留白 2px；细线型由组合变体贴齐轨道边缘，不叠加横向位移和负边距。
     thumb:
-      "absolute left-[2px] right-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] top-[2px] w-auto flex items-center justify-center rounded-full bg-white shadow transition-[left,right] duration-200 ease-[ease-in-out] motion-reduce:transition-none",
+      "absolute left-0.5 right-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] top-0.5 w-auto flex items-center justify-center rounded-full bg-white shadow transition-[left,right] duration-200 ease-[ease-in-out] motion-reduce:transition-none",
     /**
      * 点内文案的网格容器：两态文案叠在同一格里，独立裁剪不影响滑块和波纹。
      * 固定宽度下 flex-1 + min-w-0 只吃轨道剩余空间，超出由文案自己省略。
@@ -37,7 +37,7 @@ export default {
   },
   variants: {
     /**
-     * 尺寸规格：胶囊和圆角型滑块四周留白固定 2px（基础槽的 left-[2px] / top-[2px]），
+     * 尺寸规格：胶囊和圆角型滑块四周留白固定 2px（基础槽的 left-0.5 / top-0.5），
      * 选中位移 = 轨道宽 − 滑块直径 − 4px 留白。
      */
     // 按压只向轨道内侧加宽，松开后恢复；禁用、加载和减弱动效时不拉伸。
@@ -46,11 +46,11 @@ export default {
         track: "h-4 w-7 [--re-switch-thumb-size:calc(--spacing(4)-4px)]",
         thumb: "h-(--re-switch-thumb-size)",
         // 点内文本：外侧 = 2px 边距 + 间隙，滑块侧 = 2px 边距 + 滑块直径 + 间隙；两侧间隙相等（sm/md/lg 为 4/5/6px），文案才在留出的区域内居中
-        inlineActive: "pl-[6px] pr-[calc(var(--re-switch-thumb-size)+6px)]",
-        inlineInactive: "pl-[calc(var(--re-switch-thumb-size)+6px)] pr-[6px]",
+        inlineActive: "pl-1.5 pr-[calc(var(--re-switch-thumb-size)+6px)]",
+        inlineInactive: "pl-[calc(var(--re-switch-thumb-size)+6px)] pr-1.5",
       },
       md: {
-        track: "h-6 w-11 [--re-switch-thumb-size:calc(--spacing(6)-4px)]",
+        track: "h-6 w-10.5 [--re-switch-thumb-size:calc(--spacing(6)-4px)]",
         thumb: "h-(--re-switch-thumb-size)",
         inlineActive: "pl-[7px] pr-[calc(var(--re-switch-thumb-size)+7px)]",
         inlineInactive: "pl-[calc(var(--re-switch-thumb-size)+7px)] pr-[7px]",
@@ -58,8 +58,8 @@ export default {
       lg: {
         track: "h-8 w-15 [--re-switch-thumb-size:calc(--spacing(8)-4px)]",
         thumb: "h-(--re-switch-thumb-size)",
-        inlineActive: "pl-[8px] pr-[calc(var(--re-switch-thumb-size)+8px)]",
-        inlineInactive: "pl-[calc(var(--re-switch-thumb-size)+8px)] pr-[8px]",
+        inlineActive: "pl-2 pr-[calc(var(--re-switch-thumb-size)+8px)]",
+        inlineInactive: "pl-[calc(var(--re-switch-thumb-size)+8px)] pr-2",
       },
     },
     /**
@@ -83,13 +83,13 @@ export default {
     type: {
       circle: {},
       round: {
-        track: "rounded-sm",
+        track: "rounded-md",
         thumb: "rounded-sm",
-        wave: "rounded-sm",
+        wave: "rounded-md",
       },
       line: {
         track: "overflow-visible",
-        // top-1/2 + translate-y 居中盖掉基础槽的 top-[2px]；补一圈淡描边把白滑块从浅色背景里衬出来
+        // top-1/2 + translate-y 居中盖掉基础槽的 top-0.5；补一圈淡描边把白滑块从浅色背景里衬出来
         thumb: "top-1/2 -translate-y-1/2 ring-1 ring-black/10",
       },
     },
@@ -128,7 +128,7 @@ export default {
         inlineActive: "translate-x-0",
         inlineInactive: "translate-x-full",
         // 开态固定右边界，按压只向左侧伸展；关态方向相反。
-        thumb: "left-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] right-[2px] motion-safe:group-[:active:not([data-disabled=true])]/switch:left-[max(2px,calc(100%_-_var(--re-switch-thumb-size)*1.3_-_2px))]",
+        thumb: "left-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] right-0.5 motion-safe:group-[:active:not([data-disabled=true])]/switch:left-[max(2px,calc(100%_-_var(--re-switch-thumb-size)*1.3_-_2px))]",
         activeLabel: "font-medium",
         inactiveLabel: "text-gray-5",
       },
@@ -158,7 +158,7 @@ export default {
   compoundVariants: [
     // autoWidth：固定宽降级为最小宽，轨道随点内文本撑开
     { autoWidth: true, size: "sm" as (typeof size)[number], class: { track: "w-auto min-w-7" } },
-    { autoWidth: true, size: "md" as (typeof size)[number], class: { track: "w-auto min-w-11" } },
+    { autoWidth: true, size: "md" as (typeof size)[number], class: { track: "w-auto min-w-10.5" } },
     { autoWidth: true, size: "lg" as (typeof size)[number], class: { track: "w-auto min-w-15" } },
     // line 型轨道高度：约为滑块直径的一半，宽度沿用 size 档
     { type: "line" as (typeof type)[number], size: "sm" as (typeof size)[number], class: { track: "h-2" } },

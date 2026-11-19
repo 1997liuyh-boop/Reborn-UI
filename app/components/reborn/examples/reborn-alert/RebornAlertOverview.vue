@@ -6,7 +6,7 @@ import RebornAlert from '~/components/reborn/ui/reborn-alert/RebornAlert.vue'
 </script>
 
 <template>
-  <div class="w-full max-w-[210px]">
+  <div class="w-full max-w-52.5">
     <RebornAlert
       type="success"
       title="保存成功"

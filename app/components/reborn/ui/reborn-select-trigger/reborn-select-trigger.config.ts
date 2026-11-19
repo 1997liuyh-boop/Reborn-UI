@@ -57,7 +57,7 @@ export default {
         wrapper: "relative inline-flex w-full group outline-none",
         // 背景与描边只用灰阶 token（base.css 的 .dark 会整条翻转），不可写 bg-white / dark: 前缀，否则深色模式下会二次翻转
         // 圆角 8px（rounded-lg）；内边距不放这里，展开动画走 height:0 → scrollHeight，border-box 下内边距会撑出一段残留高度
-        dropdown: "absolute z-50 w-full flex flex-col rounded-lg border border-gray-3 bg-gray-1 shadow-lg overflow-y-auto overscroll-contain scrollbar-hide",
+        dropdown: "absolute z-50 w-full flex flex-col rounded-lg bg-gray-1 shadow-lg overflow-y-auto overscroll-contain scrollbar-hide",
         dropdownInner: "w-full shrink-0",
         // 箭头独立于面板淡入淡出，避免被展开动画的溢出裁剪隐藏。
         arrow: "absolute bg-gray-1 pointer-events-none mask-no-repeat mask-size-[100%_100%]",
@@ -104,10 +104,11 @@ export default {
          * 若这里再叠 top-full / bottom-full，两套定位会互相打架（只是恰好被内联优先级压住）。
          */
         placement: {
-            top: { arrow: floatingArrowSides.top },
-            bottom: { arrow: floatingArrowSides.bottom },
-            left: { arrow: floatingArrowSides.left },
-            right: { arrow: floatingArrowSides.right },
+            // 只保留面板外侧的箭头投影，避免大范围阴影叠进面板内容。
+            top: { arrow: `${floatingArrowSides.top} [clip-path:inset(0_-100px_-100px)]` },
+            bottom: { arrow: `${floatingArrowSides.bottom} [clip-path:inset(-100px_-100px_0)]` },
+            left: { arrow: `${floatingArrowSides.left} [clip-path:inset(-100px_-100px_-100px_0)]` },
+            right: { arrow: `${floatingArrowSides.right} [clip-path:inset(-100px_0_-100px_-100px)]` },
         },
         /** 交叉轴对齐，仅传送模式生效（由组件内联下发），行内模式恒为 start */
         align: {

@@ -115,7 +115,7 @@ const theme = tv({
     // reborn-tabs__title 是量取下划线宽度的锚点，不能删
     // z-[1] 让标题浮在选中底板之上：底板滑过相邻标签时不会把它们的文字盖住
     tabTitle: 'reborn-tabs__title relative z-[1] overflow-hidden whitespace-nowrap',
-    tabClose: 'i-lucide-x relative z-[1] shrink-0 text-gray-6 transition-colors',
+    tabClose: 'i-lucide-x relative z-[1] shrink-0 transition-colors text-gray-6 hover:text-gray-8 active:text-gray-9',
     // 指示器位移与长度由组件量取后写成行内样式，这里只负责形态与过渡；底色由 color 变体给
     indicator:
       'pointer-events-none absolute rounded-full transition-all duration-300 ease-out will-change-transform',

@@ -319,8 +319,8 @@ const borderedVariants = ["outlined", "subtle"] as const;
         <div class="flex flex-col items-center gap-3">
           <DemoNote tone="dimmed" class="text-xs">胶囊组</DemoNote>
           <div class="flex items-center">
-            <RebornButton color="warning" class="w-[110px] rounded-l-full px-6">加入购物车</RebornButton>
-            <RebornButton color="error" class="w-[110px] rounded-r-full px-6">立即购买</RebornButton>
+            <RebornButton color="warning" class="w-27.5 rounded-l-full px-6">加入购物车</RebornButton>
+            <RebornButton color="error" class="w-27.5 rounded-r-full px-6">立即购买</RebornButton>
           </div>
         </div>
         <div class="flex flex-col items-center gap-3">

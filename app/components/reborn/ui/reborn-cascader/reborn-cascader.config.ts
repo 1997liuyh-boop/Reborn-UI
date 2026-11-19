@@ -138,6 +138,8 @@ export default {
     // 触发器盒子、选项行、多选标签、虚拟滚动四组样式整体取自 reborn-select，
     // 下面只覆盖「级联是多列」这一点带来的差异。
     ...selectSlots,
+    // 标签尺寸与外部 size 一致，图标由 Badge 自身的尺寸档位决定。
+    tagCloseIcon: "",
 
     /**
      * 浮层内容区。级联的滚动发生在每一列内部，这一层既不滚动也不留内边距：
@@ -163,7 +165,7 @@ export default {
      * 列宽给下限而不是定值：标签长短不一时列会自行变宽，而不是把文字截断。
      */
     column:
-      "flex max-h-60 min-w-40 max-w-70 shrink-0 flex-col overflow-y-auto px-[4px] py-[6px] scrollbar-hide",
+      "flex max-h-60 min-w-40 max-w-70 shrink-0 flex-col overflow-y-auto px-1 py-1.5 scrollbar-hide",
     /** 列分割线：1px 宽的 gray-2 竖线，取代「每列一张卡片」的分块做法 */
     columnDivider: "w-px shrink-0 self-stretch bg-gray-2",
     /**
@@ -180,7 +182,7 @@ export default {
     optionLoading: "size-4 shrink-0 animate-spin text-gray-5",
     /** 搜索结果列表：单列铺开，滚动与内边距同列 */
     searchList:
-      "flex max-h-60 w-full flex-col overflow-y-auto px-[4px] py-[6px] scrollbar-hide",
+      "flex max-h-60 w-full flex-col overflow-y-auto px-1 py-1.5 scrollbar-hide",
     /** 触发器内的前缀元素 */
     prefix: "flex shrink-0 items-center text-gray-6",
     /** 搜索态下替换箭头的搜索图标 */
@@ -201,21 +203,22 @@ export default {
   },
   variants: {
     ...selectVariantMap,
-    /** 多选标签左侧留 4px，右侧沿用尺寸档位，与单选的尾部图标对齐。 */
+    /** 多选上下留 4px，右侧留 12px；有标签后左侧才收敛为 4px。 */
     multiple: {
-      true: { trigger: "pl-1!" },
+      true: { trigger: "h-auto! py-1!" },
       false: {},
     },
+    active: { true: {}, false: { option: "text-gray-8" } },
     /**
-     * 尺寸档位。触发器与标签沿用 reborn-select 的三档，
+     * 尺寸档位。触发器沿用 reborn-select 的三档，标签直接使用 Badge 的同档尺寸，
      * 级联额外按档位给列宽下限：档位越大，列越宽，避免 lg 下文字贴着分割线。
-     * 多选搜索位的高度与同档标签一致（h-4 / h-5 / h-6）：输入框按行高撑开会比标签高出几像素，
+     * 多选搜索位的高度与同档标签一致（h-4.5 / h-6 / h-8）：输入框按行高撑开会比标签高出几像素，
      * 展开时那一行跟着变高，触发器整体抖一下。
      */
     size: {
-      sm: { ...selectSize.sm, column: "min-w-35", tagSearch: "h-4" },
-      md: { ...selectSize.md, column: "min-w-40", tagSearch: "h-5" },
-      lg: { ...selectSize.lg, column: "min-w-45", tagSearch: "h-6" },
+      sm: { ...selectSize.sm, tagList: "gap-1", tag: "", tagClose: "", column: "min-w-35", tagSearch: "h-4.5" },
+      md: { ...selectSize.md, tag: "", tagClose: "", column: "min-w-40", tagSearch: "h-6" },
+      lg: { ...selectSize.lg, tag: "", tagClose: "", column: "min-w-45", tagSearch: "h-8" },
     },
     /**
      * 可清空。在 reborn-select 的基础上补一条：搜索态下箭头被搜索图标顶替，
@@ -241,7 +244,22 @@ export default {
       false: { tagLabel: "whitespace-normal break-all" },
     },
   },
-  compoundVariants: selectTheme.compoundVariants,
+  compoundVariants: [
+    // 保留原有展开外圈；按住时仅将边框切到对应配色的第七阶。
+    ...selectTheme.compoundVariants.filter((variant: { wrapTags?: boolean }) => !variant.wrapTags),
+    { multiple: true, class: { trigger: "pr-3!" } },
+    { multiple: true, wrapTags: true, class: { trigger: "pl-1!" } },
+    { multiple: true, size: "sm", class: { trigger: "min-h-6" } },
+    { multiple: true, size: "md", class: { trigger: "min-h-8" } },
+    { multiple: true, size: "lg", class: { trigger: "min-h-10" } },
+    { color: "primary", disabled: false, class: { trigger: "data-[state=closed]:active:border-brand-7 data-[state=open]:active:border-brand-7" } },
+    { color: "secondary", disabled: false, class: { trigger: "data-[state=closed]:active:border-secondary-7 data-[state=open]:active:border-secondary-7" } },
+    { color: "success", disabled: false, class: { trigger: "data-[state=closed]:active:border-green-7 data-[state=open]:active:border-green-7" } },
+    { color: "info", disabled: false, class: { trigger: "data-[state=closed]:active:border-blue-7 data-[state=open]:active:border-blue-7" } },
+    { color: "warning", disabled: false, class: { trigger: "data-[state=closed]:active:border-orange-7 data-[state=open]:active:border-orange-7" } },
+    { color: "error", disabled: false, class: { trigger: "data-[state=closed]:active:border-red-7 data-[state=open]:active:border-red-7" } },
+    { color: "neutral", disabled: false, class: { trigger: "data-[state=closed]:active:border-gray-7 data-[state=open]:active:border-gray-7" } },
+  ],
   defaultVariants: {
     ...selectTheme.defaultVariants,
     bordered: false,

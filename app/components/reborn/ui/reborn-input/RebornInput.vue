@@ -28,7 +28,7 @@ const props = withDefaults(defineProps<InputProps>(), {
   showWordLimit: false,
   wordLimitPosition: "inside",
   clearable: false,
-  clearIcon: "lucide:x-circle",
+  clearIcon: "lucide:x",
   showPassword: false,
   password: false,
   rows: 2,
@@ -105,6 +105,8 @@ export interface InputUi {
   password?: string;
   separator?: string;
   count?: string;
+  /** 文本域右下角的拖拽提示图标，鼠标事件穿透至原生手柄 */
+  resizeHandle?: string;
 }
 
 /** autosize 的对象形式：限定自适应的最小 / 最大行数 */
@@ -285,6 +287,7 @@ const ui = computed(() => {
     multiline: isMultiline.value,
     wordLimitPosition: props.wordLimitPosition,
     multilineWithCount: isMultiline.value && showLimit.value && props.wordLimitPosition === "inside",
+    resizable: isMultiline.value && !!props.resize && props.resize !== "none",
     resizeWithCount: isMultiline.value && showLimit.value && props.wordLimitPosition === "inside"
       && !!props.resize && props.resize !== "none",
     error: isError.value,
@@ -311,11 +314,12 @@ const ui = computed(() => {
     prefix: (opts?: { class?: any }) => styles.prefix({ class: cn(opts?.class, uiOverrides.value.prefix) }),
     iconBox: (opts?: { class?: any }) => styles.iconBox({ class: cn(opts?.class, uiOverrides.value.iconBox) }),
     icon: (opts?: { class?: any }) => styles.icon({ class: cn(opts?.class, uiOverrides.value.icon) }),
-    suffix: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class, uiOverrides.value.suffix) }),
-    clear: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class, uiOverrides.value.clear) }),
+    suffix: (opts?: { class?: any }) => styles.iconSection({ class: cn(styles.suffix(), opts?.class, uiOverrides.value.suffix) }),
+    clear: (opts?: { class?: any }) => styles.iconSection({ class: cn('text-gray-6 hover:text-gray-8 active:text-gray-9 hover:opacity-100', opts?.class, uiOverrides.value.clear) }),
     password: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class, uiOverrides.value.password) }),
     separator: (opts?: { class?: any }) => styles.separator({ class: cn(opts?.class, uiOverrides.value.separator) }),
     count: (opts?: { class?: any }) => styles.count({ class: cn(opts?.class, uiOverrides.value.count) }),
+    resizeHandle: (opts?: { class?: any }) => styles.resizeHandle({ class: cn(opts?.class, uiOverrides.value.resizeHandle) }),
   };
 });
 
@@ -614,9 +618,17 @@ defineExpose({
           @compositionend="onCompositionEnd" @pointerup="captureTextareaResize"
         />
 
+        <!-- 图标只作视觉提示，实际缩放仍由浏览器原生手柄处理。 -->
+        <svg
+          v-if="isMultiline && resize && resize !== 'none'" :class="ui.resizeHandle()"
+          viewBox="0 0 8 8" fill="none" stroke="currentColor" aria-hidden="true"
+        >
+          <path d="M1 7 7 1M5 7 7 5" />
+        </svg>
+
         <!-- textarea 的字数统计悬浮在右下角 -->
         <span v-if="isMultiline && showLimit && wordLimitPosition === 'inside'" :class="ui.count()">
-          {{ currentCount }} / {{ props.maxlength }}
+          <span>{{ currentCount }}</span> / {{ props.maxlength }}
         </span>
 
         <div v-if="!isMultiline" :class="ui.iconBox()" @click.stop>

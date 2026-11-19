@@ -30,7 +30,7 @@ before(async () => {
         const columns=[{label:'人员信息',children:[{prop:'id',label:'编号',width:80,fixed:'left'},
           {prop:'name',label:'姓名',width:500}]},{prop:'amount',label:'金额',width:100,fixed:'right'}];
         createApp({render:()=>h('main',{},[
-          state.visible?h(Table,{...state,data,columns,height:240,ariaLabel:'固定表头回弹测试',style:{width:'420px'}}):null,
+          state.visible?h(Table,{...state,data,columns:state.columns??columns,height:240,ariaLabel:'固定表头回弹测试',style:{width:'420px'}}):null,
           h(Scrollbar,{id:'ordinary',style:{width:'420px',height:'100px'}},()=>h('div',{style:{height:'500px'}},'普通滚动区域'))
         ])}).mount('#app');window.tableFixture={state,flush:nextTick};`,
       resolveDir: resolve('.'), sourcefile: 'table-bounce-fixture.ts', loader: 'ts',
@@ -207,4 +207,63 @@ it('回弹过程中取消固定表头或卸载表格，会清理旧目标的动�
     await fixture.flush();
   });
   assert.equal(await page.evaluate(() => (window as any).activeTableBounce.playState), 'idle');
+}));
+
+
+it('多选列由复选框加左右16px撑开，铺满、窄屏、隐藏表头和固定列均保持对齐', { skip: !browserAvailable }, () => withPage(async (page) => {
+  assert.equal(await page.locator('[data-reborn-table] th').first().evaluate(el => getComputedStyle(el).fontWeight), '500');
+  for (const tableLayout of ['fixed', 'auto']) {
+    for (const size of ['sm', 'md', 'lg']) {
+      for (const showHeader of [true, false]) {
+        await page.evaluate(async ({ tableLayout, size, showHeader }) => {
+          const fixture = (window as any).tableFixture;
+          Object.assign(fixture.state, { tableLayout, size, showHeader, border: true, columns: [
+            { type: 'selection', fixed: 'left' },
+            { prop: 'name', label: '姓名', fixed: 'left' },
+            { prop: 'amount', label: '金额' },
+          ] });
+          await fixture.flush();
+        }, { tableLayout, size, showHeader });
+        await page.waitForTimeout(100);
+        const geometry = await page.locator('[data-reborn-table] tbody tr').first().evaluate(row => {
+          const cell = row.children[0] as HTMLElement;
+          const checkbox = cell.querySelector('label')!;
+          const control = checkbox.getBoundingClientRect();
+          const rect = cell.getBoundingClientRect();
+          const style = getComputedStyle(cell);
+          return { width: rect.width, content: control.width, left: style.paddingLeft, right: style.paddingRight,
+            border: parseFloat(style.borderRightWidth) + parseFloat(style.borderLeftWidth),
+            nextLeft: parseFloat(getComputedStyle(row.children[1]).left) };
+        });
+        assert.equal(geometry.left, '16px');
+        assert.equal(geometry.right, '16px');
+        assert.ok(Math.abs(geometry.width - geometry.content - 32 - geometry.border) < 1, JSON.stringify({tableLayout,size,showHeader,...geometry}));
+        assert.ok(Math.abs(geometry.nextLeft - geometry.width) < 1);
+      }
+    }
+  }
+  await page.evaluate(async () => {
+    const fixture = (window as any).tableFixture;
+    Object.assign(fixture.state, { tableLayout: 'fixed', showHeader: true, columns: [
+      { label: '分组', children: [{ type: 'selection', fixed: 'left' }, { prop: 'name', label: '姓名', width: 180 }] },
+      { prop: 'amount', label: '金额', width: 80 },
+    ] });
+    await fixture.flush();
+  });
+  await page.addStyleTag({ content: '[data-column-index="0"] label > span:first-of-type { width: 24px; }' });
+  for (const width of [700, 300, 500]) {
+    await page.locator('[data-reborn-table]').evaluate((el, width) => { (el as HTMLElement).style.width = width + 'px'; }, width);
+    await page.waitForTimeout(150);
+    const geometry = await page.locator('[data-reborn-table] tbody tr').first().evaluate(row => {
+      const cell = row.children[0];
+      const control = cell.querySelector('label')!;
+      return { width: cell.getBoundingClientRect().width, content: control.getBoundingClientRect().width,
+        amount: row.children[2].getBoundingClientRect().width };
+    });
+    assert.equal(geometry.content, 24);
+    assert.ok(Math.abs(geometry.width - 57) < 1, JSON.stringify(geometry));
+    assert.ok(geometry.amount >= 80, '显式数据列宽不能被挤小');
+  }
+  await page.getByRole('checkbox', { name: '选择第 1 行', exact: true }).check({ force: true });
+  assert.equal(await page.getByRole('checkbox', { name: '选择第 1 行', exact: true }).isChecked(), true);
 }));

@@ -774,6 +774,7 @@ const formRules = z.object({
 | `header`     | -                                          | 〔选择框〕面板上方的页头，自带下分隔线。               |
 | `footer`     | -                                          | 〔选择框〕面板下方的页脚，自带上分隔线。               |
 | `cell`       | `DatePickerCell`                           | 〔面板〕自定义单元格内容，对应面板的 `default` 插槽。  |
+| `range-separator` | - | 〔选择框〕范围类型起止输入框之间的分隔内容，默认显示 `rangeSeparator`。 |
 | `prev-month` | -                                          | 〔面板〕日期视图「上个月」按钮的图标。                 |
 | `next-month` | -                                          | 〔面板〕日期视图「下个月」按钮的图标。                 |
 | `prev-year`  | -                                          | 〔面板〕「上一年」按钮的图标。                         |
@@ -1001,6 +1002,8 @@ const formRules = z.object({
 | 样式覆盖入口 | `ui` + `triggerUi` + `panelUi`                                         | `ui` + `triggerUi` + `popupUi` + `pickerUi`                               |
 
 ## 注意事项
+
+- **多选悬停不回填触发器。** `dates` / `months` / `years` / `quarters` 只在选择后更新标签，单选与区间保留候选日期预览。多选空值沿用同尺寸单选的水平内边距，有标签后左侧改为 4px。
 
 - **写回时机随类型不同**。单值与范围类型选定即写回并收起；多选类型每点一项写回、面板不收；`datetime` / `datetimerange` 在值完整时写回，但要点击外部才收起。
 - **范围只选一半会被丢弃**。点了开始日期就收起面板，绑定值保持原样；下次展开时草稿按绑定值重置。

@@ -1,5 +1,5 @@
 export { default as rebornCalendarConfig } from "./reborn-calendar.config";
-export type { CalendarColor, CalendarControllerType, CalendarMode, CalendarTitleAlign, CalendarUI } from "./reborn-calendar.config";
+export type { CalendarColor, CalendarControllerType, CalendarMode, CalendarSize, CalendarTitleAlign, CalendarUI } from "./reborn-calendar.config";
 export { getLunar } from "./reborn-calendar.lunar";
 export type { CalendarLunar } from "./reborn-calendar.lunar";
 export { calculateValidatedDateRange } from "./reborn-calendar.utils";

@@ -76,8 +76,9 @@ const progressValue = computed(() => {
   return undefined;
 });
 const direction = computed(() => context?.direction.value ?? 'horizontal');
-const placement = computed(() => props.placement ?? context?.placement.value
-  ?? (direction.value === 'horizontal' && context?.alignCenter.value ? 'bottom' : 'right'));
+const placement = computed(() => context?.type.value === 'tabs' && direction.value === 'horizontal'
+  ? 'right' : props.placement ?? context?.placement.value
+    ?? (direction.value === 'horizontal' && context?.alignCenter.value ? 'bottom' : 'right'));
 const simple = computed(() => context?.simple.value ?? false);
 const type = computed(() => context?.type.value ?? 'default');
 const lineType = computed(() => context?.lineType.value ?? 'solid');
@@ -103,7 +104,7 @@ const layoutStyle = computed<CSSProperties | undefined>(() => {
 });
 const styles = computed(() => stepsTheme({
   direction: direction.value, size: context?.size.value ?? 'md', color: color.value, status: status.value,
-  type: type.value, current: current.value, lineType: lineType.value, completed: completed.value,
+  type: type.value, progress: showProgress.value, current: current.value, lineType: lineType.value, completed: completed.value,
   placement: placement.value, alignCenter: context?.alignCenter.value ?? false, simple: simple.value, last: last.value,
   spaced: !!context?.space.value,
 }));
@@ -118,8 +119,8 @@ function ui(key: keyof StepsUI) {
   <li :class="ui('item')" :style="layoutStyle" :data-step-index="index" :data-status="status" :data-placement="placement" :aria-current="current ? 'step' : undefined">
     <span v-if="type !== 'text'" :class="ui('marker')" :aria-hidden="showProgress ? undefined : true">
       <svg v-if="showProgress" :class="ui('progressRing')" role="progressbar" :aria-label="progressLabel" :aria-valuenow="progressValue" :aria-valuemin="0" :aria-valuemax="100">
-        <circle :class="ui('progressTrack')" cx="50%" cy="50%" r="calc(50% - var(--spacing) / 4)" />
-        <circle v-if="progressValue" :class="ui('progressIndicator')" cx="50%" cy="50%" r="calc(50% - var(--spacing) / 4)" pathLength="100" :stroke-dasharray="`${progressValue} 100`" stroke-linecap="round" />
+        <circle :class="ui('progressTrack')" cx="50%" cy="50%" r="calc(50% - var(--reborn-steps-internal-ring-half-stroke, var(--spacing) / 4))" />
+        <circle v-if="progressValue" :class="ui('progressIndicator')" cx="50%" cy="50%" r="calc(50% - var(--reborn-steps-internal-ring-half-stroke, var(--spacing) / 4))" pathLength="100" :stroke-dasharray="`${progressValue} 100`" stroke-linecap="round" />
       </svg>
       <template v-if="type !== 'dot'">
         <slot name="icon" :index="index" :status="status" :current="current" :progress="progressValue">

@@ -69,12 +69,13 @@ export default {
     pagerItem: "reborn-pagination-pager-item",
     ellipsis:
       "reborn-pagination-ellipsis inline-flex items-center justify-center select-none text-gray-5",
-    prev: "reborn-pagination-prev",
-    next: "reborn-pagination-next",
-    jumper: "reborn-pagination-jumper inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-gray-5",
-    total: "reborn-pagination-total shrink-0 whitespace-nowrap text-gray-5",
+    // 翻页按钮统一使用正文灰色，禁用时直接切换灰阶，不叠加透明度。
+    prev: "reborn-pagination-prev text-gray-9 hover:text-gray-9 disabled:text-gray-5 disabled:opacity-100",
+    next: "reborn-pagination-next text-gray-9 hover:text-gray-9 disabled:text-gray-5 disabled:opacity-100",
+    jumper: "reborn-pagination-jumper inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-gray-8",
+    total: "reborn-pagination-total shrink-0 whitespace-nowrap text-gray-8",
     sizes: "reborn-pagination-sizes shrink-0",
-    simple: "reborn-pagination-simple inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-gray-5",
+    simple: "reborn-pagination-simple inline-flex shrink-0 items-center gap-4 whitespace-nowrap text-gray-9",
     input: "shrink-0",
   },
   variants: {

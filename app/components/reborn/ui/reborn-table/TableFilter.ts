@@ -30,13 +30,16 @@ export default defineComponent({
     return () => h(RebornPopover, {
       open: open.value, 'onUpdate:open': changeOpen, portal: true,
       placement: 'bottom-start', sideOffset: 4,
-      ui: { content: 'p-3' },
+      ui: { wrapper: 'inline-flex shrink-0', content: 'p-3' },
     }, {
       default: () => h('button', {
         type: 'button', disabled: props.disabled, 'aria-label': `筛选${props.column.label ?? ''}`,
         'aria-expanded': open.value, 'aria-haspopup': 'dialog',
-        class: ['inline-flex size-6 shrink-0 items-center justify-center rounded-sm focus-visible:outline-2 focus-visible:outline-primary', props.values.length ? 'text-primary' : 'text-gray-5 hover:text-gray-8'],
-      }, [h('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.5, 'aria-hidden': 'true' }, [h('path', { d: 'M4 5h16l-6 7v7l-4-2v-5z' })])]),
+        class: ['inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-sm focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed', props.values.length ? 'text-primary' : 'text-gray-5 hover:text-gray-8'],
+      }, [
+        // ant-design:filter-filled 的原始路径，独立分发时无需注册全局图标组件。
+        h('svg', { viewBox: '0 0 1024 1024', fill: 'currentColor', class: 'size-3.5', 'aria-hidden': 'true' }, [h('path', { d: 'M349 838c0 17.7 14.2 32 31.8 32h262.4c17.6 0 31.8-14.3 31.8-32V642H349zm531.1-684H143.9c-24.5 0-39.8 26.7-27.5 48l221.3 376h348.8l221.3-376c12.1-21.3-3.2-48-27.7-48' })]),
+      ]),
       content: () => h('div', { role: 'dialog', 'aria-label': `筛选${props.column.label ?? ''}`, class: 'min-w-[160px] text-base' }, [
         h('div', { class: 'flex max-h-[240px] flex-col gap-2 overflow-y-auto' }, props.column.filters?.map(option => h(RebornCheckbox, {
           key: `${typeof option.value}:${option.value}`, label: option.text, modelValue: draft.value.includes(option.value),

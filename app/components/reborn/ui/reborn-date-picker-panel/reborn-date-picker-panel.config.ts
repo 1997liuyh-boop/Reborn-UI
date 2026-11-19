@@ -97,8 +97,8 @@ export default {
     /** 快捷栏内边距与选项间距均为 8px，位置变体负责内侧分隔线。 */
     shortcuts: `shrink-0 space-y-2 overflow-y-auto p-2 ${scrollbarHide}`,
     shortcut:
-      "block h-6 w-26 cursor-pointer truncate bg-gray-2 px-3 py-0 text-center text-sm text-gray-8",
-    /** 头部导航行：与网格共用左右 5 个间距刻度，上 4、下 3；默认根字号下为 20 / 16 / 12px */
+      "block h-6 w-26 cursor-pointer truncate bg-gray-2 px-3 py-0 text-center text-sm text-gray-8 rounded-sm hover:bg-gray-3 hover:text-gray-8 active:bg-gray-3 active:text-gray-8",
+    /** 头部导航行：上 16px、左右 20px、下 12px */
     header: "flex items-center justify-between px-5 pt-4 pb-3",
     /** 翻页按钮组：同侧按钮间隔 2 个刻度，默认根字号下为 8px */
     navGroup: "flex items-center gap-2",
@@ -108,55 +108,56 @@ export default {
     /** 翻页按钮不可用（取消联动时两侧面板已相邻，再翻就会交叉） */
     navBtnDisabled: "opacity-40 cursor-not-allowed hover:text-gray-8",
     /** 标题：14px / 500 字重 / 标题色 */
-    title: "text-base font-medium text-gray-8 cursor-pointer hover:text-gray-9 transition-colors",
+    title: "text-base font-medium text-gray-10 cursor-pointer hover:text-gray-10 transition-colors",
     /** 星期表头：与日期网格共用单元格尺寸和左右内边距，上下间距随同一刻度缩放 */
-    weekdays: "grid grid-cols-7 justify-items-center text-sm text-gray-6 px-5 pt-2 pb-3",
-    weekday: "size-7.5 flex items-center justify-center",
+    weekdays: "grid grid-cols-7 justify-items-center text-sm text-gray-6 px-4 py-2",
+    weekday: "size-8 flex items-center justify-center",
     /** 周数列表头：与星期表头同尺寸，位于第一列 */
-    weekNumberHeader: "size-7.5 flex items-center justify-center",
+    weekNumberHeader: "size-8 flex items-center justify-center",
     /**
-     * 周数格：占日期网格第一列，高度等于日期格的布局高度（默认根字号下为 30px），不参与范围带子，
+     * 周数格：占日期网格第一列，高度等于日期格的布局高度（默认根字号下为 32px），不参与范围带子，
      * 用弱化的文字色与日期区分。
      */
-    weekNumber: "flex h-7.5 w-full items-center justify-center text-sm text-gray-5",
+    weekNumber: "flex h-8 w-full items-center justify-center text-sm text-gray-5",
     /**
-     * 日期网格：行距 3 个间距刻度。md 日期格为 7.5 个刻度，列宽由 grid-cols-7 均分，
-     * min-w 保证每列至少 10.5 个刻度，左右间隔靠列宽富余留出 3 个刻度。
-     * 默认根字号 16px 时分别为 12 / 30 / 42px，根字号变化时整个几何链同比缩放。
+     * 日期网格：行距 3 个间距刻度。md 日期格为 8 个刻度，列宽由 grid-cols-7 均分，
+     * min-w 保证每列至少 11 个刻度，左右间隔靠列宽富余留出 3 个刻度。
+     * 默认根字号 16px 时分别为 12 / 32 / 44px，根字号变化时整个几何链同比缩放。
      * 不能改用 gap-x：范围模式的底色带子靠 dayCell 撑满整列首尾相接，gap 会把带子切断。
      * 列间留白同时保证 dates 多选叠加 outline 激活类型时，相邻选中项的 1px 描边不会并成一条粗线。
      */
-    days: "grid grid-cols-7 gap-y-3 px-5 pb-4 min-w-83.5",
+    days: "grid grid-cols-7 gap-y-3 px-4 pt-2 pb-3 min-w-83",
+    /** 行容器沿用日期网格的列，周选择时绘制整行悬停底色。 */
+    weekRow: "col-span-full grid grid-cols-subgrid transition-colors",
     /**
      * 日期格的外层格位：宽度撑满所在列。
      * 范围模式的底色画在整列格位上，相邻两列首尾相接，日期格的方块 / 圆形不会被拉宽。
      * 高度取「日期格 + 上下各 1 个刻度」，配合 -my-1 把占位压回日期格高度。
-     * md 默认根字号下为 38px 高、上下各超出 4px；行高、负边距与超出量始终同比缩放。
+     * md 默认根字号下为 40px 高、上下各超出 4px；行高、负边距与超出量始终同比缩放。
      */
-    dayCell: "flex h-9.5 -my-1 w-full items-center justify-center",
+    dayCell: "flex h-10 -my-1 w-full items-center justify-center",
     /**
      * 范围端点宽度为「内侧半列 + 半个日期格 + 外侧 1 个刻度」。
-     * md 的额外宽度为 7.5 / 2 + 1 = 4.75 个刻度，默认根字号下为 19px。
+     * md 的额外宽度为 8 / 2 + 1 = 5 个刻度，默认根字号下为 20px。
      * 外扩与带子上下留白共用同一刻度，随根字号缩放，不随列宽富余变化。
      * ml-auto / mr-auto 让带子贴向内侧列边与相邻列首尾相接，
      * justify-start / justify-end 配合 1 个刻度内边距锚定日期格，与其他列对齐。
      * 圆角封口跟随激活类型（见 activeType 变体）；宽度里的半格随 size 档换算（见 size 变体）。
      */
-    dayRangeStart: "w-[calc(50%+var(--spacing)*4.75)] ml-auto justify-start pl-1",
-    dayRangeEnd: "w-[calc(50%+var(--spacing)*4.75)] mr-auto justify-end pr-1",
-    /** 单个日期格：7.5 个间距刻度的方格，字号仍取 14px 正文令牌 */
-    day: "size-7.5 box-border flex items-center justify-center text-base cursor-pointer transition-colors text-gray-9 hover:bg-gray-2",
+    dayRangeStart: "w-[calc(50%+var(--spacing)*5)] ml-auto justify-start pl-1",
+    dayRangeEnd: "w-[calc(50%+var(--spacing)*5)] mr-auto justify-end pr-1",
+    /** 单个日期格：8 个间距刻度的方格，字号仍取 14px 正文令牌 */
+    day: "size-8 box-border flex items-center justify-center text-base cursor-pointer transition-colors text-gray-9 hover:bg-gray-2",
     /** 年 / 月 / 季度格：与日期格等高，字号取 14px 正文令牌，宽度撑满所在列 */
     yearMonthItem:
-      "h-7.5 box-border flex items-center justify-center cursor-pointer transition-colors text-base text-gray-9 hover:bg-gray-2 w-full",
+      "h-8 box-border flex items-center justify-center cursor-pointer transition-colors text-base text-gray-9 hover:bg-gray-2 w-full",
     dayActive: "",
     // 禁用格保留指针事件才能显示 cursor-not-allowed，点击由脚本层守卫拦截；hover 不再显示灰底反馈
     dayDisabled: "text-gray-5 cursor-not-allowed hover:bg-transparent",
     /**
-     * 禁用日期的灰底带子层（画在 dayCell 上）：连续禁用格连成整条灰带；
-     * 范围带子（选中高亮）优先于灰带。
+     * 保留禁用带样式键以兼容既有覆盖，默认不绘制禁用背景。
      */
-    dayDisabledBand: "bg-gray-2",
+    dayDisabledBand: "",
     /**
      * 非本月的补位格：只把文字调淡以区分月份，保留手型光标与悬停灰底——它们可以点击，
      * 不与 dayDisabled 共用，否则会被误显示成禁用光标。
@@ -172,13 +173,14 @@ export default {
     yearMonthRangeStart: "",
     yearMonthRangeEnd: "",
     yearMonthOutside: "opacity-40",
-    /** 年 / 月网格：四列，行距 7.5 个刻度；季度网格两列两行 */
+    /** 年 / 月网格每行三列，季度每行四列；沿用公开样式键以兼容既有覆盖 */
     grid4Year:
-      "grid grid-cols-4 gap-y-7.5 justify-items-center px-5 pb-4 min-w-83.5 overflow-auto",
+      "grid grid-cols-3 gap-y-7.5 justify-items-center px-4 pt-2 pb-3 min-w-83 overflow-auto",
     grid4Month:
-      "grid grid-cols-4 gap-y-7.5 justify-items-center px-5 pb-4 min-w-83.5",
+      "grid grid-cols-3 gap-y-7.5 justify-items-center px-4 pt-2 pb-3 min-w-83",
     grid2Quarter:
-      "grid grid-cols-2 gap-y-7.5 justify-items-center px-5 pb-4 min-w-83.5",
+      "grid grid-cols-4 gap-y-7.5 justify-items-center px-4 pt-2 pb-3 min-w-83",
+    dateTimeTrigger: "h-auto pt-3",
     dateTimeHeader: "flex items-center justify-center gap-2 w-full",
     // 日期/时间切换段。字号取七级令牌 text-sm（12px），原先的 text-xs 是 Tailwind 原生值，
     // 字号同为 12px，只是行高不同。这里的 leading-6 保留：它不是排版覆写，而是让 24px 行盒
@@ -217,14 +219,14 @@ export default {
     /**
      * 整面板禁用：不再整体调透明度——那样连已选值都看不清，也没有禁用光标提示。
      * 改为逐元素表达：标题转 gray-4、翻页图标降透明度、二者都换禁用光标；
-     * 日期格统一走 dayDisabled + 灰带（逻辑侧把每一格都标为禁用，选中 / 范围高亮也一并不显示），点击在脚本里拦截。
+     * 日期格统一走 dayDisabled，不绘制背景（逻辑侧把每一格都标为禁用，选中 / 范围高亮也一并不显示），点击在脚本里拦截。
      * 标题的覆盖放在 compoundVariants 末尾，原因见那里。
      */
     disabled: {
       true: {
         navBtn: "cursor-not-allowed hover:text-gray-8",
         icon: "opacity-40",
-        shortcut: "text-gray-5 cursor-not-allowed hover:bg-transparent hover:text-gray-5",
+        shortcut: "bg-transparent text-gray-5 cursor-not-allowed hover:bg-transparent hover:text-gray-5 active:bg-transparent active:text-gray-5",
         // 日期 / 时间输入框：灰底 + gray-4 描边 + gray-5 文字。描边沿用 ring 而非 border，
         // 与常态同一种描边方式，禁用前后盒子尺寸不变
         dateTimeSegment: "bg-gray-2 ring-gray-4 text-gray-5",
@@ -308,28 +310,29 @@ export default {
      * 显示周数：星期表头与日期网格都多出第一列放周数，列数 7 → 8。
      * md 最小宽度按刻度重算：10.5 × 8 + 左右内边距 10 = 94；sm / lg 档见复合变体。
      */
+    weekSelect: { true: { weekRow: "hover:bg-gray-2" }, false: {} },
     weekNumber: {
       true: { weekdays: "grid-cols-8", days: "grid-cols-8 min-w-94" },
       false: {},
     },
     size: {
-      // 日期格使用 sm / md / lg = 6.5 / 7.5 / 8.5 个刻度，默认根字号下为 26 / 30 / 34px。
+      // 日期格使用 sm / md / lg = 6 / 8 / 10 个刻度，默认根字号下为 24 / 32 / 40px。
       sm: {
-        day: "size-6.5 text-sm",
-        // 6.5 个刻度的日期格，上下各外扩 1 个刻度
-        dayCell: "h-8.5",
-        weekday: "size-6.5 text-sm",
-        weekNumberHeader: "size-6.5 text-sm",
-        weekNumber: "h-6.5",
-        // 端点额外宽度：6.5 / 2 + 1 = 4.25 个刻度
-        dayRangeStart: "w-[calc(50%+var(--spacing)*4.25)]",
-        dayRangeEnd: "w-[calc(50%+var(--spacing)*4.25)]",
-        // 网格最小宽度：(6.5 + 3) × 7 + 10 = 76.5 个刻度
-        days: "min-w-76.5",
-        grid4Year: "min-w-76.5",
-        grid4Month: "min-w-76.5",
-        grid2Quarter: "min-w-76.5",
-        yearMonthItem: "h-6.5 text-sm",
+        day: "size-6 text-sm",
+        // 6 个刻度的日期格，上下各外扩 1 个刻度
+        dayCell: "h-8",
+        weekday: "size-6 text-sm",
+        weekNumberHeader: "size-6 text-sm",
+        weekNumber: "h-6",
+        // 端点额外宽度：6 / 2 + 1 = 4 个刻度
+        dayRangeStart: "w-[calc(50%+var(--spacing)*4)]",
+        dayRangeEnd: "w-[calc(50%+var(--spacing)*4)]",
+        // 网格最小宽度：(6 + 3) × 7 + 6 = 69 个刻度
+        days: "min-w-69",
+        grid4Year: "min-w-69",
+        grid4Month: "min-w-69",
+        grid2Quarter: "min-w-69",
+        yearMonthItem: "h-6 text-sm",
         title: "text-sm",
         icon: "size-3.5",
         // 换字号会被 twMerge 连带清掉行高，这里重申 150%
@@ -337,21 +340,21 @@ export default {
       },
       md: {},
       lg: {
-        day: "size-8.5 text-lg",
-        // 8.5 个刻度的日期格，上下各外扩 1 个刻度
-        dayCell: "h-10.5",
-        weekday: "size-8.5 text-lg",
-        weekNumberHeader: "size-8.5 text-lg",
-        weekNumber: "h-8.5 text-lg",
-        // 端点额外宽度：8.5 / 2 + 1 = 5.25 个刻度
-        dayRangeStart: "w-[calc(50%+var(--spacing)*5.25)]",
-        dayRangeEnd: "w-[calc(50%+var(--spacing)*5.25)]",
-        // 网格最小宽度：(8.5 + 3) × 7 + 10 = 90.5 个刻度
-        days: "min-w-90.5",
-        grid4Year: "min-w-90.5",
-        grid4Month: "min-w-90.5",
-        grid2Quarter: "min-w-90.5",
-        yearMonthItem: "h-8.5 text-lg",
+        day: "size-10 text-lg",
+        // 10 个刻度的日期格，上下各外扩 1 个刻度
+        dayCell: "h-12",
+        weekday: "size-10 text-lg",
+        weekNumberHeader: "size-10 text-lg",
+        weekNumber: "h-10 text-lg",
+        // 端点额外宽度：10 / 2 + 1 = 6 个刻度
+        dayRangeStart: "w-[calc(50%+var(--spacing)*6)]",
+        dayRangeEnd: "w-[calc(50%+var(--spacing)*6)]",
+        // 网格最小宽度：(10 + 3) × 7 + 6 = 97 个刻度
+        days: "min-w-97",
+        grid4Year: "min-w-97",
+        grid4Month: "min-w-97",
+        grid2Quarter: "min-w-97",
+        yearMonthItem: "h-10 text-lg",
         title: "text-lg",
         icon: "size-4.5",
         footer: "text-lg leading-[1.5]",
@@ -630,9 +633,9 @@ export default {
     },
     // ---- 周数列 × 尺寸：8 列网格的最小宽度随日期格尺寸换算 ----
     // size 变体里的 days min-w 按 7 列写死，显示周数时需在其后覆盖
-    { weekNumber: true, size: "sm", class: { days: "min-w-86" } },
+    { weekNumber: true, size: "sm", class: { days: "min-w-78" } },
     { weekNumber: true, size: "md", class: { days: "min-w-94" } },
-    { weekNumber: true, size: "lg", class: { days: "min-w-102" } },
+    { weekNumber: true, size: "lg", class: { days: "min-w-110" } },
     // ---- 整面板禁用 ----
     // 禁用时标题保持 gray-4，不响应悬停加深；今天栏同步收起主题色强调
     {

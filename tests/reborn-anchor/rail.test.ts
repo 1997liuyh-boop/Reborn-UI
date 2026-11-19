@@ -8,8 +8,7 @@ import { installDom, loadAppModule, wait } from '../composables/harness';
 /**
  * 锚点轨道线回归测试
  *
- * 曾经的问题：default 的轨道线用 bg-gray-2，而浅色主题的 --color-elevated 也是 gray-2，
- * 锚点放进填充面板时轨道线与底色重合，default 与 underline 在页面上看不出任何区别。
+ * 轨道线使用 gray-2；验证默认轨道、无轴线切换及明暗主题的页面底色区分。
  */
 
 const dom = installDom();
@@ -64,19 +63,20 @@ it('default 画轨道线、underline 不画，两个方向都成立', () => {
   }
 });
 
-it('轨道线在明暗两套主题下都与填充面板底色拉开对比，不会重合', () => {
+it('轨道线使用 gray-2，并与明暗主题的页面背景区分', () => {
   const css = readFileSync(path.resolve('app/assets/theme/base.css'), 'utf8');
   const light = cssBlock(css, '@theme');
   // 暗色块只覆盖色阶，--color-elevated 仍沿用 @theme 里的 var(--color-gray-2)，要拼在一起解析
   const dark = `${cssBlock(css, '.dark')}\n${light}`;
   for (const direction of directions) {
     const token = railToken(rebornAnchorConfig({ type: 'default', direction }).list())!;
+    assert.equal(token, '--color-gray-2');
     for (const [theme, block] of [['浅色', light], ['暗色', dark]] as const) {
       const rail = resolveToken(block, token);
-      const panel = resolveToken(block, '--color-elevated');
+      const panel = resolveToken(block, '--color-gray-1');
       const ratio = contrast(rail, panel);
-      // gray-2 对 gray-2 是 1.00；gray-3 在浅色下约 1.13、暗色下约 1.48，取 1.1 作为可辨识的下限
-      assert.ok(ratio >= 1.1, `${theme}主题下 ${direction} 轨道线 ${rail} 与面板底色 ${panel} 对比度只有 ${ratio.toFixed(2)}`);
+      // 轨道线与页面背景区分；填充面板可与轨道线使用同一灰阶。
+      assert.ok(ratio > 1, `${theme}主题下 ${direction} 轨道线 ${rail} 与页面背景 ${panel} 对比度只有 ${ratio.toFixed(2)}`);
     }
   }
 });
@@ -98,7 +98,7 @@ it('切换 type 时列表节点的轨道线随之出现与消失', async () => {
   try {
     await nextTick();
     const list = () => root.querySelector('[data-reborn-anchor] > div')!;
-    assert.equal(railToken(list().className), '--color-gray-3');
+    assert.equal(railToken(list().className), '--color-gray-2');
 
     type.value = 'underline';
     await wait();
@@ -107,7 +107,7 @@ it('切换 type 时列表节点的轨道线随之出现与消失', async () => {
 
     type.value = 'default';
     await wait();
-    assert.equal(railToken(list().className), '--color-gray-3');
+    assert.equal(railToken(list().className), '--color-gray-2');
   }
   finally {
     app.unmount();

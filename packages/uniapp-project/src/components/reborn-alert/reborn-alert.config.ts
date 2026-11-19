@@ -64,9 +64,7 @@ export const alertTheme = tv({
     title: 'font-medium',
     description: 'min-w-0',
     action: 'flex min-h-[1.5em] shrink-0 items-center',
-    closeButton: `
-      flex size-[1.5em] shrink-0 items-center justify-center rounded-full
-    `,
+    closeButton: `flex size-[1.5em] shrink-0 items-center justify-center rounded-full text-gray-6 hover:text-gray-8 active:text-gray-9`,
     closeIcon: 'size-[28rpx] shrink-0',
     // 单行高度 42rpx（28rpx × 1.5）；多行模式由组件按 rows 用内联样式覆盖高度。
     // 位于内容列中，不能带 flex-1：不定高列容器里 basis 0% 会退化为按内容计算，顶掉显式高度

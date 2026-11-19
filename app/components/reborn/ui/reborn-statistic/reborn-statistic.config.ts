@@ -5,8 +5,9 @@ import { tv } from '~/lib/tv';
 export const statisticTheme = tv({
   slots: {
     root: 'reborn-statistic flex min-w-0 flex-col gap-1',
-    title: 'text-base text-gray-8',
-    content: 'flex flex-wrap items-baseline gap-x-1 text-2xl font-medium text-gray-10 tabular-nums',
+    // 标题与数值按各自字号保持 150% 行高。
+    title: 'text-base leading-[1.5] text-gray-8',
+    content: 'flex flex-wrap items-baseline gap-x-1 text-2xl leading-[1.5] font-medium text-gray-10 tabular-nums',
     prefix: 'inline-flex shrink-0 items-center',
     value: 'break-all',
     suffix: 'inline-flex shrink-0 items-center',

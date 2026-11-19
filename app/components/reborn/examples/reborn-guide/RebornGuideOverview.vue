@@ -27,7 +27,7 @@ const arrowStyle = { top: '-7px', left: '50%', transform: 'translateX(-50%) rota
         新建项目
       </RebornButton>
     </div>
-    <div :class="cn(styles.guideBox(), 'relative mt-3 w-[200px] gap-1 border border-gray-3 px-2.5 py-2')">
+    <div :class="cn(styles.guideBox(), 'relative mt-3 w-50 gap-1 border border-gray-3 px-2.5 py-2')">
       <div
         :class="cn(styles.guideArrow(), 'border-t border-l border-gray-3')"
         :style="arrowStyle"

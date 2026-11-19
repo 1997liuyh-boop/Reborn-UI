@@ -23,7 +23,7 @@ const targetKeys = shallowRef(['chinese', 'english'])
 </script>
 
 <template>
-  <div class="w-[312px] shrink-0 scale-[0.64]">
+  <div class="w-78 shrink-0 scale-[0.64]">
     <RebornTransfer
       v-model="targetKeys"
       :data-source="dataSource"

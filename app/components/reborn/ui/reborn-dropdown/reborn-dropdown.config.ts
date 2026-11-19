@@ -16,10 +16,10 @@ export const dropdownTriggers = ['click', 'hover', 'manual'] as const;
 export type DropdownTrigger = (typeof dropdownTriggers)[number];
 
 /**
- * 子菜单面板与触发行的间距：4px 可见间隙 + 父面板 4px 水平内边距 + 1px 描边，
+ * 子菜单面板与触发行的间距：4px 可见间隙 + 父面板 4px 水平内边距，
  * 使子面板与父面板外缘之间正好留出 4px。
  */
-export const SUBMENU_POPUP_OFFSET = 9;
+export const SUBMENU_POPUP_OFFSET = 8;
 
 /**
  * 浮层与触发器的默认间距（px）：无箭头 4、带箭头 12，取值与理由见 SelectTrigger 配置。
@@ -72,8 +72,8 @@ export const DROPDOWN_INJECTION_KEY: InjectionKey<DropdownContext> = Symbol('reb
  * hover 浅灰底 bg-gray-2（与 select 的 optionHighlight 同色），行距 4px，面板内边距 4/6。
  * 页头与选项同一套内边距、字号与行距，只把文字降到 gray-5、不画分隔线；页脚 12px 字号，同样不画分隔线。
  * 颜色只用灰阶 token（base.css 的 .dark 会整条翻转），不写 dark: 前缀以免二次翻转。
- * 浮层外壳（底色 / 描边 / 圆角 / 阴影）由 RebornSelectTrigger 给出，与 Select 完全同源；
- * 这里只负责壳内的内容排版。禁用态走 data-[disabled]。
+ * 浮层定位、底色与圆角复用 RebornSelectTrigger；菜单取消边框，使用独立阴影。
+ * 禁用态走 data-[disabled]。
  */
 export const dropdownTheme = tv({
   slots: {
@@ -81,20 +81,21 @@ export const dropdownTheme = tv({
     // 用 w-fit 而非 w-auto，auto 宽度在网格 / 拉伸布局里仍会被撑满整格
     wrapper: 'inline-flex w-fit',
     trigger: 'inline-flex cursor-pointer',
-    panel: 'px-[4px] py-[6px]',
+    popup: 'w-auto! border-0 shadow-[0px_2px_16px_0px_rgba(1,27,70,0.1)]',
+    panel: 'px-1 py-1.5',
     // 页眉排版与 item 一致（内边距、字号、与下方选项的 4px 行距），只换成 gray-5 弱化色，不画分隔线
-    header: 'mb-[4px] shrink-0 px-[6px] py-[4px] text-base text-gray-5',
-    list: 'max-h-60 overflow-y-auto scrollbar-hide space-y-[4px]',
-    item: 'flex w-full cursor-pointer select-none items-center gap-1 rounded-sm px-[6px] py-[4px] text-base text-gray-8 transition-colors hover:bg-gray-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent',
+    header: 'mb-1 shrink-0 px-1.5 py-1 text-base text-gray-5',
+    list: 'max-h-60 overflow-y-auto scrollbar-hide space-y-1',
+    item: 'flex w-full cursor-pointer select-none items-center gap-1 rounded-sm px-1.5 py-1 text-base text-gray-8 transition-colors hover:bg-gray-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent',
     itemIcon: 'flex size-4 shrink-0 items-center justify-center',
     itemLabel: 'flex-1 truncate',
     // 子菜单入口右侧的展开指示箭头
     submenuIcon: 'ml-auto size-4 shrink-0 text-gray-5',
     // 选项组：组内行距 4px，相邻分组之间绘制 gray-2 分割线，左右各缩进 8px 不贴面板边缘；组标题用 text-sm 弱化灰
-    group: 'space-y-[4px] [&+&]:before:mx-2 [&+&]:before:mb-1 [&+&]:before:block [&+&]:before:h-px [&+&]:before:bg-gray-2',
-    groupTitle: 'select-none px-[6px] py-[4px] text-sm text-gray-5',
+    group: 'space-y-1 [&+&]:before:mx-2 [&+&]:before:mb-1 [&+&]:before:block [&+&]:before:h-px [&+&]:before:bg-gray-2',
+    groupTitle: 'select-none px-1.5 py-1 text-sm text-gray-5',
     // 页脚比选项弱一档：text-sm（12px / 20px 行高），与页头一样不画分隔线
-    footer: 'shrink-0 px-[10px] py-[6px] text-sm text-gray-6',
+    footer: 'shrink-0 px-2.5 py-1.5 text-sm text-gray-6',
   },
 });
 
@@ -102,6 +103,8 @@ export const dropdownTheme = tv({
 export interface DropdownUI {
   wrapper?: string;
   trigger?: string;
+  /** 浮层外壳：宽度、边框与阴影 */
+  popup?: string;
   panel?: string;
   header?: string;
   list?: string;

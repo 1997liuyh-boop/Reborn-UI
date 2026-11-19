@@ -262,7 +262,7 @@ Web 的 `outside` 统计在输入框下方右对齐，与输入框间隔 2px（`
 | `wordLimitPosition` | `'inside' \| 'outside'` | `'inside'` | 字数统计位置：输入框内 / 输入框下方。 |
 | `countGraphemes` | `(value: string) => number` | - | 自定义字素计数函数；设置后绕过原生 maxlength / minlength 约束，只做统计展示。 |
 | `clearable` | `boolean` | `false` | 有内容且非禁用/只读时显示清除按钮，点击清空并重新聚焦。 |
-| `clearIcon` | `string` | `'lucide:x-circle'` | 自定义清除图标名（Iconify 名称）。 |
+| `clearIcon` | `string` | `'lucide:x'` | 自定义清除图标名（Iconify 名称）。 |
 | `formatter` | `(value: string \| number) => string` | - | 展示值格式化，仅 `type="text"` 生效；需与 `parser` 配对。 |
 | `parser` | `(text: string) => string` | - | 从格式化文本中提取值，与 `formatter` 配对。 |
 | `showPassword` | `boolean` | `false` | 是否显示明文/密文切换按钮（掩码显示内容）。 |
@@ -431,7 +431,7 @@ UniApp 端只暴露这四项：没有原生元素引用（小程序无 DOM），
 
 ### 自定义样式（ui）
 
-`ui` 按键名把类名合并到对应节点（`cn` 合并，冲突时覆盖默认类名）。两端各有 14 个键，但与 config 的 `slots` 不是一一同名：`suffix` / `clear` / `password` 三个键没有同名 slot，而是共用 config 里的 `iconSection` 样式；`iconSection` 本身不能作为键传入。两端键位与默认类名都不同，分开列出。
+`ui` 按键名把类名合并到对应节点（`cn` 合并，冲突时覆盖默认类名）。两端各有 14 个键，但与 config 的 `slots` 不是一一同名：`clear` / `password` 共用 config 里的 `iconSection` 样式；Web 的 `suffix` 在此基础上合并同名 slot 的默认颜色；`iconSection` 本身不能作为键传入。两端键位与默认类名都不同，分开列出。
 
 ::tabs{sync="platform"}
 
@@ -442,16 +442,17 @@ UniApp 端只暴露这四项：没有原生元素引用（小程序无 DOM），
 | `group` | 输入组（prepend + 输入框 + append） | `flex w-full min-w-0 grow items-stretch`，尺寸档追加 `h-6` / `h-8` / `h-10` | 始终渲染；多行模式高度改为 `h-auto!`。 |
 | `prepend` | 前置连体块 | `flex shrink-0 items-center bg-gray-2 text-gray-8 border border-gray-4 border-r-0` | 仅传了 `#prepend` 且单行时渲染；默认无内边距；禁用时追加 `cursor-not-allowed text-gray-5`。 |
 | `append` | 后置连体块 | `flex shrink-0 items-center bg-gray-2 text-gray-8 border-gray-4 border-l-0` | 仅传了 `#append` 且单行时渲染；默认无内边距；禁用时追加 `cursor-not-allowed text-gray-5`。 |
-| `wrapper` | 输入框主体容器 | `group/input relative inline-flex w-full min-w-0 items-center overflow-hidden text-gray-9`，另按尺寸加 `px-2.5` / `px-3` / `px-4`、按 `variant` 加背景与边框 | 始终渲染；`class` prop 也合并到这里；有前 / 后置块时对应一侧圆角被压平。 |
+| `wrapper` | 输入框主体容器 | `group/input relative inline-flex w-full min-w-0 items-center overflow-hidden text-gray-9`，另按尺寸加 `px-2` / `px-3` / `px-3`、按 `variant` 加背景与边框 | 始终渲染；`class` prop 也合并到这里；有前 / 后置块时对应一侧圆角被压平。 |
 | `input` | 原生 input / textarea 元素 | `h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-gray-5`，聚焦光标色跟随 `color` | 始终渲染；多行模式改为 `h-auto resize-none`。 |
 | `prefix` | 前缀容器 | `inline-flex shrink-0 items-center text-gray-6`，组件另加 `mr-1` | 仅有 `#prefix` 或 `prefixIcon` 且单行时渲染。 |
 | `iconBox` | 尾部功能区（清除 / 密码 / 字数 / 后缀） | `inline-flex shrink-0 items-center gap-2` | 仅单行渲染，`type="textarea"` 时整块不存在。 |
 | `icon` | 内置图标（`prefixIcon` / `suffixIcon` / 清除 / 默认密码图标） | 无基础类名，尺寸档追加 `text-sm` / `text-base` / `text-lg` | 只作用于组件自己渲染的 `Icon`；插槽里自定义的内容不受影响。 |
-| `suffix` | 后缀容器 | 共用 `iconSection`：`flex cursor-pointer items-center justify-center text-gray-5 hover:opacity-80` | 仅有 `#suffix` 或 `suffixIcon` 且单行时渲染。 |
+| `suffix` | 后缀容器 | 共用 `iconSection` 并合并 `suffix`：`flex cursor-pointer items-center justify-center text-gray-7` | 仅有 `#suffix` 或 `suffixIcon` 且单行时渲染。 |
 | `clear` | 清除按钮 | 共用 `iconSection`（同上） | `clearable` 且有值、非禁用、非只读、单行时渲染。 |
 | `password` | 明文 / 密文切换按钮 | 共用 `iconSection`（同上） | 开启 `show-password`（或旧名 `password`）且单行时渲染。 |
 | `separator` | 竖分割线 | `w-px shrink-0 bg-gray-4`，尺寸档追加 `h-3` / `h-3.5` / `h-4`，聚焦时 `group-focus-within/input:bg-<color>` | `separator` 为 `true`，且清除按钮与密码开关 / 后缀相邻时渲染。 |
-| `count` | 字数统计文本 | `pointer-events-none text-sm text-gray-5 tabular-nums` | `showWordLimit` 生效时渲染；多行 `inside` 追加 `absolute bottom-1 right-2`，`outside` 追加 `self-end`。 |
+| `count` | 字数统计文本 | `pointer-events-none text-sm text-gray-5 tabular-nums` | `showWordLimit` 生效时渲染；多行 `inside` 追加 `absolute bottom-1 right-2`，`outside` 追加 `self-end`。文本域当前输入数使用 `text-gray-8`，分隔符与总数使用 `text-gray-5`。 |
+| `resizeHandle` | 文本域拖拽提示图标 | `pointer-events-none absolute bottom-1 right-1 size-2 text-gray-6` | 多行且 `resize` 非 `none` 时渲染；图标距内边缘 4px，缩放行为由原生手柄处理。 |
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
@@ -534,7 +535,7 @@ UniApp 端只抽出高度令牌，水平内边距与图标尺寸直接写在配�
 | `size` | `'md'` | `'sm'` |
 | `variant` | `'outlined'` | `'filled'` |
 | `maxlength` | `string \| number`，默认不限长 | `number`，默认 `140`，`-1` 不限制 |
-| `clearIcon` | Iconify 名称 `'lucide:x-circle'` | Iconify class `'i-lucide-x-circle'` |
+| `clearIcon` | Iconify 名称 `'lucide:x'` | Iconify class `'i-lucide-x-circle'` |
 | 圆角令牌单位 | 4 / 6 / 8 **px** | 4 / 6 / 8 **rpx** |
 | 字号 | sm/md 14px、lg 16px | 26 / 28 / 30 **rpx** 递进 |
 | `type` | 自由字符串（原生 type） | 受约束的原生键盘类型联合 + `'textarea'` |

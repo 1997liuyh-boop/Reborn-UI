@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { VNode } from "vue";
+import type { DropdownPlacement } from "../reborn-dropdown/reborn-dropdown.config";
 import type {
   TabKey,
   TabPaneMeta,
@@ -13,12 +14,13 @@ import type {
   TabsType,
   TabsUI,
 } from "./reborn-tabs.config";
-import { onClickOutside, useResizeObserver } from "@vueuse/core";
+import { useResizeObserver } from "@vueuse/core";
 import { animate } from "motion-v";
-import { cloneVNode, computed, Fragment, isVNode, nextTick, onBeforeUnmount, onBeforeUpdate, onMounted, onUpdated, provide, shallowRef, useSlots, useTemplateRef, watch } from "vue";
+import { cloneVNode, computed, Fragment, isVNode, nextTick, onBeforeUnmount, onBeforeUpdate, onMounted, onUpdated, provide, shallowRef, useId, useSlots, useTemplateRef, watch } from "vue";
 import { motionPresets, prefersReducedMotion } from "@/lib/motion";
 import { useLiquidSlider } from "~/composables/useLiquidSlider";
 import { cn } from "~/lib/utils";
+import RebornDropdown from "../reborn-dropdown/RebornDropdown.vue";
 import theme, { TABS_INJECTION_KEY } from "./reborn-tabs.config";
 
 defineOptions({
@@ -115,6 +117,9 @@ const stageRef = useTemplateRef<HTMLElement>('stageRef');
 const indicatorRef = useTemplateRef<HTMLElement>('indicatorRef');
 const sliderRef = useTemplateRef<HTMLElement>('sliderRef');
 const slots = useSlots();
+const overflowId = useId();
+const startDropdownRef = useTemplateRef<InstanceType<typeof RebornDropdown>>("startDropdownRef");
+const endDropdownRef = useTemplateRef<InstanceType<typeof RebornDropdown>>("endDropdownRef");
 /** 标签页登记表，顺序即头部渲染顺序 */
 const panes = shallowRef<TabPaneMeta[]>([]);
 const userSorted = shallowRef(false);
@@ -293,33 +298,83 @@ const dropdownPanes = computed(() => ({
   end: panes.value.filter(pane => hiddenKeys.value.end.includes(pane.key)),
 }));
 const dropdownOpen = shallowRef<OverflowSide | null>(null);
-let dropdownTimer: ReturnType<typeof setTimeout> | undefined;
-
+/** 下拉的定位与动画交给 Dropdown，Tabs 仅维护两侧互斥状态。 */
 function closeDropdown() {
-  clearTimeout(dropdownTimer);
   dropdownOpen.value = null;
 }
 
-function openDropdown(side: OverflowSide) {
-  clearTimeout(dropdownTimer);
-  if (!dropdownPanes.value[side].length) return;
-  dropdownOpen.value = side;
+function setDropdownVisible(side: OverflowSide, visible: boolean) {
+  if (visible && dropdownPanes.value[side].length) dropdownOpen.value = side;
+  else if (dropdownOpen.value === side) closeDropdown();
 }
 
-/** 延迟收起，让指针能跨过按钮与面板之间的间距。 */
-function leaveDropdown(event: MouseEvent) {
-  const target = event.currentTarget;
-  if (target instanceof HTMLElement && target.contains(document.activeElement)) return;
-  dropdownTimer = setTimeout(closeDropdown, 120);
+function dropdownPlacement(side: OverflowSide): DropdownPlacement {
+  const align = side === "start" ? "start" : "end";
+  const direction = { top: "bottom", bottom: "top", left: "right", right: "left" } as const;
+  return `${direction[resolvedPosition.value]}-${align}`;
 }
 
-function blurDropdown(event: FocusEvent) {
-  const target = event.currentTarget;
-  if (target instanceof HTMLElement && event.relatedTarget instanceof Node && target.contains(event.relatedTarget)) return;
+/** 传送面板与触发器共用关闭边界，键盘离开后不遗留菜单。 */
+function blurDropdown(event: FocusEvent, side: OverflowSide) {
+  const dropdown = side === "start" ? startDropdownRef.value : endDropdownRef.value;
+  if (event.relatedTarget instanceof Node && dropdown?.contains(event.relatedTarget)) return;
+  if (dropdownOpen.value === side) closeDropdown();
+}
+
+function closeDropdownAndFocus() {
+  const side = dropdownOpen.value;
+  const dropdown = side === "start" ? startDropdownRef.value : endDropdownRef.value;
+  // 先聚焦再关闭，避免触发器的 focus 监听重新展开菜单。
+  dropdown?.$el.querySelector("button")?.focus({ preventScroll: true });
   closeDropdown();
 }
 
-onClickOutside(navRef, closeDropdown);
+function focusDropdownItem(button?: HTMLButtonElement) {
+  if (!button) return;
+  button.focus({ preventScroll: true });
+  const menu = button.closest<HTMLElement>('[role="menu"]');
+  if (!menu) return;
+  const itemRect = button.getBoundingClientRect();
+  const menuRect = menu.getBoundingClientRect();
+  // 只滚动菜单自身，避免长列表的键盘定位带动整个页面。
+  if (itemRect.top < menuRect.top) menu.scrollTop -= menuRect.top - itemRect.top;
+  else if (itemRect.bottom > menuRect.bottom) menu.scrollTop += itemRect.bottom - menuRect.bottom;
+}
+
+async function focusDropdown(side: OverflowSide, last = false, event?: KeyboardEvent) {
+  if (!dropdownPanes.value[side].some(pane => !pane.disabled)) {
+    closeDropdown();
+    return;
+  }
+  event?.preventDefault();
+  event?.stopPropagation();
+  setDropdownVisible(side, true);
+  await nextTick();
+  const buttons = document.getElementById(`${overflowId}-${side}`)?.querySelectorAll<HTMLButtonElement>("button:not(:disabled)");
+  focusDropdownItem(last ? buttons?.[buttons.length - 1] : buttons?.[0]);
+}
+
+function onDropdownKeydown(event: KeyboardEvent) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    event.stopPropagation();
+    closeDropdownAndFocus();
+    return;
+  }
+  if (event.key === "Tab") {
+    closeDropdownAndFocus();
+    return;
+  }
+  if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+  event.preventDefault();
+  const target = event.currentTarget;
+  if (!(target instanceof HTMLElement)) return;
+  const buttons = [...target.querySelectorAll<HTMLButtonElement>("button:not(:disabled)")];
+  const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+  const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1
+    : (index + (event.key === "ArrowDown" ? 1 : -1) + buttons.length) % buttons.length;
+  focusDropdownItem(buttons[next]);
+}
 
 function handleDropdownPick(pane: TabPaneMeta) {
   if (pane.disabled) return;
@@ -327,6 +382,7 @@ function handleDropdownPick(pane: TabPaneMeta) {
   emit("tabClick", pane.key);
   if (pane.key === currentKey.value) void refresh();
   else switchTo(pane.key);
+  nextTick(() => listRef.value?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus({ preventScroll: true }));
 }
 
 const uiOverrides = computed(() => {
@@ -899,33 +955,37 @@ defineExpose({
       </button>
 
       <!-- 对应一侧没有隐藏标签时，连容器与间距一起移除。 -->
-      <div
-        v-if="showDropdown && dropdownPanes.start.length" :class="ui.dropdown" data-tabs-overflow="start"
-        @mouseenter="openDropdown('start')" @mouseleave="leaveDropdown"
-        @focusin="openDropdown('start')" @focusout="blurDropdown"
+      <RebornDropdown
+        v-if="showDropdown && dropdownPanes.start.length" ref="startDropdownRef" tabindex="-1"
+        :popup-visible="dropdownOpen === 'start'" trigger="hover" :placement="dropdownPlacement('start')"
+        :popup-offset="8" :class="ui.dropdown" data-tabs-overflow="start"
+        :ui="{ trigger: 'flex items-center justify-center', popup: ui.dropdownPanel, panel: 'p-0', list: 'flex max-h-64 flex-col space-y-0' }"
+        @update:popup-visible="setDropdownVisible('start', $event)" @focusout="blurDropdown($event, 'start')"
       >
-        <button
-          type="button" :class="ui.navButton"
-          :aria-label="isVertical ? '展开上方隐藏标签' : '展开左侧隐藏标签'" aria-haspopup="listbox"
-          :aria-expanded="dropdownOpen === 'start'" @click="openDropdown('start')"
-        >
-          <Icon name="lucide:ellipsis" class="size-[1.2em]" />
-        </button>
-        <div
-          v-if="dropdownOpen === 'start' && dropdownPanes.start.length" role="listbox"
-          :aria-label="isVertical ? '上方隐藏标签' : '左侧隐藏标签'"
-          :class="[ui.dropdownPanel, isVertical ? 'top-0' : 'left-0']"
-        >
+        <template #default="{ open }">
           <button
-            v-for="pane in dropdownPanes.start" :key="pane.key" type="button" role="option"
-            :aria-selected="pane.key === currentKey" :disabled="pane.disabled" :class="dropdownItemClass(pane)"
-            @click="handleDropdownPick(pane)"
+            type="button" :class="ui.navButton"
+            :aria-label="isVertical ? '展开上方隐藏标签' : '展开左侧隐藏标签'" aria-haspopup="menu"
+            :aria-expanded="dropdownOpen === 'start'" :aria-controls="`${overflowId}-start`" @click="open" @focus="open"
+            @keydown.down.stop.prevent="focusDropdown('start')" @keydown.up.stop.prevent="focusDropdown('start', true)"
+            @keydown.tab.exact="focusDropdown('start', false, $event)" @keydown.tab.shift="closeDropdown"
           >
-            <component :is="pane.titleSlot" v-if="pane.titleSlot" />
-            <template v-else>{{ pane.title }}</template>
+            <Icon name="lucide:ellipsis" class="size-[1.2em]" />
           </button>
-        </div>
-      </div>
+        </template>
+        <template #content>
+          <div :id="`${overflowId}-start`" data-tabs-menu="start" :aria-label="isVertical ? '上方隐藏标签' : '左侧隐藏标签'" @keydown="onDropdownKeydown" @focusout="blurDropdown($event, 'start')">
+            <button
+              v-for="pane in dropdownPanes.start" :key="pane.key" type="button" role="menuitemradio"
+              :aria-checked="pane.key === currentKey" :disabled="pane.disabled" :class="dropdownItemClass(pane)"
+              @click="handleDropdownPick(pane)"
+            >
+              <component :is="pane.titleSlot" v-if="pane.titleSlot" />
+              <template v-else>{{ pane.title }}</template>
+            </button>
+          </div>
+        </template>
+      </RebornDropdown>
 
       <div
         ref="wrapperRef" :class="ui.navWrapper"
@@ -981,33 +1041,37 @@ defineExpose({
         <Icon :name="isVertical ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="size-[1.2em]" />
       </button>
 
-      <div
-        v-if="showDropdown && dropdownPanes.end.length" :class="ui.dropdown" data-tabs-overflow="end"
-        @mouseenter="openDropdown('end')" @mouseleave="leaveDropdown"
-        @focusin="openDropdown('end')" @focusout="blurDropdown"
+      <RebornDropdown
+        v-if="showDropdown && dropdownPanes.end.length" ref="endDropdownRef" tabindex="-1"
+        :popup-visible="dropdownOpen === 'end'" trigger="hover" :placement="dropdownPlacement('end')"
+        :popup-offset="8" :class="ui.dropdown" data-tabs-overflow="end"
+        :ui="{ trigger: 'flex items-center justify-center', popup: ui.dropdownPanel, panel: 'p-0', list: 'flex max-h-64 flex-col space-y-0' }"
+        @update:popup-visible="setDropdownVisible('end', $event)" @focusout="blurDropdown($event, 'end')"
       >
-        <button
-          type="button" :class="ui.navButton"
-          :aria-label="isVertical ? '展开下方隐藏标签' : '展开右侧隐藏标签'" aria-haspopup="listbox"
-          :aria-expanded="dropdownOpen === 'end'" @click="openDropdown('end')"
-        >
-          <Icon name="lucide:ellipsis" class="size-[1.2em]" />
-        </button>
-        <div
-          v-if="dropdownOpen === 'end' && dropdownPanes.end.length" role="listbox"
-          :aria-label="isVertical ? '下方隐藏标签' : '右侧隐藏标签'"
-          :class="[ui.dropdownPanel, isVertical ? 'bottom-0' : 'right-0']"
-        >
+        <template #default="{ open }">
           <button
-            v-for="pane in dropdownPanes.end" :key="pane.key" type="button" role="option"
-            :aria-selected="pane.key === currentKey" :disabled="pane.disabled" :class="dropdownItemClass(pane)"
-            @click="handleDropdownPick(pane)"
+            type="button" :class="ui.navButton"
+            :aria-label="isVertical ? '展开下方隐藏标签' : '展开右侧隐藏标签'" aria-haspopup="menu"
+            :aria-expanded="dropdownOpen === 'end'" :aria-controls="`${overflowId}-end`" @click="open" @focus="open"
+            @keydown.down.stop.prevent="focusDropdown('end')" @keydown.up.stop.prevent="focusDropdown('end', true)"
+            @keydown.tab.exact="focusDropdown('end', false, $event)" @keydown.tab.shift="closeDropdown"
           >
-            <component :is="pane.titleSlot" v-if="pane.titleSlot" />
-            <template v-else>{{ pane.title }}</template>
+            <Icon name="lucide:ellipsis" class="size-[1.2em]" />
           </button>
-        </div>
-      </div>
+        </template>
+        <template #content>
+          <div :id="`${overflowId}-end`" data-tabs-menu="end" :aria-label="isVertical ? '下方隐藏标签' : '右侧隐藏标签'" @keydown="onDropdownKeydown" @focusout="blurDropdown($event, 'end')">
+            <button
+              v-for="pane in dropdownPanes.end" :key="pane.key" type="button" role="menuitemradio"
+              :aria-checked="pane.key === currentKey" :disabled="pane.disabled" :class="dropdownItemClass(pane)"
+              @click="handleDropdownPick(pane)"
+            >
+              <component :is="pane.titleSlot" v-if="pane.titleSlot" />
+              <template v-else>{{ pane.title }}</template>
+            </button>
+          </div>
+        </template>
+      </RebornDropdown>
 
       <!-- 头部末尾侧的额外内容：水平方向靠右、垂直方向靠底 -->
       <div v-if="$slots['right-extra']" :class="ui.rightExtra">

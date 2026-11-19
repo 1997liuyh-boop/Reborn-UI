@@ -26,7 +26,7 @@ export interface RebornStepsProps {
   simple?: boolean;
   /** 标记与文字尺寸 */
   size?: StepsSize;
-  /** 外观类型：圆形数字、点状标记或无标记的文本步骤 */
+  /** 外观类型：圆形数字、点状标记、无标记文本或水平标签导航 */
   type?: StepsType;
   /** 连接方式：实线、原生虚线或箭头 */
   lineType?: StepsLineType;
@@ -56,8 +56,9 @@ const stepsWidth = computed(() => {
 const space = computed(() => typeof props.space === 'number'
   ? Number.isFinite(props.space) && props.space >= 0 ? `${props.space}px` : ''
   : props.space.trim());
-const placement = computed(() => props.placement ?? (props.direction === 'horizontal' && props.alignCenter ? 'bottom' : 'right'));
-const styles = computed(() => stepsTheme({ direction: props.direction, placement: placement.value, spaced: !!space.value }));
+const placement = computed(() => props.type === 'tabs' && props.direction === 'horizontal'
+  ? 'right' : props.placement ?? (props.direction === 'horizontal' && props.alignCenter ? 'bottom' : 'right'));
+const styles = computed(() => stepsTheme({ direction: props.direction, type: props.type, lineType: props.lineType, placement: placement.value, spaced: !!space.value }));
 
 provide(stepsContextKey, {
   active: computed(() => active.value), direction: computed(() => props.direction),
@@ -99,7 +100,7 @@ function StepItems(props: { nodes: VNode[] }) {
 </script>
 
 <template>
-  <ol :class="styles.root({ class: props.ui.root })" :style="{ '--steps-width': stepsWidth, '--steps-space': space }" :data-direction="direction" :data-type="type" :data-simple="simple">
+  <ol :class="styles.root({ class: props.ui.root })" :style="{ '--steps-width': stepsWidth, '--steps-space': space }" :data-direction="direction" :data-type="type" :data-line-type="lineType" :data-simple="simple">
     <StepItems :nodes="renderSteps()" />
   </ol>
 </template>

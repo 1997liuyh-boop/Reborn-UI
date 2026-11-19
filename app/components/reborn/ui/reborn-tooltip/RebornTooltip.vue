@@ -23,6 +23,7 @@ import {
   resolveFloatingPosition,
 } from '~/lib/floating';
 import { FLOATING_ARROW_DEPTH, FLOATING_ARROW_LENGTH } from "~/lib/floating-arrow";
+import { prefersReducedMotion, runMotion, stopMotion } from '~/lib/motion';
 import { resolvePlacement } from '~/lib/placement';
 import { cn } from '~/lib/utils';
 import RebornTransition from '../reborn-transition/RebornTransition.vue';
@@ -78,7 +79,7 @@ interface RebornTooltipProps {
   placement?: TooltipPlacement;
   /** 自定义背景颜色，面板与箭头同步着色 */
   color?: string;
-  /** 箭头显隐；对象形式的 pointAtCenter 让箭头指向触发元素中心而非对齐端 */
+  /** 箭头显隐；默认指向触发元素中心，上下方位可传 pointAtCenter: false 按对齐端定位 */
   arrow?: boolean | { pointAtCenter?: boolean };
   /** 主轴放不下时自动翻转到对侧 */
   autoAdjustOverflow?: boolean;
@@ -116,7 +117,7 @@ const openModel = defineModel<boolean>('open', { default: undefined });
 /** 生成唯一 ID 用于 ARIA 关联 */
 const tooltipId = `tooltip-${useId()}`;
 
-/** 箭头根部嵌入 2px，尖端与触发器保持 4px 可见间距。 */
+/** 裁去箭头在面板内的 2px 根部，尖端与触发器保持 4px 可见间距。 */
 const ARROW_OVERLAP = 2;
 const TRIGGER_GAP = 4;
 
@@ -129,6 +130,7 @@ const anchorRef = computed(() => props.virtualTriggering ? props.virtualRef : tr
 const contentRefComponent = useTemplateRef<{ el?: HTMLElement | null }>('contentRefComponent');
 const contentWrapperRef = computed(() => contentRefComponent.value?.el ?? undefined);
 const contentRef = useTemplateRef<HTMLElement>('contentRef');
+const arrowRef = useTemplateRef<HTMLElement>('arrowRef');
 
 const isVisible = shallowRef(false);
 /** 定位样式与箭头样式每次都整体替换，用 shallowRef */
@@ -148,6 +150,8 @@ onBeforeUpdate(() => {
 let openTimer: ReturnType<typeof setTimeout> | null = null;
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
 let rafId: number | null = null;
+let restoreEntrance: (() => void) | undefined;
+let entranceElement: Element | undefined;
 
 /** 解析 placement（兼容驼峰别名），拆分为方向与对齐方式 */
 const placementState = computed(() => resolvePlacement(props.placement));
@@ -174,7 +178,7 @@ const styles = computed(() => {
 /** 箭头显隐与指向模式归一化 */
 const showArrow = computed(() => props.arrow !== false);
 const pointAtCenter = computed(
-  () => typeof props.arrow === 'object' && props.arrow !== null && !!props.arrow.pointAtCenter,
+  () => typeof props.arrow !== 'object' || props.arrow?.pointAtCenter !== false,
 );
 
 /** 触发行为集合 */
@@ -257,7 +261,15 @@ const clearTimers = () => {
   }
 };
 
-/** 上下方向按对齐端或 pointAtCenter 定位，左右方向始终指向触发器的高度中心。 */
+/** 裁切远离触发器的一侧，从靠近触发器的边缘开始显示。 */
+const revealClip = (side: TooltipSide, inset: string) => ({
+  top: `inset(${inset} 0px 0px 0px)`,
+  right: `inset(0px ${inset} 0px 0px)`,
+  bottom: `inset(0px 0px ${inset} 0px)`,
+  left: `inset(0px 0px 0px ${inset})`,
+})[side];
+
+/** 默认指向触发器中心，落点限制在面板边缘内。 */
 const syncArrowPosition = (
   triggerRect: DOMRect,
   contentRect: FloatingSize,
@@ -270,36 +282,30 @@ const syncArrowPosition = (
     return;
   }
 
-  const halfThickness = FLOATING_ARROW_DEPTH / 2;
   const length = FLOATING_ARROW_LENGTH;
   const halfLength = length / 2;
-  // 根部内嵌面板，遮住曲线两端平直边并消除接缝。
-  const overlap = ARROW_OVERLAP;
   // 对齐端内缩量为圆角加半个底边，钳制与极小面板的兜底由 getArrowCenter 统一处理
   const inset = FLOATING_PANEL_RADIUS + halfLength;
 
-  let centerX: number;
-  let centerY: number;
+  let left: string;
+  let top: string;
+  const joiningEdge = `calc(100% - ${ARROW_OVERLAP}px)`;
+  const facingEdge = `${ARROW_OVERLAP - FLOATING_ARROW_DEPTH}px`;
 
   if (side === 'top' || side === 'bottom') {
-    centerX = getArrowCenter({
+    const center = getArrowCenter({
       panelStart: position.left,
       panelExtent: contentRect.width,
       triggerStart: triggerRect.left,
       triggerExtent: triggerRect.width,
       align,
-      inset,
+      inset: pointAtCenter.value ? halfLength : inset,
       pointAtCenter: pointAtCenter.value,
     });
-    if (side === 'top') {
-      // 面板在触发器上方：箭头贴面板底边，尖端向下
-      centerY = contentRect.height + halfThickness - overlap;
-    } else {
-      // 面板在触发器下方：箭头贴面板顶边，尖端向上
-      centerY = -halfThickness + overlap;
-    }
+    left = `${center - halfLength}px`;
+    top = side === 'top' ? joiningEdge : facingEdge;
   } else {
-    centerY = getArrowCenter({
+    const center = getArrowCenter({
       panelStart: position.top,
       panelExtent: contentRect.height,
       triggerStart: triggerRect.top,
@@ -309,21 +315,12 @@ const syncArrowPosition = (
       inset: halfLength,
       pointAtCenter: true,
     });
-    if (side === 'left') {
-      // 面板在触发器左侧：箭头贴面板右边，尖端向右（SVG 原始方向）
-      centerX = contentRect.width + halfThickness - overlap;
-    } else {
-      // 面板在触发器右侧：箭头贴面板左边，尖端向左
-      centerX = -halfThickness + overlap;
-    }
+    top = `${center - halfLength}px`;
+    left = side === 'left' ? joiningEdge : facingEdge;
   }
 
-  // 按实际方向设置布局盒，长短边始终保持 2.5:1。
-  const vertical = side === 'top' || side === 'bottom';
-  arrowStyle.value = {
-    left: `${centerX - (vertical ? halfLength : halfThickness)}px`,
-    top: `${centerY - (vertical ? halfThickness : halfLength)}px`,
-  };
+  // 用百分比贴住面板边缘，保留小数像素布局下的接缝对齐。
+  arrowStyle.value = { left, top, '--rb-tooltip-arrow-clip': revealClip(side, `${ARROW_OVERLAP}px`) };
 };
 
 /** 同步提示层位置与箭头位置 */
@@ -333,11 +330,10 @@ const updatePosition = (el?: Element) => {
     return;
   }
 
-  const htmlEl = currentContent as HTMLElement;
   const triggerRect = anchorRef.value.getBoundingClientRect();
-  // offsetWidth/offsetHeight 不受 CSS transform（如 zoom-in 动画的 scale-90）影响，
-  // 避免在 onBeforeEnter 期间测量到缩放后的错误尺寸
-  const contentRect: FloatingSize = { width: htmlEl.offsetWidth, height: htmlEl.offsetHeight };
+  // 裁切动画不改变元素尺寸，直接使用包含小数像素的面板宽高。
+  const { width, height } = currentContent.getBoundingClientRect();
+  const contentRect: FloatingSize = { width, height };
   const { side, align } = placementState.value;
 
   const { side: usedSide, position: nextPosition } = resolveFloatingPosition({
@@ -349,20 +345,70 @@ const updatePosition = (el?: Element) => {
     autoAdjustOverflow: props.autoAdjustOverflow,
   });
 
+  if (showArrow.value) {
+    // 让独立绘制的箭头和面板共用设备像素边界，避免半透明颜色的接缝出现亮线。
+    const scale = window.devicePixelRatio || 1;
+    const snapEdge = (start: number, extent: number) => Math.round((start + extent) * scale) / scale - extent;
+    if (usedSide === 'top' || usedSide === 'bottom') {
+      nextPosition.top = snapEdge(nextPosition.top, usedSide === 'top' ? height : 0);
+    } else {
+      nextPosition.left = snapEdge(nextPosition.left, usedSide === 'left' ? width : 0);
+    }
+  }
+  if (actualSide.value !== usedSide) clearEntrance();
   actualSide.value = usedSide;
   contentStyle.value = {
     top: `${nextPosition.top}px`,
     left: `${nextPosition.left}px`,
   };
   syncArrowPosition(triggerRect, contentRect, nextPosition, usedSide, align);
+  return usedSide;
 };
 
-const onBeforeEnter = (el: Element) => {
-  updatePosition(el);
+const clearEntrance = () => {
+  restoreEntrance?.();
+  restoreEntrance = undefined;
 };
 
 const onEnter = (el: Element) => {
-  updatePosition(el);
+  // 销毁模式下，挂载和 v-show 可能为同一节点各触发一次入场。
+  if (entranceElement === el) return;
+  entranceElement = el;
+  clearEntrance();
+  const side = updatePosition(el);
+  const panel = contentRef.value;
+  const arrow = arrowRef.value;
+  if (!side || !panel || prefersReducedMotion()) return;
+
+  // 箭头先从尖端露出。面板接着从箭头底边向内展开，两个元素始终留在最终位置。
+  const hidden = revealClip(side, '100%');
+  const arrowDuration = arrow ? 0.065 : 0;
+  const panelClip = panel.style.clipPath;
+  const arrowClip = arrow?.style.clipPath;
+  const revealArrow = arrow && runMotion(arrow, {
+    clipPath: [hidden, revealClip(side, `${ARROW_OVERLAP}px`)],
+  }, { duration: arrowDuration });
+  const revealPanel = runMotion(panel, {
+    clipPath: [hidden, revealClip(side, '0%')],
+  }, { duration: 0.18, delay: arrowDuration });
+
+  const restore = () => {
+    revealArrow?.stop();
+    revealPanel.stop();
+    panel.style.clipPath = panelClip;
+    if (arrow) arrow.style.clipPath = arrowClip ?? '';
+  };
+  restoreEntrance = restore;
+  void revealPanel.finished.then(() => {
+    if (shouldRender.value && restoreEntrance === restore) clearEntrance();
+  });
+};
+
+const onBeforeLeave = (el: Element) => {
+  if (entranceElement !== el) return;
+  entranceElement = undefined;
+  stopMotion(el.querySelector('[role=tooltip]'));
+  stopMotion(el.querySelector('[data-floating-arrow]'));
 };
 
 /** 通过动画帧节流位置更新，减少滚动时的抖动 */
@@ -428,7 +474,7 @@ const requestClose = (delay: number) => {
   }
 };
 
-/** 打开提示层（走鼠标延时，供 expose 与 hover 触发使用） */
+/** 打开提示层（走鼠标延时，供 expose 使用） */
 const openTooltip = () => requestOpen(enterDelayMs.value);
 
 /** 关闭提示层（走鼠标延时，供 expose 与 hover 触发使用） */
@@ -662,6 +708,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  clearEntrance();
   clearTimers();
   unbindWindowEvents();
   unbindKeyboardEvent();
@@ -686,9 +733,11 @@ onBeforeUnmount(() => {
 
   <Teleport :to="popupTarget" :disabled="!isMounted">
     <RebornTransition
-      ref="contentRefComponent" :show="shouldRender" name="fade" :destroy="destroyOnHidden"
-      lazy-render :custom-class="styles.contentWrapper()" :custom-style="popupStyle" @before-enter="onBeforeEnter"
-      @enter="onEnter" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
+      ref="contentRefComponent" :show="shouldRender" :destroy="destroyOnHidden"
+      :duration="{ enter: 0, leave: 150 }" leave-from-class="opacity-100" leave-to-class="opacity-0"
+      lazy-render :custom-class="styles.contentWrapper()" :custom-style="popupStyle"
+      @enter="onEnter" @before-leave="onBeforeLeave" @after-leave="clearEntrance"
+      @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
     >
       <div
         :id="tooltipId" ref="contentRef" :class="styles.content()"
@@ -701,7 +750,7 @@ onBeforeUnmount(() => {
       </div>
       <!-- 曲线轮廓与 Popover、下拉浮层共用，背景色跟随面板。 -->
       <span
-        v-if="showArrow" :class="styles.arrow()" :style="[arrowStyle, props.color ? { backgroundColor: props.color } : null]"
+        v-if="showArrow" ref="arrowRef" :class="styles.arrow()" :style="[arrowStyle, props.color ? { backgroundColor: props.color } : null]"
         data-floating-arrow aria-hidden="true"
       />
     </RebornTransition>

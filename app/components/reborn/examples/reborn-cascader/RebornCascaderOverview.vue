@@ -8,7 +8,7 @@ const styles = tv(fieldTheme)({ size: "sm", variant: "outlined", color: "primary
 </script>
 
 <template>
-  <div class="w-full max-w-[210px]">
+  <div class="w-full max-w-52.5">
     <div :class="styles.trigger()" aria-hidden="true">
       <span :class="styles.triggerText()">浙江 / 杭州 / 西湖</span>
       <span :class="styles.triggerIconWrapper()"><Icon name="lucide:chevron-down" :class="styles.arrow()" /></span>

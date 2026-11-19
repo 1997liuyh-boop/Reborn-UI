@@ -35,7 +35,7 @@ AvatarGroup 将多个 `RebornAvatar` 以重叠方式排列，适合展示团队�
 
 ### 基础头像组
 
-默认插槽中直接放置 `RebornAvatar`，头像默认以 8px 重叠距离排列，描边区分相邻边界，通过 `gap` 可自定义距离。
+默认插槽中直接放置 `RebornAvatar`，头像默认以 6.4px 重叠距离排列，lg 使用 2px 描边，其余尺寸使用 1px 描边区分相邻边界，通过 `gap` 可自定义距离。
 
 ```vue
 <template>
@@ -68,7 +68,7 @@ AvatarGroup 将多个 `RebornAvatar` 以重叠方式排列，适合展示团队�
 
 ### 重叠距离
 
-`gap` 默认 `8`，单位为 px，数值越大重叠越多；`0` 表示不重叠。普通头像和计数头像使用相同距离，浮层内部的头像间距不受影响。
+`gap` 默认 `6.4`，单位为 px，数值越大重叠越多；`0` 表示不重叠。普通头像和计数头像使用相同距离，浮层内部的头像间距不受影响。
 
 ```vue
 <template>
@@ -146,7 +146,7 @@ AvatarGroup 将多个 `RebornAvatar` 以重叠方式排列，适合展示团队�
 | --- | --- | --- | --- |
 | size | `'sm' \| 'md' \| 'lg' \| number` | - | 子头像默认大小，未配置时最终为 `md`；三档为 24 / 32 / 40px，数值单位 px |
 | shape | `'circle' \| 'square'` | - | 子头像默认形状，未配置时最终为 `circle` |
-| gap | `number` | `8` | 相邻头像重叠距离，单位 px；`0` 表示不重叠，负数按 `0` 处理，非有限数值回退到 `8` |
+| gap | `number` | `6.4` | 相邻头像重叠距离，单位 px；`0` 表示不重叠，负数按 `0` 处理，非有限数值回退到 `6.4` |
 | collapseAvatars | `boolean` | `false` | 是否折叠超出上限的头像 |
 | collapseAvatarsTooltip | `boolean` | `false` | 开启折叠后，悬停或聚焦计数头像时显示隐藏头像 |
 | maxCollapseAvatars | `number` | `1` | 折叠时直接显示的普通头像数，至少一个，不包含计数头像 |
@@ -170,7 +170,7 @@ AvatarGroup 将多个 `RebornAvatar` 以重叠方式排列，适合展示团队�
 | 键名 | 说明 |
 | --- | --- |
 | root | 头像组容器，默认 `inline-flex items-center` |
-| item | 可见头像与计数头像的包装层，后续项按 `gap` 向前重叠，默认 8px |
+| item | 可见头像与计数头像的包装层，后续项按 `gap` 向前重叠，默认 6.4px |
 | collapse | 计数头像外框，仅存在隐藏头像时渲染；与 `collapseClass` 合并 |
 | tooltip | 隐藏头像浮层面板，默认换行、8px 间距；仅开启折叠浮层时存在，与 `popperClass` 合并 |
 
@@ -187,7 +187,7 @@ AvatarGroup 将多个 `RebornAvatar` 以重叠方式排列，适合展示团队�
 
 | 变量名 | 对应取值 | 值 |
 | --- | --- | --- |
-| `--rb-avatar-group-gap` | `gap` | 默认 `8px`，负数为 `0px`，非有限值回退到 `8px` |
+| `--rb-avatar-group-gap` | `gap` | 默认 `6.4px`，负数为 `0px`，非有限值回退到 `6.4px` |
 
 ## 注意事项
 

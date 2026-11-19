@@ -182,11 +182,13 @@ it('悬停单个滑块立即显示当前值，放大和圆环不改变布局，�
       probe.remove();
       return { shadow: style.getPropertyValue('--tw-ring-shadow'), actual, expected };
     });
-    assert.ok(ring.shadow.includes('4px'));
+    assert.ok(ring.shadow.includes('3px'));
     assert.equal(ring.actual, ring.expected);
     assert.deepEqual(await page.locator('#hover').boundingBox(), wrapper);
+    const tipBackground = await tip.evaluate(el => getComputedStyle(el).backgroundColor);
     await page.mouse.down();
     await page.mouse.move(700, 500);
+    assert.equal(await tip.evaluate(el => getComputedStyle(el).backgroundColor), tipBackground, '拖拽不改变气泡背景');
     assert.equal(await tip.count(), 1, '指针捕获转到交互带后气泡仍显示');
     assert.ok(Math.abs((await thumb.boundingBox())!.width - 16) < 0.01);
     await page.mouse.up();
@@ -228,7 +230,7 @@ it('自定义胶囊滑块在单值和范围模式等比放大，按压与禁用�
   });
 });
 
-it('滑块圆环取对应色板第六阶的 20% 透明色，数值气泡保持灰色与 80% 不透明度', { skip: !browserAvailable }, async () => {
+it('滑块圆环取对应色板第六阶的 20% 透明色，数值气泡使用 gray-10 且无投影', { skip: !browserAvailable }, async () => {
   await withSliders(async (page) => {
     const palettes = { primary: 'brand', secondary: 'secondary', success: 'green', info: 'blue', warning: 'orange', error: 'red', neutral: 'gray' };
     for (const [color, palette] of Object.entries(palettes)) {
@@ -242,14 +244,15 @@ it('滑块圆环取对应色板第六阶的 20% 透明色，数值气泡保持�
           const ringActual = getComputedStyle(probe).color;
           probe.style.color = `color-mix(in oklab, var(--color-${palette}-6) 20%, transparent)`;
           const ringExpected = getComputedStyle(probe).color;
-          probe.style.color = 'var(--color-gray-9)';
+          probe.style.color = 'var(--color-gray-10)';
           const expected = getComputedStyle(probe).color;
           probe.remove();
           const arrow = getComputedStyle(el, '::after');
-          return { background: style.backgroundColor, opacity: style.opacity, arrow: vertical ? arrow.borderRightColor : arrow.borderTopColor, expected, ringActual, ringExpected };
+          return { background: style.backgroundColor, opacity: style.opacity, shadow: style.boxShadow, arrow: vertical ? arrow.borderRightColor : arrow.borderTopColor, expected, ringActual, ringExpected };
         }, { palette, vertical });
         assert.equal(colors.ringActual, colors.ringExpected);
-        assert.equal(colors.opacity, '0.8');
+        assert.equal(colors.opacity, '1');
+        assert.equal(colors.shadow, 'none');
         assert.equal(colors.background, colors.expected);
         assert.equal(colors.arrow, colors.expected);
       }

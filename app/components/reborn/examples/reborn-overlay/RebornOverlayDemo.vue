@@ -86,10 +86,9 @@ const gradientVisible = shallowRef(false);
                   {{ state.closeOnClickOverlay ? "点击遮罩可关闭" : "已禁止点击遮罩关闭" }}
                 </p>
                 <RebornButton
-                  class="mt-4"
+                  class="mt-4 w-full"
                   size="sm"
                   variant="soft"
-                  block
                   label="关闭"
                   @click="playgroundVisible = false"
                 />
@@ -125,8 +124,7 @@ const gradientVisible = shallowRef(false);
             <p class="text-highlighted text-base font-medium">全屏遮罩</p>
             <p class="text-muted mt-1.5 text-sm">页面滚动已被锁定，点击遮罩或按钮均可关闭。</p>
             <RebornButton
-              class="mt-5"
-              block
+              class="mt-5 w-full"
               label="我知道了"
               @click="fullscreenVisible = false"
             />

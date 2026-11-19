@@ -106,7 +106,7 @@ onUnmounted(stop);
         <!-- 关闭按钮 -->
         <button
           v-show="!preventClose"
-          class="bg-primary text-primary-foreground ring-offset-background hover:bg-primary/90 focus-visible:ring-ring absolute top-4 right-4 z-[101] inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+          class="bg-primary text-gray-6 hover:text-gray-8 active:text-gray-9 ring-offset-background hover:bg-primary/90 focus-visible:ring-ring absolute top-4 right-4 z-[101] inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
           @click="close"
         >
           <!-- 关闭图标 -->

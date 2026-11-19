@@ -5,16 +5,16 @@ import theme, { inputSizes, inputVariants } from '../../app/components/reborn/ui
 import { tv } from '../../app/lib/tv'
 
 const input = tv(theme)
-const inputPadding = { sm: 'px-2.5', md: 'px-3', lg: 'px-4' }
+const inputPadding = { sm: 'px-2', md: 'px-3', lg: 'px-3' }
 for (const size of inputSizes) {
   for (const variant of inputVariants) {
     it(`可拖拽多行统计 ${size}/${variant} 将手柄移到外框角落并保留文本内边距`, () => {
-      const styles = input({ size, variant, multiline: true, resizeWithCount: true })
+      const styles = input({ size, variant, multiline: true, resizable: true, resizeWithCount: true })
       assert.ok(styles.wrapper().split(/\s+/).includes('px-0!'))
       assert.ok(styles.wrapper().split(/\s+/).includes('py-0'))
       assert.ok(styles.input().split(/\s+/).includes('py-2'))
       assert.ok(styles.input().split(/\s+/).includes('pb-6'))
-      const padding = variant === 'underlined' ? 'px-0.5' : inputPadding[size]
+      const padding = ['underlined', 'borderless'].includes(variant) ? 'px-0.5' : inputPadding[size]
       assert.ok(styles.input().split(/\s+/).includes(padding))
       assert.ok(styles.count().split(/\s+/).includes('right-6'))
       assert.ok(!styles.count().split(/\s+/).includes('right-2'))

@@ -177,7 +177,7 @@ const droplist = [{ label: "活动列表", path: "/promotion/list" }, { label: "
 
 ### 超出折叠：max-count
 
-`max-count` 指定最多展示的条目数量（`0` 表示不限制）。超出时保留首项与末尾 `max-count - 1` 项，中间折叠为省略号，可用 `#more-icon` 插槽替换省略号内容。
+`max-count` 指定最多展示的条目数量（`0` 表示不限制）。超出时保留首项与末尾 `max-count - 1` 项，中间折叠为省略号，可用 `#more-icon` 插槽替换省略号内容。Web 端悬停省略号时默认显示完整面包屑，保留条目内容、图标、分隔符和排序，样式、悬停延时与浮层行为沿用 `RebornTooltip` 默认值；设置 `:collapse-tooltip="false"` 可关闭提示。
 
 ```vue
 <script setup lang="ts">
@@ -242,7 +242,7 @@ const longRoutes = ["首页", "频道", "分类", "专题", "当前页"].map(lab
 
 #### RebornBreadcrumb
 
-两端只有 `separator-icon` 的取值类型不同：Web 端既能传 Iconify 名称也能直接传组件，UniApp 端把它当作类名挂到 `<view>` 上，只能传图标类名。
+`separator-icon` 在 Web 端既能传 Iconify 名称也能直接传组件，UniApp 端只能传图标类名。折叠提示 `collapse-tooltip` 仅 Web 端支持。
 
 ::tabs{sync="platform"}
 
@@ -256,6 +256,7 @@ const longRoutes = ["首页", "频道", "分类", "专题", "当前页"].map(lab
 | `separatorIcon` | `string \| Component` | — | 图标分隔符，优先级高于 `separator`。字符串按 Iconify 名称渲染（如 `lucide:chevron-right`），也可直接传组件 |
 | `routes` | `BreadcrumbRoute[]` | — | 路径数据，非空时由组件渲染条目并替换默认插槽；空数组仍用默认插槽 |
 | `maxCount` | `number` | `0` | 最多展示的条目数量，`0` 表示不限制；超出时保留首项与末尾 `max-count - 1` 项 |
+| `collapseTooltip` | `boolean` | `true` | 折叠省略号悬停时显示完整面包屑；设为 `false` 关闭 |
 | `customUrl` | `(paths: string[]) => string` | — | 自定义链接地址，入参为当前条目及其祖先的 path，优先级高于 `path` |
 | `customClass` | `string` | — | 追加到面包屑根节点的自定义类名（两端同名，均非 `class`） |
 | `ui` | `BreadcrumbUI` | `{}` | 细粒度样式覆盖，键位见「自定义样式（ui）」。会级联到所有子条目 |
@@ -396,6 +397,7 @@ const longRoutes = ["首页", "频道", "分类", "专题", "当前页"].map(lab
 | 键名              | 说明                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `root`            | 根节点 `<nav>`，默认 `flex items-center flex-wrap gap-x-1.5 text-sm leading-none`；整条面包屑的字号、换行、条目间距改这里；`custom-class` prop 也并到该节点。折叠时省略号直接插在首项之后，DOM 顺序即视觉顺序，不依赖 flex `order`。                                                                                                                                                                                                                                                                                                                         |
+| `tooltipTrail` | Web 折叠提示中的完整路径容器，文字颜色、字号与行高继承 `RebornTooltip` 默认样式，条目内容和排序保持不变。 |
 | `item`            | 单个条目外层（折叠出现的省略号节点也用这个键），默认 `reborn-breadcrumb-item flex items-center gap-x-1.5 group/breadcrumb`。文字与分隔符之间的间距改这里。**分组名固定为 `group/breadcrumb`（具名而非匿名），覆盖时请保留。**                                                                                                                                                                                                                                                                                                         |
 | `link`            | 条目的文本/链接节点，默认 `text-gray-9 transition-colors flex items-center gap-1`。**所有条目一视同仁**：同一个文字颜色 `text-gray-9`、同一个字重，首项与末项都不加粗；视觉上的唯一变化来自 hover（可跳转与带下拉的条目变 `text-primary`）。要给首项/末项做区分可自行补 `group-first/breadcrumb:` / `group-last/breadcrumb:` 修饰。条目上的 `custom-class` prop 也并到该节点。**带下拉菜单的条目同样只有这一层样式，不会额外套边框或底色。**                                                                                          |
 | `separator`       | 分隔符容器，默认 `text-gray-4 select-none flex items-center justify-center text-sm group-last/breadcrumb:hidden`（末项自动隐藏）。填充 `separator` 插槽只替换里面的内容，容器类名仍生效。                                                                                                                                                                                                                                                                                                                                             |
@@ -440,6 +442,7 @@ const longRoutes = ["首页", "频道", "分类", "专题", "当前页"].map(lab
 
 | 维度               | Web                                                                                                                                              | UniApp                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| 折叠提示 | `collapse-tooltip` 默认开启，悬停省略号显示完整路径 | 不支持 |
 | 跳转模式 `replace` | `push` / `replace` / `blank`，默认 `push`                                                                                                        | `navigate` / `redirect` / `switchTab` / `reLaunch`，默认 `navigate`              |
 | `target`           | 未声明；新窗口打开用 `replace="blank"`                                                                                                           | 已声明但不参与跳转逻辑（预留属性）                                               |
 | `separatorIcon`   | Iconify 名称或组件，如 `lucide:chevron-right`                                                                                                    | 仅图标类名，如 `i-lucide-chevron-right`                                          |

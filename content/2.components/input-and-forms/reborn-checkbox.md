@@ -509,7 +509,7 @@ Web 端定义位于 `app/components/reborn/ui/reborn-checkbox/reborn-checkbox.co
 
 ```vue
 <template>
-  <RebornForm :model="form" :rules="rules">
+  <RebornForm :model-value="form" :rules="rules">
     <RebornFormItem prop="agreed">
       <RebornCheckbox v-model="form.agreed" label="我已阅读并同意用户协议" />
     </RebornFormItem>

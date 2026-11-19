@@ -114,3 +114,12 @@ it('loadMore 与 fieldNames 写成内联表达式时，父级重渲染不清空�
  labelKey.value='label';await nextTick();await nextTick();
  assert.equal(root.textContent.includes('子项'),false);
 });
+
+it('多选标签与折叠标签直接跟随外部尺寸，并保留搜索勾选框尺寸',async()=>{
+ const p=mount({options:[{label:'甲',value:'a'},{label:'乙',value:'b'}],multiple:true,modelValue:['a','b'],maxTagCount:1,size:'sm'},Cascader);
+ for(const [size,height] of [['sm','h-4.5'],['md','h-6'],['lg','h-8']]){
+  p.props.value={...p.props.value,size};await nextTick();
+  const tags=[...p.root.querySelectorAll('.reborn-badge > span')];assert.equal(tags.length,2);
+  for(const tag of tags){assert.ok(tag.classList.contains(height));assert.equal(/h-\d[\w.]*!/.test(tag.className),false)}
+ }
+});

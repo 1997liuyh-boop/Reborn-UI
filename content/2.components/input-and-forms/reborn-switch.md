@@ -85,12 +85,12 @@ const on = ref(true);
 
 ### 尺寸：size
 
-三档圆形规格，两端同一几何（两端都按 px 书写）：
+三档圆形规格（按 px 书写，Web 默认中号轨道比 UniApp 窄 2px）：
 
 | `size`       | 轨道    | 滑块直径 | 选中位移 |
 | ------------ | ------- | -------- | -------- |
 | `sm`         | 16 × 28 | 12       | 12       |
-| `md`（默认） | 24 × 44 | 20       | 20       |
+| `md`（默认） | Web：24 × 42；UniApp：24 × 44 | 20 | Web：18；UniApp：20 |
 | `lg`         | 32 × 60 | 28       | 28       |
 
 三档共用同一条几何关系：滑块四周留白固定 2px，选中时滑块右缘贴到轨道右端再回收 2px。位移由 `left` / `right` 两个端点按 `--re-switch-thumb-size` 计算，不写死像素，因此用 `ui` 改轨道宽度时不必改位移，`autoWidth` 撑宽后同样成立。处于 `RebornForm` 内时，表单下发的尺寸优先于组件自身的 `size`。
@@ -122,7 +122,7 @@ const on = ref(true);
 | `round`          | 轨道、滑块与波纹换成小圆角方形                   | 与方角控件（表格、工具栏）并排时保持形状语言一致 |
 | `line`           | 轨道压成滑块直径一半的细线，滑块骑在线上居中滑动 | 低视觉权重场景，如卡片角落的次要开关             |
 
-`round` 的圆角 Web 端为 `rounded-sm`，UniApp 端为 `rounded-ui-2xs`。
+`round` 的 Web 轨道圆角为 `rounded-md`（6px），滑块为 `rounded-sm`（4px）；UniApp 端为 `rounded-ui-2xs`。
 
 ```vue
 <template>

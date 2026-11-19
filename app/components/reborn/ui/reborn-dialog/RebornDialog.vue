@@ -160,7 +160,7 @@ const props = withDefaults(defineProps<RebornDialogProps>(), {
   draggable: false,
   overflow: false,
   center: false,
-  alignCenter: false,
+  alignCenter: true,
   destroyOnClose: false,
   closeIcon: "lucide:x",
   headerAriaLevel: "2",

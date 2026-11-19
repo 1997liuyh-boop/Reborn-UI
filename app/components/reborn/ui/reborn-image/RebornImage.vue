@@ -44,6 +44,7 @@ interface ViewerInternals {
 export interface ImageProps {
 	customClass?: ClassValue;
 	src: string; // 图片地址
+	alt?: string; // 图片替代文本
 	mode?: (typeof imageMode)[number]; // 图片裁剪、缩放的模式
 	preview?: boolean; // 是否显示边框
 	previewList?: string[];
@@ -72,11 +73,16 @@ export interface ImageProps {
 		magnifierView: ClassValue;
 		magnifierViewImage: ClassValue;
 		previewToolbar: ClassValue;
+		previewBackdrop: ClassValue;
+		previewError: ClassValue;
+		previewErrorIcon: ClassValue;
 		previewAction: ClassValue;
 		previewActionIcon: ClassValue;
 		previewActionText: ClassValue;
 		previewArrow: ClassValue;
 		previewArrowIcon: ClassValue;
+		previewClose: ClassValue;
+		previewCloseIcon: ClassValue;
 	}>;
 }
 
@@ -141,12 +147,17 @@ const ui = computed(() => {
 		magnifierView: (opts?: { class?: any }) => styles.magnifierView({ class: cn(opts?.class, uiOverrides.value.magnifierView) }),
 		magnifierViewImage: (opts?: { class?: any }) => styles.magnifierViewImage({ class: cn(opts?.class, uiOverrides.value.magnifierViewImage) }),
 		previewToolbar: (opts?: { class?: any }) => styles.previewToolbar({ class: cn(opts?.class, uiOverrides.value.previewToolbar) }),
+		previewBackdrop: (opts?: { class?: any }) => styles.previewBackdrop({ class: cn(opts?.class, uiOverrides.value.previewBackdrop) }),
+		previewError: (opts?: { class?: any }) => styles.previewError({ class: cn(opts?.class, uiOverrides.value.previewError) }),
+		previewErrorIcon: (opts?: { class?: any }) => styles.previewErrorIcon({ class: cn(opts?.class, uiOverrides.value.previewErrorIcon) }),
 		previewAction: (opts?: { class?: any }) => styles.previewAction({ class: cn(opts?.class, uiOverrides.value.previewAction) }),
 		previewActionIcon: (opts?: { class?: any }) => styles.previewActionIcon({ class: cn(opts?.class, uiOverrides.value.previewActionIcon) }),
 		previewActionText: (opts?: { class?: any }) => styles.previewActionText({ class: cn(opts?.class, uiOverrides.value.previewActionText) }),
 		// 左右箭头只有定位不同，按 arrowSide 变体取各自的类名
 		previewArrow: (side: "prev" | "next", opts?: { class?: any }) =>
 			b({ arrowSide: side }).previewArrow({ class: cn(opts?.class, uiOverrides.value.previewArrow) }),
+		previewClose: (opts?: { class?: any }) => styles.previewClose({ class: cn(opts?.class, uiOverrides.value.previewClose) }),
+		previewCloseIcon: (opts?: { class?: any }) => styles.previewCloseIcon({ class: cn(opts?.class, uiOverrides.value.previewCloseIcon) }),
 		previewArrowIcon: (opts?: { class?: any }) => styles.previewArrowIcon({ class: cn(opts?.class, uiOverrides.value.previewArrowIcon) })
 	};
 });
@@ -304,6 +315,22 @@ const previewActions: Record<PreviewToolbarToken, (viewer: Viewer) => void> = {
 function mountPreviewControls(viewer: Viewer, total: number) {
 	const internals = viewer as unknown as ViewerInternals;
 	const styles = ui.value;
+	// 保留 ViewerJS 的遮罩点击行为，仅移除未分层的默认背景样式，由 Tailwind 配置接管。
+	internals.viewer.classList.remove("viewer-backdrop");
+	// 自绘关闭按钮，避免 ViewerJS 的固定白色雪碧图覆盖统一交互色。
+	const closeButton = document.createElement("button");
+	closeButton.type = "button";
+	closeButton.className = styles.previewClose();
+	closeButton.setAttribute("aria-label", "关闭图片预览");
+	const closeIcon = document.createElement("span");
+	closeIcon.className = styles.previewCloseIcon();
+	closeIcon.setAttribute("aria-hidden", "true");
+	closeButton.appendChild(closeIcon);
+	closeButton.addEventListener("click", (event) => {
+		event.stopPropagation();
+		viewer.hide();
+	});
+	internals.viewer.appendChild(closeButton);
 
 	/**
 	 * 点击必须截在按钮上，不能冒泡到 viewerjs 的根容器：它的 click 处理对不认识的元素走 default 分支，
@@ -400,11 +427,11 @@ function watchPreviewError(instance: Viewer, image: HTMLImageElement) {
 		canvas.classList.remove("viewer-loading");
 
 		const placeholder = document.createElement("div");
-		placeholder.className = ui.value.error({ class: "pointer-events-none inset-0 bg-transparent" });
+		placeholder.className = ui.value.previewError();
 		placeholder.setAttribute("role", "img");
 		placeholder.setAttribute("aria-label", "图片加载失败");
 		const icon = document.createElement("span");
-		icon.className = ui.value.errorIcon();
+		icon.className = ui.value.previewErrorIcon();
 		icon.setAttribute("aria-hidden", "true");
 		placeholder.appendChild(icon);
 		// 切图时 viewerjs 会清空画布，错误占位随上一张图片一并移除。
@@ -444,8 +471,10 @@ function onPreview(force = false) {
 				document.body.appendChild(container);
 				viewerContainer = container;
 				const instance = new Viewer(container, {
+					className: ui.value.previewBackdrop(),
 					// 自带工具栏是白色雪碧图，图标无法跟随主题色，换成 mountPreviewControls 里的自绘菜单
 					toolbar: false,
+					button: false,
 					// 缩略图列表只在多图时有意义：单图时列表里只有它自己，开了也不显示
 					navbar: props.previewNavbar && urls.length > 1,
 					ready() {
@@ -818,7 +847,7 @@ function onMouseLeave() {
 			ui.inner(),
 			'data-[lazy=loading]:opacity-0 data-[lazy=loading]:transition-opacity data-[lazy=loading]:duration-300 data-[lazy=loaded]:opacity-100 data-[lazy=loaded]:transition-opacity data-[lazy=loaded]:duration-300 data-[lazy=error]:opacity-100'
 		)
-			" :src="currentSrc" :data-lazy="lazyStatus" :style="imgStyle" :mode="mode" @load="onLoad" @error="onError"
+			" :src="currentSrc" :alt="alt" :data-lazy="lazyStatus" :style="imgStyle" :mode="mode" @load="onLoad" @error="onError"
 			@click="onPreview()" />
 
 		<!-- 放大镜透镜 -->

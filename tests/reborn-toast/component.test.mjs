@@ -108,8 +108,8 @@ it("所有变体 loading 使用 outline，支持自定义图标及同 key 更新
   await nextTick();
   const loader = container.querySelector(".rb-loading");
   assert.ok(loader.querySelector("circle"), "outline 包含完整底圈");
-  assert.equal(loader.style.width, "14px");
-  assert.equal(loader.style.height, "14px");
+  assert.equal(loader.style.width, "16px");
+  assert.equal(loader.style.height, "16px");
   assert.equal(container.querySelector(".animate-spin"), null, "不重复旋转通用图标");
   void addMessage({ type: "loading", content: "自定义", duration: 0, key: "loading", icon: "lucide:clock" });
   await nextTick();

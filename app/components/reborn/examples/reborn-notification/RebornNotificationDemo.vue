@@ -236,7 +236,7 @@ function fireCustomIconDemo() {
     icon: "lucide:bookmark-check",
     closeIcon: "lucide:minus",
     duration: 5000,
-    ui: { icon: "size-[24px] text-brand-6" },
+    ui: { icon: "size-6 text-brand-6" },
   });
 }
 

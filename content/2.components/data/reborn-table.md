@@ -122,7 +122,7 @@ const columns = [{ prop: 'name', label: '姓名' }]
 
 ### 带边框表格
 
-`size` 默认 `md`；表头和内容均使用 `text-base font-normal text-gray-9`，沿用 14px 字号、22px 行高与 400 字重，不另叠 `leading-*`。
+`size` 默认 `md`；表头使用 `text-base font-medium text-gray-9`（500字重），内容使用 `text-base font-normal text-gray-9`（400字重），均沿用 14px 字号与22px 行高，不另叠 `leading-*`。
 
 | `size` | 单行高度 | 典型用途 |
 | --- | --- | --- |
@@ -132,7 +132,7 @@ const columns = [{ prop: 'name', label: '姓名' }]
 
 | 外观参数 | 默认行为 | 典型用途 |
 | --- | --- | --- |
-| `border` | `false`，开启外框与纵向分隔线，使用灰阶 3 | 列较多、需要明确列边界 |
+| `border` | `false`，开启外框与纵向分隔线，使用灰阶 2 | 列较多、需要明确列边界 |
 | `stripe` | `false`，开启交替行底色 | 长行横向阅读 |
 | `headerBackground` | `false`，开启灰阶 2 表头背景 | 强调表头与表体分区 |
 | `hover` | `true`，整行悬停背景为灰阶 2 | 跟踪当前阅读的行 |
@@ -379,7 +379,7 @@ const radioColumns = computed<TableColumn[]>(() => [...(showRadio.value ? [{ typ
 
 `selectedKeys` 默认 `[]`，`currentRowKey` 默认 `undefined`；多选通过 `type: 'selection'` 开启；`selectable` 限制可选行，`reserveSelection` 保留跨数据选择。
 
-`selection` 列的表头全选框与行复选框均水平、垂直居中，左右内边距为 8px；普通列仍由 `align` / `headerAlign` 控制对齐。
+`selection` 列的表头全选框与行复选框均水平、垂直居中，左右内边距为 16px；未传列宽时按复选框实际宽度加两侧内边距自动计算，不随表格铺满而拉宽；普通列仍由 `align` / `headerAlign` 控制对齐。
 
 演示使用独立的两批数据，每批八条、行键跨批唯一；切换批次后仍可读取已选行或清空全部选择，待审核行始终禁选。这份扩容数据不用于合并或分页示例。
 
@@ -1073,7 +1073,7 @@ const columns: TableColumn[] = [{ prop: 'note', label: '说明', width: 180, for
 
 ### 自定义样式（ui）
 
-`ui` 使用 `TableUi` 按内部节点覆盖 Tailwind 类名。共享文字为 `text-base font-normal text-gray-9`，不需要重复设置行高；行分割线为灰阶 2，外框和列边界为灰阶 3。
+`ui` 使用 `TableUi` 按内部节点覆盖 Tailwind 类名。共享文字为 `text-base font-normal text-gray-9`，不需要重复设置行高；行分割线、外框和列边界为灰阶 2；表头文字旁的短分割线为灰阶 3。
 
 | 键名 | 说明 |
 | --- | --- |
@@ -1081,9 +1081,9 @@ const columns: TableColumn[] = [{ prop: 'note', label: '说明', width: 180, for
 | `scrollbar` | 滚动容器，默认 `relative min-w-0 w-full`；开启 `border` 时底框由 `after` 向内叠绘 1px，避免与表格底线相加。涉及固定表头时不要覆盖滚动行为。 |
 | `table` | 语义化表格，默认 `w-full table-fixed border-separate border-spacing-0 text-left`，`tableLayout="auto"` 切换为 `table-auto`，底部分隔线为 `border-b border-gray-2`。 |
 | `thead` | 表头区域，默认无附加类名；`showHeader=false` 时不渲染。 |
-| `headerCell` | 表头单元格，默认 `border-b border-gray-3 border-b-gray-2 bg-gray-1 px-4 py-0 align-middle`，高度跟随 `size`。 |
+| `headerCell` | 表头单元格，默认 `border-b border-gray-2 bg-gray-1 px-4 py-0 align-middle`，高度跟随 `size`。表头之间有 1px `gray-3` 分割线，高度与字号一致；最后一列不绘制。筛选和排序图标靠右，间隔 8px，末图标与分割线间隔 16px。 |
 | `row` | 数据行，默认 `group/row bg-gray-1`，悬停背景为灰阶 2；当前行高亮为 `bg-brand-2`，悬停时保留。 |
-| `cell` | 数据单元格，默认 `border-t border-gray-3 border-t-gray-2 px-4 py-0 align-middle`，表体首行不重复绘制顶线，高度跟随 `size`。 |
+| `cell` | 数据单元格，默认 `border-t border-gray-2 px-4 py-0 align-middle`，表体首行不重复绘制顶线，高度跟随 `size`。 |
 | `cellContent` | 单元格内容容器，默认 `min-w-0 py-1`。 |
 | `expand` | 详情单元格，默认 `border-t border-gray-2 bg-gray-1 px-4 py-3`；无展开详情时不渲染。 |
 | `empty` | 空态区域，默认 `px-4 py-10 text-center text-gray-6`，仅无数据时可见。 |

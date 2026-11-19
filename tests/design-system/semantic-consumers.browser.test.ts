@@ -42,7 +42,7 @@ it('控件实际配色跟随语义角色、局部主题覆盖及实底配对前�
     const timeline = themes.timeline({ variant: 'solid' });
     // data-pair：背景与前景都须等于参照；data-fg：文字色等于参照前景；data-bg-fg：以参照前景作底色（指示点、反相按钮）。
     return `<section data-color="${color}">
-      <i data-ref="background" class="bg-${color}"></i><i data-ref="foreground" class="text-${color}-foreground"></i>
+      <i data-ref="background" class="bg-${color}"></i><i data-ref="foreground" class="text-${color}-foreground"></i><i data-ref="steps-foreground" class="text-gray-3"></i>
       <div class="${steps.item()}"><span data-pair="steps" class="${steps.marker()}">1</span></div>
       <div class="${carousel.indicators()}"><span data-pair="carousel" class="${carousel.indicatorActive()}">1</span></div>
       <span data-part="radio-background" class="${radio.slider()}"></span><span data-part="radio-foreground" class="${radio.root()}">单选</span>
@@ -53,7 +53,7 @@ it('控件实际配色跟随语义角色、局部主题覆盖及实底配对前�
       <span data-pair="fab-capsule" class="${fab.capsuleWrapper()}">胶囊</span>
       <div data-pair="guide-box" class="${guide.guideBox({ class: 'static' })}">
         <span data-fg="guide-title" class="${guide.guideTitle()}">标题</span><span data-fg="guide-body" class="${guide.guideBody()}">正文</span>
-        <span data-fg="guide-close" class="${guide.closeButton()}">×</span><span data-bg-fg="guide-dot" class="${guide.indicatorDot()}"></span>
+        <span data-close="guide" class="${guide.closeButton()}">×</span><span data-bg-fg="guide-dot" class="${guide.indicatorDot()}"></span>
         <span data-fg="guide-prev" class="${guideButtonUi.prev.base}">上一步</span><span data-bg-fg="guide-next" class="${guideButtonUi.next.base}">下一步</span>
         <span data-fg="guide-skip" class="${guideButtonUi.skip.base}">跳过</span>
       </div>
@@ -79,6 +79,14 @@ it('控件实际配色跟随语义角色、局部主题覆盖及实底配对前�
             const style = (selector: string) => getComputedStyle(section.querySelector(selector)!);
             const background = style('[data-ref=background]').backgroundColor;
             const foreground = style('[data-ref=foreground]').color;
+            const close = section.querySelector<HTMLElement>('[data-close="guide"]')!;
+            const closeColor = getComputedStyle(close).color;
+            const closeProbe = document.createElement("i");
+            closeProbe.className = "text-gray-6";
+            section.append(closeProbe);
+            const gray6 = getComputedStyle(closeProbe).color;
+            closeProbe.remove();
+            const stepsForeground = style('[data-ref=steps-foreground]').color;
             const pairs = [...section.querySelectorAll('[data-pair]')].map(element => ({ name: element.getAttribute('data-pair'), background: getComputedStyle(element).backgroundColor, foreground: getComputedStyle(element).color }));
             const foregrounds = [...section.querySelectorAll('[data-fg]')].map(element => ({ name: element.getAttribute('data-fg'), color: getComputedStyle(element).color }));
             const inverted = [...section.querySelectorAll('[data-bg-fg]')].map(element => ({ name: element.getAttribute('data-bg-fg'), background: getComputedStyle(element).backgroundColor }));
@@ -90,7 +98,7 @@ it('控件实际配色跟随语义角色、局部主题覆盖及实底配对前�
             section.append(probe);
             const gray9 = getComputedStyle(probe).backgroundColor;
             probe.remove();
-            return { color: section.dataset.color, background, foreground, pairs, foregrounds, inverted, tree, gray9, parts: Object.fromEntries(['radio', 'switch', 'slider'].map(name => [name, {
+            return { color: section.dataset.color, closeColor, gray6, background, foreground, stepsForeground, pairs, foregrounds, inverted, tree, gray9, parts: Object.fromEntries(['radio', 'switch', 'slider'].map(name => [name, {
               background: style(`[data-part=${name}-background]`).backgroundColor,
               foreground: ['radio', 'switch'].includes(name) ? style(`[data-part=${name}-foreground]`).color : null,
             }])) };
@@ -101,7 +109,7 @@ it('控件实际配色跟随语义角色、局部主题覆盖及实底配对前�
           if (custom && result.color === 'primary') assert.equal(result.background, 'rgb(18, 52, 86)', '局部主色覆盖必须实际生效');
           for (const pair of result.pairs) {
             assert.equal(pair.background, result.background, `${label}/${pair.name} 背景`);
-            assert.equal(pair.foreground, result.foreground, `${label}/${pair.name} 前景`);
+            assert.equal(pair.foreground, pair.name === 'steps' ? result.stepsForeground : result.foreground, `${label}/${pair.name} 前景`);
           }
           for (const item of result.foregrounds) assert.equal(item.color, result.foreground, `${label}/${item.name} 前景`);
           for (const item of result.inverted) assert.equal(item.background, result.foreground, `${label}/${item.name} 反相底色`);
@@ -109,6 +117,7 @@ it('控件实际配色跟随语义角色、局部主题覆盖及实底配对前�
             assert.equal(part.background, result.background, `${label}/${name} 背景`);
             if (part.foreground) assert.equal(part.foreground, result.foreground, `${label}/${name} 前景`);
           }
+          assert.equal(result.closeColor, result.gray6, `${label}/guide 关闭按钮`);
           assert.equal(result.tree, result.color === 'neutral' ? result.gray9 : result.background, `${label}/tree 指示线`);
         }
       }

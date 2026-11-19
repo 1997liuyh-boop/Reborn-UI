@@ -50,7 +50,7 @@ before(async () => {
   const compiler = await compile("@import 'tailwindcss';@import './app/assets/theme/typography.css';@import './app/assets/theme/base.css';@import './app/components/reborn/ui/scrollbar/scrollbar.css';", { base: resolve('.'), onDependency() {} });
   const scanner = new Scanner({ sources: ['reborn-time-picker', 'scrollbar', 'reborn-button', 'reborn-select-trigger', 'reborn-field-trigger']
     .map(name => ({ base: resolve('app/components/reborn/ui', name), pattern: '**/*', negated: false })) });
-  const css = compiler.build(scanner.scan());
+  const css = compiler.build([...scanner.scan(), 'text-left']);
   const script = result.outputFiles[0]!.text;
   server = createServer((request, response) => {
     response.setHeader('Content-Type', request.url === '/app.js' ? 'text/javascript' : request.url === '/style.css' ? 'text/css' : 'text/html');
@@ -137,10 +137,12 @@ it('点击模式滚动只浏览，点击时分秒后写回且置顶，末项也�
     for (const name of ['时', '分', '秒']) {
       const column = page.getByRole('listbox', { name, exact: true });
       await column.getByRole('option').last().click();
+      await page.waitForTimeout(240);
       assert.ok(Math.abs((await position(column)).top) <= 1);
     }
     assert.equal((await state(page)).value, '23:59:59');
     await hour.getByRole('option').first().click();
+    await page.waitForTimeout(240);
     assert.equal((await state(page)).value, '00:59:59');
     assert.ok(Math.abs((await position(hour)).top) <= 1);
   });
@@ -195,6 +197,7 @@ it('切换模式取消待提交滚动，外部值、范围和毫秒选择按新�
     const millisecond = page.getByRole('listbox', { name: '结束毫秒', exact: true });
     assert.equal(await millisecond.getByRole('option').count(), 1000);
     await millisecond.getByRole('option').last().click();
+    await page.waitForTimeout(240);
     assert.deepEqual((await state(page)).value, ['09:30:15.000', '18:30:15.999']);
     assert.ok(Math.abs((await position(millisecond)).top) <= 1);
   });
@@ -207,10 +210,46 @@ it('选择器透传点击模式，禁用后不接受点选', async () => {
     const hour = page.getByRole('listbox', { name: '时', exact: true });
     await hour.waitFor();
     await hour.locator('[data-value="10"]').click();
+    await page.waitForTimeout(240);
     assert.equal((await state(page)).value, '10:30:15');
     assert.ok(Math.abs((await position(hour)).top) <= 1);
     await configure(page, { kind: 'panel', disabled: true });
     await page.getByRole('listbox', { name: '时', exact: true }).locator('[data-value="11"]').dispatchEvent('click');
     assert.equal((await state(page)).value, '10:30:15');
+  });
+});
+
+it('点击选中有向上滑动过程，区间最后一列后切换且2px滑块跟随端点', async () => {
+  await withPanel(async page => {
+    await configure(page, { kind: 'picker', interaction: 'click', isRange: true, format: 'HH:mm', modelValue: [], ui: { rangeText: 'text-left' } });
+    const start = page.locator('[data-range-role="start"]');
+    const end = page.locator('[data-range-role="end"]');
+    await start.click();
+    assert.equal(await start.evaluate(el => getComputedStyle(el).textAlign), 'left');
+    assert.equal(await page.getByRole('listbox').count(), 2);
+    const hour = page.getByRole('listbox', { name: '时', exact: true });
+    const scroll = hour.locator('.reborn-scrollbar__wrap');
+    await hour.locator('[data-value="4"]').click();
+    await page.waitForTimeout(60);
+    const middle = await scroll.evaluate(el => el.scrollTop);
+    assert.ok(middle > 0 && middle < 4 * 29, `中途滚动位置${middle}`);
+    await page.waitForTimeout(200);
+    assert.ok(Math.abs((await position(hour)).top) <= 1);
+    assert.equal(await start.getAttribute('aria-pressed'), 'true');
+    await page.getByRole('listbox', { name: '分', exact: true }).locator('[data-value="5"]').click();
+    await page.waitForFunction(() => document.querySelector('[data-range-role="end"]')?.getAttribute('aria-pressed') === 'true');
+    await page.waitForTimeout(240);
+    const indicator = page.locator('[class*="RebornTimePicker-rangeIndicator"]');
+    assert.equal(await indicator.evaluate(el => getComputedStyle(el).height), '2px');
+    const line = await indicator.boundingBox(); const segment = await end.boundingBox();
+    assert.ok(line && segment && Math.abs(line.x - segment.x) <= 1 && Math.abs(line.width - segment.width) <= 1);
+    const icon = page.locator('[data-state="open"] [class*="RebornFieldTrigger-arrow"]').first();
+    assert.equal(await icon.evaluate(el => getComputedStyle(el).transform), 'none');
+    await page.getByRole('listbox', { name: '时', exact: true }).locator('[data-value="17"]').click();
+    await page.getByRole('listbox', { name: '分', exact: true }).locator('[data-value="30"]').click();
+    await page.getByRole('button', { name: '确定', exact: true }).click();
+    assert.deepEqual((await state(page)).value, ['04:05', '17:30']);
+    await page.waitForTimeout(250);
+    assert.equal(await page.getByRole('dialog').count(), 0);
   });
 });

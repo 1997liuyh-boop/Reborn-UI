@@ -223,12 +223,12 @@ function parseThousands(text: string) {
         <DemoItem label="#prepend / #append（连体块）" mono>
           <RebornInput v-model="groupValue" variant="outlined" placeholder="域名前缀">
             <template #prepend>
-              <div class="px-[12px]">
+              <div class="px-3">
                 https://
               </div>
             </template>
             <template #append>
-              <div class="px-[8px]">
+              <div class="px-2">
                 .com
               </div>
             </template>
@@ -246,7 +246,7 @@ function parseThousands(text: string) {
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem mono>
           <RebornInput v-model="adornmentValue" placeholder="请输入内容" :ui="{
-            append: 'bg-brand-6 text-white px-[12px] border border-brand-6'
+            append: 'bg-brand-6 text-white px-3 border border-brand-6'
           }">
             <template #append>
               搜索
@@ -255,7 +255,7 @@ function parseThousands(text: string) {
         </DemoItem>
         <DemoItem mono>
           <RebornInput v-model="adornmentValue" disabled placeholder="请输入内容" :ui="{
-            append: 'bg-brand-3 text-gray-2 px-[12px] border border-brand-3'
+            append: 'bg-brand-3 text-gray-2 px-3 border border-brand-3'
           }">
             <template #append>
               搜索
@@ -264,10 +264,10 @@ function parseThousands(text: string) {
         </DemoItem>
         <DemoItem mono>
           <RebornInput v-model="adornmentValue" placeholder="请输入内容" :ui="{
-            append: 'bg-white text-gray-10 px-[8px]'
+            append: 'bg-white text-gray-10 px-2'
           }">
             <template #prepend>
-              <div class="px-[12px]">
+              <div class="px-3">
                 https://
               </div>
             </template>
@@ -278,10 +278,10 @@ function parseThousands(text: string) {
         </DemoItem>
         <DemoItem mono>
           <RebornInput v-model="adornmentValue" disabled placeholder="请输入内容" :ui="{
-            append: 'bg-gray-2 text-gray-5 px-[8px]'
+            append: 'bg-gray-2 text-gray-5 px-2'
           }">
             <template #prepend>
-              <div class="px-[12px] text-gray-5">
+              <div class="px-3 text-gray-5">
                 https://
               </div>
             </template>

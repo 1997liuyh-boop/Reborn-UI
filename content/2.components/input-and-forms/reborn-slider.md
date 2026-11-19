@@ -370,7 +370,7 @@ Web 端滑块在端点不会溢出；UniApp 端保持纯百分比定位，端点
 | `thumbWrapper` | 滑块与气泡的定位容器 | `absolute top-1/2 -translate-x-1/2 -translate-y-1/2 inline-flex z-[1]` | 始终渲染；负责位置与层级，不参与缩放，宽高由滑块本体撑开 |
 | `thumb` | 滑块本体（语义色外圆） | `relative size-3 rounded-full flex items-center justify-center outline-none` + `bg-<color>` 与对应色板第 6 阶、20% 透明度圆环 | 始终渲染；使用 `#thumb` 插槽时仍是插槽内容的外层，外形、底色与缩放在这里改 |
 | `thumbDot` | 滑块中心圆 | `rounded-full bg-gray-1` | 使用 `#thumb` 插槽时不渲染 |
-| `tooltip` | 数值气泡 | `absolute z-[3] rounded-sm bg-gray-9 px-2 py-1 text-sm text-gray-1 opacity-80 whitespace-nowrap shadow-md` | 悬停、拖拽中或 `tooltip.open` 为 `true` 时渲染；`open: false` 或 `formatter: null` 时不渲染 |
+| `tooltip` | 数值气泡 | `absolute z-[3] rounded-sm bg-gray-10 px-2 py-1 text-sm text-gray-1 whitespace-nowrap` | 悬停、拖拽中或 `tooltip.open` 为 `true` 时渲染；`open: false` 或 `formatter: null` 时不渲染 |
 | `suffix` | 末尾端图标容器 | `shrink-0 inline-flex items-center text-gray-6 ml-[8px]` | 仅设置 `suffixIcon` 且未使用 `#suffix` 插槽时渲染 |
 | `value` | 末尾数值文本 | `text-center w-[50px] text-gray-8 ml-[8px]` | 仅 `showValue` 且未使用 `#value` 插槽时渲染 |
 :::

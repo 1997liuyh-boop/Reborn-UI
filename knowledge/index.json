@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-17T02:45:15.566Z",
+  "generatedAt": "2026-11-19T07:44:23.284Z",
   "components": [
     {
       "id": "animate-grid",
@@ -2629,7 +2629,7 @@
     {
       "id": "reborn-toast",
       "title": "Toast 消息提示",
-      "description": "全局命令式消息提示（Message）：五种类型静态方法、Promise 接口、同 key 更新与全局配置；web 端由 Toast 升级而来。",
+      "description": "全局命令式消息提示（Message）：按类型调用的静态方法、Promise 接口、同 key 更新与全局配置；web 端由 Toast 升级而来。",
       "category": "misc",
       "tags": [],
       "platforms": [

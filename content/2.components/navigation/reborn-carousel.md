@@ -213,7 +213,7 @@ const carousel = ref<CarouselExpose>();
 | `ui` | 样式键覆盖 | 圆角、箭头与分页样式 |
 
 ```vue
-<RebornCarousel :pagination="{ type: 'fraction' }" :ui="{ root: 'rounded-xl' }">
+<RebornCarousel :pagination="{ type: 'fraction', backgroundColor: 'var(--color-gray-2)' }" :arrow="{ display: 'always', backgroundColor: '#64748b' }" :ui="{ root: 'rounded-xl' }">
   <div v-for="item in items" :key="item.id">{{ item.title }}</div>
   <template #prev="{ prev, disabled }">
     <RebornButton class="pointer-events-auto" :disabled="disabled" @click="prev">上一项</RebornButton>
@@ -234,10 +234,10 @@ const carousel = ref<CarouselExpose>();
 | `centeredSlides` | `boolean` | `false` | 当前项居中，非循环首尾受滚动范围约束。 |
 | `loop` | `boolean` | `false` | 使用相邻克隆片双向衔接首尾；箭头、指示器和外部模型更新共用循环路径。 |
 | `autoplay` | `boolean \| CarouselAutoplay` | `false` | true 为 3000ms；对象支持 delay、pauseOnHover、pauseOnFocus。 |
-| `pagination` | `CarouselPagination \| null` | `null` | type：line / dot / progress / fraction / button；display：hover / always / never，默认 always；clickable、indicatorBackground 默认 true。null 时不渲染分页。 |
+| `pagination` | `CarouselPagination \| null` | `null` | type：line / dot / progress / fraction / button；display：hover / always / never，默认 always；clickable、indicatorBackground 默认 true；backgroundColor 支持 CSS 颜色和 var()，仅设置容器底色，indicatorBackground=false 或 progress 时不生效。null 时不渲染分页。 |
 | `trigger` | `"hover" \| "click"` | `"hover"` | hover 增加悬停切换，点击与键盘原生激活始终可用。 |
 | `indicatorPosition` | `"inside" \| "outside" \| "none"` | `"inside"` | 内部、外部或隐藏分页。 |
-| `arrow` | `"hover" \| "always" \| "never"` | `"hover"` | hover 同时支持键盘聚焦显示。 |
+| `arrow` | `CarouselArrow` | `"hover"` | 兼容 hover / always / never 字符串；对象支持 display（默认 hover）与 backgroundColor（CSS 颜色或 var()）。主箭头与缩略图箭头默认 bg-gray-6、图标 text-gray-1；hover 同时支持键盘聚焦显示。 |
 | `motionBlur` | `boolean` | `false` | 非激活项增加模糊。 |
 | `height` | `string \| number` | `"auto"` | 数字为 px，字符串支持 CSS 高度；auto 按当前项计算高度。 |
 | `type` | `"default" \| "card"` | `"default"` | 卡片模式按内容自身尺寸布局。 |
@@ -311,9 +311,9 @@ const carousel = ref<CarouselExpose>();
 | 键名                | 说明                                                                                                                                                                                                                     |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `arrowGroup`        | 左右箭头的定位容器。**仅 `arrow` 判定为显示时渲染**，默认 `pointer-events-none absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 justify-between`；箭头离边距离改这里。                                              |
-| `arrow`             | 单个箭头按钮，默认 `size-10 rounded-full inline-flex items-center justify-center bg-[#000000]/45 backdrop-blur-3xl border`。**仅在未填充 `prev` / `next` 插槽时渲染**，填充这两个插槽会替换掉按钮，`ui.arrow` 随之失效。 |
+| `arrow`             | 单个箭头按钮，默认 `size-10 rounded-full inline-flex items-center justify-center bg-gray-6 text-gray-1 backdrop-blur-3xl border`。**仅在未填充 `prev` / `next` 插槽时渲染**，填充这两个插槽会替换掉按钮，`ui.arrow` 随之失效。 |
 | `indicatorWrapper`  | 指示器定位与显隐容器，默认 `flex justify-center`；`indicatorPosition` 为 `inside` 时在 `root` 内绝对定位，为 `outside` 时在横向主图下方或纵向主图右侧常规排列；普通分页的 indicatorOffset 优先于边缘距离 / 间距类名，纵向 fraction 通过局部偏移变量保留此键的左右位置覆盖，progress 固定贴边；`pagination.display` 对内置分页与自定义插槽均生效。 |
-| `indicators`        | 五种内置分页的容器；基础为 `flex w-max items-center gap-2 p-0.5`。line / dot 开启背景时使用 `p-2`，button 使用 `px-2 py-1`，fraction 使用 `px-4 py-1`，progress 为满宽无内边距。背景由 `pagination.indicatorBackground` 控制：line / dot 使用 `bg-gray-1/80 ring-1 ring-inset ring-gray-10/15`，其中 inside line 改用 `bg-gray-10/30 ring-gray-1/20`，衬托 gray-1 激活项；fraction / button 保留 `bg-gray-1/30`。开启背景的四种分页均使用 `backdrop-blur-xl shadow-[0_0_8px_rgb(0_0_0/0.18)] rounded-full`：24px 背景模糊，阴影横纵偏移均为 0、模糊半径为 8px，均匀环绕四周；progress 不使用底板。自定义 `indicators` 插槽时此键及以下分页内容样式键失效，`indicatorWrapper` 仍有效。 |
+| `indicators`        | 五种内置分页的容器；基础为 `flex w-max items-center gap-2 p-0.5`。line / dot 开启背景时使用 `p-2`，button 使用 `px-2 py-1`，fraction 使用 `px-4 py-1`，progress 为满宽无内边距。背景由 `pagination.indicatorBackground` 控制：line / dot 使用 `bg-gray-1/80 ring-1 ring-inset ring-gray-10/15`，其中 inside line 改用 `bg-gray-10/30 ring-gray-1/20`，衬托 gray-1 激活项；fraction / button 保留 `bg-gray-1/30`。开启背景的四种分页均使用 `backdrop-blur-xl shadow-[0_0_8px_rgb(0_0_0/0.18)] rounded-full`：24px 背景模糊，阴影横纵偏移均为 0、模糊半径为 8px，均匀环绕四周；progress 不使用底板。可用 `pagination.backgroundColor` 自定义底色；关闭背景时忽略该颜色。自定义 `indicators` 插槽时此键及以下分页内容样式键失效，`indicatorWrapper` 仍有效。 |
 | `indicator`         | line / dot / button 的导航按钮；横向 line 为 24×2px、纵向为 2×24px；dot 普通项 6×6px，横向激活项 10×6px、纵向为 6×10px；button 为 20×20px。fraction / progress 不渲染此节点。 |
 | `indicatorActive`   | 当前按钮的追加类名，line 默认依位置使用 gray-1 / gray-5，可点击时悬停为 `bg-(--carousel-color)`；dot 默认透明底与 gray-10 描边，可点击时悬停为 `border-(--carousel-color)`；button 使用 `bg-(--carousel-color)`。仅 line / dot / button 生效。 |
 | `indicatorInactive` | 非当前按钮的追加类名，line 为 bg-gray-4，dot 为 bg-gray-10，button 保留 gray-2 与内描边；仅 line / dot / button 生效。 |
@@ -384,4 +384,6 @@ const carousel = ref<CarouselExpose>();
 - **分数和进度条仅展示。** clickable 只控制 line / dot / button；progress 显示当前页比例，不是自动播放倒计时，且不响应 indicatorOffset 和背景开关。
 - **背景开关位于 `pagination` 内。** `indicatorBackground` 默认 true；line / dot 通过 8px 留白、80% 不透明度的 gray-1 底色和内描边区分浅色图片，其中 inside line 使用 30% 不透明度的 gray-10 底色衬托 gray-1 激活项。fraction / button 保留 30% 不透明度的 gray-1 底色。false 移除底色、内描边、毛玻璃与阴影，line / dot 留白恢复为 2px，指示项颜色不变；自定义 `indicators` 插槽与 `ui` 覆盖需自行控制外观。
 - **外部分页的阴影不应由外层裁剪。** 组件 wrapper 保留可见溢出，root / viewport 独立限制轮播内容；业务父容器若设置 overflow-hidden，仍需为投影预留内边距，或将裁剪下移到内容区域，增加 z-index 不能突破祖先裁剪。
+- **背景色参数保留样式覆盖能力。** `pagination.backgroundColor` 设置分页容器底色，`arrow.backgroundColor` 同时设置主导航与缩略图箭头底色；支持十六进制、rgb/rgba 和 var() 等 CSS 颜色。`ui.indicators`、`ui.arrow`、`ui.thumbsArrow` 的背景类仍优先；自定义分页或箭头插槽需要自行控制外观。
+
 - **显示模式位于 pagination 内。** display 默认 always，hover 在轮播悬停或键盘聚焦时显示，无悬停能力的设备保持可见；never 不挂载分页及 indicators 插槽。pagination=null、indicatorPosition="none" 或内容不足两项仍优先隐藏分页；不影响箭头、模型或自动播放。

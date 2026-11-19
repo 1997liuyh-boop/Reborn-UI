@@ -111,6 +111,22 @@ Avatar 用图片、图标或简短文字标识用户或组织，目前仅提供 
 </template>
 ```
 
+### 可编辑头像
+
+editable 默认关闭。开启后悬停或键盘聚焦时显示编辑遮罩与图标，点击行为由 @click 交给业务处理。默认底色 bg-gray-5，文字 text-gray-1。文字与图标头像悬停时底色为 bg-gray-7，图片头像保留原图；图片加载失败后遵循回退头像的悬停样式。
+
+```vue
+<script setup>
+import { ref } from 'vue'
+
+const editingIcon = ref(false)
+</script>
+
+<template>
+  <RebornAvatar editable aria-label="更换头像图标" :icon="editingIcon ? 'lucide:smile' : 'lucide:user-round'" @click="editingIcon = !editingIcon" />
+</template>
+```
+
 ### 回退行为
 
 图片加载失败时触发 `error`，依次尝试 `icon`、默认插槽；更换 `src` 或 `srcSet` 后自动重新加载图片。
@@ -203,6 +219,7 @@ function handleError(event: Event) {
 | srcSet | `string` | - | 原生 `srcset`，模板可写 `src-set` |
 | alt | `string` | - | 图片替代文字；回退内容也以此作为无障碍名称 |
 | fit | `'fill' \| 'contain' \| 'cover' \| 'none' \| 'scale-down'` | `cover` | 图片适应外框的方式 |
+| editable | `boolean` | `false` | 显示编辑遮罩；根节点使用原生按钮，支持键盘激活，通过 `@click` 处理编辑操作 |
 | class | `ClassValue` | - | 根节点追加类名 |
 | ui | `AvatarUI` | `{}` | 按内部结构覆盖类名 |
 
@@ -224,8 +241,10 @@ function handleError(event: Event) {
 | --- | --- |
 | root | 外框，默认居中、裁剪溢出、灰色背景；尺寸和圆角由变体决定 |
 | image | 图片，默认 `block size-full`，仅图片可用时存在 |
-| icon | 图标，默认宽高为外框的 60%，仅使用 `icon` 时存在 |
+| icon | 图标，默认宽高为外框的 50%，仅使用 `icon` 时存在 |
 | fallback | 默认插槽容器，默认单行截断；图片或图标生效时不渲染 |
+| editOverlay | 可编辑遮罩，悬停或聚焦时显示 |
+| editIcon | 编辑图标 |
 
 ```vue
 <RebornAvatar icon="lucide:leaf" :ui="{ root: 'bg-success/10 text-success', icon: 'size-5' }" />

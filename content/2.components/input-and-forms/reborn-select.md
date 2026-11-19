@@ -411,7 +411,7 @@ function onScroll(e: Event) {
 ```vue
 <template>
   <RebornForm
-    :model="form"
+    :model-value="form"
     :rules="rules"
   >
     <RebornFormItem
@@ -791,9 +791,9 @@ type SelectValue = string | number | (string | number)[] | null;
 | `emptyText` | 空态插槽的默认文案「暂无数据」 | `text-gray-400 text-sm` | 同 `empty`；传入 `empty` 插槽后不渲染 |
 | `buttons` | 底部按钮区容器 | `flex flex-row items-center justify-center gap-2 p-3` | `showCancel` 与 `showConfirm` 同为 `false` 时 `hideButtons` 变体追加 `hidden` |
 | `cancel` | 取消按钮外层容器 | `flex-1` | 始终渲染（即使 `showCancel` 为 `false`，也保留这一格） |
-| `cancelButton` | 取消按钮本体，作为 `RebornButton` 的 `base` 下发 | `w-full`，按钮为 `variant="outlined"`、`block` | 仅 `showCancel` 为 `true` 时渲染 |
+| `cancelButton` | 取消按钮本体，作为 `RebornButton` 的 `base` 下发 | `w-full`，按钮为 `variant="outlined"` | 仅 `showCancel` 为 `true` 时渲染 |
 | `confirm` | 确认按钮外层容器 | `flex-1` | 仅 `showConfirm` 为 `true` 且有选项数据时渲染 |
-| `confirmButton` | 确认按钮本体，作为 `RebornButton` 的 `base` 下发 | `w-full`，按钮为 `variant="filled"`、`block` | 同 `confirm` |
+| `confirmButton` | 确认按钮本体，作为 `RebornButton` 的 `base` 下发 | `w-full`，按钮为 `variant="filled"` | 同 `confirm` |
 
 ::tip
 `hideButtons` 变体只追加一个 `hidden`。`ui.buttons` 的类排在它之后参与合并，所以传 `flex` 这类 display 类会把 `hidden` 替换掉、让空按钮区重新占位；只改间距、内边距则不影响隐藏。

@@ -117,7 +117,7 @@ const config = {
      * 内边距与条目一致取 px-1.5，复选框列才能和下方条目的复选框上下对齐
      */
     panelHeader:
-      'relative z-10 flex shrink-0 items-center gap-2 border-b border-gray-4 px-1.5 py-2',
+      'relative z-10 flex shrink-0 items-center gap-2 border-b border-gray-2 px-1.5 py-2',
 
     /** 头部勾选控件区（title 插槽 + 下拉菜单） */
     headerSelectControls: 'flex min-w-0 items-center gap-2',
@@ -127,7 +127,7 @@ const config = {
      * 下拉触发器：传给 RebornSelect 的 triggerUi.trigger。
      * 覆盖 sm 档的 h-6，以内容高度展示头部计数；h-auto! 沿用头部触发器的优先级。
      */
-    headerSelectTrigger: 'h-auto! w-auto gap-1 bg-transparent text-base text-gray-9',
+    headerSelectTrigger: 'h-auto! w-auto gap-1 bg-transparent text-base text-gray-9 border-0 group-focus:ring-0 focus-within:ring-0 data-[state=open]:ring-0',
     /** 下拉箭头固定为 16px，覆盖 RebornSelect 的 sm 档图标尺寸 */
     headerSelectIconWrapper: 'size-4',
     headerSelectArrow: 'text-lg text-gray-8',
@@ -145,7 +145,7 @@ const config = {
     /** 搜索 + 列表 + 底部的内容区，占满头部以下的全部高度 */
     panelContent: 'flex min-h-0 flex-1 flex-col',
     /** 搜索框外层：并入内容区，不画上下分隔线，左右内边距与条目对齐 */
-    panelSearch: 'shrink-0 px-1.5 pt-2 pb-1',
+    panelSearch: 'shrink-0 px-1.5 py-1',
     /** 搜索框：作为 class 传给 RebornInput，落在带边框的输入外壳（wrapper）上 */
     searchInput: 'w-full',
     /** 可滚动列表区域（RebornScrollbar 的根节点），占满内容区剩余高度 */
@@ -166,7 +166,7 @@ const config = {
      */
     virtualWindow: 'absolute inset-x-0 top-0 flex flex-col gap-1',
     /** 底部区域：分页与 footer 插槽，固定在面板底部 */
-    panelFooter: 'mt-auto shrink-0 flex flex-col gap-2 border-t border-gray-4 px-2 py-2',
+    panelFooter: 'mt-auto shrink-0 flex flex-col gap-2 border-t border-gray-2 px-2 py-2',
     /** 分页栏 */
     panelPagination: 'flex justify-center',
 
@@ -195,7 +195,7 @@ const config = {
     /** 中间操作按钮区 */
     operations: 'flex flex-col items-center justify-center gap-2.5 shrink-0 self-center px-1',
     /** 操作按钮（RebornButton 的根节点），高度与字号由按钮的 sm 档决定 */
-    operationBtn: 'shrink-0',
+    operationBtn: 'shrink-0 disabled:bg-gray-4',
     /** 只有图标、没有文案时收成正方形 */
     operationBtnIconOnly: 'aspect-square px-0',
     /** 操作按钮内图标容器，防止 flex 挤压导致图标不可见 */

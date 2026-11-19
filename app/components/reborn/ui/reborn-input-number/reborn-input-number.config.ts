@@ -41,32 +41,32 @@ export default {
       "absolute inset-y-0 flex w-(--stack-w) flex-col bg-inherit opacity-0 transition-all duration-200 group-hover/number:translate-x-0 group-hover/number:opacity-100 group-focus-within/number:translate-x-0 group-focus-within/number:opacity-100",
     /**
      * 堆叠布局下的单个按钮。
-     * 悬停时通过 flex-grow 1 → 1.5 扩大自身在按钮组里的占比（另一个按钮相应收缩），
-     * 分割线画在首个按钮的下边框上（gray-4），会随两按钮的分界线一起平滑移动；
+     * 两个按钮保持均分高度，悬停时仅改变交互颜色。
+     * 分割线画在首个按钮的下边框上（gray-4），位置保持不变；
      * 不能用 border-none 兜底重置，否则会把分割线的边框样式一并抹掉。
      */
     stackButton:
-      "flex min-h-0 flex-1 items-center justify-center border-0 bg-transparent p-0 text-gray-6 transition-all duration-200 first:border-b first:border-gray-4 enabled:hover:grow-[1.5] disabled:cursor-not-allowed disabled:text-gray-5",
+      "flex min-h-0 flex-1 items-center justify-center border-0 bg-transparent p-0 text-gray-6 transition-all duration-200 first:border-b first:border-gray-4 disabled:cursor-not-allowed disabled:text-gray-5",
     input:
-      "h-full min-w-0 flex-1 border-none bg-transparent text-gray-9 outline-none transition-[padding] duration-200 placeholder:text-gray-5 read-only:cursor-default disabled:cursor-not-allowed disabled:text-gray-5",
+      "h-full min-w-0 flex-1 px-3 border-none bg-transparent text-gray-9 outline-none transition-[padding] duration-200 placeholder:text-gray-5 read-only:cursor-default disabled:cursor-not-allowed disabled:text-gray-5",
     divider: "h-full w-px shrink-0 bg-gray-3",
     /** 输入框内的前缀区（prefix 插槽） */
-    prefix: "flex shrink-0 items-center pe-0 text-gray-6",
+    prefix: "flex shrink-0 items-center pe-0 text-gray-8",
     /** 输入框内的后缀区（suffix 插槽） */
-    suffix: "flex shrink-0 items-center ps-0 text-gray-6",
+    suffix: "flex shrink-0 items-center ps-0 text-gray-8",
     icon: "shrink-0",
   },
   variants: {
     /**
      * 尺寸直接使用 Tailwind 刻度：高度 h-6 / h-8 / h-10，
-     * 水平内边距 px-2.5 / px-3 / px-4，图标 size-2.5 / size-3 / size-4。
+     * 输入区水平内边距固定 px-3（12px），图标 size-2.5 / size-3 / size-4。
      * 字号：sm / md 均为 14px（text-base）、lg 为 16px（text-lg）。
      * 分列按钮宽度与输入框高度取同一刻度，堆叠按钮宽度由局部变量同步计算。
      */
     size: {
       sm: {
         wrapper: "h-6 text-base [--stack-w:--spacing(6)]",
-        input: "px-2.5 text-base",
+        input: "text-base",
         button: "w-6",
         prefix: "ps-2.5",
         suffix: "pe-2.5",
@@ -74,7 +74,7 @@ export default {
       },
       md: {
         wrapper: "h-8 text-base [--stack-w:--spacing(8)]",
-        input: "px-3 text-base",
+        input: "text-base",
         button: "w-8",
         prefix: "ps-3",
         suffix: "pe-3",
@@ -82,7 +82,7 @@ export default {
       },
       lg: {
         wrapper: "h-10 text-lg [--stack-w:--spacing(10)]",
-        input: "px-4 text-lg",
+        input: "text-lg",
         button: "w-10",
         prefix: "ps-4",
         suffix: "pe-4",
@@ -102,11 +102,11 @@ export default {
     variant: {
       outlined: {
         wrapper:
-          "bg-gray-1 ring-1 ring-gray-4 focus-within:ring-1 data-[disabled=true]:bg-gray-2",
+          "bg-gray-1 border border-gray-4 ring-0 focus-within:ring-2 data-[disabled=true]:bg-gray-2",
       },
       filled: {
         wrapper:
-          "bg-gray-2 ring-1 ring-transparent focus-within:bg-gray-1 focus-within:ring-1 data-[disabled=true]:bg-gray-2 data-[disabled=true]:ring-gray-4",
+          "bg-gray-2 border border-transparent ring-0 focus-within:bg-gray-1 focus-within:ring-2 data-[disabled=true]:bg-gray-2 data-[disabled=true]:border-gray-4",
       },
       borderless: {
         wrapper: "bg-transparent ring-0 focus-within:ring-0",
@@ -125,49 +125,49 @@ export default {
       right: { input: "text-right" },
     },
     /**
-     * 配色。同时给出聚焦态的 ring 色与 border 色：
-     * ring 供 outlined / filled 使用，border 供 underlined 使用，
-     * 两者互不冲突，未使用的那一条在对应形态下不产生视觉效果。
+     * 交互描边固定使用对应色板第 5 阶，聚焦光环使用第 1 阶。
+     * outlined / filled 使用 1px 边框与 2px 聚焦光环；underlined 保留底线，borderless 保留无边框。
+     * 禁用态不响应悬停配色，避免不可操作的输入框显示强调边框。
      */
     color: {
       primary: {
-        wrapper: "focus-within:ring-primary focus-within:border-primary",
+        wrapper: "data-[disabled=false]:hover:border-brand-5 focus-within:border-brand-5 focus-within:ring-brand-1",
         button: "hover:text-primary",
         stackButton: "hover:text-primary",
         input: "caret-primary",
       },
       secondary: {
-        wrapper: "focus-within:ring-secondary focus-within:border-secondary",
+        wrapper: "data-[disabled=false]:hover:border-secondary-5 focus-within:border-secondary-5 focus-within:ring-secondary-1",
         button: "hover:text-secondary",
         stackButton: "hover:text-secondary",
         input: "caret-secondary",
       },
       success: {
-        wrapper: "focus-within:ring-success focus-within:border-success",
+        wrapper: "data-[disabled=false]:hover:border-green-5 focus-within:border-green-5 focus-within:ring-green-1",
         button: "hover:text-success",
         stackButton: "hover:text-success",
         input: "caret-success",
       },
       info: {
-        wrapper: "focus-within:ring-info focus-within:border-info",
+        wrapper: "data-[disabled=false]:hover:border-blue-5 focus-within:border-blue-5 focus-within:ring-blue-1",
         button: "hover:text-info",
         stackButton: "hover:text-info",
         input: "caret-info",
       },
       warning: {
-        wrapper: "focus-within:ring-warning focus-within:border-warning",
+        wrapper: "data-[disabled=false]:hover:border-orange-5 focus-within:border-orange-5 focus-within:ring-orange-1",
         button: "hover:text-warning",
         stackButton: "hover:text-warning",
         input: "caret-warning",
       },
       error: {
-        wrapper: "focus-within:ring-error focus-within:border-error",
+        wrapper: "data-[disabled=false]:hover:border-red-5 focus-within:border-red-5 focus-within:ring-red-1",
         button: "hover:text-error",
         stackButton: "hover:text-error",
         input: "caret-error",
       },
       neutral: {
-        wrapper: "focus-within:ring-neutral focus-within:border-neutral",
+        wrapper: "data-[disabled=false]:hover:border-gray-5 focus-within:border-gray-5 focus-within:ring-gray-1",
         button: "hover:text-neutral",
         stackButton: "hover:text-neutral",
         input: "caret-neutral",
@@ -203,7 +203,7 @@ export default {
     error: {
       true: {
         wrapper:
-          "ring-red-5 border-red-5 focus-within:ring-red-5 focus-within:border-red-5",
+          "border-red-5 data-[disabled=false]:hover:border-red-5 focus-within:ring-red-1 focus-within:border-red-5",
       },
     },
   },

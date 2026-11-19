@@ -18,23 +18,23 @@ export default {
         /** 定位层不参与缩放；交互状态统一控制本体放大、彩色边框与气泡避让距离 */
         thumbWrapper: "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 inline-flex z-[1] hover:z-[3] focus-within:z-[3] [--slider-thumb-grow:0] hover:[--slider-thumb-grow:1] has-[:focus-visible]:[--slider-thumb-grow:1]",
         /**
-         * 滑块默认 12px，悬停、按压或键盘聚焦时等比放大至 4/3，并显示 4px 的第六阶半透明圆环。
+         * 滑块默认 12px，悬停、按压或键盘聚焦时等比放大至 4/3，并显示 3px 的第六阶半透明圆环。
          * 缩放不改写宽高，自定义滑块可保留原有尺寸和长宽比。
          * 开启指针命中以接收悬停事件，拖拽事件仍冒泡到交互带统一处理。
          * outline-none：可编辑模式下滑块可聚焦（按键删除节点），聚焦视觉由色晕承担。
          */
         thumb:
-            "relative size-3 rounded-full flex items-center justify-center pointer-events-auto shadow-[0_0_1px_1px_rgba(100,100,100,0.1)] outline-none scale-[calc(1+var(--slider-thumb-grow)/3)] hover:ring-4 focus-visible:ring-4 transition-[scale,opacity,box-shadow] duration-100",
+            "relative size-3 rounded-full flex items-center justify-center pointer-events-auto shadow-[0_0_1px_1px_rgba(100,100,100,0.1)] outline-none scale-[calc(1+var(--slider-thumb-grow)/3)] hover:ring-3 focus-visible:ring-3 transition-[scale,opacity,box-shadow] duration-100",
         /** 默认露出 2px 彩色边框，交互时露出 2.25px，随本体放大 4/3 后恰为 3px */
         thumbDot: "size-[calc(100%-4px-var(--slider-thumb-grow)*0.5px)] rounded-full bg-gray-1",
         /**
          * 数值气泡：默认悬停或拖拽时显示在滑块上方（垂直模式显示在右侧）。
-         * 底色取 gray-9，整体不透明度为 80%，让气泡与箭头保持一致。
+         * 底色取 gray-10，无投影；悬停与按压只影响滑块，不改变气泡配色。
          * 箭头用 after 伪元素的透明边框三角实现，指向方位由 vertical 变体给出。
          * 箭头向主体内重叠 1px，避免亚像素边缘透底形成分割线。
          * 静止时箭头离本体约 3px，交互时按放大的半径和圆环补足距离，避免常显气泡留白过大。
          */
-        tooltip: "absolute z-[3] rounded-sm bg-gray-9 px-2 py-1 text-sm text-gray-1 whitespace-nowrap pointer-events-none opacity-80 shadow-md after:absolute after:border-4 after:border-transparent after:content-['']",
+        tooltip: "absolute z-[3] rounded-sm bg-gray-10 px-2 py-1 text-sm text-gray-1 whitespace-nowrap pointer-events-none after:absolute after:border-4 after:border-transparent after:content-['']",
         /**
          * 轨道节点统一样式（间断点与刻度点共用）：5px 圆点、gray-1 底、1.5px 边框，
          * 边框色由 color 变体取对应色板的第 3 阶。
@@ -43,15 +43,15 @@ export default {
         /** 轨道上的刻度点（marks），压在进度条之上、滑块之下 */
         markDot: "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 size-2 rounded-full bg-gray-1 border-[1.5px] pointer-events-none",
         /** 刻度文字（marks 的 label），可点击跳转到对应刻度；单个标记的 style 以内联样式叠加 */
-        markLabel: "absolute top-full mt-[8px] -translate-x-1/2 text-sm text-gray-6 whitespace-nowrap cursor-pointer select-none",
+        markLabel: "absolute top-full mt-2 -translate-x-1/2 text-sm text-gray-6 whitespace-nowrap cursor-pointer select-none",
         /** 滑轨两侧的业务含义图标（#prefix / #suffix 插槽或 prefix-icon / suffix-icon 属性） */
-        prefix: "shrink-0 inline-flex items-center text-gray-6 mr-[8px]",
-        suffix: "shrink-0 inline-flex items-center text-gray-6 ml-[8px]",
+        prefix: "shrink-0 inline-flex items-center text-gray-6 mr-2",
+        suffix: "shrink-0 inline-flex items-center text-gray-6 ml-2",
         /**
          * 末尾数值：与 suffix 一样离交互带 8px，4px 圆环不会贴到数字上。
          * 只写 text-gray-8：灰阶令牌在暗色主题下自动翻转，原先的 dark:text-gray-1 在暗色下等于深底深字，数字看不见
          */
-        value: "text-center w-12.5 text-gray-8 ml-[8px]",
+        value: "text-center w-12.5 text-gray-8 ml-2",
     },
     variants: {
         size: {
@@ -83,7 +83,7 @@ export default {
         },
         /** 按压拖拽中保持放大与圆环，即使指针已经离开滑块 */
         pressed: {
-            true: { thumbWrapper: "[--slider-thumb-grow:1]", thumb: "ring-4" },
+            true: { thumbWrapper: "[--slider-thumb-grow:1]", thumb: "ring-3" },
             false: {},
         },
         /**
@@ -115,16 +115,16 @@ export default {
                 progress: "left-0 w-full",
                 stopDot: "top-auto left-1/2",
                 markDot: "top-auto left-1/2",
-                markLabel: "top-auto mt-0 translate-x-0 left-full ml-[12px] -translate-y-1/2",
-                prefix: "mr-0 mb-[8px]",
-                suffix: "ml-0 mt-[8px]",
-                value: "ml-0 mt-[8px]",
+                markLabel: "top-auto mt-0 translate-x-0 left-full ml-3 -translate-y-1/2",
+                prefix: "mr-0 mb-2",
+                suffix: "ml-0 mt-2",
+                value: "ml-0 mt-2",
                 // 气泡在滑块右侧，箭头贴气泡左缘、指向左
-                tooltip: "left-[calc(100%+var(--slider-thumb-grow)*100%/6)] top-1/2 -translate-y-1/2 ml-[calc(6px+var(--slider-thumb-grow)*6px)] after:right-full after:-mr-px after:top-1/2 after:-translate-y-1/2 after:border-r-gray-9",
+                tooltip: "left-[calc(100%+var(--slider-thumb-grow)*100%/6)] top-1/2 -translate-y-1/2 ml-[calc(6px+var(--slider-thumb-grow)*6px)] after:right-full after:-mr-px after:top-1/2 after:-translate-y-1/2 after:border-r-gray-10",
             },
             false: {
                 // 气泡在滑块上方，箭头贴气泡下缘、指向下
-                tooltip: "bottom-[calc(100%+var(--slider-thumb-grow)*100%/6)] left-1/2 -translate-x-1/2 mb-[calc(6px+var(--slider-thumb-grow)*6px)] after:top-full after:-mt-px after:left-1/2 after:-translate-x-1/2 after:border-t-gray-9",
+                tooltip: "bottom-[calc(100%+var(--slider-thumb-grow)*100%/6)] left-1/2 -translate-x-1/2 mb-[calc(6px+var(--slider-thumb-grow)*6px)] after:top-full after:-mt-px after:left-1/2 after:-translate-x-1/2 after:border-t-gray-10",
             },
         },
         /** 是否有刻度标记：为下方（垂直模式为右侧）的刻度文字留出空间，见 compoundVariants */
@@ -156,8 +156,8 @@ export default {
     },
     compoundVariants: [
         // 刻度文字在滑轨下方（垂直模式在右侧），wrapper 留出对应空间
-        { hasMarks: true, vertical: false, class: { wrapper: "pb-[26px]" } },
-        { hasMarks: true, vertical: true, class: { wrapper: "pr-[36px]" } },
+        { hasMarks: true, vertical: false, class: { wrapper: "pb-6.5" } },
+        { hasMarks: true, vertical: true, class: { wrapper: "pr-9" } },
     ] as any,
     defaultVariants: {
         size: "md" as (typeof sizes)[number],

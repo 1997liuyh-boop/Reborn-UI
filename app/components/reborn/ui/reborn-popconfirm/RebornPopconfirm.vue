@@ -12,6 +12,9 @@ import theme from './reborn-popconfirm.config';
 
 defineOptions({ name: 'RebornPopconfirm' });
 
+// 随组件提供示例使用的问号图标，避免依赖外部图标服务。
+const questionCirclePath = 'M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448s448-200.6 448-448S759.4 64 512 64m0 708c-22.1 0-40-17.9-40-40s17.9-40 40-40s40 17.9 40 40s-17.9 40-40 40m62.9-219.5a48.3 48.3 0 0 0-30.9 44.8V620c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8v-21.5c0-23.1 6.7-45.9 19.9-64.9c12.9-18.6 30.9-32.8 52.1-40.9c34-13.1 56-41.6 56-72.7c0-44.1-43.1-80-96-80s-96 35.9-96 80v7.6c0 4.4-3.6 8-8 8h-48c-4.4 0-8-3.6-8-8V420c0-39.3 17.2-76 48.4-103.3C430.4 290.4 470 276 512 276s81.6 14.5 111.6 40.7C654.8 344 672 380.7 672 420c0 57.8-38.1 109.8-97.1 132.5';
+
 const props = withDefaults(defineProps<PopconfirmProps>(), {
   confirmText: '确定', cancelText: '取消', confirmColor: 'primary', cancelColor: 'neutral',
   hideCancel: false, loading: false, arrow: true, portal: true, dismissible: true, closeOnScroll: true, defaultOpen: false,
@@ -43,6 +46,8 @@ export type PopconfirmPlacement = Placement;
 export interface PopconfirmProps {
   /** 标题文字，14px 标题色（gray-10）。 */
   title?: string;
+  /** 标题左侧的图标名，尺寸 16px，与标题间隔 8px。 */
+  icon?: string;
   /** 描述文字，14px 辅助色（gray-8），与标题间隔 8px。 */
   description?: string;
   /** 确认按钮文字。 */
@@ -106,7 +111,7 @@ const popoverSideOffset = computed(() => props.sideOffset ?? props.content?.side
 const popoverUi = computed(() => ({
   ...props.ui?.popover,
   // 原阴影仅向下投射，同色背景上顶部轮廓不清；增加四周柔光，同时保留下方投影。
-  content: ['p-[12px] shadow-[0_0_8px_rgb(0_0_0/0.12),0_8px_24px_rgb(0_0_0/0.12)]', props.ui?.popover?.content],
+  content: ['p-3 shadow-[0_0_8px_rgb(0_0_0/0.12),0_8px_24px_rgb(0_0_0/0.12)]', props.ui?.popover?.content],
 }));
 
 const popoverRef = useTemplateRef<InstanceType<typeof RebornPopover>>('popoverRef');
@@ -148,8 +153,17 @@ defineExpose({
     <template #content>
       <div data-popconfirm :class="styles.body({ class: props.ui?.body })">
         <div v-if="$slots.title || title || $slots.description || description" :class="styles.header({ class: props.ui?.header })">
-          <div v-if="$slots.title || title" data-popconfirm-title :class="styles.title({ class: props.ui?.title })">
-            <slot name="title">{{ title }}</slot>
+          <div v-if="$slots.title || title" :class="styles.titleRow()">
+            <svg
+              v-if="icon === 'ant-design:question-circle-filled'" :class="styles.icon({ class: props.ui?.icon })"
+              viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"
+            >
+              <path :d="questionCirclePath" />
+            </svg>
+            <Icon v-else-if="icon" :name="icon" :class="styles.icon({ class: props.ui?.icon })" aria-hidden="true" />
+            <div data-popconfirm-title :class="styles.title({ class: props.ui?.title })">
+              <slot name="title">{{ title }}</slot>
+            </div>
           </div>
           <div v-if="$slots.description || description" data-popconfirm-description :class="styles.description({ class: props.ui?.description })">
             <slot name="description">{{ description }}</slot>

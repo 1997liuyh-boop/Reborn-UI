@@ -389,7 +389,7 @@ function scrollToBlock(key: string) {
             -->
             <section
               v-for="item in playgroundBlocks" :id="blockId('anchor-playground', item.key)" :key="item.key"
-              class="border-default flex min-h-[280px] flex-col gap-2 border-b border-dashed py-4 last:border-b-0"
+              class="border-default flex min-h-70 flex-col gap-2 border-b border-dashed py-4 last:border-b-0"
               :style="{ paddingLeft: `${item.depth * 16}px` }"
             >
               <h4 class="text-highlighted text-sm font-medium">
@@ -428,7 +428,7 @@ function scrollToBlock(key: string) {
         <div id="anchor-basic-box" class="h-64 min-w-0 flex-1 overflow-y-auto pr-2">
           <section
             v-for="item in chapters" :id="blockId('anchor-basic', item.key)" :key="item.key"
-            class="flex min-h-[280px] flex-col gap-2 py-2"
+            class="flex min-h-70 flex-col gap-2 py-2"
           >
             <h4 class="text-highlighted text-sm font-medium">
               {{ item.title }}
@@ -454,7 +454,7 @@ function scrollToBlock(key: string) {
         <div id="anchor-items-box" class="h-64 min-w-0 flex-1 overflow-y-auto pr-2">
           <section
             v-for="block in itemsBlocks" :id="block.id" :key="block.id"
-            class="flex min-h-[280px] flex-col gap-2 py-2" :class="block.depth > 0 && 'pl-4'"
+            class="flex min-h-70 flex-col gap-2 py-2" :class="block.depth > 0 && 'pl-4'"
           >
             <h4 class="text-highlighted text-sm font-medium">
               {{ block.title }}
@@ -485,7 +485,7 @@ function scrollToBlock(key: string) {
         <div id="anchor-horizontal-box" class="h-64 w-full overflow-y-auto">
           <section
             v-for="item in chapters" :id="blockId('anchor-horizontal', item.key)" :key="item.key"
-            class="flex min-h-[280px] flex-col gap-2 py-2"
+            class="flex min-h-70 flex-col gap-2 py-2"
           >
             <h4 class="text-highlighted text-sm font-medium">
               {{ item.title }}
@@ -545,7 +545,7 @@ function scrollToBlock(key: string) {
         <div id="anchor-marker-box" class="h-64 min-w-0 flex-1 overflow-y-auto pr-2">
           <section
             v-for="item in chapters" :id="blockId('anchor-marker', item.key)" :key="item.key"
-            class="flex min-h-[280px] flex-col gap-2 py-2"
+            class="flex min-h-70 flex-col gap-2 py-2"
           >
             <h4 class="text-highlighted text-sm font-medium">
               {{ item.title }}
@@ -585,7 +585,7 @@ function scrollToBlock(key: string) {
         <div id="anchor-track-box" class="h-64 min-w-0 flex-1 overflow-y-auto pr-2">
           <section
             v-for="item in chapters" :id="blockId('anchor-track', item.key)" :key="item.key"
-            class="flex min-h-[280px] flex-col gap-2 py-2"
+            class="flex min-h-70 flex-col gap-2 py-2"
           >
             <h4 class="text-highlighted text-sm font-medium">
               {{ item.title }}
@@ -616,7 +616,7 @@ function scrollToBlock(key: string) {
         <div id="anchor-color-box" class="h-64 min-w-0 flex-1 overflow-y-auto pr-2">
           <section
             v-for="item in chapters" :id="blockId('anchor-color', item.key)" :key="item.key"
-            class="flex min-h-[280px] flex-col gap-2 py-2"
+            class="flex min-h-70 flex-col gap-2 py-2"
           >
             <h4 class="text-highlighted text-sm font-medium">
               {{ item.title }}
@@ -648,7 +648,7 @@ function scrollToBlock(key: string) {
         <div id="anchor-container-box" ref="containerEl" class="h-64 min-w-0 flex-1 overflow-y-auto px-2">
           <section
             v-for="item in chapters" :id="blockId('anchor-container', item.key)" :key="item.key"
-            class="flex min-h-[280px] flex-col gap-2 py-2"
+            class="flex min-h-70 flex-col gap-2 py-2"
           >
             <h4 class="text-highlighted text-sm font-medium">
               {{ item.title }}
@@ -708,7 +708,7 @@ function scrollToBlock(key: string) {
         <div id="anchor-offset-box" class="h-64 min-w-0 flex-1 overflow-y-auto pr-2">
           <section
             v-for="item in chapters" :id="blockId('anchor-offset', item.key)" :key="item.key"
-            class="flex min-h-[280px] flex-col gap-2 py-2"
+            class="flex min-h-70 flex-col gap-2 py-2"
           >
             <h4 class="text-highlighted text-sm font-medium">
               {{ item.title }}
@@ -744,7 +744,7 @@ function scrollToBlock(key: string) {
 
         <div id="anchor-nested-box" class="h-64 min-w-0 flex-1 overflow-y-auto pr-2">
           <template v-for="group in nestedChapters" :key="group.key">
-            <section :id="blockId('anchor-nested', group.key)" class="flex min-h-[280px] flex-col gap-2 py-2">
+            <section :id="blockId('anchor-nested', group.key)" class="flex min-h-70 flex-col gap-2 py-2">
               <h4 class="text-highlighted text-sm font-medium">
                 {{ group.title }}
               </h4>
@@ -755,7 +755,7 @@ function scrollToBlock(key: string) {
 
             <section
               v-for="child in group.children" :id="blockId('anchor-nested', `${group.key}-${child.key}`)"
-              :key="child.key" class="flex min-h-[280px] flex-col gap-2 py-2 pl-4"
+              :key="child.key" class="flex min-h-70 flex-col gap-2 py-2 pl-4"
             >
               <h5 class="text-highlighted text-xs font-medium">
                 {{ group.title }} / {{ child.title }}
@@ -795,7 +795,7 @@ function scrollToBlock(key: string) {
           <div id="anchor-manual-box" class="h-64 min-w-0 flex-1 overflow-y-auto pr-2">
             <section
               v-for="item in chapters" :id="blockId('anchor-manual', item.key)" :key="item.key"
-              class="flex min-h-[280px] flex-col gap-2 py-2"
+              class="flex min-h-70 flex-col gap-2 py-2"
             >
               <h4 class="text-highlighted text-sm font-medium">
                 {{ item.title }}

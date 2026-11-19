@@ -418,3 +418,66 @@ it('树节点没有图标时不渲染占位，有图标与自定义插槽仍正�
   assert.equal(flatten(root).filter(node => node.type === 'svg').length, 1);
   app.unmount();
 });
+
+
+it('最大数量拦截新增，取消后可继续选择，计数和清空同步更新', async () => {
+  const view = mount({ treeData: team, multiple: true, checkStrictly: true, maxCount: 2, showWordLimit: true, clearable: true, modelValue: ['fe'] });
+  await view.open();
+  const status = () => flatten(view.root).find(node => node.props.role === 'status')!;
+  const text = (node: Element): string => node.text + node.children.map(text).join('');
+  assert.equal(text(status()).replace(/\s/g, ''), '1/2');
+  view.find('Tree').props.onCheck(['fe', 'be']); await nextTick();
+  assert.deepEqual(view.props.modelValue, ['fe', 'be']);
+  assert.equal(text(status()).replace(/\s/g, ''), '2/2');
+  view.find('Tree').props.onCheck(['fe', 'be', 'dept']); await nextTick();
+  assert.deepEqual(view.props.modelValue, ['fe', 'be']);
+  assert.equal(view.changes.length, 1, '超限不发送change或回写');
+  assert.deepEqual(view.find('Tree').props.checkedKeys, ['fe', 'be']);
+  view.find('Tree').props.onCheck(['be']); await nextTick();
+  view.find('Tree').props.onCheck(['be', 'dept']); await nextTick();
+  assert.deepEqual(view.props.modelValue, ['be', 'dept']);
+  flatten(view.root).find(node => node.props['aria-label'] === '清空选择')!.props.onClick({ stopPropagation() {} }); await nextTick();
+  assert.deepEqual(view.props.modelValue, []);
+  assert.equal(text(status()).replace(/\s/g, ''), '0/2');
+  assert.equal(view.clears, 1); view.unmount();
+});
+
+it('父子联动按完整标签数限制，超过上限不产生部分勾选', async () => {
+  const view = mount({ treeData: team, multiple: true, maxCount: 2, modelValue: ['fe'] });
+  await view.open();
+  view.find('Tree').props.onCheck(['fe', 'dept'], { checked: true, node: team[0] }); await nextTick();
+  assert.deepEqual(view.props.modelValue, ['fe']);
+  assert.deepEqual(view.values, []);
+  assert.deepEqual(view.find('Tree').props.checkedKeys, { checked: ['fe'], halfChecked: ['dept'] });
+  view.props.maxCount = 3; await nextTick();
+  view.find('Tree').props.onCheck(['fe', 'dept'], { checked: true, node: team[0] }); await nextTick();
+  assert.deepEqual(view.props.modelValue, ['fe', 'dept', 'be']);
+  view.props.maxCount = 1; await nextTick();
+  assert.deepEqual(view.props.modelValue, ['fe', 'dept', 'be'], '动态缩小上限不截断已有回填');
+  view.find('Tree').props.onCheck(['fe'], { checked: false, node: team[0].children[1] }); await nextTick();
+  assert.deepEqual(view.props.modelValue, ['fe']); view.unmount();
+});
+
+it('搜索隐藏的选择也占数量，超限时保留关键词，移除标签可恢复可选数量', async () => {
+  const view = mount({ treeData: team, multiple: true, checkStrictly: true, maxCount: 1, allowSearch: true, modelValue: ['fe'] });
+  await view.open();
+  view.find('input').props.onInput({ target: { value: '后端' } }); await nextTick();
+  view.find('Tree').props.onCheck(['be']); await nextTick();
+  assert.deepEqual(view.props.modelValue, ['fe']);
+  assert.equal(view.find('input').props.value, '后端');
+  view.find('Badge').props.onClose({ stopPropagation() {} }); await nextTick();
+  view.find('Tree').props.onCheck(['be']); await nextTick();
+  assert.deepEqual(view.props.modelValue, ['be']);
+  assert.equal(view.find('input').props.value, ''); view.unmount();
+});
+
+it('计数开关默认关闭且只作用于多选，未配置上限时不限制数量', async () => {
+  const view = mount({ treeData: team, multiple: true, checkStrictly: true, modelValue: ['fe'] });
+  assert.equal(flatten(view.root).some(node => node.props.role === 'status'), false);
+  view.props.showWordLimit = true; await nextTick();
+  assert.ok(flatten(view.root).some(node => node.props.role === 'status'));
+  await view.open(); view.find('Tree').props.onCheck(['fe', 'be', 'dept']); await nextTick();
+  assert.deepEqual(view.props.modelValue, ['fe', 'be', 'dept']);
+  view.props.multiple = false; await nextTick();
+  assert.equal(flatten(view.root).some(node => node.props.role === 'status'), false); view.unmount();
+});

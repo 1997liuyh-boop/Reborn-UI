@@ -211,6 +211,8 @@ const slots = defineSlots<{
   footer?: () => any;
   /** 自定义单元格内容，对应 RebornDatePickerPanel 的 default 插槽 */
   cell?: (props: DatePickerCell) => any;
+  /** 范围类型开始和结束输入框之间的分隔内容 */
+  "range-separator"?: () => any;
   /** 上个月图标 */
   "prev-month"?: () => any;
   /** 下个月图标 */
@@ -322,10 +324,10 @@ const rangeTexts = computed<[string, string]>(() => {
   const v = Array.isArray(source) ? source : [];
   return [formatItem(v[0]), formatItem(v[1])];
 });
-const isPreviewing = computed(() => preview.value !== null && !inputDirty.value);
+const isPreviewing = computed(() => !isMultiple.value && preview.value !== null && !inputDirty.value);
 const inputTexts = computed<[string, string]>(() => {
   if (inputDraft.value && !isPreviewing.value) return inputDraft.value;
-  if (isMultiple.value) return [isPreviewing.value ? formatItem(preview.value) : "", ""];
+  if (isMultiple.value) return ["", ""];
   if (isWeek.value) return [rangeTexts.value.some(Boolean) ? rangeTexts.value.join(` ${props.rangeSeparator} `) : "", ""];
   return isDual.value ? rangeTexts.value : [formatItem(preview.value ?? model.value), ""];
 });
@@ -412,6 +414,7 @@ const ui = computed(() => {
     color: props.color,
     variant: props.variant,
     multiple: isMultiple.value,
+    hasTags: tags.value.length > 0,
     wrapTags: wrapTags.value,
     // 箭头旋转受 arrowAnimation 控制；展开态的描边色走 data-state，不依赖该变体
     open: isOpen.value && props.arrowAnimation,
@@ -610,7 +613,7 @@ function onInputKeydown(event: KeyboardEvent) {
 }
 
 function onPanelHover(value: Date | [Date, Date | null] | null) {
-  if (!inputDirty.value) preview.value = value;
+  if (!isMultiple.value && !inputDirty.value) preview.value = value;
 }
 
 watch(isDisabled, (disabled) => {
@@ -840,7 +843,7 @@ defineExpose({
                 @blur="onInputBlur"
                 @keydown="onInputKeydown"
               >
-              <span :class="ui.rangeSeparator()">{{ rangeSeparator }}</span>
+              <span :class="ui.rangeSeparator()"><slot name="range-separator">{{ rangeSeparator }}</slot></span>
               <input
                 :value="inputTexts[1]"
                 :disabled="isDisabled"

@@ -23,6 +23,8 @@ export interface AvatarProps {
   alt?: string;
   /** 图片在头像外框中的适应方式 */
   fit?: AvatarFit;
+  /** 显示可编辑遮罩，点击通过原生 click 事件交给业务处理 */
+  editable?: boolean;
   /** 根节点追加类名 */
   class?: ClassValue;
   /** 按结构覆盖样式 */
@@ -30,7 +32,7 @@ export interface AvatarProps {
 }
 
 defineOptions({ name: 'RebornAvatar' });
-const props = withDefaults(defineProps<AvatarProps>(), { fit: 'cover', ui: () => ({}) });
+const props = withDefaults(defineProps<AvatarProps>(), { fit: 'cover', editable: false, ui: () => ({}) });
 const emit = defineEmits<{
   /** 图片加载失败，随后展示图标或默认插槽 */
   error: [event: Event];
@@ -58,6 +60,8 @@ const styles = computed(() => avatarTheme({
   shape: shape.value,
   fit: props.fit,
   grouped: !!group,
+  editable: props.editable,
+  fallbackContent: !showImage.value,
 }));
 
 /** 图片候选变化后重试，并重建图片节点，避免沿用旧请求的失败状态。 */
@@ -86,9 +90,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <span
+  <component
+    :is="editable ? 'button' : 'span'" :type="editable ? 'button' : undefined"
     :class="styles.root({ class: cn(props.ui.root, props.class) })" :style="sizeStyle"
-    :role="!showImage && alt ? 'img' : undefined" :aria-label="!showImage && alt ? alt : undefined"
+    :role="!editable && !showImage && alt ? 'img' : undefined" :aria-label="editable ? (alt || '编辑头像') : (!showImage && alt ? alt : undefined)"
   >
     <img
       v-if="showImage" ref="img" :key="imageKey" :src="src || undefined" :srcset="srcSet" :alt="alt ?? ''"
@@ -97,5 +102,8 @@ onMounted(() => {
     <Icon v-else-if="iconName" :name="iconName" :class="styles.icon({ class: props.ui.icon })" aria-hidden="true" />
     <component :is="iconComponent" v-else-if="iconComponent" :class="styles.icon({ class: props.ui.icon })" aria-hidden="true" />
     <span v-else :class="styles.fallback({ class: props.ui.fallback })"><slot /></span>
-  </span>
+    <span v-if="editable" :class="styles.editOverlay({ class: props.ui.editOverlay })" aria-hidden="true">
+      <Icon name="lucide:pencil" :class="styles.editIcon({ class: props.ui.editIcon })" />
+    </span>
+  </component>
 </template>

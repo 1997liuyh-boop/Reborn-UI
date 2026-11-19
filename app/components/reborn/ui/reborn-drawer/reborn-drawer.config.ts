@@ -28,7 +28,7 @@ export default {
     header: 'flex shrink-0 items-center justify-between gap-4 px-6 py-4',
     heading: 'flex min-w-0 items-center gap-3',
     title: 'min-w-0 break-words text-lg text-gray-10',
-    close: 'flex size-5 shrink-0 cursor-pointer items-center justify-center text-gray-6 transition-colors hover:text-gray-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+    close: 'flex size-5 shrink-0 cursor-pointer items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary text-gray-6 hover:text-gray-8 active:text-gray-9',
     extra: 'flex shrink-0 items-center gap-2',
     /**
      * 正文不用原生 overflow-auto：Windows 等平台的原生滚动条在内容溢出时常驻显示，

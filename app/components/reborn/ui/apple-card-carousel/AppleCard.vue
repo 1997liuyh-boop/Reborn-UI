@@ -90,12 +90,12 @@ function handleClose() {
           class="relative z-[60] mx-auto my-10 h-fit max-w-5xl rounded-3xl bg-white p-4 font-sans md:p-10 dark:bg-neutral-900"
         >
           <button
-            class="sticky top-4 right-0 ml-auto flex size-8 items-center justify-center rounded-full bg-black dark:bg-white"
+            class="sticky top-4 right-0 ml-auto flex size-8 items-center justify-center rounded-full bg-black dark:bg-white text-gray-6 hover:text-gray-8 active:text-gray-9"
             @click="handleClose"
           >
             <Icon
               name="tabler:x"
-              class="size-6 text-neutral-100 dark:text-neutral-900"
+              class="size-6"
             />
           </button>
           <Motion

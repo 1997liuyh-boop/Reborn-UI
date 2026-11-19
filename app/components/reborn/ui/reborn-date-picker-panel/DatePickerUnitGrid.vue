@@ -34,7 +34,7 @@ const emit = defineEmits<{ select: [cell: UnitCell]; hover: [date: Date | null] 
 
 defineSlots<{ default?: (cell: DatePickerCell) => any }>();
 
-/** 年视图四列、月视图四列、季度视图两列 */
+/** 年视图与月视图每行三列，季度视图每行四列 */
 function gridClass() {
   if (props.kind === 'year') return props.ui.grid4Year();
   if (props.kind === 'month') return props.ui.grid4Month();
@@ -47,12 +47,12 @@ function gridClass() {
  */
 function itemClass(cell: UnitCell) {
   const ui = props.ui;
-  const state = cell.selected ? ui.dayActive() : cell.inRange ? ui.yearMonthInRange() : '';
-  const capStart = cell.cap === 'start' ? ui.yearMonthRangeStart() : '';
-  const capEnd = cell.cap === 'end' ? ui.yearMonthRangeEnd() : '';
+  const state = cell.disabled ? "" : cell.selected ? ui.dayActive() : cell.inRange ? ui.yearMonthInRange() : '';
+  const capStart = !cell.disabled && cell.cap === 'start' ? ui.yearMonthRangeStart() : '';
+  const capEnd = !cell.disabled && cell.cap === 'end' ? ui.yearMonthRangeEnd() : '';
   const today = props.highlightToday && cell.isToday && !cell.disabled && !cell.selected ? ui.dayToday() : '';
   const disabled = cell.disabled ? ui.dayDisabled() : '';
-  const tail = props.kind === 'year' ? [today, disabled, cell.outside ? ui.yearMonthOutside() : ''] : [disabled, today];
+  const tail = props.kind === 'year' ? [today, disabled, cell.outside && !cell.disabled ? ui.yearMonthOutside() : ''] : [disabled, today];
   return ui.yearMonthItem({ class: [state, capStart, capEnd, ...tail] });
 }
 

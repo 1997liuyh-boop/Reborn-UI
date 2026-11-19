@@ -226,7 +226,7 @@ const spanItems: DescriptionsItem[] = [
         <RebornDescriptions bordered title="RebornDescriptionsItem 子组件" :column="2">
           <RebornDescriptionsItem label="订单编号">RB-2024-0917-0031</RebornDescriptionsItem>
           <RebornDescriptionsItem label="支付状态">
-            <span class="text-success inline-flex items-center gap-[4px]">
+            <span class="text-success inline-flex items-center gap-1">
               <Icon name="lucide:circle-check" size="14" />
               已支付
             </span>
@@ -238,7 +238,7 @@ const spanItems: DescriptionsItem[] = [
 
         <RebornDescriptions bordered title="items 配合具名插槽" :column="2" :items="serviceItems">
           <template #content-status>
-            <span class="text-success inline-flex items-center gap-[4px]">
+            <span class="text-success inline-flex items-center gap-1">
               <Icon name="lucide:circle-check" size="14" />
               运行中
             </span>
@@ -273,7 +273,7 @@ const spanItems: DescriptionsItem[] = [
         <RebornDescriptions bordered layout="vertical" title="垂直布局" :column="3" :items="orderItems" />
 
         <div class="flex w-full flex-col gap-4">
-          <div class="w-[360px] max-w-full">
+          <div class="w-90 max-w-full">
             <RebornDescriptions
               bordered
               title="容器 360px"
@@ -303,6 +303,17 @@ const spanItems: DescriptionsItem[] = [
       />
     </DemoSection>
 
+    <DemoSection title="单元格跨行" description="负责人跨两行，备注跨两列。">
+      <DemoBlock>
+        <RebornDescriptions bordered :column="2">
+          <RebornDescriptionsItem label="负责人" :rowspan="2">林清</RebornDescriptionsItem>
+          <RebornDescriptionsItem label="上午">09:00 — 12:00</RebornDescriptionsItem>
+          <RebornDescriptionsItem label="下午">14:00 — 18:00</RebornDescriptionsItem>
+          <RebornDescriptionsItem label="备注" :span="2">工作日可通过团队空间联系。</RebornDescriptionsItem>
+        </RebornDescriptions>
+      </DemoBlock>
+    </DemoSection>
+
     <DemoSection
       title="标题与操作区"
       description="title 显示在最顶部，extra 显示在右上方，两者都有同名插槽可放富内容。"
@@ -310,7 +321,7 @@ const spanItems: DescriptionsItem[] = [
       <DemoBlock layout="stack">
         <RebornDescriptions bordered :column="2" :items="orderItems">
           <template #title>
-            <span class="inline-flex items-center gap-[8px]">
+            <span class="inline-flex items-center gap-2">
               <Icon name="lucide:receipt-text" class="text-primary" size="20" />
               订单详情
             </span>

@@ -127,7 +127,7 @@ const ui = computed(() => {
         title: (opts?: { class?: any }) => styles.title({ class: cn(opts?.class, overrides.title) }),
         center: (opts?: { class?: any }) => styles.center({ class: cn(opts?.class, overrides.center) }),
         right: (opts?: { class?: any }) => styles.right({ class: cn(opts?.class, overrides.right) }),
-        toggle: (opts?: { class?: any }) => styles.toggle({ class: cn(opts?.class, overrides.toggle) }),
+        toggle: (opts?: { class?: any }) => styles.toggle({ class: cn(isMenuOpen.value && 'text-gray-6 hover:text-gray-8 active:text-gray-9', opts?.class, overrides.toggle) }),
         // 移动端弹窗根节点：本组件没有对应的 tv slot，直接把用户覆盖透传给内部 RebornDrawer 的 root
         popup: (opts?: { class?: any }) => cn(opts?.class, overrides.popup),
         popupHeader: (opts?: { class?: any }) => styles.popupHeader({ class: cn(opts?.class, overrides.popupHeader) }),
@@ -226,7 +226,7 @@ async function toggleMenu() {
     <template #header="{ close }">
       <slot name="header" :close="close">
         <div :class="ui.popupHeader()">
-          <button type="button" aria-label="关闭菜单" class="flex size-5 shrink-0 items-center justify-center text-gray-9" @click="close"><Icon name="lucide:x" class="size-5" /></button>
+          <button type="button" aria-label="关闭菜单" class="flex size-5 shrink-0 items-center justify-center text-gray-6 hover:text-gray-8 active:text-gray-9" @click="close"><Icon name="lucide:x" class="size-5" /></button>
           <NuxtLink
             v-if="to && (title || $slots.title)" :to="to" :class="ui.title()"
             @click="isMenuOpen = false"

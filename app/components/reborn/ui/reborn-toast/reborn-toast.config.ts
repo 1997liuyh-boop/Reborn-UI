@@ -4,7 +4,7 @@ import { reactive, readonly } from 'vue';
 import { tv } from '~/lib/tv';
 
 /** 消息类型（level） */
-export const messageTypes = ['info', 'success', 'warning', 'error', 'loading'] as const;
+export const messageTypes = ['primary', 'info', 'success', 'warning', 'error', 'loading'] as const;
 export type MessageType = (typeof messageTypes)[number];
 
 /** 视觉变体：base 为白底浮层，其余配色对齐 reborn-button 的同名变体 */
@@ -105,6 +105,7 @@ export interface MessageInstance extends MessageOptions {
 
 /** type → 默认配色（loading 视作品牌主色） */
 export const MESSAGE_TYPE_COLOR: Record<MessageType, MessageColor> = {
+  primary: 'primary',
   info: 'info',
   success: 'success',
   warning: 'warning',
@@ -114,9 +115,10 @@ export const MESSAGE_TYPE_COLOR: Record<MessageType, MessageColor> = {
 
 /** type → 默认图标名 */
 export const MESSAGE_TYPE_ICON: Record<MessageType, string> = {
-  info: 'lucide:info',
+  primary: 'ant-design:info-outlined',
+  info: 'ant-design:info-outlined',
   success: 'lucide:check',
-  warning: 'lucide:triangle-alert',
+  warning: 'ant-design:exclamation-outlined',
   error: 'lucide:x',
   loading: 'lucide:loader-2',
 };
@@ -282,11 +284,10 @@ export function applyMessageConfig(config: Pick<MessageGlobalConfig, 'top' | 'du
 }
 
 /*
- * 视觉规格：单条消息 px-12px / 高 40px / 字号 14px / 圆角 8px。
+ * 视觉规格：单条消息 px-3 / 高 40px / 字号 14px / 圆角 4px。
  * base 变体：gray-1 白底 + 0 2px 12px rgba(0,0,0,.15) 投影，图标为语义色圆形底 + 白色符号。
- * filled / outlined / soft / subtle 配色对齐 reborn-button 的同名变体（不含 circle）；
- * 消息是悬浮层，soft/subtle 的半透明底（bg-{c}/10）会透出页面内容，
- * 故用同色相的 1 阶实色填充令牌（tag 填充色）等效替代，outlined 的透明底同理垫 gray-1。
+ * filled 的图标使用六阶底色。soft 和 subtle 均使用一阶底色和六阶文字，subtle 另加二阶描边。
+ * outlined 使用 gray-1 实色底，避免浮层透出页面内容。
  * 关闭图标 14px、透明度 65%，悬停恢复不透明，颜色继承当前文字色，五种变体通用；
  * 重复次数徽标 16px 高、12px 字号，压在消息右上角，底色取语义色并带 2px gray-1 描边与消息分隔。
  */
@@ -294,12 +295,11 @@ export const messageTheme = tv({
   slots: {
     /** 定位容器：纵向贴边距离由行内样式给出（见容器组件的 edgeStyle），横向位置随 placement 变化，贴边与对齐都用逻辑方向以便 rtl 镜像 */
     wrapper: 'fixed z-[2100] flex gap-2 pointer-events-none',
-    root: 'reborn-message pointer-events-auto relative inline-flex max-w-[80vw] items-center gap-2 h-10 px-3 text-base rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.15)]',
-    iconWrapper: 'flex items-center justify-center shrink-0',
+    root: 'reborn-message pointer-events-auto relative inline-flex max-w-[80vw] items-center gap-2 h-10 px-3 text-base rounded-sm shadow-[0_2px_12px_0_rgba(0,0,0,0.15)]',
+    iconWrapper: 'flex size-4 items-center justify-center shrink-0',
     icon: 'shrink-0',
     content: 'truncate',
-    close:
-      'inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center opacity-65 transition-opacity hover:opacity-100',
+    close: 'inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center transition-colors text-gray-6 hover:text-gray-8 active:text-gray-9',
     badge:
       'pointer-events-none absolute -top-2 -right-2 h-4 min-w-4 rounded-full px-1 text-center text-sm leading-4 font-medium text-white ring-2 ring-gray-1',
   },
@@ -321,6 +321,7 @@ export const messageTheme = tv({
       },
       filled: {
         root: 'text-white',
+        iconWrapper: 'size-5 rounded-full',
         icon: 'size-4',
       },
       outlined: {
@@ -370,14 +371,14 @@ export const messageTheme = tv({
     { variant: 'base', loading: true, color: 'error', class: { iconWrapper: 'text-red-6' } },
     { variant: 'base', loading: true, color: 'neutral', class: { iconWrapper: 'text-neutral' } },
 
-    // filled：同 reborn-button 的 filled（语义色实底 + 白字）
-    { variant: 'filled', color: 'primary', class: { root: 'bg-primary' } },
-    { variant: 'filled', color: 'secondary', class: { root: 'bg-secondary' } },
-    { variant: 'filled', color: 'success', class: { root: 'bg-success' } },
-    { variant: 'filled', color: 'info', class: { root: 'bg-info' } },
-    { variant: 'filled', color: 'warning', class: { root: 'bg-warning' } },
-    { variant: 'filled', color: 'error', class: { root: 'bg-error' } },
-    { variant: 'filled', color: 'neutral', class: { root: 'bg-neutral' } },
+    // filled：语义色实底与白字，图标圆底固定为六阶色
+    { variant: 'filled', color: 'primary', class: { root: 'bg-primary', iconWrapper: 'bg-brand-6' } },
+    { variant: 'filled', color: 'secondary', class: { root: 'bg-secondary', iconWrapper: 'bg-secondary-6' } },
+    { variant: 'filled', color: 'success', class: { root: 'bg-success', iconWrapper: 'bg-green-6' } },
+    { variant: 'filled', color: 'info', class: { root: 'bg-info', iconWrapper: 'bg-blue-6' } },
+    { variant: 'filled', color: 'warning', class: { root: 'bg-warning', iconWrapper: 'bg-orange-6' } },
+    { variant: 'filled', color: 'error', class: { root: 'bg-error', iconWrapper: 'bg-red-6' } },
+    { variant: 'filled', color: 'neutral', class: { root: 'bg-neutral', iconWrapper: 'bg-gray-6' } },
 
     // outlined：同 reborn-button 的 outlined（语义色边框 + 文字），底色垫 gray-1
     { variant: 'outlined', color: 'primary', class: { root: 'border-primary text-primary' } },
@@ -388,23 +389,23 @@ export const messageTheme = tv({
     { variant: 'outlined', color: 'error', class: { root: 'border-error text-error' } },
     { variant: 'outlined', color: 'neutral', class: { root: 'border-neutral text-neutral' } },
 
-    // soft：同 reborn-button 的 soft，底色用 1 阶实色填充令牌
-    { variant: 'soft', color: 'primary', class: { root: 'bg-brand-1 text-primary' } },
-    { variant: 'soft', color: 'secondary', class: { root: 'bg-secondary-1 text-secondary' } },
-    { variant: 'soft', color: 'success', class: { root: 'bg-green-1 text-success' } },
-    { variant: 'soft', color: 'info', class: { root: 'bg-blue-1 text-info' } },
-    { variant: 'soft', color: 'warning', class: { root: 'bg-orange-1 text-warning' } },
-    { variant: 'soft', color: 'error', class: { root: 'bg-red-1 text-error' } },
-    { variant: 'soft', color: 'neutral', class: { root: 'bg-gray-2 text-neutral' } },
+    // soft：一阶实色底和六阶文字
+    { variant: 'soft', color: 'primary', class: { root: 'bg-brand-1 text-brand-6' } },
+    { variant: 'soft', color: 'secondary', class: { root: 'bg-secondary-1 text-secondary-6' } },
+    { variant: 'soft', color: 'success', class: { root: 'bg-green-1 text-green-6' } },
+    { variant: 'soft', color: 'info', class: { root: 'bg-blue-1 text-blue-6' } },
+    { variant: 'soft', color: 'warning', class: { root: 'bg-orange-1 text-orange-6' } },
+    { variant: 'soft', color: 'error', class: { root: 'bg-red-1 text-red-6' } },
+    { variant: 'soft', color: 'neutral', class: { root: 'bg-gray-1 text-gray-6' } },
 
-    // subtle：soft + 语义色边框
-    { variant: 'subtle', color: 'primary', class: { root: 'bg-brand-1 border-primary text-primary' } },
-    { variant: 'subtle', color: 'secondary', class: { root: 'bg-secondary-1 border-secondary text-secondary' } },
-    { variant: 'subtle', color: 'success', class: { root: 'bg-green-1 border-success text-success' } },
-    { variant: 'subtle', color: 'info', class: { root: 'bg-blue-1 border-info text-info' } },
-    { variant: 'subtle', color: 'warning', class: { root: 'bg-orange-1 border-warning text-warning' } },
-    { variant: 'subtle', color: 'error', class: { root: 'bg-red-1 border-error text-error' } },
-    { variant: 'subtle', color: 'neutral', class: { root: 'bg-gray-2 border-neutral text-neutral' } },
+    // subtle：一阶实色底、二阶边框和六阶文字
+    { variant: 'subtle', color: 'primary', class: { root: 'bg-brand-1 border-brand-2 text-brand-6' } },
+    { variant: 'subtle', color: 'secondary', class: { root: 'bg-secondary-1 border-secondary-2 text-secondary-6' } },
+    { variant: 'subtle', color: 'success', class: { root: 'bg-green-1 border-green-2 text-green-6' } },
+    { variant: 'subtle', color: 'info', class: { root: 'bg-blue-1 border-blue-2 text-blue-6' } },
+    { variant: 'subtle', color: 'warning', class: { root: 'bg-orange-1 border-orange-2 text-orange-6' } },
+    { variant: 'subtle', color: 'error', class: { root: 'bg-red-1 border-red-2 text-red-6' } },
+    { variant: 'subtle', color: 'neutral', class: { root: 'bg-gray-1 border-gray-2 text-gray-6' } },
   ],
   defaultVariants: {
     placement: 'top' as MessagePlacement,

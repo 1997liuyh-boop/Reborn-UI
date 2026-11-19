@@ -13,12 +13,12 @@ for (const color of buttonColors) {
     for (const variant of ['filled', 'round', 'circle'] as const) {
       const classes = button({ color, variant }).base().split(/\s+/)
       for (const expected of [
-        `bg-${color}`, `text-${color}-foreground`,
-        `enabled:hover:bg-${color}-hover`, `enabled:hover:text-${color}-hover-foreground`,
-        `enabled:active:bg-${color}-active`, `enabled:active:text-${color}-active-foreground`,
+        `bg-${color}`, color === 'neutral' ? 'text-gray-10' : `text-${color}-foreground`,
+        `enabled:hover:bg-${color}-hover`, color === 'neutral' ? 'enabled:hover:text-gray-10/75' : `enabled:hover:text-${color}-hover-foreground`,
+        `enabled:active:bg-${color}-active`, color === 'neutral' ? 'enabled:active:text-gray-10' : `enabled:active:text-${color}-active-foreground`,
       ]) assert.ok(classes.includes(expected), `${variant} 缺少 ${expected}`)
       assert.ok(!classes.includes('text-white'))
-      assert.ok(!classes.some(value => value.endsWith('/75')))
+      assert.ok(!classes.some(value => value.endsWith('/75') && !(color === 'neutral' && value === 'enabled:hover:text-gray-10/75')))
     }
     const badgeClasses = badge({ color, variant: 'filled' }).base().split(/\s+/)
     assert.ok(badgeClasses.includes(`bg-${color}`))

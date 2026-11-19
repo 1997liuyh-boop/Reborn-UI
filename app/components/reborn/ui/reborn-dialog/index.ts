@@ -10,7 +10,7 @@ export { default as RebornDialog } from "./RebornDialog.vue";
 export type { DialogTransition, RebornDialogProps, RebornDialogUi } from "./RebornDialog.vue";
 
 /** 命令式确认框类型 */
-export type ModalType = "info" | "success" | "warning" | "error" | "confirm";
+export type ModalType = "primary" | "info" | "success" | "warning" | "error" | "confirm";
 
 /** 命令式内容节点：字符串 / VNode / 渲染函数 */
 export type ModalContent = string | VNode | (() => VNode | VNode[]);
@@ -61,30 +61,27 @@ export interface ModalReturn {
 }
 
 /** 各类型的默认图标与配色 */
-const TYPE_PRESETS: Record<ModalType, { icon: string; iconClass: string }> = {
-  info: { icon: "lucide:info", iconClass: "text-info" },
-  success: { icon: "lucide:circle-check", iconClass: "text-success" },
-  warning: { icon: "lucide:circle-alert", iconClass: "text-warning" },
-  error: { icon: "lucide:circle-x", iconClass: "text-error" },
-  confirm: { icon: "lucide:circle-help", iconClass: "text-warning" },
+// 随组件提供状态图标，避免在运行时请求外部图标集。
+const feedbackIconPaths = new Map<string, string>([
+  ["ant-design:info-outlined", "M448 224a64 64 0 1 0 128 0a64 64 0 1 0-128 0m96 168h-64c-4.4 0-8 3.6-8 8v464c0 4.4 3.6 8 8 8h64c4.4 0 8-3.6 8-8V400c0-4.4-3.6-8-8-8"],
+  ["ant-design:exclamation-outlined", "M448 804a64 64 0 1 0 128 0a64 64 0 1 0-128 0m32-168h64c4.4 0 8-3.6 8-8V164c0-4.4-3.6-8-8-8h-64c-4.4 0-8 3.6-8 8v464c0 4.4 3.6 8 8 8"],
+]);
+
+const TYPE_PRESETS: Record<ModalType, { icon: string; iconBackground: string }> = {
+  primary: { icon: "ant-design:info-outlined", iconBackground: "bg-brand-6" },
+  info: { icon: "ant-design:info-outlined", iconBackground: "bg-blue-6" },
+  success: { icon: "lucide:check", iconBackground: "bg-green-6" },
+  warning: { icon: "ant-design:exclamation-outlined", iconBackground: "bg-orange-6" },
+  error: { icon: "lucide:x", iconBackground: "bg-red-6" },
+  confirm: { icon: "lucide:circle-help", iconBackground: "bg-orange-6" },
 };
 
 /** 存活中的命令式实例注册表（destroyAll 的依据） */
 const activeModals = new Set<ModalReturn>();
 
-/** 归一化内容为可渲染节点（字符串按 describe 描述文字的样式渲染） */
+/** 解析命令式弹窗的字符串、节点或渲染函数。 */
 function renderContent(content?: ModalContent) {
-  if (content == null) {
-    return null;
-  }
-  if (typeof content === "function") {
-    return content();
-  }
-  if (typeof content === "string") {
-    // 行高用 text-sm 令牌自带的 20px，不再写 leading-[1.6]
-    return h("div", { class: "text-sm text-gray-7 whitespace-pre-line" }, content);
-  }
-  return content;
+  return typeof content === "function" ? content() : content;
 }
 
 /**
@@ -111,6 +108,8 @@ function createModal(type: ModalType, options: ModalMethodOptions = {}): ModalRe
   } = options;
 
   const preset = TYPE_PRESETS[type];
+  const iconName = icon ?? preset.icon;
+  const iconPath = feedbackIconPaths.get(iconName);
   const useLoading = onLoading !== false;
 
   const open = shallowRef(true);
@@ -272,11 +271,16 @@ function createModal(type: ModalType, options: ModalMethodOptions = {}): ModalRe
             header: () => {
               const nodes = [
                 h("div", { class: "flex min-w-0 items-center gap-2" }, [
-                  // 提示图标固定 24px，与标题基线对齐
-                  h(Icon, {
-                    name: icon || preset.icon,
-                    class: `size-[24px] shrink-0 ${preset.iconClass}`,
-                  }),
+                  h("span", {
+                    class: ["flex size-4 shrink-0 items-center justify-center rounded-full text-gray-1", preset.iconBackground],
+                    "aria-hidden": "true",
+                  }, [
+                    iconPath
+                      ? h("svg", { class: "size-3", viewBox: "0 0 1024 1024", fill: "currentColor" }, [
+                          h("path", { d: iconPath }),
+                        ])
+                      : h(Icon, { name: iconName, class: "size-3" }),
+                  ]),
                   // 标题样式与 RebornDialog 的 title slot 保持一致（text-lg / 500 / gray-10）
                   h(
                     "span",
@@ -288,8 +292,8 @@ function createModal(type: ModalType, options: ModalMethodOptions = {}): ModalRe
               // content 优先，回退 describe / description，保证两种写法都落在描述位置
               const body = renderContent(content ?? dialogProps.describe ?? dialogProps.description);
               if (body) {
-                // 左缩进 = 图标 24px + gap-2 的 8px，让描述文字与标题左边缘对齐
-                nodes.push(h("div", { class: "pl-8" }, [body]));
+                // 左缩进等于圆底宽度 16px 加间隔 8px，让正文与标题对齐。
+                nodes.push(h("div", { class: "pl-6 text-base text-gray-8 whitespace-pre-line" }, [body]));
               }
               return nodes;
             },
@@ -362,6 +366,7 @@ function typeMethod(type: ModalType) {
  * Modal.destroyAll() 用于路由切换等场景批量销毁所有存活实例
  */
 export const Modal = {
+  primary: typeMethod("primary"),
   info: typeMethod("info"),
   success: typeMethod("success"),
   warning: typeMethod("warning"),

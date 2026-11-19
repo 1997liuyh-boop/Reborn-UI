@@ -57,8 +57,7 @@ export default {
          * 清空按钮。默认绝对定位盖在箭头之上且隐藏，
          * 仅在 clearable 变体开启且鼠标悬停整个触发器时显示，避免箭头被永久顶掉。
          */
-        clearBtn:
-            "absolute inset-0 hidden cursor-pointer items-center justify-center text-gray-5 transition-colors hover:text-gray-7",
+        clearBtn: "absolute inset-0 hidden cursor-pointer items-center justify-center transition-colors text-gray-6 hover:text-gray-8 active:text-gray-9",
         /**
          * 触发器加载中指示器（RebornLoading）：占满尾部图标格子，替代箭头。
          * 颜色使用 RebornLoading 默认的 primary。
@@ -96,9 +95,9 @@ export default {
          * 分隔线用 gray-3，与浮层描边同一阶；字号比正文弱一档（text-sm）。
          */
         dropdownHeader:
-            "shrink-0 border-b border-gray-3 px-[10px] py-[6px] text-sm text-gray-6",
+            "shrink-0 border-b border-gray-3 px-2.5 py-1.5 text-sm text-gray-6",
         dropdownFooter:
-            "shrink-0 border-t border-gray-3 px-[10px] py-[6px] text-sm text-gray-6",
+            "shrink-0 border-t border-gray-3 px-2.5 py-1.5 text-sm text-gray-6",
 
         /* ---------------- 多选标签（dates / months / years / quarters，交由 RebornBadge 渲染） ---------------- */
 
@@ -110,7 +109,7 @@ export default {
         tagList: "flex min-w-0 flex-1 items-center gap-1 overflow-hidden",
         tag: "rounded-sm border-gray-3 bg-gray-2 text-gray-9",
         tagLabel: "truncate",
-        tagClose: "shrink-0 text-gray-5 transition-colors hover:text-gray-8",
+        tagClose: "shrink-0 transition-colors text-gray-6 hover:text-gray-8 active:text-gray-9",
         /** 标签关闭图标的尺寸 */
         tagCloseIcon: "size-full",
         /** collapse-tags 折叠后的 “+N” 标签 */
@@ -118,12 +117,11 @@ export default {
     },
     variants: {
         /**
-         * 多选形态。触发器内装的是标签而不是纯文本，水平内边距收敛为 4px。
-         * ! 沿用多选形态的优先级，覆盖单选尺寸档位的水平内边距。
-         * 本变体声明在 variant 之前，保证 borderless / underlined 的 px-0! 仍能压过它。
+         * 多选空值时与单选保留相同内边距，有标签后仅将左侧收敛为 4px。
          */
+        hasTags: { true: {}, false: {} },
         multiple: {
-            true: { trigger: "px-[4px]!" },
+            true: {},
             false: {},
         },
         /**
@@ -197,13 +195,13 @@ export default {
          * 色阶 token 自身已随主题切换，不可再写 dark: 前缀。
          */
         color: {
-            primary: { trigger: "hover:border-primary focus-within:border-primary group-focus:border-primary data-[state=open]:border-primary" },
-            secondary: { trigger: "hover:border-secondary focus-within:border-secondary group-focus:border-secondary data-[state=open]:border-secondary" },
-            success: { trigger: "hover:border-success focus-within:border-success group-focus:border-success data-[state=open]:border-success" },
-            info: { trigger: "hover:border-info focus-within:border-info group-focus:border-info data-[state=open]:border-info" },
-            warning: { trigger: "hover:border-warning focus-within:border-warning group-focus:border-warning data-[state=open]:border-warning" },
-            error: { trigger: "hover:border-error focus-within:border-error group-focus:border-error data-[state=open]:border-error" },
-            neutral: { trigger: "hover:border-gray-6 focus-within:border-neutral group-focus:border-neutral data-[state=open]:border-neutral" },
+            primary: { trigger: "hover:border-primary focus-within:border-primary group-focus:border-primary data-[state=open]:border-primary ring-primary/20" },
+            secondary: { trigger: "hover:border-secondary focus-within:border-secondary group-focus:border-secondary data-[state=open]:border-secondary ring-secondary/20" },
+            success: { trigger: "hover:border-success focus-within:border-success group-focus:border-success data-[state=open]:border-success ring-success/20" },
+            info: { trigger: "hover:border-info focus-within:border-info group-focus:border-info data-[state=open]:border-info ring-info/20" },
+            warning: { trigger: "hover:border-warning focus-within:border-warning group-focus:border-warning data-[state=open]:border-warning ring-warning/20" },
+            error: { trigger: "hover:border-error focus-within:border-error group-focus:border-error data-[state=open]:border-error ring-error/20" },
+            neutral: { trigger: "hover:border-gray-6 focus-within:border-neutral group-focus:border-neutral data-[state=open]:border-neutral ring-neutral/20" },
         },
         open: {
             true: { arrow: "rotate-180" },
@@ -254,6 +252,17 @@ export default {
         },
     },
     compoundVariants: [
+        { disabled: false, class: { trigger: "group-focus:ring-2 focus-within:ring-2 data-[state=open]:ring-2" } },
+        { disabled: false, error: true, class: { trigger: "ring-error/20 data-[state=closed]:active:border-red-7 data-[state=open]:active:border-red-7" } },
+        { multiple: true, hasTags: true, class: { trigger: "pl-1!" } },
+        // 按住触发器时使用第七阶描边，松开后沿用原有展开描边与外圈。
+        { color: "primary", disabled: false, error: false, class: { trigger: "data-[state=closed]:active:border-brand-7 data-[state=open]:active:border-brand-7" } },
+        { color: "secondary", disabled: false, error: false, class: { trigger: "data-[state=closed]:active:border-secondary-7 data-[state=open]:active:border-secondary-7" } },
+        { color: "success", disabled: false, error: false, class: { trigger: "data-[state=closed]:active:border-green-7 data-[state=open]:active:border-green-7" } },
+        { color: "info", disabled: false, error: false, class: { trigger: "data-[state=closed]:active:border-blue-7 data-[state=open]:active:border-blue-7" } },
+        { color: "warning", disabled: false, error: false, class: { trigger: "data-[state=closed]:active:border-orange-7 data-[state=open]:active:border-orange-7" } },
+        { color: "error", disabled: false, error: false, class: { trigger: "data-[state=closed]:active:border-red-7 data-[state=open]:active:border-red-7" } },
+        { color: "neutral", disabled: false, error: false, class: { trigger: "data-[state=closed]:active:border-gray-7 data-[state=open]:active:border-gray-7" } },
         // borderless 形态本身没有描边宽度，出错时需要补一圈，否则错误态完全不可见
         { variant: "borderless", error: true, class: { trigger: "border" } },
         // underlined 形态只在底边报错，避免补出一整圈与形态语言冲突的红框
@@ -279,6 +288,7 @@ export default {
         },
     ] as any,
     defaultVariants: {
+        error: false,
         size: "md" as (typeof sizes)[number],
         color: "primary" as (typeof colors)[number],
         variant: "outlined" as (typeof variants)[number],

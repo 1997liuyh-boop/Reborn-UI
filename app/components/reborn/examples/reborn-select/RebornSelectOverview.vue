@@ -18,7 +18,7 @@ const options: SelectOption[] = [
 </script>
 
 <template>
-  <div class="w-full max-w-[210px]">
+  <div class="w-full max-w-52.5">
     <RebornSelect
       v-model="city"
       :options="options"

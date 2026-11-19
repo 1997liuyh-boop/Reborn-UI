@@ -256,7 +256,7 @@ for (const kind of ['popover', 'tooltip', 'popconfirm']) {
   });
 }
 
-it('popover 十二方位保持 4px 可见间距，侧向箭头指向触发器中心且面板无描边', { skip: !existsSync(executablePath) }, async () => {
+it('popover 十二方位保持 4px 可见间距，箭头均指向触发器中心且面板无描边', { skip: !existsSync(executablePath) }, async () => {
   await withPopover('popover', async (page) => {
     await configure(page, { open: true, arrow: true, triggerStyle: { position: 'fixed', left: '500px', top: '300px' } });
     await page.locator('[data-popup="persistent"]').waitFor();
@@ -279,10 +279,8 @@ it('popover 十二方位保持 4px 可见间距，侧向箭头指向触发器中
             : side === 'left' ? trigger.left - arrow.right : arrow.left - trigger.right;
         near(gap, 4, `${side}-${align} 箭头尖端间距`);
         const arrowCenter = vertical ? arrow.left + arrow.width / 2 : arrow.top + arrow.height / 2;
-        const panelStart = vertical ? panel.left : panel.top;
-        const panelEnd = vertical ? panel.right : panel.bottom;
         const triggerCenter = vertical ? trigger.left + trigger.width / 2 : trigger.top + trigger.height / 2;
-        near(arrowCenter, !vertical || align === 'center' ? triggerCenter : align === 'start' ? panelStart + 25 : panelEnd - 25, '箭头中心');
+        near(arrowCenter, triggerCenter, '箭头中心');
         assert.equal(style.border, '0px');
         assert.equal(style.radius, '8px');
         assert.equal(style.padding, '12px');

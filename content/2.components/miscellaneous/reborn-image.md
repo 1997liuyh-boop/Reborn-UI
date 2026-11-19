@@ -16,6 +16,7 @@ badge: New
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
 | `src` | `string` | - | **必填**。图片地址。 |
+| `alt` | `string` | - | **仅 Web**。传给图片元素的替代文本。 |
 | `mode` | `string` | `aspectFill` | 图片裁剪、缩放的模式，两端通用。支持 `scaleToFill`, `aspectFit`, `aspectFill`, `widthFix`, `heightFix`, `top`, `bottom`, `center`, `left`, `right`, `top left`, `top right`, `bottom left`, `bottom right`。Web 端映射为 CSS：`scaleToFill` / `aspectFit` / `aspectFill` 对应 `object-fit` 的 `fill` / `contain` / `cover`，方位类取值为 `object-fit: none` 加对应的 `object-position`（不缩放原图）；`widthFix` / `heightFix` 需把另一边设为 `auto`，否则根节点的固定宽高不会随原图比例伸缩。 |
 | `width` | `string \| number` | `120` | 图片宽度。数字默认为 px，字符串支持 rpx, %, vw 等。 |
 | `height` | `string \| number` | `120` | 图片高度。数字默认为 px，字符串支持 rpx, %, vw 等。 |
@@ -50,16 +51,21 @@ badge: New
 | `loading`            | 通用   | 加载态遮罩容器。**仅 `showLoading` 为真且图片仍在加载时渲染**，默认 `absolute h-full w-full bg-gray-2 flex flex-col items-center justify-center`。 |
 | `loadingIcon`        | 通用   | 加载态的转圈图标。**仅在未填充 `loading` 插槽时渲染**，填充该插槽会替换掉这个节点，`ui.loadingIcon` 随之失效。                                   |
 | `error`              | 通用   | 加载失败遮罩容器。**仅图片加载失败时渲染**，默认与 `loading` 同款底色与居中布局。                                                              |
-| `errorIcon`          | 通用   | 失败态图标。Web 默认 `text-gray-4 size-8 icon-[lucide--image]`，原图与预览共用该样式。原图填充 `error` 插槽时替换默认图标；Web 预览仍显示该图标，不读取 `error` 插槽。UniApp 默认 `text-gray-4`，内部使用 `lucide:image`。 |
+| `errorIcon`          | 通用   | 失败态图标。Web 默认 `text-gray-4 size-8 icon-[lucide--image]`，原图填充 `error` 插槽时替换默认图标；Web 预览使用独立的 `previewErrorIcon`，不读取 `error` 插槽。UniApp 默认 `text-gray-4`，内部使用 `lucide:image`。 |
 | `magnifierLens`      | Web    | 放大镜在原图上的透镜方块。**仅 `magnifier` 为真且视口达到宽屏断点时渲染**，默认 `absolute bg-black/30 border border-white/20 rounded-lg backdrop-blur-[2px]`；透镜的可见度改这里，尺寸请用 `magnifierSize` prop。 |
 | `magnifierView`      | Web    | 放大镜的预览窗口（浮在原图右侧）。默认 `absolute top-0 left-[calc(100%+16px)] border bg-white shadow-2xl overflow-hidden z-50`；想换预览窗位置就覆盖这里的定位类。 |
 | `magnifierViewImage` | Web    | 预览窗内被放大的图层，默认 `absolute max-w-none origin-top-left`；缩放与偏移由内联样式实时计算，一般只在这里加圆角或滤镜。                     |
+| `previewBackdrop` | Web | 预览遮罩背景，默认 `rgba(25, 30, 39, 0.5)`。 |
+| `previewError` | Web | 预览加载失败的占位区域，默认 800px 见方、`bg-gray-2`，小屏限制在视口内。 |
+| `previewErrorIcon` | Web | 预览失败图标，默认 224px、`text-gray-5`，与原图错误插槽独立。 |
 | `previewToolbar`     | Web    | 预览菜单栏，位于大图下方、标题与缩略图条之间。**仅 `previewToolbar` 解析出至少一个按钮时渲染**，默认 `mx-auto mb-6 flex w-fit items-center gap-4 rounded-lg bg-gray-1 px-10 py-2`；按钮间距改 `gap-*`。 |
 | `previewAction`      | Web    | 菜单按钮，默认 56px 见方（`size-14`），hover 与按下时 `rounded-lg bg-gray-2`、图标转 `text-primary`。图标颜色继承这里的文字色，改图标颜色写这里而不是 `previewActionIcon`。 |
-| `previewActionIcon`  | Web    | 菜单按钮里的图标，默认 `size-6`。`oneToOne` 按钮显示的是文字，不经过这个键。                                                                    |
+| `previewActionIcon`  | Web    | 菜单按钮里的图标，默认 `size-5`（20px）。`oneToOne` 按钮显示的是文字，不经过这个键。                                                                    |
 | `previewActionText`  | Web    | `oneToOne` 按钮的「1:1」文字，默认 `text-base font-semibold`。viewerjs 的容器把字号设成了 0，覆盖时必须带字号类，否则文字不可见。               |
-| `previewArrow`       | Web    | 遮罩两侧的切换箭头。**仅预览列表多于 1 张时渲染**，默认 `size-12 rounded-full bg-gray-1`，垂直居中、左右各距边缘 24px；左右两个共用这个键。   |
-| `previewArrowIcon`   | Web    | 切换箭头里的图标，默认 `size-6`。                                                                                                              |
+| `previewArrow`       | Web    | 遮罩两侧的切换箭头。**仅预览列表多于 1 张时渲染**，默认 36px 圆形、白色 25% 透明背景，悬停为白色 50%；垂直居中、左右各距边缘 24px；左右两个共用这个键。   |
+| `previewClose` | Web | 预览关闭按钮，位于遮罩右上角，距顶部和右侧 32px；36px 圆形、`rgba(25, 30, 39, 0.25)` 背景，悬停透明度 0.5。图标使用 `text-gray-1`，悬停和按下时保持该颜色。 |
+| `previewCloseIcon` | Web | 关闭图标，默认 `size-5`。 |
+| `previewArrowIcon`   | Web    | 切换箭头里的图标，默认 `size-4.5`（18px）、`text-gray-1`。                                                                                                              |
 
 ```vue
 <template>

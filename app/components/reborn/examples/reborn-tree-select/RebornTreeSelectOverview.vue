@@ -30,14 +30,14 @@ const selectedKeys = ['web']
 </script>
 
 <template>
-  <div class="flex w-[184px] flex-col gap-1">
+  <div class="flex w-46 flex-col gap-1">
     <RebornTreeSelect
       v-model="team"
       :tree-data="treeData"
       :default-expanded-keys="expandedKeys"
       size="sm"
     />
-    <div class="w-full rounded-lg border border-gray-3 bg-gray-1 px-[4px] py-[6px] shadow-lg">
+    <div class="w-full rounded-lg border border-gray-3 bg-gray-1 px-1 py-1.5 shadow-lg">
       <RebornTree
         :tree-data="treeData"
         :default-expanded-keys="expandedKeys"

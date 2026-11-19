@@ -1,6 +1,6 @@
 ---
 title: Alert 警告提示
-description: 静态警告提示条：四种消息类型、六种视觉变体、顶部公告模式与消息轮播通知栏。
+description: 静态警告提示条：多种消息类型、六种视觉变体、顶部公告模式与消息轮播通知栏。
 category: 反馈
 platform: both
 tags: [alert, notice, banner, marquee, uniapp]
@@ -14,7 +14,7 @@ badge: New
 
 Alert 是嵌在页面流里的提示条，用来说明当前状态，不打断用户操作。它不会自动消失，也不需要用户确认；能否关闭由 `closable` 决定。
 
-`type` 同时决定默认图标与配色，`variant` 决定着色方式。Web 的 `filled` 使用语义色一阶浅底、六阶图标底色与灰色文字，其余变体保留同名按钮变体的配色。`color` 可以单独覆盖配色，让图标语义和颜色脱钩。
+`type` 同时决定默认图标与配色，`variant` 决定着色方式。Web 的 `filled` 使用语义色一阶浅底、六阶图标底色与灰色文字，`soft` 和 `subtle` 使用一阶实色底与六阶文字，`subtle` 另加二阶边框。`color` 可以单独覆盖配色，让图标语义和颜色脱钩。
 
 传入 `messages` 后组件切换为轮播通知栏：单行逐条切换、多行逐行上移、水平跑马灯三种形态由 `direction` 与 `rows` 组合决定，此时默认插槽不再渲染。
 
@@ -35,7 +35,7 @@ Alert 是嵌在页面流里的提示条，用来说明当前状态，不打断�
 
 ### 基础用法
 
-`type` 同时决定图标与配色，默认插槽写正文。四种类型的默认图标依次为：`info` 圆形 i、`success` 圆形对勾、`warning` 圆形感叹号、`error` 圆形叉。中性提示可通过 `color="neutral"` 指定配色；Web 的 `filled` 中性配色使用 `bg-gray-2`，避免与页面底色重合。
+`type` 同时决定图标与配色，默认插槽写正文。Web 的 `primary` 和 `info` 使用信息图标，`success`、`warning`、`error` 分别使用对勾、感叹号和叉号，`loading` 使用与 Message 一致的无底色加载指示器。中性提示可通过 `color="neutral"` 指定配色；Web 的 `filled` 中性配色使用 `bg-gray-2`，避免与页面底色重合。
 
 ```vue
 <template>
@@ -53,8 +53,8 @@ Alert 是嵌在页面流里的提示条，用来说明当前状态，不打断�
 
 | variant    | 着色                              | 典型用途                               |
 | ---------- | --------------------------------- | -------------------------------------- |
-| `soft`     | 语义色 10% 透明底 + 语义色文字    | UniApp 默认，页面内说明性提示           |
-| `subtle`   | `soft` 再加语义色描边             | 背景偏浅、需要边界把提示区分出来时     |
+| `soft`     | Web 使用一阶底色和六阶文字，UniApp 使用语义色半透明底    | UniApp 默认，页面内说明性提示           |
+| `subtle`   | `soft` 加描边，Web 使用二阶描边             | 背景偏浅、需要边界把提示区分出来时     |
 | `outlined` | 透明底 + 语义色描边与文字         | 卡片内部，不想再叠一层底色             |
 | `filled`   | Web：语义色一阶浅底 + 灰色文字，中性用灰色二阶；UniApp：语义色实底 + 白字 | Web 默认，页面内带有明确状态的提示 |
 | `round`    | Web：语义色实底 + 配套前景；UniApp：实底白字，胶囊圆角 | 单行短提示，放在工具栏或浮层顶部 |
@@ -64,7 +64,7 @@ Alert 是嵌在页面流里的提示条，用来说明当前状态，不打断�
 <template>
   <RebornAlert variant="filled" type="success">实底</RebornAlert>
   <RebornAlert variant="outlined" type="success">描边</RebornAlert>
-  <RebornAlert variant="soft" type="success">半透明浅底</RebornAlert>
+  <RebornAlert variant="soft" type="success">浅底</RebornAlert>
   <RebornAlert variant="subtle" type="success">浅底 + 描边</RebornAlert>
   <RebornAlert variant="text" type="success">纯文字</RebornAlert>
   <RebornAlert variant="round" type="success">胶囊</RebornAlert>
@@ -75,16 +75,15 @@ Alert 是嵌在页面流里的提示条，用来说明当前状态，不打断�
 `color` 可脱离 `type` 单独指定，用于图标语义与配色不一致的场景。例如 `type="success"` 配 `color="primary"`：图标仍是对勾，配色换成主色。
 ::
 
-Web 的 `filled` 使用 14px 字号（`text-base`）：正文为 `text-gray-8`，标题为 `text-gray-10`，关闭图标为 `text-gray-6`。状态图标为 16×16px、圆形（`rounded-full`），底色取当前色相六阶，符号使用 `text-gray-1`。例如 `info` 面板为 `bg-blue-1`、图标底色为 `bg-blue-6`；`color="neutral"` 面板为 `bg-gray-2`、图标底色为 `bg-gray-6`。
+Web 的 `filled` 使用 14px 字号（`text-base`）：正文和标题为 `text-gray-8`，关闭图标为 `text-gray-6`，悬停和按压时逐级加深。状态图标为 16×16px、圆形（`rounded-full`），底色取当前色相六阶，符号使用 `text-gray-1`。例如 `info` 面板为 `bg-blue-1`、图标底色为 `bg-blue-6`；`color="neutral"` 面板为 `bg-gray-2`、图标底色为 `bg-gray-6`。
 
 ### 标题与操作区：title 与 action 插槽
 
-`title` 属性或 `title` 插槽渲染一行加粗标题，标题与正文纵向排列。`action` 插槽位于内容右侧、关闭按钮左侧，适合放一个处理按钮。它与首行文字顶部对齐，所以正文多行时按钮不会被拉到中间。
+`title` 属性或 `title` 插槽渲染标题，标题与正文纵向排列。Web 端可用 `description` 属性或默认插槽提供正文，有正文时标题使用 `text-gray-10`、150% 行高和 500 字重。`action` 插槽位于内容右侧、关闭按钮左侧，适合放一个处理按钮。它与首行文字顶部对齐，所以正文多行时按钮不会被拉到中间。
 
 ```vue
 <template>
-  <RebornAlert type="warning" title="存储空间不足">
-    当前可用空间不足 10%，可能影响新数据写入，请及时清理。
+  <RebornAlert type="warning" title="存储空间不足" description="当前可用空间不足 10%，可能影响新数据写入，请及时清理。">
     <template #action>
       <RebornButton size="sm" color="warning" variant="outlined">去清理</RebornButton>
     </template>
@@ -209,12 +208,13 @@ const current = ref(0);
 
 | 属性名         | 类型                                                                                   | 默认值       | 描述                                                              |
 | -------------- | -------------------------------------------------------------------------------------- | ------------ | ----------------------------------------------------------------- |
-| `type`         | `'info' \| 'success' \| 'warning' \| 'error'`                              | `'info'`     | 消息类型，决定默认图标与配色。                                    |
+| `type`         | `'primary' \| 'info' \| 'success' \| 'warning' \| 'error' \| 'loading'`                              | `'info'`     | 消息类型，决定默认图标与配色。                                    |
 | `variant`      | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round'`                    | `'filled'`     | 视觉变体；`filled` 使用浅底、灰字与圆形状态图标。                  |
 | `color`        | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | -            | 配色覆盖；缺省时按 `type` 映射，可用 `neutral` 指定中性色。       |
 | `show-icon`    | `boolean`                                                                              | `true`       | 是否展示图标。                                                    |
 | `closable`     | `boolean`                                                                              | `false`      | 是否展示关闭按钮。                                                |
 | `title`        | `string`                                                                               | -            | 标题，也可用 `title` 插槽。                                       |
+| `description`  | `string`                                                                               | -            | 辅助文字，默认插槽可覆盖，轮播模式下不显示。                         |
 | `banner`       | `boolean`                                                                              | `false`      | 顶部公告模式，去除圆角与边框。                                    |
 | `center`       | `boolean`                                                                              | `false`      | 图标与内容整体居中。                                              |
 | `icon`         | `string`                                                                               | 按 `type` 取 | Iconify 图标名（如 `lucide:star`），也可用 `icon` 插槽。          |

@@ -136,7 +136,7 @@ function handleSelect(value: DropdownValue) {
 - 子面板内的点击不算父级的外部点击。
 - 任一层选中都会逐级冒泡到最外层的 `select`，并按各层的 `hide-on-select` 整条链路一起收起。
 
-子面板与父面板外缘之间固定留 4px 间隙：子菜单的间距取 9px，即 4px 可见间隙加父面板 4px 水平内边距与 1px 描边。
+子面板与父面板外缘之间固定留 4px 间隙：子菜单的间距取 8px，即 4px 可见间隙加父面板 4px 水平内边距。
 
 ### 页头页脚、禁用与选择后保持展开
 
@@ -295,12 +295,13 @@ function onVisibleChange(v: boolean) {
 
 ### 自定义样式（ui）
 
-`ui` 只传给 `RebornDropdown`。其中 `item` / `itemIcon` / `itemLabel` / `submenuIcon` / `group` / `groupTitle` 六个键通过上下文下发给面板里的每个 `RebornDoption`、`RebornDsubmenu` 入口行与 `RebornDgroup`，一处设置即作用于整个菜单。例外是子菜单：`RebornDsubmenu` 的入口行取所在菜单的配置，但它展开的面板是另一个 Dropdown 实例，会重新下发自己的默认样式，所以最外层 `ui` 的任何键都作用不到子菜单面板里的选项、组与容器，子菜单面板目前没有样式覆盖入口。浮层外壳（底色、描边、圆角、阴影）与 Select 同源，由 `RebornSelectTrigger` 给出，不在下表之列。
+`ui` 只传给 `RebornDropdown`。其中 `item` / `itemIcon` / `itemLabel` / `submenuIcon` / `group` / `groupTitle` 六个键通过上下文下发给面板里的每个 `RebornDoption`、`RebornDsubmenu` 入口行与 `RebornDgroup`，一处设置即作用于整个菜单。例外是子菜单：`RebornDsubmenu` 的入口行取所在菜单的配置，但它展开的面板是另一个 Dropdown 实例，会重新下发自己的默认样式，所以最外层 `ui` 的任何键都作用不到子菜单面板里的选项、组与容器，子菜单面板目前没有样式覆盖入口。浮层定位、底色和圆角复用 `RebornSelectTrigger`；菜单默认无边框，阴影为 `0px 2px 16px 0px rgba(1, 27, 70, 0.1)`，可通过 `ui.popup` 覆盖。
 
 | 键名 | 对应节点 | 默认关键类名 | 渲染条件 |
 | --- | --- | --- | --- |
 | `wrapper` | 最外层锚点容器，定位与箭头以它为基准；`class` prop 也并到这里 | `inline-flex w-fit`（覆盖 SelectTrigger 锚点的 `w-full`，保证与触发元素等宽） | 始终渲染 |
 | `trigger` | 包裹默认插槽的触发外框，承载点击与悬停监听 | `inline-flex cursor-pointer` | 始终渲染；需要触发器撑满父容器时加 `w-full` |
+| `popup` | 浮层外壳 | `w-auto! border-0 shadow-[0px_2px_16px_0px_rgba(1,27,70,0.1)]`，无边框，宽度由内容决定 | 展开时渲染 |
 | `panel` | 浮层内的内容排版容器，同时承载面板的悬停监听 | `px-[4px] py-[6px]` | 展开时渲染 |
 | `header` | 页头容器 | `mb-[4px] px-[6px] py-[4px] text-base text-gray-5`，排版与 `item` 一致、无分隔线 | 仅提供 `header` 插槽时渲染 |
 | `list` | 选项列表容器（`role="menu"`），`options` 或 `content` 插槽的内容放在这里 | `max-h-60 overflow-y-auto scrollbar-hide space-y-[4px]` | 展开时渲染；最大高度与行距改这里 |

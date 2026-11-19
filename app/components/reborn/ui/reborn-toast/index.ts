@@ -98,6 +98,7 @@ function levelMethod(type: MessageType) {
 export const message = {
   /** 以完整 config 打开一条消息 */
   open,
+  primary: levelMethod('primary'),
   info: levelMethod('info'),
   success: levelMethod('success'),
   warning: levelMethod('warning'),

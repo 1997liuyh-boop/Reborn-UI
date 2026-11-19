@@ -3,6 +3,7 @@ import type { ClassValue } from "clsx";
 import type { ComponentPublicInstance, CSSProperties, PropType, VNode, VNodeChild } from "vue";
 import type {
   CarouselArrowMode,
+  CarouselArrowOptions,
   CarouselRenderSlide,
   CarouselSlot,
   CarouselSlots,
@@ -294,7 +295,16 @@ const effectiveCenteredSlides = computed(
   () => responsiveProps.value.centeredSlides ?? props.centeredSlides,
 );
 /** 实时生效的控制箭头显隐交互模式 */
-const effectiveArrow = computed(() => responsiveProps.value.arrow ?? props.arrow);
+const effectiveArrowOptions = computed<CarouselArrowOptions>(() => {
+  const value = responsiveProps.value.arrow ?? props.arrow;
+  return typeof value === "string" ? { display: value } : value;
+});
+const effectiveArrow = computed(() => effectiveArrowOptions.value.display ?? "hover");
+/** 动态色值通过局部变量交给 Tailwind 类消费，ui 覆盖仍保留最后优先级。 */
+const appearanceStyle = computed<CSSProperties>(() => ({
+  "--reborn-carousel-internal-arrow-background": effectiveArrowOptions.value.backgroundColor,
+  "--reborn-carousel-internal-pagination-background": props.pagination?.backgroundColor,
+}));
 /** 实时生效的分页器展示位置 */
 const effectiveIndicatorPosition = computed(
   () => responsiveProps.value.indicatorPosition ?? props.indicatorPosition,
@@ -590,7 +600,12 @@ const ui = computed(() => {
   const result = {} as Record<CarouselSlot, (options?: StyleOptions) => string>;
   for (const key of Object.keys(theme.slots) as CarouselSlot[]) {
     result[key] = (options = {}) => {
-      const classes: ClassValue[] = [options.class, props.ui[key]];
+      const backgroundClass = (key === "arrow" || key === "thumbsArrow") && effectiveArrowOptions.value.backgroundColor
+        ? "bg-(--reborn-carousel-internal-arrow-background)"
+        : key === "indicators" && props.pagination?.backgroundColor && props.pagination.indicatorBackground !== false && !isProgressPagination.value
+          ? "bg-(--reborn-carousel-internal-pagination-background)"
+          : undefined;
+      const classes: ClassValue[] = [backgroundClass, options.class, props.ui[key]];
       if (options.active !== undefined) {
         if (key === "slide" || key === "thumb") {
           const stateKey = `${key}${options.active ? "Active" : "Inactive"}` as CarouselSlot;
@@ -1790,7 +1805,7 @@ defineExpose({
 </script>
 
 <template>
-  <div v-if="prepareSlides()" ref="carouselRootRef" :class="ui.wrapper({ class: props.class })" role="region" aria-roledescription="轮播" aria-label="轮播内容" @pointerenter="handlePointerEnter" @pointerleave="handlePointerLeave" @focusin="handleFocusIn" @focusout="handleFocusOut">
+  <div v-if="prepareSlides()" ref="carouselRootRef" :class="ui.wrapper({ class: props.class })" :style="appearanceStyle" role="region" aria-roledescription="轮播" aria-label="轮播内容" @pointerenter="handlePointerEnter" @pointerleave="handlePointerLeave" @focusin="handleFocusIn" @focusout="handleFocusOut">
     <div :class="thumbsShellClass">
       <div v-if="showThumbs && isThumbsReady" :class="thumbsPanelClass" :style="thumbsPanelStyle">
         <div ref="thumbsViewportRef" :class="thumbsViewportClass">

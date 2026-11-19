@@ -13,6 +13,7 @@ const defaultState = {
   separator: "/",
   separatorIcon: "",
   maxCount: 0,
+  collapseTooltip: true,
 };
 
 /** 演练场状态 */
@@ -53,6 +54,12 @@ const controls = [
         props: { min: 0, max: 6, step: 1 },
         defaultValue: 0,
       },
+      {
+        label: "显示完整路径提示",
+        key: "collapseTooltip",
+        component: "checkbox" as const,
+        defaultValue: true,
+      },
     ],
   },
 ];
@@ -67,6 +74,7 @@ const breadcrumbCode = computed(() => {
     `separator="${s.separator}"`,
     `separator-icon="${s.separatorIcon}"`,
     `:max-count="${Number(s.maxCount)}"`,
+    `:collapse-tooltip="${s.collapseTooltip}"`,
   ];
   const items = [
     '  <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>',
@@ -138,6 +146,7 @@ const lastSelected = shallowRef("");
         :separator="state.separator"
         :separator-icon="state.separatorIcon"
         :max-count="Number(state.maxCount)"
+        :collapse-tooltip="state.collapseTooltip"
       >
         <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>
         <RebornBreadcrumbItem to="/components">组件库</RebornBreadcrumbItem>

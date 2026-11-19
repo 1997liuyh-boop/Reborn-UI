@@ -79,7 +79,7 @@ Progress 用一条轨道或一段圆弧表示「已完成多少」，适合上�
 </template>
 ```
 
-圆环三档外径为 48px / 76px / 114px，描边 4px / 6px / 6px，文字与图标在中央显示。圆形不会占满父容器宽度，外径由 `size` 固定。
+圆环三档外径为 48px / 76px / 114px，描边 3px / 4px / 6px，文字与图标在中央显示。圆形不会占满父容器宽度，外径默认由 `size` 决定，也可通过 `width` 覆盖。
 
 ### 形态：仪表盘 dashboard
 
@@ -92,7 +92,19 @@ Progress 用一条轨道或一段圆弧表示「已完成多少」，适合上�
 </template>
 ```
 
-仪表盘只绘制 270° 圆弧，底部保留 90° 缺口；尺寸、文字和状态图标与圆环一致。
+仪表盘只绘制 270° 圆弧，底部保留 90° 缺口。三档外径为 48px、76px、120px，文字和状态图标与圆环一致。
+
+### 自定义宽度与粗细
+
+`width` 控制直线轨道总宽度或圆形外径。`strokeWidth` 控制直线高度或圆形描边。两个参数都使用像素，省略时沿用相应形态和尺寸档位的默认值。
+
+```vue
+<template>
+  <RebornProgress :width="160" :stroke-width="6" :steps="5" :percent="60" />
+  <RebornProgress type="circle" :width="24" :stroke-width="3" :percent="60" :show-text="false" />
+  <RebornProgress type="dashboard" :width="80" :stroke-width="4" :percent="60" />
+</template>
+```
 
 ### 步骤：steps 与逐节点配色
 
@@ -278,6 +290,8 @@ const gradient = {
 | `percent`       | `number`                            | `0`         | 当前完成百分比，钳制到 0–100，非有限数值回退为 0。                                     |
 | `type`          | `'line' \| 'circle' \| 'dashboard'` | `'line'`    | 进度条形态。                                                                           |
 | `size`          | `'sm' \| 'md' \| 'lg'`              | `'md'`      | 尺寸档位，决定直线高度、圆形外径与描边。                                               |
+| `strokeWidth`   | `number`                          | -           | 描边粗细或直线轨道高度，单位 px。普通圆环默认 `sm` 3px、`md` 4px、`lg` 6px。 |
+| `width`         | `number`                          | -           | 圆环和仪表盘的外径，或直线轨道总宽度（含步骤间距），单位 px。显式外径优先于 `size`。 |
 | `status`        | `'default' \| 'success' \| 'error'` | `'default'` | 显式进度状态，决定语义色与状态图标；不随百分比自动变化。                               |
 | `steps`         | `number`                            | `0`         | 步骤数量，0 为连续进度；向下取整并限制在 0–1000。                                      |
 | `strokeColor`   | `ProgressStrokeColor`               | —           | 单色、逐节点颜色数组（仅 `steps > 0` 生效）或渐变配置。                                |
@@ -357,8 +371,10 @@ interface ProgressSegment {
 | ------------------------- | ------- | -------- | --------- |
 | 直线高度                  | 6px     | 8px      | 16px      |
 | 直线步骤节点宽 × 高       | 2 × 6px | 32 × 8px | 32 × 16px |
-| 圆环 / 仪表盘外径         | 48px    | 76px     | 114px     |
-| 圆环 / 仪表盘描边         | 4px     | 6px      | 6px       |
+| 圆环外径                  | 48px    | 76px     | 114px     |
+| 仪表盘外径                | 48px    | 76px     | 120px     |
+| 圆环描边                  | 3px     | 4px      | 6px       |
+| 仪表盘描边                | 4px     | 6px      | 6px       |
 | 步骤圆环 / 步骤仪表盘描边 | 6px     | 8px      | 16px      |
 | 圆形中央文字              | 14px    | 16px     | 24px      |
 | 圆形状态图标              | 18px    | 20px     | 28px      |

@@ -12,7 +12,7 @@ const styles = notificationTheme({ type: 'success', ribbon: 'none' })
 </script>
 
 <template>
-  <div :class="cn(styles.root(), 'w-[220px] gap-3 px-4 py-3 shadow-[0_4px_16px_rgba(15,23,42,0.12)]')">
+  <div :class="cn(styles.root(), 'w-55 gap-3 px-4 py-3 shadow-[0_4px_16px_rgba(15,23,42,0.12)]')">
     <div :class="cn(styles.header(), 'gap-2')">
       <span :class="styles.iconWrapper()">
         <Icon

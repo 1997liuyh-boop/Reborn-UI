@@ -102,7 +102,7 @@ const links = [
 
       <div class="flex w-full flex-col gap-3">
         <!-- 外层只负责定位与裁切：挂载到父元素时抽屉以它为参照铺满，不随内层滚动 -->
-        <div class="border-default rounded-lg relative h-[420px] w-full overflow-hidden border">
+        <div class="border-default rounded-lg relative h-105 w-full overflow-hidden border">
           <!-- 内层是独立的滚动视口，吸顶相对它生效 -->
           <div class="h-full overflow-y-auto">
             <RebornHeader v-model:open="playgroundOpen" :title="state.title" to="/" :toggle-side="state.toggleSide" :sticky="state.sticky" :append-to-body="!state.mountToParent">
@@ -188,7 +188,7 @@ const links = [
         为 <code>false</code> 时在顶栏所在位置渲染，铺满最近的定位父元素，适合嵌在局部预览区或后台的内容区里。
       </template>
       <DemoBlock layout="stack">
-        <div class="border-default rounded-lg relative h-[280px] w-full overflow-hidden border">
+        <div class="border-default rounded-lg relative h-70 w-full overflow-hidden border">
           <RebornHeader v-model:open="parentOpen" title="局部预览" to="/" :append-to-body="false">
             <template #content="{ close }">
               <nav class="flex flex-col gap-1 p-2">

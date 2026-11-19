@@ -27,15 +27,15 @@ export type ProgressUi = Partial<Record<'root' | 'track' | 'step' | 'fill' | 'st
 
 /** SVG 使用真实像素坐标，避免 viewBox 缩放改变描边宽度。 */
 export const progressMetrics = {
-  sm: { diameter: 48, strokeWidth: 4, stepWidth: 6 },
-  md: { diameter: 76, strokeWidth: 6, stepWidth: 8 },
-  lg: { diameter: 114, strokeWidth: 6, stepWidth: 16 },
+  sm: { diameter: 48, strokeWidth: 3, dashboardStrokeWidth: 4, stepWidth: 6 },
+  md: { diameter: 76, strokeWidth: 4, dashboardStrokeWidth: 6, stepWidth: 8 },
+  lg: { diameter: 114, strokeWidth: 6, dashboardStrokeWidth: 6, stepWidth: 16 },
 } as const;
 
 export default {
   slots: {
-    root: 'relative inline-flex items-center gap-[8px] text-primary',
-    track: 'relative flex min-w-0 flex-1 gap-[2px]',
+    root: 'relative inline-flex items-center gap-2 text-primary',
+    track: 'relative flex min-w-0 flex-1 gap-0.5',
     step: 'relative min-w-0 flex-1 overflow-hidden rounded-full bg-gray-3',
     fill: 'absolute inset-y-0 overflow-hidden bg-current transition-[width] duration-300 ease-out motion-reduce:transition-none',
     // 条纹作为独立覆盖层叠在填充之上，不干扰纯色、渐变与分段背景。
@@ -67,6 +67,8 @@ export default {
       false: {},
     },
     textInside: { true: {}, false: {} },
+    customWidth: { true: {}, false: {} },
+    customStroke: { true: { step: 'h-(--reborn-progress-stroke-width)' }, false: {} },
     // reverse 方向让步骤节点从右往左排列，连续进度只有单节点不受影响。
     reversed: { true: { track: 'flex-row-reverse' }, false: {} },
     // 时长与方向通过 CSS 变量注入，动画停留在类里以便 motion-reduce 关闭。
@@ -80,13 +82,18 @@ export default {
     // 中号和大号节点带 2px 圆角，小号节点仅 2px 宽保持直角。
     { type: 'line' as const, stepped: true, size: 'md' as const, class: { root: 'w-fit max-w-full', track: 'overflow-x-auto', step: 'w-8 rounded-[2px]' } },
     { type: 'line' as const, stepped: true, size: 'lg' as const, class: { root: 'w-fit max-w-full', track: 'overflow-x-auto', step: 'w-8 rounded-[2px]' } },
-    // 环形中心文字按直径分档：48/76/114px 对应 14/16/24px 字号，均取自 7 级字号令牌。
+    // 环形中心文字按尺寸分档，仪表盘大号单独使用 120px 外径。
     { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'sm' as const, class: { root: 'size-12', text: 'text-base', icon: 'size-4.5' } },
     { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'md' as const, class: { root: 'size-19', text: 'text-lg', icon: 'size-5' } },
-    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'lg' as const, class: { root: 'size-28.5', text: 'text-2xl', icon: 'size-7' } },
+    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'lg' as const, class: { text: 'text-2xl', icon: 'size-7' } },
+    { type: 'circle' as const, size: 'lg' as const, class: { root: 'size-28.5' } },
+    { type: 'dashboard' as const, size: 'lg' as const, class: { root: 'size-30' } },
+    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], customWidth: true, class: { root: 'size-(--reborn-progress-width)' } },
+    { type: 'line' as const, customWidth: true, class: { root: 'w-fit max-w-full', track: 'w-(--reborn-progress-width) flex-initial' } },
+    { type: 'line' as const, customWidth: true, stepped: true, class: { track: 'gap-(--reborn-progress-step-gap)', step: 'w-(--reborn-progress-step-width)' } },
     // 内嵌文字不改变设计高度；极细进度条允许字形溢出，避免文字被裁掉。
     // 10px 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量。
-    { type: 'line' as const, textInside: true, class: { text: 'pointer-events-none absolute inset-y-0 left-0 flex min-w-max items-center justify-end px-[4px] text-[10px] text-white' } },
+    { type: 'line' as const, textInside: true, class: { text: 'pointer-events-none absolute inset-y-0 left-0 flex min-w-max items-center justify-end px-1 text-[10px] text-white' } },
   ],
   defaultVariants: { type: 'line' as const, size: 'md' as const, status: 'default' as const, stepped: false, textInside: false, reversed: false, stripedFlow: false },
 };

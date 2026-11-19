@@ -57,7 +57,7 @@ export const segmentedTheme = tv({
     },
     direction: {
       horizontal: {},
-      vertical: { root: "flex-col" },
+      vertical: { root: "flex-col gap-1" },
     },
     /** 撑满父元素宽度：横排时各选项等分宽度，竖排时选项撑满容器宽度 */
     block: {

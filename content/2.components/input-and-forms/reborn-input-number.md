@@ -65,7 +65,7 @@ const count = ref(5);
 :::tabs-item{label="Web" icon="tabler:world"}
 `shape="square"` 按尺寸取 `rounded-sm` / `rounded-md` / `rounded-lg`，**默认值为 `square`**。
 
-`size` 支持 `sm` / `md` / `lg` 三档，高度取 `h-6` / `h-8` / `h-10`，水平内边距取 `px-2.5` / `px-3` / `px-4`，加减图标取 `size-2.5` / `size-3` / `size-4`。默认根字号为 16px 时，分别对应高度 24 / 32 / 40px、内边距与图标尺寸 10 / 12 / 16px，并随 Tailwind `--spacing` 缩放；字号仍取 `app/assets/theme/typography.css`，sm 与 md 同为 14px、lg 为 16px。`color` 影响聚焦环、光标与按钮悬停色。
+`size` 支持 `sm` / `md` / `lg` 三档，高度取 `h-6` / `h-8` / `h-10`，水平内边距统一取 `px-3`，加减图标取 `size-2.5` / `size-3` / `size-4`。默认根字号为 16px 时，分别对应高度 24 / 32 / 40px、水平内边距统一为 12px、图标尺寸为 10 / 12 / 16px，并随 Tailwind `--spacing` 缩放；字号仍取 `app/assets/theme/typography.css`，sm 与 md 同为 14px、lg 为 16px。`color` 影响悬停 / 聚焦描边、聚焦光环、光标与按钮悬停色。Web 描边形态使用 1px 边框，悬停和聚焦时取对应色板第 5 阶，聚焦时增加第 1 阶的 2px 光环；禁用态不显示悬停强调描边。
 
 ```vue
 <template>
@@ -136,7 +136,7 @@ const count = ref(5);
 ```
 
 ::tip
-形态实现细节的端差异不影响用法，但会影响你覆盖样式时的写法：Web 端错误态描边用 `ring-red-5`、深浅色由 `base.css` 的 `.dark` 自动翻转灰阶；UniApp 端错误态用 `ring-error`，且 `theme.css` 没有 `.dark` 代码块，深色适配是逐条写死的 `dark:` 变体。
+形态实现细节的端差异不影响用法，但会影响你覆盖样式时的写法：Web 端描边形态的错误态使用 `border-red-5`，聚焦光环为 `ring-red-1`、深浅色由 `base.css` 的 `.dark` 自动翻转灰阶；UniApp 端错误态用 `ring-error`，且 `theme.css` 没有 `.dark` 代码块，深色适配是逐条写死的 `dark:` 变体。
 ::
 
 ### 禁用与只读：disabled / readonly
@@ -500,7 +500,7 @@ UniApp 的 `<input>` 只能通过 `cursor` / `selection-start` / `selection-end`
   <RebornInputNumber
     v-model="count"
     :ui="{
-      wrapper: 'h-12 rounded-lg ring-purple-300',
+      wrapper: 'h-12 rounded-lg border-purple-300 focus-within:ring-purple-100',
       button: 'text-purple-500 hover:bg-purple-50',
       input: 'font-bold text-purple-700',
       divider: 'hidden',
@@ -536,7 +536,7 @@ UniApp 端的加减按钮绑定了长按手势：按住不放会连续增减，�
 | `stepStrictly` | `boolean`                                                                              | `false`                   | 是否只能取 `step` 的倍数，提交时就近吸附到最近的倍数。                                                                     |
 | `precision` | `number`                                                                               | `-`                       | 数值精度（小数位数）；小于 `step` 的小数位时按 `step` 的小数位生效。                                                       |
 | `size` | `"sm" \| "md" \| "lg"`                                                                 | `"md"`                    | 尺寸档位，对应高度 24 / 32 / 40px。                                                                                        |
-| `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`               | 聚焦环与按钮悬停的强调色。                                                                                                 |
+| `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`               | 悬停 / 聚焦描边、聚焦光环与按钮悬停的强调色。                                                                                                 |
 | `shape` | `"circle" \| "square"`                                                                 | `"square"`                | 外形轮廓：circle 为胶囊圆角，square 按尺寸取 `rounded-sm` / `rounded-md` / `rounded-lg`；`variant="underlined"` 时不生效。 |
 | `variant` | `"outlined" \| "filled" \| "borderless" \| "underlined"`                               | `"outlined"`              | 形态变体：底色描边 / 灰底填充 / 无边框 / 仅下划线。                                                                        |
 | `align` | `"left" \| "center" \| "right"`                                                        | `"center"`                | 内部输入文本的对齐方式。                                                                                                   |
@@ -687,11 +687,11 @@ UniApp 无原生 DOM 元素可取，因此不提供 `inputRef`。
 
 | 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
 | --- | --- | --- | --- |
-| `wrapper` | 根容器 `div`，点击时把焦点交给输入框；`class` 也合并到这一层 | `group/number relative flex w-full items-center overflow-hidden text-gray-8`；`size` 追加 `h-6` / `h-8` / `h-10` 与 `--stack-w`，`variant` 追加背景与描边（如 outlined 为 `bg-gray-1 ring-1 ring-gray-4`），`shape="circle"` 追加 `rounded-full`，`square` 按尺寸追加 `rounded-sm/md/lg` | 始终渲染；`underlined` 形态带 `rounded-none!`，覆盖圆角须写 `!` |
+| `wrapper` | 根容器 `div`，点击时把焦点交给输入框；`class` 也合并到这一层 | `group/number relative flex w-full items-center overflow-hidden text-gray-8`；`size` 追加 `h-6` / `h-8` / `h-10` 与 `--stack-w`，`variant` 追加背景与描边（如 outlined 为 `bg-gray-1 border border-gray-4 ring-0 focus-within:ring-2`），`shape="circle"` 追加 `rounded-full`，`square` 按尺寸追加 `rounded-sm/md/lg` | 始终渲染；`underlined` 形态带 `rounded-none!`，覆盖圆角须写 `!` |
 | `button` | 左右分列布局下的加减按钮（原生 `button`） | `flex h-full shrink-0 items-center justify-center bg-transparent p-0 text-gray-6 disabled:text-gray-5`；`size` 追加 `w-6` / `w-8` / `w-10`，`color` 追加 `hover:text-*` | 仅按钮显示（`controls` 为 `true` 且未开 `hide-button`）且未设 `controls-position` 时渲染 |
 | `stack` | 堆叠布局下的按钮组容器，绝对定位在输入区一侧 | `absolute inset-y-0 flex w-(--stack-w) flex-col bg-inherit opacity-0 group-hover/number:opacity-100 group-focus-within/number:opacity-100`；`left` 追加 `start-0 -translate-x-full border-e`，`right` 追加 `end-0 translate-x-full border-s` | 仅按钮显示且 `controls-position` 为 `left` / `right` 时渲染 |
 | `stackButton` | 堆叠布局下的单个按钮，上为加、下为减 | `flex min-h-0 flex-1 items-center justify-center text-gray-6 first:border-b first:border-gray-4 enabled:hover:grow-[1.5]` | 同 `stack` |
-| `input` | 中间的原生输入框（`type="text"`） | `h-full min-w-0 flex-1 bg-transparent text-gray-9 outline-none placeholder:text-gray-5`；`size` 追加 `px-2.5` / `px-3` / `px-4`，`align` 追加 `text-left/center/right`，`color` 追加 `caret-*`；堆叠布局悬停 / 聚焦时追加对应侧 `ps-(--stack-w)` / `pe-(--stack-w)` | 始终渲染 |
+| `input` | 中间的原生输入框（`type="text"`） | `h-full min-w-0 flex-1 bg-transparent text-gray-9 outline-none placeholder:text-gray-5`；水平内边距统一为 `px-3`，`align` 追加 `text-left/center/right`，`color` 追加 `caret-*`；堆叠布局悬停 / 聚焦时追加对应侧 `ps-(--stack-w)` / `pe-(--stack-w)` | 始终渲染 |
 | `divider` | 分列按钮与输入区之间的竖线，左右各一条 | `h-full w-px shrink-0 bg-gray-3` | 同 `button`；`underlined` 形态追加 `hidden` |
 | `prefix` | 前缀容器，包住 `prefix` 插槽 | `flex shrink-0 items-center pe-0 text-gray-6`；`size` 追加 `ps-2.5` / `ps-3` / `ps-4` | 仅传入 `prefix` 插槽时渲染 |
 | `suffix` | 后缀容器，包住 `suffix` 插槽 | `flex shrink-0 items-center ps-0 text-gray-6`；`size` 追加 `pe-2.5` / `pe-3` / `pe-4` | 仅传入 `suffix` 插槽时渲染 |
@@ -759,7 +759,7 @@ Web 的高度、内边距和图标使用 Tailwind 原生尺寸刻度，字号保
 | 项目                        | sm     | md     | lg     | 用途                                         |
 | :-------------------------- | :----- | :----- | :----- | :------------------------------------------- |
 | 高度 / 分列按钮宽度         | `h-6` / `w-6` | `h-8` / `w-8` | `h-10` / `w-10` | 宽高取相同刻度，保证按钮正方形 |
-| 输入区水平内边距            | `px-2.5` | `px-3` | `px-4` | 默认根字号下为 10 / 12 / 16px |
+| 输入区水平内边距            | `px-3` | `px-3` | `px-3` | 默认根字号下统一为 12px |
 | 加减图标尺寸                | `size-2.5` | `size-3` | `size-4` | 默认根字号下为 10 / 12 / 16px |
 | `--text-base` / `--text-lg` | `14px` | `14px` | `16px` | 输入文字字号（sm 与 md 同为 14px）           |
 

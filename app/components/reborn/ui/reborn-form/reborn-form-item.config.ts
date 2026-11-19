@@ -7,7 +7,7 @@ export default {
         // 错误信息出现时不会把标签拽向「控件 + 错误」的整体中线
         root: 'flex items-start last:mb-0',
         wrapper: 'flex-1 min-w-0',
-        label: 'text-sm text-gray-9 font-semibold flex items-center shrink-0',
+        label: 'text-base text-gray-9 font-semibold flex items-center shrink-0',
         /**
          * 内容区取 flex-col + justify-center：与 size 变体的最小高度配合，
          * 比控件高度矮的内容（勾选框组、开关、滑块等）在令牌高度内垂直居中，与标签中线对齐；
@@ -75,7 +75,7 @@ export default {
             },
             right: {
                 root: 'flex-row',
-                label: 'justify-end text-right pr-[12px]',
+                label: 'justify-end text-right pr-3',
             },
             top: {
                 root: 'flex-col items-stretch',
@@ -86,10 +86,10 @@ export default {
         // 表单项之间的间距：有标签 24px、无标签 16px（末项由 root 的 last:mb-0 归零）
         hasLabel: {
             true: {
-                root: 'mb-[24px]',
+                root: 'mb-6',
             },
             false: {
-                root: 'mb-[16px]',
+                root: 'mb-4',
             },
         },
     },

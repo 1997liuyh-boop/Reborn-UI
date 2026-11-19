@@ -280,6 +280,7 @@ const ui = computed(() => {
   return {
     wrapper: () => styles.wrapper({ class: cn(uiOverrides.value.wrapper, props.class) }),
     trigger: slot('trigger'),
+    popup: slot('popup'),
     panel: slot('panel'),
     header: slot('header'),
     list: slot('list'),
@@ -328,7 +329,7 @@ defineExpose({
     :side="resolvedPlacement.side" :align="resolvedPlacement.align" :offset="offset" :arrow="showArrow"
     :class="ui.wrapper()" :ui="{
       /* 浮层宽度由菜单内容撑开，不跟随触发器 */
-      dropdown: 'w-auto!',
+      dropdown: ui.popup(),
     }"
     @keydown="onKeydown" @close="onOutsideClose"
   >

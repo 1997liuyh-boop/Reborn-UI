@@ -17,7 +17,7 @@ export { color as chipColors, position as chipPositions, size as chipSizes, vari
  * 四种变体的尺寸（sm / md / lg）：
  *   solid       实心圆点  4 / 5 / 6px
  *   outline     空心圆环  内径 4 / 6 / 8px + 描边 2 / 3 / 4px，外径 8 / 12 / 16px
- *   textDot     实心文字  高 16 / 20 / 24px，字号 12 / 16 / 20px，白字
+ *   textDot     实心文字  高 16 / 20 / 24px，字号 12 / 14 / 16px，白字
  *   textOutline 描边文字  同 textDot，1px 描边，文字取 6 阶
  *
  * outline 用 box-content：规格里的 size 指内径，描边长在外圈。若按 border-box 计算，
@@ -26,7 +26,7 @@ export { color as chipColors, position as chipPositions, size as chipSizes, vari
  */
 export default {
   slots: {
-    root: 'relative inline-flex items-center justify-center shrink-0 h-fit leading-none',
+    root: 'relative inline-flex items-center justify-center shrink-0 h-fit align-middle leading-none',
     base: 'absolute rounded-full flex items-center justify-center whitespace-nowrap',
     label: 'font-medium'
   },
@@ -99,32 +99,32 @@ export default {
 
     /*
      * 文字类：min-w 与高度相同，单个字符时是正圆，多字符时横向撑成胶囊，px-1 防止文字贴到圆弧上。
-     * 字号用 12 / 16 / 20px 令牌（text-sm / text-lg / text-xl），它们各自带 20 / 24 / 28px 行高，
+     * 字号用 12 / 14 / 16px 令牌（text-sm / text-base / text-lg），字号令牌带有默认行高，
      * 比圆点还高，所以 leading-none 必须写在字号之后：tailwind-merge 会让后出现的字号类删掉前面的行高类。
      */
     { variant: textVariants, size: 'sm' as const, class: { base: 'h-4 min-w-4 px-1', label: 'text-sm leading-none' } },
-    { variant: textVariants, size: 'md' as const, class: { base: 'h-5 min-w-5 px-1', label: 'text-lg leading-none' } },
-    { variant: textVariants, size: 'lg' as const, class: { base: 'h-6 min-w-6 px-1', label: 'text-xl leading-none' } },
+    { variant: textVariants, size: 'md' as const, class: { base: 'h-5 min-w-5 px-1', label: 'text-base leading-none' } },
+    { variant: textVariants, size: 'lg' as const, class: { base: 'h-6 min-w-6 px-1', label: 'text-lg leading-none' } },
 
     {
       inset: false,
       position: 'top-right' as const,
-      class: { base: '-translate-y-1/2 translate-x-1/2 transform' }
+      class: { base: '-translate-y-1/2 translate-x-[max(50%,calc(100%_-_var(--rb-chip-host-width,0px)*0.6))] transform' }
     },
     {
       inset: false,
       position: 'bottom-right' as const,
-      class: { base: 'translate-y-1/2 translate-x-1/2 transform' }
+      class: { base: 'translate-y-1/2 translate-x-[max(50%,calc(100%_-_var(--rb-chip-host-width,0px)*0.6))] transform' }
     },
     {
       inset: false,
       position: 'top-left' as const,
-      class: { base: '-translate-y-1/2 -translate-x-1/2 transform' }
+      class: { base: '-translate-y-1/2 -translate-x-[max(50%,calc(100%_-_var(--rb-chip-host-width,0px)*0.6))] transform' }
     },
     {
       inset: false,
       position: 'bottom-left' as const,
-      class: { base: 'translate-y-1/2 -translate-x-1/2 transform' }
+      class: { base: 'translate-y-1/2 -translate-x-[max(50%,calc(100%_-_var(--rb-chip-host-width,0px)*0.6))] transform' }
     }
   ],
   defaultVariants: {

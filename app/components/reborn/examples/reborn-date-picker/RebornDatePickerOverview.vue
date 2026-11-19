@@ -26,7 +26,7 @@ const panelUi = {
 </script>
 
 <template>
-  <div class="flex w-[200px] flex-col gap-1">
+  <div class="flex w-50 flex-col gap-1">
     <div :class="styles.trigger()" aria-hidden="true">
       <span :class="styles.triggerText()">2026-10-09</span>
       <span :class="styles.triggerIconWrapper()"><Icon name="lucide:chevron-down" :class="styles.arrow()" /></span>
@@ -34,12 +34,12 @@ const panelUi = {
     <div
       class="w-full overflow-hidden rounded-lg border border-gray-3 bg-gray-1 shadow-lg [mask-image:linear-gradient(to_bottom,#000_72%,transparent)]"
     >
-      <div class="h-[86px]">
+      <div class="h-21.5">
         <RebornDatePickerPanel
           v-model="date"
           value-format="YYYY-MM-DD"
           size="sm"
-          class="w-[306px] origin-top-left scale-[0.65]"
+          class="w-76.5 origin-top-left scale-[0.65]"
           :ui="panelUi"
         />
       </div>

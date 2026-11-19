@@ -17,7 +17,7 @@ const slides = [
 </script>
 
 <template>
-  <div class="w-full max-w-[236px]">
+  <div class="w-full max-w-59">
     <RebornCarousel
       type="card"
       slides-per-view="auto"
@@ -32,7 +32,7 @@ const slides = [
       <div
         v-for="slide in slides"
         :key="slide.id"
-        class="flex h-full w-[150px] flex-col justify-end gap-0.5 rounded-lg bg-linear-to-br p-3 text-white"
+        class="flex h-full w-37.5 flex-col justify-end gap-0.5 rounded-lg bg-linear-to-br p-3 text-white"
         :class="slide.tone"
       >
         <span class="text-sm font-medium">{{ slide.title }}</span>

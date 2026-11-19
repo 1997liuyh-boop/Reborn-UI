@@ -10,6 +10,15 @@ import type { carouselArrowModes, carouselColors, carouselDirections, carouselIn
 
 /** 轮播图控制箭头的显示模式：'hover' (悬浮时显示) | 'always' (始终显示) | 'never' (不显示) */
 export type CarouselArrowMode = (typeof carouselArrowModes)[number];
+/** 箭头外观配置；省略显示模式时沿用默认 hover。 */
+export interface CarouselArrowOptions {
+  /** 箭头显示模式。 */
+  display?: CarouselArrowMode;
+  /** 主导航与缩略图箭头的背景颜色，支持 CSS 颜色和 var()；默认 gray-6。 */
+  backgroundColor?: string;
+}
+/** 兼容旧显示模式字符串，也可传入对象自定义背景。 */
+export type CarouselArrow = CarouselArrowMode | CarouselArrowOptions;
 /** 轮播滚动方向：'horizontal' (水平) | 'vertical' (垂直) */
 export type CarouselDirection = (typeof carouselDirections)[number];
 /** 分页指示器的位置：'inside' (轨道内部) | 'outside' (轨道外部) | 'none' (不显示) */
@@ -64,6 +73,8 @@ export interface CarouselPagination {
   type?: (typeof carouselIndicatorTypes)[number];
   /** 是否显示指示器容器的 gray-1 半透明背景、毛玻璃与阴影，默认 true；不影响 progress 的轨道。 */
   indicatorBackground?: boolean;
+  /** 指示器容器的背景颜色；关闭背景或使用 progress 时不生效，不改变指示项本身的颜色。 */
+  backgroundColor?: string;
 }
 
 /** 缩略图面板配置参数接口 */
@@ -96,8 +107,8 @@ export interface RebornCarouselBreakpoint {
   spaceBetween?: number;
   /** 是否将活动项强制居中展示 */
   centeredSlides?: boolean;
-  /** 对应宽度下的控制箭头显示模式 */
-  arrow?: CarouselArrowMode;
+  /** 对应宽度下的箭头显示模式或背景配置。 */
+  arrow?: CarouselArrow;
   /** 对应宽度下分页器指示器的显示位置 */
   indicatorPosition?: CarouselIndicatorPosition;
   /** 滚动转场时是否开启边缘动态模糊视觉动效 */
@@ -134,8 +145,8 @@ export interface RebornCarouselProps {
   trigger?: CarouselTrigger;
   /** 分页指示器在布局中的摆放位置 */
   indicatorPosition?: CarouselIndicatorPosition;
-  /** 控制箭头的显隐交互模式 */
-  arrow?: CarouselArrowMode;
+  /** 控制箭头显隐；对象还支持 backgroundColor，默认 gray-6 背景与 gray-1 图标。 */
+  arrow?: CarouselArrow;
   /** 在滑动转场动画期间是否启用动态的高级运动模糊视觉特效 */
   motionBlur?: boolean;
   /** 轮播图主体容器的外观高度 */

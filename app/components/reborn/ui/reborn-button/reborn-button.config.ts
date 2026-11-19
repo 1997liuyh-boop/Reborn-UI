@@ -260,7 +260,7 @@ export default {
       color: "neutral" as (typeof color)[number],
       variant: "outlined" as (typeof variant)[number],
       class:
-        "bg-transparent text-gray-10 border border-neutral enabled:hover:bg-neutral/10",
+        "bg-transparent text-gray-10 border border-gray-4 enabled:hover:bg-neutral/10",
     },
     // 实底与胶囊按钮使用对应色系的第 3 阶，不叠加整体透明度。
     {
@@ -434,7 +434,7 @@ export default {
     {
       color: "neutral" as (typeof color)[number],
       variant: "text" as (typeof variant)[number],
-      class: "bg-transparent text-neutral enabled:hover:text-neutral-hover enabled:active:text-neutral-active h-auto px-0",
+      class: "bg-transparent text-gray-10 enabled:hover:text-gray-10/75 enabled:active:text-gray-10 h-auto px-0",
     },
     {
       variant: "text" as (typeof variant)[number],
@@ -453,6 +453,12 @@ export default {
       disabled: true,
       class: "text-gray-5",
     },
+    // 中性色可用态统一使用灰阶 10，禁用态继续使用对应的禁用文字色。
+    {
+      color: "neutral" as (typeof color)[number],
+      disabled: false,
+      class: "text-gray-10 enabled:hover:text-gray-10/75 enabled:active:text-gray-10",
+    },
     // 形状最后应用，覆盖 text 的普通几何默认；外部 ui 仍可继续覆盖。
     { round: true, class: "rounded-full" },
     { circle: true, class: "rounded-full p-0" },
@@ -463,6 +469,7 @@ export default {
   defaultVariants: {
     color: "primary" as (typeof color)[number],
     variant: variant[0],
+    disabled: false,
     size: "md" as (typeof size)[number],
     borderStyle: "solid" as (typeof borderStyle)[number],
   },

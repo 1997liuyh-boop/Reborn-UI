@@ -18,7 +18,7 @@ const options: DropdownOption[] = [
 </script>
 
 <template>
-  <div class="flex h-[160px] w-[160px] items-start justify-center">
+  <div class="flex h-40 w-40 items-start justify-center">
     <div class="flex flex-col items-center gap-1">
       <RebornButton
         size="sm"

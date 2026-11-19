@@ -330,7 +330,7 @@ const codeString = computed(() => {
           :default-expand-all="state.defaultExpandAll"
           :color="state.color"
           :show-active-background="state.showActiveBackground"
-          class="min-h-[400px] w-full"
+          class="min-h-100 w-full"
           @select="handleSelect"
           @open="handleOpen"
           @close="handleClose"
@@ -439,7 +439,7 @@ const codeString = computed(() => {
             mode="vertical"
             :collapse="isCollapse"
             color="primary"
-            class="min-h-[300px] w-full max-w-xs"
+            class="min-h-75 w-full max-w-xs"
             @select="handleSelect"
           >
             <RebornMenuItem index="1">
@@ -746,7 +746,7 @@ const codeString = computed(() => {
             mode="vertical"
             expand-type="normal"
             color="success"
-            class="min-h-[280px] w-full"
+            class="min-h-70 w-full"
           >
             <RebornMenuItem index="a1">
               <template #icon>
@@ -793,7 +793,7 @@ const codeString = computed(() => {
             mode="horizontal"
             expand-type="normal"
             color="info"
-            class="min-h-[200px] w-full"
+            class="min-h-50 w-full"
           >
             <RebornMenuItem index="b1">
               <template #icon>
@@ -838,7 +838,7 @@ const codeString = computed(() => {
             expand-type="popup"
             :expand-mutex="true"
             color="warning"
-            class="min-h-[280px] w-full"
+            class="min-h-70 w-full"
           >
             <RebornSubMenu index="c1">
               <template #icon>
@@ -888,7 +888,7 @@ const codeString = computed(() => {
             v-model:open-keys="showcaseOpenKeys"
             mode="vertical"
             color="primary"
-            class="min-h-[180px] w-full"
+            class="min-h-45 w-full"
           >
             <RebornSubMenu index="d1">
               <template #icon>
@@ -927,7 +927,7 @@ const codeString = computed(() => {
             expand-type="normal"
             default-expand-all
             color="error"
-            class="min-h-[300px] w-full"
+            class="min-h-75 w-full"
           >
             <RebornSubMenu index="f1">
               <template #icon>
@@ -1049,7 +1049,7 @@ const codeString = computed(() => {
             :items="menuItems"
             mode="vertical"
             color="primary"
-            class="min-h-[420px] w-full max-w-xs"
+            class="min-h-105 w-full max-w-xs"
           />
         </div>
 
@@ -1065,7 +1065,7 @@ const codeString = computed(() => {
             mode="vertical"
             expand-type="normal"
             color="secondary"
-            class="min-h-[420px] w-full max-w-xs"
+            class="min-h-105 w-full max-w-xs"
           />
         </div>
       </DemoBlock>
@@ -1161,7 +1161,7 @@ const codeString = computed(() => {
             background-color="#1f2937"
             text-color="#e5e7eb"
             active-text-color="#818cf8"
-            class="min-h-[280px] w-full"
+            class="min-h-70 w-full"
           >
             <RebornMenuItem index="1">
               <template #icon>
@@ -1198,7 +1198,7 @@ const codeString = computed(() => {
               menuItem: 'rounded-none mx-0',
               menuItemTitle: 'font-normal',
             }"
-            class="min-h-[280px] w-full"
+            class="min-h-70 w-full"
           >
             <RebornMenuItem index="1">
               <template #icon>

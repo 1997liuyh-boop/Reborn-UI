@@ -50,20 +50,24 @@ export type DescriptionsSpan = number | "filled" | DescriptionsResponsive;
 const config = {
   slots: {
     root: "reborn-descriptions w-full",
-    header: "mb-[16px] flex items-start justify-between gap-[16px]",
+    header: "mb-4 flex items-start justify-between gap-4",
     titleWrapper: "flex min-w-0 flex-1 items-center",
     title: "text-2xl font-medium text-gray-9",
-    extra: "ml-auto flex shrink-0 items-center gap-[8px]",
+    extra: "ml-auto flex shrink-0 items-center gap-2",
     tableWrapper: "w-full overflow-x-auto",
     body: "w-full border-collapse",
     /** 每个 td 共用：左右内边距固定 16px 不随 size 变化，行高与上下内边距由 size 决定，边线由组件按行列位置补 */
-    cell: "px-[16px] align-middle",
+    cell: "px-4 align-middle",
     label: "text-base font-medium tracking-normal text-gray-9",
     content: "text-base text-gray-8 break-words",
     // 冒号只在「无边框 + 水平」下渲染，所以直接跟随该形态的标签色
     colon: "select-none font-medium text-gray-7",
   },
   variants: {
+    layout: {
+      horizontal: {},
+      vertical: {},
+    },
     // 行高与上下内边距只在带边框时生效，见下方 compoundVariants
     size: {
       sm: {},
@@ -92,12 +96,14 @@ const config = {
     },
   },
   compoundVariants: [
+    // 水平无边框时由原生表格按每列最长标签对齐，内容仅留 4px 左间距。
+    { bordered: false, layout: "horizontal", class: { label: "w-px whitespace-nowrap pr-0", content: "pl-1" } },
     // 行高用 h-*：表格单元格的 height 实际按最小高度生效，内容换行时照常撑开。
     // 无边框时不吃这套值——那一形态没有网格线，靠留白分层，行距由组件按行位置给固定值
     // （标签与内容之间 4px、项与项之间 16px），套上 48px 行高会把这两个间距淹掉。
-    { bordered: true, size: "sm", class: { cell: "h-9 py-[6px]" } },
-    { bordered: true, size: "md", class: { cell: "h-12 py-[8px]" } },
-    { bordered: true, size: "lg", class: { cell: "h-14 py-[10px]" } },
+    { bordered: true, size: "sm", class: { cell: "h-9 py-1.5" } },
+    { bordered: true, size: "md", class: { cell: "h-12 py-2" } },
+    { bordered: true, size: "lg", class: { cell: "h-14 py-2.5" } },
   ],
   defaultVariants: {
     size: "md" as DescriptionsSize,

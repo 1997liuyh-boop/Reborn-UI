@@ -11,6 +11,7 @@ import { resolvePlacement } from "~/lib/placement";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornButton from "../reborn-button/RebornButton.vue";
+import RebornImage from "../reborn-image/RebornImage.vue";
 import theme, { guideButtonUi } from "./reborn-guide.config";
 
 /** 子步骤按父步骤在前的深度优先顺序展开 */
@@ -582,7 +583,16 @@ defineExpose({ next: onNext, prev: onPrev, finish: onFinish, skip: onSkip, close
               </svg>
             </button>
           </div>
-          <img v-if="activeStep.cover" :src="activeStep.cover" :alt="activeStep.coverAlt || ''" :class="ui.cover()">
+          <RebornImage
+            v-if="activeStep.cover"
+            :key="activeStep.cover"
+            :src="activeStep.cover"
+            :alt="activeStep.coverAlt ?? ''"
+            width="100%"
+            height="auto"
+            mode="widthFix"
+            :custom-class="ui.cover()"
+          />
           <div v-if="activeStep.title" :class="ui.guideHeader()">
             <h3 :class="ui.guideTitle()">{{ activeStep.title }}</h3>
           </div>

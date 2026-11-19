@@ -54,13 +54,23 @@ function classesOf(variant: MessageVariant, color: MessageColor, loading: boolea
 }
 
 /** 按位置分组：六个方位各自维护一条堆叠队列；每条消息带上算好的类名，模板直接取字符串 */
+// 内置的 Ant Design 图标随消息组件分发，无需额外安装图标集。
+const builtinIconPaths = new Map<string, string>([
+  ['ant-design:info-outlined', 'M448 224a64 64 0 1 0 128 0a64 64 0 1 0-128 0m96 168h-64c-4.4 0-8 3.6-8 8v464c0 4.4 3.6 8 8 8h64c4.4 0 8-3.6 8-8V400c0-4.4-3.6-8-8-8'],
+  ['ant-design:exclamation-outlined', 'M448 804a64 64 0 1 0 128 0a64 64 0 1 0-128 0m32-168h64c4.4 0 8-3.6 8-8V164c0-4.4-3.6-8-8-8h-64c-4.4 0-8 3.6-8 8v464c0 4.4 3.6 8 8 8'],
+]);
+
 const stacks = computed(() =>
   messagePlacements.map(placement => ({
     placement,
     wrapperClass: messageTheme({ placement }).wrapper(),
     items: messageState.list
       .filter(item => item.placement === placement)
-      .map(item => ({ item, cls: classesOf(item.variant, item.color, item.type === 'loading') })),
+      .map(item => ({
+        item,
+        cls: classesOf(item.variant, item.color, item.type === 'loading'),
+        icon: iconName(item),
+      })),
   })),
 );
 
@@ -143,7 +153,7 @@ function handleMouseLeave(item: MessageInstance) {
     @leave-cancelled="listMotion.cancel"
   >
     <div
-      v-for="{ item, cls } in stack.items" :key="item.id"
+      v-for="{ item, cls, icon } in stack.items" :key="item.id"
       :data-placement="stack.placement"
       :class="[cls.root, item.className, semanticClass(item, 'root')]"
       :style="[item.style ?? {}, semanticStyle(item, 'root') ?? {}]"
@@ -154,12 +164,15 @@ function handleMouseLeave(item: MessageInstance) {
     >
       <span :class="[cls.iconWrapper, semanticClass(item, 'icon')]" :style="semanticStyle(item, 'icon')">
         <component :is="item.icon" v-if="isNodeContent(item.icon)" />
-        <!-- 所有变体统一使用固定尺寸的加载组件，避免通用图标旋转时中心偏移。 -->
+        <!-- 加载图标统一使用 16px，与状态图标容器居中对齐。 -->
         <RebornLoading
           v-else-if="item.type === 'loading' && !item.icon"
-          type="outline" color="currentColor" :size="item.variant === 'base' ? 14 : 16" :class="cls.icon"
+          type="outline" color="currentColor" :size="16"
         />
-        <Icon v-else :name="iconName(item)" :class="cls.icon" />
+        <svg v-else-if="builtinIconPaths.has(icon)" :class="cls.icon" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
+          <path :d="builtinIconPaths.get(icon)" />
+        </svg>
+        <Icon v-else :name="icon" :class="cls.icon" />
       </span>
 
       <!-- dangerouslyUseHTMLString 开启时按 HTML 片段渲染，调用方需保证内容可信 -->

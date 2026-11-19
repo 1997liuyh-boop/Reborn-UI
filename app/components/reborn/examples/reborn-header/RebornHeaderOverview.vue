@@ -12,7 +12,7 @@ const links = ['首页', '组件', '文档']
 </script>
 
 <template>
-  <div class="h-[124px] w-[200px] overflow-hidden rounded-lg border border-gray-3 bg-gray-1">
+  <div class="h-31 w-50 overflow-hidden rounded-lg border border-gray-3 bg-gray-1">
     <RebornHeader
       title="Reborn"
       to="/"

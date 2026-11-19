@@ -370,3 +370,19 @@ it('左右快捷侧栏均在点击时取值并提交一次，按钮不触发表�
     assert.equal(p.root.querySelector('[data-state]').dataset.state, 'closed');
   }
 });
+
+it('四种多选类型悬停不回填输入框，点击后才更新标签值', async () => {
+  for (const type of ['dates', 'months', 'quarters', 'years']) {
+    const p = mount({ type, modelValue: [], defaultValue: '2026-01-01', valueFormat: 'YYYY-MM-DD' });
+    p.root.querySelector('[data-state]').click(); await tick();
+    const target = p.root.querySelector('[data-day]').parentElement;
+    target.dispatchEvent(new window.MouseEvent('mouseenter')); await tick();
+    assert.equal(p.root.querySelector('input').value, '', `${type}不回填候选`);
+    assert.ok(!p.root.querySelector('input').classList.contains('text-gray-5'));
+    assert.equal(p.updates.length, 0);
+    target.click(); await tick();
+    assert.equal(p.updates.length, 1);
+    assert.equal(p.updates[0].length, 1);
+    assert.equal(p.root.querySelector('input').value, '');
+  }
+});

@@ -279,7 +279,7 @@ it('根节点是单个元素：$el 指向根元素，透传属性落在根上', 
 });
 
 /** 用真实组件配合可控几何尺寸，验证滚动、隐藏项归属与定位，而不是依赖 jsdom 的零尺寸布局。 */
-async function mountOverflowTabs(options: { active?: string; position?: 'auto' | 'start' | 'center' | 'end'; vertical?: boolean } = {}) {
+async function mountOverflowTabs(options: { active?: string; position?: 'auto' | 'start' | 'center' | 'end'; vertical?: boolean; allDisabled?: boolean } = {}) {
   const prototype = dom.window.HTMLElement.prototype;
   const properties = ['clientWidth', 'clientHeight', 'scrollWidth', 'scrollHeight', 'clientLeft', 'clientTop', 'offsetWidth', 'offsetHeight', 'getBoundingClientRect', 'scrollTo', 'scrollBy'] as const;
   const descriptors = properties.map(key => [key, Object.getOwnPropertyDescriptor(prototype, key)] as const);
@@ -326,7 +326,7 @@ async function mountOverflowTabs(options: { active?: string; position?: 'auto' |
     ref: tabsRef, type: 'text', position: vertical ? 'left' : 'top',
     activeKey: active.value, 'onUpdate:activeKey': (key: string) => { active.value = key; },
     scrollPosition: position.value, overflow: overflow.value, ui: { navWrapper: 'test-viewport' },
-  }, () => Array.from({ length: 8 }, (_, index) => h(Pane, { paneKey: String(index), title: `标签 ${index}`, disabled: index === 6 }))) });
+  }, () => Array.from({ length: 8 }, (_, index) => h(Pane, { paneKey: String(index), title: `标签 ${index}`, disabled: options.allDisabled || index === 6 }))) });
   app.component('Icon', { render: () => h('i') });
   app.mount(container);
   await wait();
@@ -345,65 +345,104 @@ async function mountOverflowTabs(options: { active?: string; position?: 'auto' |
   };
 }
 
-it('省略号按左右隐藏项分别展开，支持悬停、选中、禁用与 Escape 关闭', async () => {
+it('省略号按左右隐藏项分别展开，传送菜单支持选中、禁用与 Escape 关闭', async () => {
   const demo = await mountOverflowTabs();
   const button = (side: string) => demo.container.querySelector<HTMLButtonElement>(`[aria-label="展开${side}侧隐藏标签"]`);
-  const items = () => [...demo.container.querySelectorAll('[role="option"]')].map(item => item.textContent);
+  const items = () => [...document.querySelectorAll('[data-tabs-menu] [role="menuitemradio"]')].map(item => item.textContent);
   try {
     assert.equal(button('左'), null);
-    assert.equal(demo.container.querySelector('[data-tabs-overflow="start"]'), null, '起点移除整个左侧容器，不保留空占位');
+    assert.equal(demo.container.querySelector('[data-tabs-overflow="start"]'), null);
     assert.ok(button('右'));
-    demo.container.querySelector('[data-tabs-overflow="end"]')!.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
-    await wait();
+    demo.container.querySelector('[data-tabs-overflow="end"] > div')!.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
+    await wait(450);
     assert.deepEqual(items(), ['标签 3', '标签 4', '标签 5', '标签 6', '标签 7']);
-    assert.equal(demo.container.querySelector<HTMLButtonElement>('[role="option"]:disabled')?.textContent, '标签 6');
+    assert.equal(demo.container.querySelector('[data-tabs-menu]'), null, '菜单传送至 body，不受头部裁剪');
+    assert.equal(document.querySelector<HTMLButtonElement>('[data-tabs-menu] button:disabled')?.textContent, '标签 6');
     demo.wrapper.scrollLeft = 250;
     demo.wrapper.dispatchEvent(new dom.window.Event('scroll'));
     await wait();
     assert.ok(button('左'));
-    demo.container.querySelector('[data-tabs-overflow="start"]')!.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
-    await wait();
+    button('左')!.click();
+    await wait(350);
     assert.deepEqual(items(), ['标签 0', '标签 1', '标签 2']);
-    assert.equal(demo.container.querySelectorAll('[role="listbox"]').length, 1);
-    demo.container.querySelector<HTMLButtonElement>('[role="option"]')!.click();
-    await wait();
+    assert.equal(document.querySelectorAll('[data-tabs-menu]').length, 1);
+    document.querySelector<HTMLButtonElement>('[data-tabs-menu] button')!.click();
+    await wait(250);
     assert.equal(demo.active.value, '0');
     assert.equal(demo.wrapper.scrollLeft, 20);
-    assert.equal(demo.container.querySelector('[role="listbox"]'), null);
+    assert.equal(document.querySelector('[data-tabs-menu]'), null);
     demo.wrapper.scrollLeft = 520;
     demo.wrapper.dispatchEvent(new dom.window.Event('scroll'));
     await wait();
     assert.ok(button('左'));
     assert.equal(button('右'), null);
-    assert.equal(demo.container.querySelector('[data-tabs-overflow="end"]'), null, '终点移除整个右侧容器');
+    assert.equal(demo.container.querySelector('[data-tabs-overflow="end"]'), null);
     button('左')!.focus();
-    await wait();
-    assert.ok(demo.container.querySelector('[role="listbox"]'));
-    button('左')!.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    await wait();
-    assert.equal(demo.container.querySelector('[role="listbox"]'), null);
+    await wait(350);
+    assert.ok(document.querySelector('[data-tabs-menu]'));
+    document.querySelector('[data-tabs-menu] button')!.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await wait(250);
+    assert.equal(document.querySelector('[data-tabs-menu]'), null);
   } finally { demo.cleanup(); }
 });
 
-it('悬停从省略号移入面板不会误关闭，离开和点击外部会关闭', async () => {
+it('悬停从省略号移入传送面板不会误关闭，离开和点击外部会关闭', async () => {
   const demo = await mountOverflowTabs();
-  const control = demo.container.querySelector('[data-tabs-overflow="end"]')!;
+  const control = demo.container.querySelector('[data-tabs-overflow="end"] > div')!;
   try {
     control.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
-    await wait();
+    await wait(450);
     control.dispatchEvent(new dom.window.MouseEvent('mouseleave'));
+    const menu = document.querySelector('[data-tabs-menu]')!;
+    menu.parentElement!.parentElement!.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
+    await wait(200);
+    assert.ok(document.querySelector('[data-tabs-menu]'));
+    menu.parentElement!.parentElement!.dispatchEvent(new dom.window.MouseEvent('mouseleave'));
+    await wait(450);
+    assert.equal(document.querySelector('[data-tabs-menu]'), null);
     control.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
-    await wait(150);
-    assert.ok(demo.container.querySelector('[role="listbox"]'));
-    control.dispatchEvent(new dom.window.MouseEvent('mouseleave'));
-    await wait(150);
-    assert.equal(demo.container.querySelector('[role="listbox"]'), null);
-    control.dispatchEvent(new dom.window.MouseEvent('mouseenter'));
-    await wait();
+    await wait(450);
     document.body.dispatchEvent(new dom.window.MouseEvent('pointerdown', { bubbles: true }));
-    document.body.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true, detail: 1 }));
-    await wait();
-    assert.equal(demo.container.querySelector('[role="listbox"]'), null);
+    await wait(250);
+    assert.equal(document.querySelector('[data-tabs-menu]'), null);
+  } finally { demo.cleanup(); }
+});
+
+it('传送菜单支持方向键进入和跳过禁用项，关闭时恢复焦点，离开触发器收起', async () => {
+  const demo = await mountOverflowTabs();
+  const trigger = demo.container.querySelector<HTMLButtonElement>('[data-tabs-overflow="end"] button')!;
+  try {
+    trigger.focus();
+    trigger.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    await wait(350);
+    assert.equal(document.activeElement?.textContent, '标签 3');
+    document.activeElement!.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+    assert.equal(document.activeElement?.textContent, '标签 7');
+    document.activeElement!.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+    assert.equal(document.activeElement?.textContent, '标签 5', '方向键跳过禁用的标签 6');
+    document.activeElement!.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await wait(250);
+    assert.equal(document.activeElement, trigger);
+    assert.equal(document.querySelector('[data-tabs-menu]'), null);
+    trigger.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    await wait(350);
+    assert.equal(document.activeElement?.textContent, '标签 3');
+    demo.container.querySelector<HTMLButtonElement>('[role="tab"]')!.focus();
+    await wait(250);
+    assert.equal(document.querySelector('[data-tabs-menu]'), null);
+  } finally { demo.cleanup(); }
+});
+
+it('隐藏项全部禁用时 Tab 放行，避免焦点困在省略号', async () => {
+  const demo = await mountOverflowTabs({ allDisabled: true });
+  try {
+    const trigger = demo.container.querySelector<HTMLButtonElement>('[data-tabs-overflow="end"] button')!;
+    trigger.focus();
+    const event = new dom.window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    trigger.dispatchEvent(event);
+    await wait(250);
+    assert.equal(event.defaultPrevented, false);
+    assert.equal(document.querySelector('[data-tabs-menu]'), null);
   } finally { demo.cleanup(); }
 });
 

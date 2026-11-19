@@ -18,10 +18,11 @@ export default {
     scrollbar: 'relative min-w-0 w-full',
     table: 'w-full table-fixed border-separate border-spacing-0 border-b border-gray-2 text-left text-base font-normal text-gray-9 tracking-normal',
     thead: '',
-    headerCell: 'box-border border-b border-gray-3 border-b-gray-2 bg-gray-1 px-4 py-0 text-base font-normal text-gray-9 align-middle',
+    // 分割线与文字等高；独立使用 before，避免覆盖固定列的 after 阴影。
+    headerCell: "relative box-border border-b border-gray-2 bg-gray-1 px-4 py-0 text-base font-medium text-gray-9 align-middle before:pointer-events-none before:absolute before:-right-px before:top-1/2 before:z-[1] before:h-[1em] before:w-px before:-translate-y-1/2 before:bg-gray-3 before:content-['']",
     row: 'group/row bg-gray-1',
     // 表体用上边框分隔行；底边由表格统一绘制，跨行合并也不会重复描边。
-    cell: 'box-border border-t border-gray-3 border-t-gray-2 px-4 py-0 text-base font-normal text-gray-9 align-middle',
+    cell: 'box-border border-t border-gray-2 px-4 py-0 text-base font-normal text-gray-9 align-middle',
     cellContent: 'min-w-0 py-1',
     expand: 'border-t border-gray-2 bg-gray-1 px-4 py-3',
     empty: 'px-4 py-10 text-center text-gray-6',
@@ -39,12 +40,12 @@ export default {
     },
     border: { true: {
       // 底框向内叠绘，内容撑满时与表格底线重合；短内容或 append 前仍保留表格底线。
-      scrollbar: "border-x border-t border-gray-3 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-30 after:h-px after:bg-gray-3 after:content-['']",
+      scrollbar: "border-x border-t border-gray-2 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-30 after:h-px after:bg-gray-2 after:content-['']",
       headerCell: 'border-r', cell: 'border-r',
     } },
     headerBackground: { true: { headerCell: 'bg-gray-2' } },
-    // 将三成灰色与底色合成为不透明背景，固定列继承后不会透出横向滚动的内容。
-    hover: { true: { row: 'hover:bg-[color-mix(in_srgb,var(--color-gray-2)_30%,var(--color-gray-1))]' } },
+    // 将五成灰色与底色合成为不透明背景，固定列继承后不会透出横向滚动的内容。
+    hover: { true: { row: 'hover:bg-[color-mix(in_srgb,var(--color-gray-2)_50%,var(--color-gray-1))]' } },
   },
   defaultVariants: { size: 'md' as const, hover: true },
 };

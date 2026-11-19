@@ -22,7 +22,7 @@ const config = {
     label: 'truncate',
     leadingIcon: 'shrink-0',
     trailingIcon: 'shrink-0',
-    closeButton: 'inline-flex items-center justify-center rounded-full transition-colors hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer focus:outline-none',
+    closeButton: 'inline-flex items-center justify-center rounded-full transition-colors hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer focus:outline-none text-gray-6 hover:text-gray-8 active:text-gray-9',
     closeIcon: 'shrink-0'
   },
   /** 徽章变体配置 */

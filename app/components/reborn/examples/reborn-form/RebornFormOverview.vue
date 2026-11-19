@@ -20,7 +20,7 @@ const form = reactive({
   <RebornForm
     :model-value="form"
     label-width="56px"
-    class="w-[200px]"
+    class="w-50"
   >
     <RebornFormItem
       prop="username"
@@ -45,7 +45,7 @@ const form = reactive({
         placeholder="请输入手机号"
       />
     </RebornFormItem>
-    <RebornFormItem class="mb-0 pl-[56px]">
+    <RebornFormItem class="mb-0 pl-14">
       <RebornButton
         color="primary"
         size="sm"

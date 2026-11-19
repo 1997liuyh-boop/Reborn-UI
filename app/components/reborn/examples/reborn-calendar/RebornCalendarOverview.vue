@@ -39,7 +39,7 @@ const weeks: OverviewCell[][] = [11, 18, 25].map(start =>
 
 <template>
   <!-- 宽 208px：缩略预览右上角有 32px 的 New 图标（距边 12px），再宽「今天」按钮就会压到图标上 -->
-  <div :class="cn(theme.root(), 'w-[208px]')">
+  <div :class="cn(theme.root(), 'w-52')">
     <div :class="cn(theme.header(), 'flex-nowrap')">
       <span :class="cn(theme.title(), 'px-0 text-sm')">2026 年 10 月</span>
       <RebornButton

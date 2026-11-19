@@ -51,6 +51,8 @@ const emit = defineEmits<{
   (e: "clear"): void;
   /** 点击底部「确定」按钮时触发，携带当前选中值（范围模式为 [start, end]） */
   (e: "confirm", value: string | string[]): void;
+  /** 选完当前时间的最后一个可见单位，供选择器切换区间端点。 */
+  (e: "selectComplete"): void;
 }>();
 
 // customParseFormat 插件已在 time-picker.utils 模块级注册，组件内不再重复 extend
@@ -147,6 +149,8 @@ const panelId = useId();
 const columnRefs = new Map<string, ScrollbarInstance>();
 const scrollTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const scrollTargets = new Map<string, number>();
+const pendingAnimations = new Set<string>();
+const runningAnimations = new Map<string, { target: number; expires: number }>();
 const uiOverrides = computed(() => props.ui || {});
 const activeUnits = computed(() => getTimeUnits(props.format));
 const roles = computed<TimeRangeRole[]>(() => (props.isRange ? ["start", "end"] : ["start"]));
@@ -428,7 +432,10 @@ function setValue(role: TimeRangeRole, unit: TimeUnit, value: number) {
   scrollTimers.delete(key);
   const state = cloneState(getState(role));
   state[unit] = value;
+  if (props.interaction === "click") pendingAnimations.add(key);
   updateState(role, state, 1);
+  syncColumns();
+  if (unit === activeUnits.value.at(-1)) emit("selectComplete");
 }
 
 function clear() {
@@ -472,8 +479,13 @@ function scrollColumnToActive(role: TimeRangeRole, unit: TimeUnit) {
   );
   if (scrollTimers.has(key)) return;
   scrollTargets.set(key, target);
-  // 定位选中项属于程序滚动，静默落位：打开面板时滚动条不闪现，只在悬停或用户滚动时显示
-  scrollbar?.setScrollTop(target, { animated: false, silent: true });
+  const animated = props.interaction === "click" && pendingAnimations.delete(key);
+  const running = runningAnimations.get(key);
+  // 模型和列状态可能同帧触发多次同步，不打断正在滑向同一目标的动画。
+  if (!animated && running?.target === target && Date.now() < running.expires) return;
+  if (animated) runningAnimations.set(key, { target, expires: Date.now() + 220 });
+  else runningAnimations.delete(key);
+  scrollbar?.setScrollTop(target, { animated, duration: 200, silent: true });
 }
 
 /** 默认模式在滚动停止后提交，再对齐居中区域；首尾不会循环。 */
@@ -493,6 +505,7 @@ function settleScroll(role: TimeRangeRole, unit: TimeUnit) {
   );
   updateState(role, state);
   scrollColumnToActive(role, unit);
+  if (unit === activeUnits.value.at(-1)) emit("selectComplete");
 }
 
 function handleScroll(role: TimeRangeRole, unit: TimeUnit) {
@@ -520,6 +533,8 @@ function flushScroll() {
 function cancelScrollTimers() {
   for (const timer of scrollTimers.values()) clearTimeout(timer);
   scrollTimers.clear();
+  pendingAnimations.clear();
+  runningAnimations.clear();
 }
 
 function syncColumns() {

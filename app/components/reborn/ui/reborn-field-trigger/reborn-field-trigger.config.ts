@@ -46,8 +46,7 @@ export default {
          * 清空按钮。默认绝对定位盖在箭头之上且隐藏，
          * 仅在 clearable 变体开启且鼠标悬停整个触发器时显示，避免箭头被永久顶掉。
          */
-        clearBtn:
-            "absolute inset-0 hidden cursor-pointer items-center justify-center text-gray-5 transition-colors hover:text-gray-7",
+        clearBtn: "absolute inset-0 hidden cursor-pointer items-center justify-center transition-colors text-gray-6 hover:text-gray-8 active:text-gray-9",
     },
     variants: {
         /**

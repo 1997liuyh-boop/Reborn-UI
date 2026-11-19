@@ -13,7 +13,7 @@ tags: [tooltip, floating, hint]
 
 Tooltip 是锚定在触发元素上的深色文字气泡，用来补充说明按钮、图标或截断文字的含义，仅 Web 端提供。默认插槽放触发元素，文案用 `title`（未传时回落到 `content`）或 `content` 插槽传入。
 
-方位由 `placement` 一个属性决定：方向（`top` / `bottom` / `left` / `right`）与对齐（`-start` / `-end`）组合出 12 种；主轴放不下时由 `autoAdjustOverflow` 翻到对侧。箭头用 `arrow` 控制显隐，对象形式 `{ pointAtCenter: true }` 让箭头指向触发元素中心。
+方位由 `placement` 一个属性决定：方向（`top` / `bottom` / `left` / `right`）与对齐（`-start` / `-end`）组合出 12 种；主轴放不下时由 `autoAdjustOverflow` 翻到对侧。箭头用 `arrow` 控制显隐，默认指向触发元素中心。
 
 其余 API 按用途分组：触发方式看 `trigger`（`hover` / `focus` / `click` / `contextMenu`，可组合）；延时看 `openDelay` / `closeDelay`（毫秒）或 `mouseEnterDelay` / `mouseLeaveDelay`（秒）；显隐控制看 `v-model:open`、`defaultOpen` 与暴露的 `open()` / `close()`；外观看 `color` 与 `ui`。
 
@@ -175,7 +175,7 @@ function show(event: Event, value: string) {
 
 ### 箭头：显隐与指向中心
 
-`:arrow="false"` 隐藏箭头。上下方向的 `-start` / `-end` 方位下箭头默认停在对齐端，触发元素比气泡宽时箭头可能不在触发元素正中；`:arrow="{ pointAtCenter: true }"` 让箭头改为指向触发元素中心。左右方向（含 `left-start` / `left-end` / `right-start` / `right-end`）默认指向触发元素的高度中心，落点限制在面板边界内。
+`:arrow="false"` 隐藏箭头。箭头默认指向触发元素的中心，落点限制在面板边界内。上下方向的 `-start` / `-end` 方位可传 `:arrow="{ pointAtCenter: false }"`，改为按对齐端定位。打开时先从尖端显示箭头，内容随后从箭头底边沿浮层方向展开。隐藏箭头时，内容直接从靠近触发元素的一侧展开。
 
 ```vue
 <template>
@@ -227,7 +227,7 @@ const emptyTitle = ref(false);
 | `virtualRef` | `HTMLElement \| null` | `null` | 虚拟触发元素，切换时迁移事件与 ARIA 关联，置空或卸载时关闭。 |
 | `placement`          | `TooltipPlacement`                                        | `'bottom'`   | 出现方向与对齐方式，12 种取值见「方位：12 种 placement」。                               |
 | `color`              | `string`                                                  | -            | 自定义背景颜色，面板与箭头同步着色，文字固定为白色。                                     |
-| `arrow`              | `boolean \| { pointAtCenter?: boolean }`                  | `true`       | 箭头显隐；对象形式的 `pointAtCenter` 让箭头指向触发元素中心而非对齐端。                  |
+| `arrow`              | `boolean \| { pointAtCenter?: boolean }`                  | `true`       | 箭头显隐。默认指向触发元素的中心，上下方位可传 `{ pointAtCenter: false }` 按对齐端定位。                  |
 | `autoAdjustOverflow` | `boolean`                                                 | `true`       | 主轴放不下时自动翻转到对侧。                                                             |
 | `trigger`            | `'hover' \| 'focus' \| 'click' \| 'contextMenu'` 或其数组 | `'hover'`    | 触发行为，可传数组组合多种触发方式。                                                     |
 | `open`               | `boolean`                                                 | -            | 受控显隐，对应 `v-model:open`；不绑定时组件内部自管理显隐。                              |
@@ -299,7 +299,7 @@ const emptyTitle = ref(false);
 - **虚拟触发引用必须是原生元素。** `virtualRef` 接收已挂载的 `HTMLElement`；组件实例需先取得其真实 DOM。显示期间切换引用保持单例浮层并更新定位，引用置空或节点卸载会关闭。
 
 - **仅 Web 端可用。** UniApp 端没有同名组件，需要轻量气泡时可用 `reborn-popover` 的 `title` 属性。
-- **箭头采用长短边比例为 2.5:1 的圆头曲线，与面板同色。** 上下方向宽 17.5px、高 7px，左右方向宽 7px、高 17.5px；根部向面板内嵌入 2px，避免两端平直边露出。箭头尖端与触发器保持 4px 可见间距，隐藏箭头时从面板边缘计算。
+- **箭头采用长短边比例为 2.5:1 的圆头曲线，与面板同色。** 上下方向宽 17.5px、高 7px，左右方向宽 7px、高 17.5px；箭头盒向面板内延伸 2px，绘制时裁去这段根部，避免两端平直边露出。箭头尖端与触发器保持 4px 可见间距，隐藏箭头时从面板边缘计算。
 - **没有可显示内容时不会弹出。** `disabled` 为 `true`、`title` 为 `null` / 空串、或既无文案也无 `content` 插槽时都不会打开；文案中途变为空会立即关闭提示，避免出现一个空气泡。
 - **关闭期间文案默认被冻结。** 提示层 DOM 默认隐藏保留，冻结文案可以避免隐藏期间外部数据变化引起内容抖动；需要关闭期间也实时更新时设 `fresh`。
 - **提示层默认 Teleport 到 `body`。** 不受父容器 `overflow: hidden` 裁剪；用 `getPopupContainer` 改挂载点时，若容器带 CSS `transform`，fixed 定位会以该容器为参照而错位。

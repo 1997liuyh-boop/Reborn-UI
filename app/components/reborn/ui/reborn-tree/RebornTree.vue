@@ -1073,7 +1073,7 @@ defineExpose({
               :loading="loadingKeys.has(entity.key)" :leaf="isLeaf(entity)"
             >
               <template v-if="isLeaf(entity)">
-                <Icon v-if="leafIconName" :name="leafIconName" class="size-4 text-gray-5" />
+                <Icon v-if="leafIconName" :name="leafIconName" class="size-3 text-gray-5" />
               </template>
               <template v-else>
                 <Icon

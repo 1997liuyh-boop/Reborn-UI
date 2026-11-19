@@ -278,14 +278,15 @@ const customRangeUi = {
 const dashedRangeValue = shallowRef(["2024-04-09", "2024-04-18"]);
 
 const dashedRangeUi = {
-  dayActive: "border border-dashed border-warning bg-transparent text-warning rounded-[4px]",
-  dayInRange: "bg-orange-1 text-gray-9 rounded-[4px] hover:bg-orange-1",
+  dayActive: "border border-dashed border-warning bg-transparent text-warning rounded-sm",
+  dayInRange: "bg-orange-1 text-gray-9 rounded-sm hover:bg-orange-1",
 };
 
 /** 节假日示例：停在 2024 年 4 月，清明假期就在眼前 */
 const cellValue = shallowRef("2024-04-03");
 
 const navIconValue = shallowRef("2024-04-03");
+const defaultViewDate = ref();
 </script>
 
 <template>
@@ -441,6 +442,12 @@ const navIconValue = shallowRef("2024-04-03");
       <DemoNote>
         取消联动后左侧必须早于右侧：两侧已相邻时，左侧的「下一页」与右侧的「上一页」置灰不响应，以免两个面板显示同一个月、区间无从落点。
       </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="默认展示日期" description="指定初始月份，点击某天才会写入选中日期。">
+      <DemoBlock>
+        <RebornDatePickerPanel v-model="defaultViewDate" default-value="2030-06-01" />
+      </DemoBlock>
     </DemoSection>
 
     <DemoSection title="周数">

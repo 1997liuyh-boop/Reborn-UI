@@ -329,7 +329,7 @@ const theme = tv({
       "flex shrink-0 items-center justify-center transition-all duration-300 ease-in-out",
     subMenu: "relative",
     subMenuPopup:
-      "absolute z-50 overflow-visible border border-gray-2 bg-gray-1 p-1 shadow-xl rounded-md",
+      "absolute z-50 overflow-visible border-0 bg-gray-1 p-1 shadow-[0px_2px_16px_0px_rgba(1,27,70,0.1)] rounded-sm",
     // 浮层内条目间距 4px，与根级垂直菜单的 gap-y-1 对齐
     subMenuContent: "flex flex-col gap-y-1",
     menuItemGroup: "flex flex-col",
@@ -485,7 +485,7 @@ const theme = tv({
     expandType: {
       normal: {
         // 平铺容器不需要浮层底色，bg-transparent 直接盖掉基础槽的 bg-gray-1（单一色阶，无需再写 dark: 变体）
-        // ⚠️ 根因：基础槽为浮层准备的 rounded-md 没被摘掉，平铺容器又带着 overflow-hidden，
+        // ⚠️ 根因：基础槽为浮层准备的圆角 没被摘掉，平铺容器又带着 overflow-hidden，
         // 首个子条目的选中背景被裁出两个上圆角，选中投影的上半截也被切掉，只剩底边一道阴影。
         // ✅ 修复：rounded-none 摘掉圆角；overflow-hidden 只在收起与动画期间保留，
         // 展开落定后由 RebornSubMenu 换成 overflow-visible，投影因此完整显示。

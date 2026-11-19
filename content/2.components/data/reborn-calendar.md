@@ -18,13 +18,13 @@ badge: New
 
 Calendar 把一个月的日期铺成周日开头的七列网格，每个日期格分上下两段：上面是日期（默认靠右），下面是 65px 高的事项区。`v-model`、`range`、`controller-type`、`formatter`、`date-cell` / `header` 插槽与 `selectDate` 等实例方法沿用 Element Plus `el-calendar` 的命名，仅 Web 端实现。
 
-数据驱动方式是 `events` + `v-model`：`events` 是 `{ date, title, color? }` 数组，按 `date` 落到对应的日期格，年视图里按月汇总；`v-model` 是选中日期，视图始终停在选中日期所在的月份——翻页、改年月下拉、点「今天」都是在挪选中日期，视图随之跟过去。`color` 决定有事项及选中单元格的浅底、顶边与日期文字，并传给工具栏的年月下拉与月 / 年切换；未选中单元格悬停使用 `bg-gray-2`，保留原有顶边颜色。事项自己的 `color` 只改它的圆点，两者互不影响。
+数据驱动方式是 `events` + `v-model`：`events` 是 `{ date, title, color? }` 数组，按 `date` 落到对应的日期格，年视图里按月汇总；`v-model` 是选中日期，视图始终停在选中日期所在的月份——翻页、改年月下拉、点「今天」都是在挪选中日期，视图随之跟过去。`color` 决定选中单元格的浅底与日期文字，以及今天／本月的顶边，并传给工具栏的年月下拉与月 / 年切换；未选中单元格悬停使用 `bg-gray-2`，保留原有顶边颜色。事项自己的 `color` 只改它的圆点，两者互不影响。
 
-其余 API 分五组：视图由 `v-model:mode`（月 / 年）与 `range`（只显示一段日期）控制；外观由 `title-align`（标题对齐）、`border`（直角边框）、`highlight-today`（本日 / 本月文字高亮，默认关闭）与 `lunar`（农历）控制；工具栏由 `controller-type`（年月下拉 / 翻页按钮）与 `formatter`（下拉文案）控制；日期换算由 `timezone`（时区）与 `value-format`（字符串绑定值）控制；`panel-change` 通知换月换年。`date-cell` 与 `header` 两个插槽分别替换日期格内容与整个工具栏，编辑入口和弹窗可在业务层自由组合。
+其余 API 分五组：视图由 `v-model:mode`（月 / 年）与 `range`（只显示一段日期）控制；外观由 `title-align`（标题对齐）、`border`（直角边框）、`highlight-today`（本日 / 本月顶边与文字高亮，默认开启）与 `lunar`（农历）控制；工具栏由 `controller-type`（年月下拉 / 翻页按钮）与 `formatter`（下拉文案）控制；日期换算由 `timezone`（时区）与 `value-format`（字符串绑定值）控制；`panel-change` 通知换月换年。`date-cell` 与 `header` 两个插槽分别替换日期格内容与整个工具栏，编辑入口和弹窗可在业务层自由组合。
 
 ### 何时使用
 
-- 排期、值班、会议这类按天归档的事项总览 —— 传 `events`，有事项的日期自动高亮。
+- 排期、值班、会议这类按天归档的事项总览 —— 传 `events`，事项按日期显示，只有选中单元格使用主题浅底。
 - 需要在日历上新增、删除事项 —— 在 `date-cell` 插槽中组合 `reborn-context-menu` 与 `reborn-dialog`，自己维护 `events`。
 - 年度规划的月份概览 —— `v-model:mode="year"`，12 个月各自汇总当月事项。
 - 面向国内用户、需要看节日节气的排期 —— 开 `lunar`。
@@ -42,7 +42,7 @@ Calendar 把一个月的日期铺成周日开头的七列网格，每个日期�
 
 `v-model` 绑定选中日期（默认是当天零点的 `Date`，设置 `value-format` 后是字符串）；未选中时视图停在本月。点任意日期即选中，点上下月补位的日期会跟着翻到那个月。
 
-`highlight-today` 默认 `false`；开启后，月视图中的今天、年视图中的本月增加 `color` 对应色板第 6 阶的顶边与日期文字高亮。选中单元格使用第 1 阶浅底和第 6 阶顶边，悬停仍保留选中态；未选中单元格悬停仅改为 `bg-gray-2`，不改变边框颜色。
+`highlight-today` 默认 `true`；开启后，月视图中的今天、年视图中的本月增加 `color` 对应色板第 6 阶的顶边与日期文字高亮。选中单元格使用第 1 阶浅底与第 6 阶文字，普通格顶边仍为 gray-4；今天／本月的顶边取第 6 阶，悬停仍保留选中态；未选中单元格悬停仅改为 `bg-gray-2`，不改变边框颜色。
 
 ```vue
 <script setup lang="ts">
@@ -56,13 +56,30 @@ const value = ref<Date>()
 </template>
 ```
 
+### 禁用日期
+
+通过 `disabledDate` 判断日期是否可选。禁用日期不响应单元格点击或实例方法选择；不会改写外部已经绑定的值。月份格按该月实际选择的目标日判断。
+
+```vue
+<script setup>
+import { ref } from 'vue'
+
+const date = ref()
+const isWeekend = day => day.getDay() === 0 || day.getDay() === 6
+</script>
+
+<template>
+  <RebornCalendar v-model="date" size="sm" :disabled-date="isWeekend" />
+</template>
+```
+
 ### 事项与语义色
 
 `events` 的每一项按 `date` 落到日期格。`'2026-10-20'` 这类不带时区的字符串直接按日期落格；`Date`、时间戳和带 `Z` / 偏移的字符串是确定时刻，按 `timezone`（缺省本地时区）换算成当天。事项区只露出 3 条，超出在格内滚动。
 
 | 设置位置 | 影响范围 | 典型用途 |
 | --- | --- | --- |
-| 日历的 `color` | 有事项及选中单元格的浅底、顶边、日期文字，日期文字高亮、可选的本日 / 本月文字高亮、圆点默认色，以及工具栏的年月下拉与月 / 年切换 | 让整张日历与页面主题一致 |
+| 日历的 `color` | 选中单元格的浅底与文字、今天／本月的顶边与文字、圆点默认色，以及工具栏的年月下拉与月 / 年切换 | 让整张日历与页面主题一致 |
 | 事项的 `color` | 只有该条事项的圆点 | 用颜色区分事项类型（发布、故障、截止） |
 
 ```vue
@@ -288,12 +305,14 @@ const calendar = ref()
 | `controllerType` | `'select' \| 'button'` | `'select'` | 工具栏左侧控件：年月下拉 / 前后翻页按钮加年月标题。 |
 | `formatter` | `(value: number, type: 'year' \| 'month') => string \| number` | - | 年份、月份下拉选项的文案；月份的 `value` 为 1~12。不传时为「2026 年」「10 月」。 |
 | `events` | `CalendarEvent[]` | `[]` | 事项数据 `{ date, title, color?, ...自定义字段 }`；`date` 无法解析的事项被跳过。 |
-| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error'` | `'primary'` | 有事项及选中单元格的第 1 阶浅底与第 6 阶顶边、日期标记、可选的本日 / 本月文字高亮、事项圆点默认色，以及工具栏年月下拉与月 / 年切换的颜色。 |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 日期标题尺寸分别为 24 / 32 / 40px，农历文字另起一行。 |
+| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error'` | `'primary'` | 选中单元格的第 1 阶浅底与第 6 阶文字、今天／本月的第 6 阶顶边与文字、事项圆点默认色，以及工具栏年月下拉与月 / 年切换的颜色。 |
 | `titleAlign` | `'left' \| 'center' \| 'right'` | `'right'` | 表头星期、公历日期与下方农历文字的水平对齐。 |
 | `border` | `boolean` | `false` | 边框模式：主体加无圆角外框，格子之间画分隔线，列间距取消。 |
-| `highlightToday` | `boolean` | `false` | 月视图强调今天、年视图强调本月，单元格顶边与日期文字高亮使用 color 对应色板第 6 阶；不影响选中状态、今天按钮和日期的无障碍语义。 |
+| `highlightToday` | `boolean` | `true` | 月视图强调今天、年视图强调本月，单元格顶边与日期文字高亮使用 color 对应色板第 6 阶；不影响选中状态、今天按钮和日期的无障碍语义。 |
 | `lunar` | `boolean` | `false` | 农历模式：公历日期下方以较小字号显示节日 / 节气 / 月名 / 日名，工具栏显示干支年与生肖；运行环境不支持 Intl 中国历法时不显示。 |
 | `timezone` | `string` | - | IANA 时区名（如 `'Asia/Shanghai'`）。决定「今天」、带时区的时刻落在哪天，以及向外派发的 `Date` 取哪个时区的零点；不传用本地时区，非法名称警告后退回本地时区。 |
+| `disabledDate` | `(date: Date) => boolean` | - | 返回 true 的日期不可选，使用 gray-5 文字与禁止光标；Date 为日历时区当天零点。年视图按点击月份时实际选中的目标日判断，禁用月份不会下钻；实例选择方法同样受限。 |
 | `valueFormat` | `string` | - | dayjs 格式串（如 `'YYYY-MM-DD'`）。设置后 `v-model` 收发该格式的字符串，不经过 `Date` 的时区换算。 |
 | `class` | `any` | - | 追加到根容器的类名。 |
 | `ui` | `CalendarUI` | `{}` | 按结构键覆盖各节点样式，键位见「自定义样式（ui）」。 |
@@ -329,18 +348,18 @@ const calendar = ref()
 | 键名 | 说明 |
 | --- | --- |
 | root | 根容器，默认 `w-full min-w-0`。 |
-| header | 工具栏，左右两端对齐，窄屏换行。 |
+| header | 工具栏，左右两端对齐，窄屏换行，默认内边距 `p-3`（12px）。 |
 | controller | 工具栏左侧控件组，间隔 8px。**仅在不使用 `header` 插槽时渲染**，下同。 |
 | title | 翻页模式与区间模式下的年月标题，默认 `text-base font-medium text-gray-10`。 |
 | lunarYear | 农历模式下工具栏里的干支年，默认 `text-sm text-gray-6`；未开启 `lunar` 时不渲染。 |
 | select | 年份、月份下拉；年份默认 `w-28`、月份 `w-24`，这里的宽度会覆盖默认值。 |
 | navButton | 翻页按钮，默认与 md 按钮等高的正方形。 |
-| body | 日历主体，默认 `mt-6`（与工具栏间隔 24px）。 |
+| body | 日历主体，默认 `px-3 py-2`（左右 12px，上下 8px）。 |
 | row | 表头行与每一行单元格，默认 `grid gap-x-2`，月视图 7 列、年视图 4 列；边框模式下 `gap-x-0`。 |
 | weekday | 表头星期，默认 `h-7 text-base text-gray-5`，对齐随 `titleAlign`。 |
-| cell | 单元格，默认 `border-t border-gray-4 p-1`；有事项或选中时使用主题第 1 阶浅底与第 6 阶顶边，highlightToday 开启时当前单元格使用第 6 阶顶边。未选中格悬停仅使用 bg-gray-2，保留原有边框；边框模式下补灰色左分隔线。 |
+| cell | 单元格，默认 `border-t border-gray-4 p-1`；选中时使用主题第 1 阶浅底；普通格顶边 gray-4，今天／本月顶边使用主题第 6 阶，highlightToday 开启时当前单元格使用第 6 阶顶边。未选中格悬停仅使用 bg-gray-2，保留原有边框；边框模式下补灰色左分隔线。 |
 | cellHeader | 日期标题容器，公历在上、农历在下，对齐随 `titleAlign`。**仅在不使用 `date-cell` 插槽时渲染**，下同。 |
-| date | 日期标题按钮，默认 `text-base text-gray-9`；补位日期 `text-gray-5`。选中或开启 highlightToday 后的本日 / 本月仅使用主题文字色和中等字重，不添加底色或描边。 |
+| date | 日期标题按钮，月视图按 `size` 取 24 / 32 / 40px 方格，年视图月份文字宽度自适应；默认 `text-base text-gray-9`；补位日期 `text-gray-5`。选中日期格使用主题浅底与主题文字色。开启 `highlightToday` 后，本日或本月使用主题色顶边。 |
 | lunar | 公历日期下方的农历文字，默认 `text-sm text-gray-6`，小于公历的 `text-base`；节日与节气用语义色，未开启 `lunar` 时不渲染。 |
 | content | 事项区，默认 `h-[65px] pt-0.5`。 |
 | eventList | 事项列表，超出事项区时纵向滚动；当天没有事项时不渲染。 |

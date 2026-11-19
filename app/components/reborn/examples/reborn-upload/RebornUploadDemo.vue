@@ -628,7 +628,7 @@ const disabledCardFiles = ref<UploadUserFile[]>([
         </RebornButton>
       </template>
 
-      <div class="flex w-full max-w-[520px] flex-col gap-4">
+      <div class="flex w-full max-w-130 flex-col gap-4">
         <RebornUpload
           ref="playRef" v-model:file-list="playFiles" :list-type="state.listType" :drag="state.drag"
           :multiple="state.multiple" :show-file-list="state.showFileList" :disabled="state.disabled"
@@ -638,7 +638,7 @@ const disabledCardFiles = ref<UploadUserFile[]>([
           <template v-if="!state.drag && state.listType !== 'picture-card'">
             <RebornButton color="neutral" variant="outlined" :disabled="state.disabled">
               <template #leading>
-                <Icon name="lucide:upload" class="size-[16px]" />
+                <Icon name="lucide:upload" class="size-4" />
               </template>
               点击上传
             </RebornButton>
@@ -669,10 +669,10 @@ const disabledCardFiles = ref<UploadUserFile[]>([
         绑定 <code>v-model:file-list</code> 拿到文件列表，<code>action</code> 填上传地址；选择文件后立即上传。
       </template>
       <DemoBlock layout="stack">
-        <RebornUpload v-model:file-list="basicFiles" action="/api/upload" class="w-full max-w-[400px]" :http-request="mockRequest">
+        <RebornUpload v-model:file-list="basicFiles" action="/api/upload" class="w-full max-w-100" :http-request="mockRequest">
           <RebornButton color="neutral" variant="outlined">
             <template #leading>
-              <Icon name="lucide:upload" class="size-[16px]" />
+              <Icon name="lucide:upload" class="size-4" />
             </template>
             点击上传
           </RebornButton>
@@ -689,13 +689,13 @@ const disabledCardFiles = ref<UploadUserFile[]>([
           <p class="text-dimmed w-24 shrink-0 pt-2 text-xs italic">{{ t }}</p>
           <RebornUpload
             v-model:file-list="listTypeFiles[t]" :list-type="t" multiple class="w-full min-w-0"
-            :class="t === 'picture-card' ? 'max-w-[640px]' : 'max-w-[480px]'"
+            :class="t === 'picture-card' ? 'max-w-160' : 'max-w-120'"
             :http-request="mockRequest"
           >
             <template v-if="t !== 'picture-card'">
               <RebornButton color="neutral" variant="outlined">
                 <template #leading>
-                  <Icon name="lucide:upload" class="size-[16px]" />
+                  <Icon name="lucide:upload" class="size-4" />
                 </template>
                 点击上传
               </RebornButton>
@@ -710,7 +710,7 @@ const disabledCardFiles = ref<UploadUserFile[]>([
         开启 <code>drag</code> 后触发区变为拖放区，把文件拖进来或点击都能选择；配合 <code>multiple</code> 一次放入多个。
       </template>
       <DemoBlock layout="stack">
-        <RebornUpload v-model:file-list="dragFiles" drag multiple class="w-full max-w-[480px]" :http-request="mockRequest">
+        <RebornUpload v-model:file-list="dragFiles" drag multiple class="w-full max-w-120" :http-request="mockRequest">
           <template #tip>
             支持一次拖入多个文件
           </template>
@@ -738,18 +738,18 @@ const disabledCardFiles = ref<UploadUserFile[]>([
         <div>
           <RebornButton color="neutral" variant="outlined" :loading="videoRecording" @click="addSampleVideo">
             <template #leading>
-              <Icon name="lucide:clapperboard" class="size-[16px]" />
+              <Icon name="lucide:clapperboard" class="size-4" />
             </template>
             生成示例视频
           </RebornButton>
         </div>
         <RebornUpload
           ref="videoListRef" v-model:file-list="videoListFiles" list-type="picture" accept="video/*" multiple
-          class="w-full max-w-[480px]" :http-request="mockRequest"
+          class="w-full max-w-120" :http-request="mockRequest"
         >
           <RebornButton color="neutral" variant="outlined">
             <template #leading>
-              <Icon name="lucide:upload" class="size-[16px]" />
+              <Icon name="lucide:upload" class="size-4" />
             </template>
             上传视频
           </RebornButton>
@@ -773,12 +773,12 @@ const disabledCardFiles = ref<UploadUserFile[]>([
       </template>
       <DemoBlock layout="stack">
         <RebornUpload
-          v-model:file-list="limitFiles" :limit="3" multiple class="w-full max-w-[400px]"
+          v-model:file-list="limitFiles" :limit="3" multiple class="w-full max-w-100"
           :http-request="mockRequest" :on-exceed="onLimitExceed"
         >
           <RebornButton color="neutral" variant="outlined">
             <template #leading>
-              <Icon name="lucide:upload" class="size-[16px]" />
+              <Icon name="lucide:upload" class="size-4" />
             </template>
             点击上传
           </RebornButton>
@@ -795,12 +795,12 @@ const disabledCardFiles = ref<UploadUserFile[]>([
       </template>
       <DemoBlock layout="stack">
         <RebornUpload
-          v-model:file-list="compressFiles" list-type="picture" accept="image/*" multiple class="w-full max-w-[480px]"
+          v-model:file-list="compressFiles" list-type="picture" accept="image/*" multiple class="w-full max-w-120"
           :http-request="compressRequest" :before-upload="compressBeforeUpload" :on-success="onCompressSuccess"
         >
           <RebornButton color="neutral" variant="outlined">
             <template #leading>
-              <Icon name="lucide:upload" class="size-[16px]" />
+              <Icon name="lucide:upload" class="size-4" />
             </template>
             点击上传
           </RebornButton>
@@ -827,12 +827,12 @@ const disabledCardFiles = ref<UploadUserFile[]>([
       </template>
       <DemoBlock layout="stack">
         <RebornUpload
-          v-model:file-list="confirmFiles" multiple class="w-full max-w-[400px]" :http-request="mockRequest"
+          v-model:file-list="confirmFiles" multiple class="w-full max-w-100" :http-request="mockRequest"
           :before-remove="confirmBeforeRemove"
         >
           <RebornButton color="neutral" variant="outlined">
             <template #leading>
-              <Icon name="lucide:upload" class="size-[16px]" />
+              <Icon name="lucide:upload" class="size-4" />
             </template>
             点击上传
           </RebornButton>
@@ -850,13 +850,13 @@ const disabledCardFiles = ref<UploadUserFile[]>([
       </template>
       <DemoBlock layout="stack">
         <RebornUpload
-          ref="manualRef" v-model:file-list="manualFiles" :auto-upload="false" multiple class="w-full max-w-[480px]"
+          ref="manualRef" v-model:file-list="manualFiles" :auto-upload="false" multiple class="w-full max-w-120"
           :http-request="manualRequest"
         >
           <template #trigger>
             <RebornButton color="neutral" variant="outlined">
               <template #leading>
-                <Icon name="lucide:folder-open" class="size-[16px]" />
+                <Icon name="lucide:folder-open" class="size-4" />
               </template>
               选择文件
             </RebornButton>
@@ -885,12 +885,12 @@ const disabledCardFiles = ref<UploadUserFile[]>([
       </template>
       <DemoBlock layout="stack">
         <RebornUpload
-          v-model:file-list="extraFiles" name="attachment" class="w-full max-w-[400px]" :data="resolveExtraData"
+          v-model:file-list="extraFiles" name="attachment" class="w-full max-w-100" :data="resolveExtraData"
           :headers="extraHeaders" :http-request="extraRequest" :on-success="onExtraSuccess"
         >
           <RebornButton color="neutral" variant="outlined">
             <template #leading>
-              <Icon name="lucide:upload" class="size-[16px]" />
+              <Icon name="lucide:upload" class="size-4" />
             </template>
             点击上传
           </RebornButton>
@@ -908,11 +908,11 @@ const disabledCardFiles = ref<UploadUserFile[]>([
       <DemoBlock layout="stack">
         <RebornUpload
           v-model:file-list="realFiles" :action="realAction" name="multipart" accept="image/*" list-type="picture"
-          class="w-full max-w-[400px]" :http-request="realRequest" :on-success="onRealSuccess" :on-error="onRealError"
+          class="w-full max-w-100" :http-request="realRequest" :on-success="onRealSuccess" :on-error="onRealError"
         >
           <RebornButton color="neutral" variant="outlined">
             <template #leading>
-              <Icon name="lucide:upload" class="size-[16px]" />
+              <Icon name="lucide:upload" class="size-4" />
             </template>
             上传图片
           </RebornButton>
@@ -939,12 +939,12 @@ const disabledCardFiles = ref<UploadUserFile[]>([
           <span class="text-muted text-sm">模拟网络不稳定（每片约 25% 概率中断，组件自动重试）</span>
         </div>
         <RebornUpload
-          ref="resumeRef" v-model:file-list="resumeFiles" :chunk="resumeAdapter" multiple class="w-full max-w-[480px]"
+          ref="resumeRef" v-model:file-list="resumeFiles" :chunk="resumeAdapter" multiple class="w-full max-w-120"
         >
           <template #trigger>
             <RebornButton color="neutral" variant="outlined">
               <template #leading>
-                <Icon name="lucide:folder-open" class="size-[16px]" />
+                <Icon name="lucide:folder-open" class="size-4" />
               </template>
               选择文件
             </RebornButton>
@@ -986,10 +986,10 @@ const disabledCardFiles = ref<UploadUserFile[]>([
       </template>
       <DemoBlock layout="stack">
         <RebornUpload
-          v-model:file-list="folderFiles" directory drag class="w-full max-w-[480px]" :http-request="mockRequest"
-          :ui="{ list: 'max-h-[200px] overflow-auto' }"
+          v-model:file-list="folderFiles" directory drag class="w-full max-w-120" :http-request="mockRequest"
+          :ui="{ list: 'max-h-50 overflow-auto' }"
         >
-          <Icon name="lucide:folder-up" class="size-[32px] text-gray-6" />
+          <Icon name="lucide:folder-up" class="size-8 text-gray-6" />
           <div>拖拽文件夹到此处，或 <span class="text-primary">点击选择</span></div>
         </RebornUpload>
         <DemoNote tone="dimmed" class="font-mono text-xs">
@@ -1004,17 +1004,17 @@ const disabledCardFiles = ref<UploadUserFile[]>([
       </template>
       <DemoBlock layout="stack">
         <RebornUpload
-          ref="customRef" v-model:file-list="customFiles" multiple class="w-full max-w-[480px]"
+          ref="customRef" v-model:file-list="customFiles" multiple class="w-full max-w-120"
           :http-request="mockRequest"
         >
           <RebornButton color="neutral" variant="outlined">
             <template #leading>
-              <Icon name="lucide:upload" class="size-[16px]" />
+              <Icon name="lucide:upload" class="size-4" />
             </template>
             点击上传
           </RebornButton>
           <template #file="{ file }">
-            <Icon name="lucide:file-text" class="size-[16px] shrink-0 text-gray-6" />
+            <Icon name="lucide:file-text" class="size-4 shrink-0 text-gray-6" />
             <span class="text-default min-w-0 flex-1 truncate">{{ file.name }}</span>
             <span class="shrink-0 text-xs text-gray-6">{{ formatSize(file.size) }}</span>
             <span class="w-20 shrink-0 text-right text-xs" :class="statusColors[file.status]">
@@ -1036,7 +1036,7 @@ const disabledCardFiles = ref<UploadUserFile[]>([
         <RebornUpload v-model:file-list="disabledFiles" disabled class="w-full">
           <RebornButton color="neutral" variant="outlined" disabled>
             <template #leading>
-              <Icon name="lucide:upload" class="size-[16px]" />
+              <Icon name="lucide:upload" class="size-4" />
             </template>
             点击上传
           </RebornButton>

@@ -11,7 +11,7 @@ const value = shallowRef('Reborn UI')
 </script>
 
 <template>
-  <div class="w-full max-w-[210px]">
+  <div class="w-full max-w-52.5">
     <RebornInput
       v-model="value"
       size="sm"

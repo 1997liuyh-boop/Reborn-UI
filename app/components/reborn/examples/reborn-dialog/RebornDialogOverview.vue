@@ -14,7 +14,7 @@ const styles = tv(theme)({})
 </script>
 
 <template>
-  <div :class="cn(styles.panel(), 'w-[220px] gap-3 bg-gray-1 px-4 py-3 text-gray-9 shadow-[0_4px_16px_rgba(15,23,42,0.12)]')">
+  <div :class="cn(styles.panel(), 'w-55 gap-3 bg-gray-1 px-4 py-3 text-gray-9 shadow-[0_4px_16px_rgba(15,23,42,0.12)]')">
     <div :class="styles.header()">
       <div :class="cn(styles.headerContent(), 'gap-1')">
         <div :class="cn(styles.title(), 'text-sm')">

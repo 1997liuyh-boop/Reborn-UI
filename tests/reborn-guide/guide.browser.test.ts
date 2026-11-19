@@ -64,6 +64,8 @@ async function buildFixture() {
       sourcefile: 'guide-fixture.ts', loader: 'ts', resolveDir: resolve('.'),
     },
     bundle: true, platform: 'browser', format: 'esm', write: false,
+    // 引导使用图片展示，不开启预览，测试夹具无需打包预览器样式。
+    loader: { '.css': 'empty' },
     alias: { '~': resolve('app'), '@': resolve('app') }, define: { 'import.meta.client': 'true' },
     plugins: [{ name: 'guide-test', setup(builder) {
       builder.onLoad({ filter: /\.vue$/ }, async ({ path }) => {

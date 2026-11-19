@@ -41,9 +41,9 @@ Badge 用于展示条目的状态、数量或分类标识，Web 与 UniApp 两�
 | `filled` | 语义背景（默认 6 阶）/ 无 / 配套语义前景 | 强调状态 |
 | `outlined` | 透明 / 4 阶 / 语义文字 | 密集列表 |
 | `soft` | 2 阶 / 无 / 语义文字 | 轻量分类 |
-| `subtle` | 2 阶 / 4 阶 / 语义文字 | 需要边界的状态标签 |
+| `subtle` | 1 阶 / 2 阶 / 6 阶语义文字 | 需要边界的状态标签 |
 
-Web 的 neutral 非实心文字使用 gray-9。`size` 三档高度为 `h-4.5` / `h-6` / `h-8`，水平内边距为 `px-1.5`，默认根字号下对应 18 / 24 / 32px 高、6px 内边距，随 Tailwind `--spacing` 缩放；字号仍为固定 12 / 12 / 14px。UniApp 尺寸按独立的 rpx 令牌取值。
+Web 的 neutral 在 `soft` / `outlined` 下使用 gray-9 文字，`subtle` 使用 gray-2 底色、gray-3 边框和 gray-9 文字；`subtle` 的未选中态同样使用灰阶 1 / 2 / 6。`size` 三档高度为 `h-4.5` / `h-6` / `h-8`，水平内边距为 `px-1.5`，默认根字号下对应 18 / 24 / 32px 高、6px 内边距，随 Tailwind `--spacing` 缩放；字号仍为固定 12 / 12 / 14px。UniApp 尺寸按独立的 rpx 令牌取值。
 
 ```vue
 <template>
@@ -260,7 +260,7 @@ UniApp 的高度与圆角令牌独立定义在 `packages/uniapp-project/src/styl
 | 关闭前确认 | `beforeClose` | 不支持 |
 | 关闭图标默认值 | `i-lucide-x` | `i-mdi-close-circle` |
 | 自定义容器 | `as` 与 `class` | `customClass` |
-| 调色板 | secondary 独立色阶，neutral 文字 gray-9 | secondary 使用灰阶，neutral 文字 gray-8 |
+| 调色板 | secondary 独立色阶；neutral 的 subtle / soft / outlined 文字 gray-9 | secondary 使用灰阶，neutral 文字 gray-8 |
 
 ## 注意事项
 

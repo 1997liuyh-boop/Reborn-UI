@@ -36,7 +36,7 @@ export default {
     slots: {
         // 星与星之间固定 4px（gap-1）；想改星距请覆盖这里
         wrapper: "inline-flex flex-row items-center gap-1",
-        star: "relative cursor-pointer transition-all duration-200 ease-out",
+        star: "relative cursor-pointer hover:scale-125 transition-all duration-200 ease-out",
         // 两层图标只过渡颜色：visibility / clip-path 必须瞬时切换，否则分段图标切换时未选中层会与选中层重叠 200ms
         icon: "transition-colors duration-200 ease-out text-gray-4",
         iconActive: "transition-colors duration-200 ease-out",
@@ -84,7 +84,7 @@ export default {
         },
         readonly: {
             true: {
-                star: "cursor-default active:scale-100",
+                star: "cursor-default hover:scale-100 active:scale-100",
             },
         },
     },

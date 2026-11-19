@@ -237,6 +237,10 @@ export interface TransferExtraSlotProps {
   direction: TransferDirection;
   /** titles 中对应面板的标题 */
   title: string;
+  /** 当前面板已勾选的条目数 */
+  checkedCount: number;
+  /** 当前面板筛选后的条目总数 */
+  total: number;
 }
 
 /** default 插槽作用域：单个列表条目 */
@@ -378,7 +382,7 @@ interface PanelMenuState {
 const defaultOperationButtonPresets = {
   toRight: { title: "移至右侧", icon: "lucide:arrow-right", iconClass: "size-4" },
   toLeft: { title: "移回左侧", icon: "lucide:arrow-left", iconClass: "size-4" },
-  undo: { title: "撤回上一步", icon: "lucide:rotate-ccw", iconClass: "size-4" },
+  undo: { title: "撤回上一步", icon: "lucide:x", iconClass: "size-4" },
 } as const;
 
 function resolveOperationButton(
@@ -1394,7 +1398,7 @@ function getPanelMenu(panel: PanelDescriptor): PanelMenuState {
           </div>
 
           <div :class="ui.panelTitleArea()">
-            <slot name="extra" :direction="panel.direction" :title="panel.title">
+            <slot name="extra" :direction="panel.direction" :title="panel.title" :checked-count="panel.checkedCount" :total="panel.total">
               <span :class="ui.panelTitle()">{{ panel.title }}</span>
             </slot>
           </div>
@@ -1529,7 +1533,7 @@ function getPanelMenu(panel: PanelDescriptor): PanelMenuState {
                         aria-label="撤回到左侧"
                         @click.stop="revertOneWayItem(item)"
                       >
-                        <Icon name="lucide:undo-2" :class="ui.itemUndoIcon()" />
+                        <Icon name="lucide:x" :class="ui.itemUndoIcon()" />
                       </button>
                     </template>
                   </div>

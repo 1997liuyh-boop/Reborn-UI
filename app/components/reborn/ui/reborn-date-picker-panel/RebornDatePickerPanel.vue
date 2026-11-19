@@ -78,6 +78,7 @@ export interface DatePickerPanelProps {
     weekNumber: ClassValue;
     title: ClassValue;
     weekdays: ClassValue;
+    weekRow: ClassValue;
     days: ClassValue;
     dayCell: ClassValue;
     dayRangeStart: ClassValue;
@@ -96,6 +97,7 @@ export interface DatePickerPanelProps {
     grid4Year: ClassValue;
     grid4Month: ClassValue;
     dateTimeHeader: ClassValue;
+    dateTimeTrigger: ClassValue;
     dateTimeSegment: ClassValue;
     dateTimeSegmentActive: ClassValue;
     dateTimeSegmentDisabled: ClassValue;
@@ -217,6 +219,7 @@ const ui = computed(() => {
     border: props.border,
     range: isRange.value,
     dual: showDual.value, // 双面板
+    weekSelect: isWeekUnit.value,
     weekNumber: showWeek.value, // 周数列
     overflow: props.overflow,
   });
@@ -251,6 +254,7 @@ const ui = computed(() => {
       styles.weekNumber({ class: cn(opts?.class, uiOverrides.value.weekNumber) }),
     title: (opts?: { class?: any }) =>
       styles.title({ class: cn(opts?.class, uiOverrides.value.title) }),
+    weekRow: (opts?: { class?: any }) => styles.weekRow({ class: cn(opts?.class, uiOverrides.value.weekRow) }),
     weekdays: (opts?: { class?: any }) =>
       styles.weekdays({ class: cn(opts?.class, uiOverrides.value.weekdays) }),
     days: (opts?: { class?: any }) =>
@@ -286,6 +290,7 @@ const ui = computed(() => {
       styles.grid4Year({ class: cn(opts?.class, uiOverrides.value.grid4Year) }),
     grid4Month: (opts?: { class?: any }) =>
       styles.grid4Month({ class: cn(opts?.class, uiOverrides.value.grid4Month) }),
+    dateTimeTrigger: (opts?: { class?: any }) => styles.dateTimeTrigger({ class: cn(opts?.class, uiOverrides.value.dateTimeTrigger) }),
     dateTimeHeader: (opts?: { class?: any }) =>
       styles.dateTimeHeader({ class: cn(opts?.class, uiOverrides.value.dateTimeHeader) }),
     dateTimeSegment: (opts?: { class?: any }) =>
@@ -1099,7 +1104,14 @@ function handleShortcut(s: any) {
   if (props.disabled) return;
   const value = typeof s.value === "function" ? s.value() : s.value;
 
-  if (Array.isArray(value)) {
+  // 多选快捷项保留完整日期列表，不能按范围类型截成起止两项。
+  if (isMultiple.value) {
+    const dates = Array.isArray(value) ? value : [value];
+    const val = dates.map(date => formatDate(date));
+    model.value = val;
+    if (dates[0]) nav.showMonthOf(dates[0]);
+    emit("change", val);
+  } else if (Array.isArray(value)) {
     range.setRange(value[0], value[1]);
     const val = [formatDate(value[0]), formatDate(value[1])];
     model.value = val;
@@ -1383,7 +1395,7 @@ watch(defaultValueKey, () => {
               :disabled-seconds="disabledSeconds"
               :disabled-milliseconds="disabledMilliseconds"
               :show-arrow="false"
-              :trigger-ui="{ dropdown: DATE_PANEL_NESTED_OVERLAY_CLASS }"
+              :trigger-ui="{ dropdown: DATE_PANEL_NESTED_OVERLAY_CLASS, trigger: ui.dateTimeTrigger() }"
               @update:model-value="setTime(t, $event)"
             >
               <template #default="{ toggle }">

@@ -23,6 +23,8 @@ export interface BreadcrumbRoute {
 export interface BreadcrumbUI {
   /** 根节点（nav） */
   root?: ClassValue;
+  /** 折叠提示中的完整路径，文字继承 Tooltip 默认样式 */
+  tooltipTrail?: ClassValue;
   /** 单个条目容器 */
   item?: ClassValue;
   /** 条目链接/文本节点 */
@@ -62,6 +64,8 @@ export const BREADCRUMB_INJECTION_KEY: InjectionKey<BreadcrumbContext> = Symbol(
 export default {
   slots: {
     root: "flex items-center flex-wrap gap-x-1.5 text-sm leading-none",
+    // 仅排布完整路径，颜色、字号与行高均继承 Tooltip，避免面包屑正文样式覆盖提示样式。
+    tooltipTrail: "flex items-center flex-wrap gap-x-1.5 [&_*]:text-inherit [&_*]:text-[length:inherit] [&_*]:leading-[inherit]",
     /**
      * 条目容器。
      * 分组用具名 group/breadcrumb 而非匿名 group：带下拉的条目内部嵌了
@@ -88,7 +92,7 @@ export default {
      * 外壳的展开动画走 height 0 → scrollHeight，border-box 下内边距会把 height:0
      * 撑出一段残留高度，收起时露出一条色块。
      */
-    droplist: "min-w-32 max-h-60 overflow-y-auto px-[4px] py-[6px] space-y-[4px] scrollbar-hide",
+    droplist: "min-w-32 max-h-60 overflow-y-auto px-1 py-1.5 space-y-1 scrollbar-hide",
     /**
      * 下拉菜单项。字号 14px（text-base）与其余 Reborn 浮层保持一致：
      * 浮层默认传送到 body，拿不到面包屑根节点的 text-sm，必须自带字号。
@@ -96,9 +100,9 @@ export default {
      * 颜色只用灰阶 token（base.css 的 .dark 会整条翻转），不可写 dark: 前缀。
      */
     droplistItem:
-      "flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-sm px-[6px] py-[4px] text-base text-gray-7 transition-colors hover:bg-gray-2 hover:text-primary data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent data-[disabled=true]:hover:text-gray-7",
+      "flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-sm px-1.5 py-1 text-base text-gray-7 transition-colors hover:bg-gray-2 hover:text-primary data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent data-[disabled=true]:hover:text-gray-7",
     /** 菜单项分隔线，与浮层描边同一阶 */
-    droplistDivider: "my-[4px] border-t border-gray-3",
+    droplistDivider: "my-1 border-t border-gray-3",
   },
   variants: {
     /** 条目是否可跳转：由是否传入 to 决定 */

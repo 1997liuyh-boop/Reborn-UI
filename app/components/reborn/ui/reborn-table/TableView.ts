@@ -20,7 +20,6 @@ import TableOverflowTooltip from './TableOverflowTooltip';
 
 const styles = tv(theme);
 const alignClasses = { left: 'text-left', center: 'text-center', right: 'text-right' };
-const justifyClasses = { left: 'justify-start', center: 'justify-center', right: 'justify-end' };
 const defaultSpan = { rowspan: 1, colspan: 1 };
 const emptySpans: ReturnType<typeof getSpan>[][] = [];
 
@@ -107,6 +106,8 @@ export default defineComponent({
     const rowElements = new Map<TableKey, HTMLTableRowElement>();
     const scrollbar = shallowRef<InstanceType<typeof RebornScrollbar>>();
     const widths = shallowRef<number[]>([]);
+    const selectionWidths = shallowRef<number[]>([]);
+    const availableWidth = shallowRef(0);
     const headHeights = shallowRef<number[]>([]);
     const horizontalOverflow = shallowRef({ left: false, right: false });
     const fixedEdges = computed(() => ({
@@ -254,6 +255,19 @@ export default defineComponent({
     function measure() {
       const el = tableElement.value;
       if (!el) return;
+      // 未配置宽度的多选列由复选框与单元格内边距撑开，不使用固定列宽。
+      const nextSelectionWidths = state.leaves.value.map((column, index) => {
+        if (column.type !== 'selection' || column.width !== undefined || column.minWidth !== undefined) return 0;
+        const checkbox = el.querySelector<HTMLElement>(`th[data-column-index="${index}"] label, td[data-column-index="${index}"] label`);
+        const cell = checkbox?.closest('th, td');
+        if (!cell || !checkbox) return 0;
+        const style = getComputedStyle(cell);
+        return checkbox.getBoundingClientRect().width + Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight)
+          + Number.parseFloat(style.borderLeftWidth) + Number.parseFloat(style.borderRightWidth);
+      });
+      if (nextSelectionWidths.some((width, index) => width !== selectionWidths.value[index]) || nextSelectionWidths.length !== selectionWidths.value.length) selectionWidths.value = nextSelectionWidths;
+      const nextAvailableWidth = scrollbar.value?.wrapRef?.clientWidth ?? 0;
+      if (nextAvailableWidth !== availableWidth.value) availableWidth.value = nextAvailableWidth;
       const nextWidths = Array.from(el.querySelectorAll('col')).map(col => col.getBoundingClientRect().width);
       const nextHeights = Array.from(el.tHead?.rows ?? []).map(row => row.getBoundingClientRect().height);
       // 只在实际尺寸变化时写状态，避免 ResizeObserver 与渲染互相触发循环。
@@ -348,7 +362,7 @@ export default defineComponent({
         onClick: (event: MouseEvent) => event.stopPropagation(),
       }, [grip()]);
     }
-    /** 选择列与拖拽列只放一个控件，表头和单元格都水平垂直居中、收窄内边距。 */
+    /** 选择列与拖拽列只放一个控件，表头和单元格都水平垂直居中。 */
     function isCentered(column: TableColumn) {
       return column.type === 'selection' || column.type === 'drag';
     }
@@ -367,23 +381,24 @@ export default defineComponent({
           'onUpdate:modelValue': state.toggleAllSelection,
         });
       } else if (!column.children?.length) {
-        content = h('div', { class: ['flex min-w-0 items-center gap-1', justifyClasses[column.headerAlign ?? column.align ?? 'left']] }, [
+        content = h('div', { class: 'flex min-w-0 items-center gap-2' }, [
           column.sortable && column.prop
             ? h('button', {
               type: 'button', disabled: props.table.loading, 'aria-label': `排序${column.label ?? column.prop}`,
-              class: 'group/sort inline-flex min-w-0 items-center gap-1 rounded-sm text-inherit focus-visible:outline-2 focus-visible:outline-primary',
+              class: 'group/sort inline-flex min-w-0 flex-1 items-center gap-2 rounded-sm text-inherit focus-visible:outline-2 focus-visible:outline-primary',
               onClick: () => state.sortColumn(column),
-            }, [header, h('span', { class: 'inline-flex shrink-0 flex-col -space-y-0.5' }, [chevron('up', order === 'ascending'), chevron('down', order === 'descending')])])
-            : h('span', { class: 'min-w-0' }, header),
+            }, [h('span', { class: ['min-w-0 flex-1', alignClasses[column.headerAlign ?? column.align ?? 'left']] }, header), h('span', { class: 'inline-flex shrink-0 flex-col -space-y-0.5' }, [chevron('up', order === 'ascending'), chevron('down', order === 'descending')])])
+            : h('span', { class: 'min-w-0 flex-1' }, header),
           column.filters?.length ? h(TableFilter, { column, values: state.filters.value[key] ?? [], disabled: props.table.loading, onApply: (values: typeof column.filteredValue) => state.setFilter(key, values ?? []) }) : null,
         ]);
       }
       return h('th', {
         key: `${key}@${start}`, scope: cell.colSpan > 1 ? 'colgroup' : 'col', colspan: cell.colSpan, rowspan: cell.rowSpan,
         'data-column-key': key,
+        'data-column-index': start,
         'data-fixed-edge': fixedEdge(column, start, cell.colSpan),
         'aria-sort': column.sortable ? order ?? 'none' : undefined,
-        class: cls('headerCell', [fixedClass(column, start, cell.colSpan), rightBorderClass(start, cell.colSpan), isCentered(column) ? 'px-2 text-center' : alignClasses[column.headerAlign ?? column.align ?? 'left'], column.labelClassName]),
+        class: cls('headerCell', [fixedClass(column, start, cell.colSpan), rightBorderClass(start, cell.colSpan), start + cell.colSpan >= state.leaves.value.length && 'before:hidden', isCentered(column) ? [column.type === 'selection' ? 'px-4' : 'px-2', 'text-center'] : alignClasses[column.headerAlign ?? column.align ?? 'left'], column.labelClassName]),
         style: cellStyle(column, start, cell.colSpan, level),
       }, [h('div', { class: cls('cellContent', isCentered(column) && 'flex items-center justify-center') }, content)]);
     }
@@ -431,11 +446,12 @@ export default defineComponent({
       return h('td', {
         key: `${key}@${columnIndex}`, rowspan: span.rowspan, colspan: span.colspan,
         'data-fixed-edge': fixedEdge(column, columnIndex, span.colspan),
+        'data-column-index': columnIndex,
         class: cls('cell', [
           'bg-inherit', fixedClass(column, columnIndex, span.colspan), rightBorderClass(columnIndex, span.colspan),
           // 合并格属于首行 DOM，但覆盖任一行悬停时都应亮起；当前行的品牌底色优先。
-          span.rowspan > 1 && isHovered(item.index, span.rowspan, view.hoverRange) && !view.current && 'bg-[color-mix(in_srgb,var(--color-gray-2)_30%,var(--color-gray-1))]',
-          isCentered(column) ? 'px-2 text-center' : alignClasses[column.align ?? 'left'], column.className, typeof props.table.cellClassName === 'function' ? props.table.cellClassName(scope) : props.table.cellClassName,
+          span.rowspan > 1 && isHovered(item.index, span.rowspan, view.hoverRange) && !view.current && 'bg-[color-mix(in_srgb,var(--color-gray-2)_50%,var(--color-gray-1))]',
+          isCentered(column) ? [column.type === 'selection' ? 'px-4' : 'px-2', 'text-center'] : alignClasses[column.align ?? 'left'], column.className, typeof props.table.cellClassName === 'function' ? props.table.cellClassName(scope) : props.table.cellClassName,
         ]),
         style: cellStyle(column, columnIndex, span.colspan),
         onMouseenter: () => hoverCell(item.index, columnIndex),
@@ -460,7 +476,7 @@ export default defineComponent({
         'data-dragging': dragging || undefined,
         class: cls('row', [
           ((props.table.stripe && position % 2 === 1) || selected) && 'bg-gray-2',
-          isHovered(position, 1, view.hoverRange) && 'bg-[color-mix(in_srgb,var(--color-gray-2)_30%,var(--color-gray-1))]',
+          isHovered(position, 1, view.hoverRange) && 'bg-[color-mix(in_srgb,var(--color-gray-2)_50%,var(--color-gray-1))]',
           // 表格默认语义色为品牌色，color-2 对应品牌二阶；悬停不能盖掉当前行高亮。
           current && 'bg-brand-2 hover:bg-brand-2',
           // 拖动中的行淡出，落点由指示线标出
@@ -509,9 +525,17 @@ export default defineComponent({
     });
     /** 滚动区内的全部内容；由 TableScrollContent 渲染，依赖只记在它自己身上。 */
     function renderScrollContent(): VNodeChild {
+      const columnWidths = state.leaves.value.map((column, index) => selectionWidths.value[index] || getColumnWidth(column));
+      // 仅向数据列分配剩余空间，保留列宽约束，复选框列始终贴合内容。
+      const totalWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+      const dataWidth = columnWidths.reduce((sum, width, index) => sum + (selectionWidths.value[index] ? 0 : width), 0);
+      const extraWidth = selectionWidths.value.some(Boolean) ? Math.max(0, availableWidth.value - totalWidth) : 0;
       return [
-        h('table', { ref: tableElement, class: cls('table', props.table.tableLayout === 'auto' && 'table-auto'), 'aria-label': props.table.ariaLabel, style: { minWidth: `${state.leaves.value.reduce((sum, column) => sum + getColumnWidth(column), 0)}px` } }, [
-          h('colgroup', state.leaves.value.map((column, index) => h('col', { key: `${getColumnKey(column, index)}@${index}`, style: { width: `${getColumnWidth(column)}px` } }))),
+        h('table', { ref: tableElement, class: cls('table', props.table.tableLayout === 'auto' && 'table-auto'), 'aria-label': props.table.ariaLabel, style: { minWidth: `${columnWidths.reduce((sum, width) => sum + width, 0)}px` } }, [
+          h('colgroup', state.leaves.value.map((column, index) => {
+            const width = columnWidths[index]!;
+            return h('col', { key: `${getColumnKey(column, index)}@${index}`, style: { width: `${width + (!selectionWidths.value[index] && dataWidth ? extraWidth * width / dataWidth : 0)}px` } });
+          })),
           props.table.showHeader === false ? null : h('thead', { class: cls('thead') }, headerRows.value.map((row, level) => h('tr', { key: level }, row.map(cell => renderHeader(cell, level))))),
           h('tbody', { class: '[&>tr:first-child>td]:border-t-0' }, state.visibleRows.value.length ? renderBody() : [h('tr', [h('td', { colspan: Math.max(1, state.leaves.value.length), class: cls('empty') }, slots.empty?.() ?? (props.table.loading ? '加载中' : h(RebornEmpty, { description: props.table.emptyText })))])]),
           props.table.showSummary ? h('tfoot', { class: cls('summary') }, [h('tr', state.leaves.value.map((column, index) => h('td', { key: `${getColumnKey(column, index)}@${index}`, 'data-fixed-edge': fixedEdge(column, index), class: cls('cell', ['bg-gray-2', fixedClass(column, index), rightBorderClass(index), alignClasses[column.align ?? 'left']]), style: cellStyle(column, index) }, [h('div', { class: cls('cellContent') }, state.summary.value[index] ?? '')])))]) : null,

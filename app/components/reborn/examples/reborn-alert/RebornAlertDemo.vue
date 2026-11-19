@@ -163,8 +163,7 @@ function resetState() {
         <code>title</code> 属性（或 <code>title</code> 插槽）设置加粗标题；<code>action</code> 插槽放在关闭按钮左侧，适合放一个跳转或处理按钮。
       </template>
       <DemoBlock layout="stack">
-        <RebornAlert type="warning" title="存储空间不足">
-          当前可用空间不足 10%，可能影响新数据写入，请及时清理。
+        <RebornAlert type="warning" title="存储空间不足" description="当前可用空间不足 10%，可能影响新数据写入，请及时清理。">
           <template #action>
             <RebornButton size="sm" color="warning" variant="outlined">
               去清理

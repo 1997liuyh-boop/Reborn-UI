@@ -14,7 +14,7 @@ const activeKey = shallowRef<TabKey>('overview')
 </script>
 
 <template>
-  <div class="w-full max-w-[210px]">
+  <div class="w-full max-w-52.5">
     <RebornTabs
       v-model:active-key="activeKey"
       hide-content

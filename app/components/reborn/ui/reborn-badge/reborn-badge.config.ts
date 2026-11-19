@@ -11,12 +11,12 @@ export const badgeSizes = ['sm', 'md', 'lg'] as const
  * 浅底与描边按「语义色 → 色相族」映射到设计令牌的数字色阶：
  * primary→brand、secondary→secondary、success→green、info→blue、warning→orange、error→red、neutral→gray。
  * 各视觉风格的取阶规则（来自设计规格）：
- *   subtle   → bg 取 2 阶 + border 取 4 阶 + 文字取 6 阶
+ *   subtle   → bg 取 1 阶 + border 取 2 阶 + 文字取 6 阶
  *   soft     → bg 取 2 阶 + 文字取 6 阶
  *   outlined → border 取 4 阶 + 文字取 6 阶
  *   filled   → 背景与前景使用语义角色，默认背景取 6 阶，随主题切换
- * 非中性文字使用语义色角色；浅底与描边保留显式层级。
- * 例外：neutral 的非 filled 文字统一用 gray-9（正文色），避免 gray-6 文字对比度不足。
+ * subtle 使用语义背景、边框与文字；soft / outlined 保留显式背景与边框层级。
+ * neutral 的 soft / outlined / subtle 使用 gray-9 正文色，subtle 另用 gray-2 底色与 gray-3 边框。
  */
 const config = {
   /** 徽章插槽样式配置 */
@@ -26,8 +26,8 @@ const config = {
     label: 'inline-flex items-center justify-center truncate max-w-full min-w-0',
     leadingIcon: 'shrink-0',
     trailingIcon: 'shrink-0',
-    // 关闭图标继承标签文字颜色，悬停时也保持一致。
-    closeButton: 'inline-flex items-center justify-center rounded-full text-inherit transition-colors cursor-pointer focus:outline-none',
+    // 关闭按钮统一使用灰阶交互色，不跟随标签配色。
+    closeButton: 'inline-flex items-center justify-center rounded-full transition-colors cursor-pointer focus:outline-none text-gray-6 hover:text-gray-8 active:text-gray-9',
     closeIcon: ''
   },
   /** 徽章变体配置 */
@@ -137,18 +137,18 @@ const config = {
     { color: 'error' as any, variant: 'soft' as any, class: 'bg-red-2 text-error' },
     { color: 'neutral' as any, variant: 'soft' as any, class: 'bg-gray-2 text-gray-9' },
 
-    // Subtle：bg 取 2 阶 + border 取 4 阶，文字取 6 阶（neutral 用 gray-9 正文色）
-    { color: 'primary' as any, variant: 'subtle' as any, class: 'bg-brand-2 border-brand-4 text-primary' },
-    { color: 'secondary' as any, variant: 'subtle' as any, class: 'bg-secondary-2 border-secondary-4 text-secondary' },
-    { color: 'success' as any, variant: 'subtle' as any, class: 'bg-green-2 border-green-4 text-success' },
-    { color: 'info' as any, variant: 'subtle' as any, class: 'bg-blue-2 border-blue-4 text-info' },
-    { color: 'warning' as any, variant: 'subtle' as any, class: 'bg-orange-2 border-orange-4 text-warning' },
-    { color: 'error' as any, variant: 'subtle' as any, class: 'bg-red-2 border-red-4 text-error' },
-    { color: 'neutral' as any, variant: 'subtle' as any, class: 'bg-gray-2 border-gray-4 text-gray-9' },
+    // 浅描边：背景、边框、文字分别使用语义色的 1、2、6 阶，包含中性色。
+    { color: 'primary' as any, variant: 'subtle' as any, class: 'bg-primary-soft border-primary-border text-primary' },
+    { color: 'secondary' as any, variant: 'subtle' as any, class: 'bg-secondary-soft border-secondary-border text-secondary' },
+    { color: 'success' as any, variant: 'subtle' as any, class: 'bg-success-soft border-success-border text-success' },
+    { color: 'info' as any, variant: 'subtle' as any, class: 'bg-info-soft border-info-border text-info' },
+    { color: 'warning' as any, variant: 'subtle' as any, class: 'bg-warning-soft border-warning-border text-warning' },
+    { color: 'error' as any, variant: 'subtle' as any, class: 'bg-error-soft border-error-border text-error' },
+    { color: 'neutral' as any, variant: 'subtle' as any, class: 'bg-gray-2 border-gray-3 text-gray-9' },
 
     // 可选中模式未选中态：统一退到灰阶。必须排在配色复合变体之后——
     // 同为 bg/border/text 颜色组，tailwind-merge 保留后出现者，从而覆盖上方配色
-    { variant: 'subtle' as any, unchecked: true, class: 'bg-gray-2 border-gray-4 text-gray-6' },
+    { variant: 'subtle' as any, unchecked: true, class: 'bg-gray-1 border-gray-2 text-gray-6' },
     { variant: 'soft' as any, unchecked: true, class: 'bg-gray-2 text-gray-6' },
     { variant: 'outlined' as any, unchecked: true, class: 'border-gray-2 text-gray-6' },
     { variant: 'filled' as any, unchecked: true, class: 'bg-gray-2 text-gray-6' },

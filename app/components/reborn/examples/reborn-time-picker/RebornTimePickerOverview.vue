@@ -24,7 +24,7 @@ const columns = [
 </script>
 
 <template>
-  <div class="flex w-[176px] flex-col gap-1">
+  <div class="flex w-44 flex-col gap-1">
     <RebornTimePicker
       v-model="time"
       size="sm"

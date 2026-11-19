@@ -127,3 +127,16 @@ it('挂载后显示内容区并定位到本月',async()=>{
  assert.equal(content,undefined);
  const now=new Date();assert.ok(p.root.textContent.includes(`${now.getFullYear()}年`));
 });
+
+it('多选预设保留完整日期列表，单个快捷日期也返回数组', async () => {
+  for (const type of ['dates', 'months', 'quarters', 'years']) {
+    const dates = [new Date(2026, 0, 5), new Date(2027, 4, 10), new Date(2028, 8, 15)];
+    const p = mount({ type, valueFormat: 'YYYY-MM-DD', shortcuts: [{ text: '三个日期', value: () => dates }, { text: '一个日期', value: () => dates[0] }] });
+    await tick();
+    const shortcuts = [...p.root.querySelectorAll('button')].filter(button => ['三个日期', '一个日期'].includes(button.textContent));
+    shortcuts[0].click(); await tick();
+    assert.deepEqual(p.updates.at(-1), ['2026-01-05', '2027-05-10', '2028-09-15']);
+    shortcuts[1].click(); await tick();
+    assert.deepEqual(p.updates.at(-1), ['2026-01-05']);
+  }
+});

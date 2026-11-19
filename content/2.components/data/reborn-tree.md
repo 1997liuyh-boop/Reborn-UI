@@ -355,13 +355,13 @@ function locate() {
 | `list` | 节点列表 `ul`（`TransitionGroup` 渲染）；虚拟滚动的 `translateY` 位移落在它身上 | `relative flex flex-col` | 始终 |
 | `node` | 单个节点行 `li`，放置指示线以它为定位基准 | `relative flex items-center`；拖拽源追加 `opacity-50` | 每个可见节点 |
 | `indentUnit` | 单层缩进列 | `w-6 shrink-0 self-stretch`；`showLine` 下以 `before:` 伪元素画 `bg-gray-3` 竖线 | 节点层级 ≥ 1 时，每层一个 |
-| `switcher` | 展开/折叠开关容器，叶子也保留占位以维持对齐 | `size-6 rounded-sm text-gray-6 hover:bg-gray-2`；叶子去掉手型与悬浮底色 | 每个节点 |
-| `switcherIcon` | 父节点的展开/折叠图标与加载图标 | `size-4 transition-transform duration-200`；非 `showLine` 下展开态 `rotate-90` | 非叶子节点，且未用 `switcherIcon` 插槽替换；`showLine` 的叶子图标不走此键 |
+| `switcher` | 展开/折叠开关容器，叶子也保留占位以维持对齐 | `mx-1.5 size-3 rounded-sm text-gray-9 hover:bg-gray-2`；叶子去掉手型与悬浮底色 | 每个节点 |
+| `switcherIcon` | 父节点的展开/折叠图标与加载图标 | `size-3 transition-transform duration-200`；非 `showLine` 下展开态 `rotate-90` | 非叶子节点，且未用 `switcherIcon` 插槽替换；`showLine` 的叶子图标不走此键 |
 | `dragHandle` | 拖拽手柄容器，排在 switcher 之后、紧贴内容区 | `size-5 cursor-grab text-gray-5` | `draggable` 开启、未设 `icon: false`，且该节点可拖拽 |
 | `checkbox` | 复选框容器 | `mr-1 flex shrink-0 items-center` | `checkable` 开启且节点未设 `checkable: false` |
 | `iconEle` | 节点图标容器，额外附加 `empty:hidden` | `size-5 shrink-0 text-gray-7` | `showIcon` 开启，且节点有 `icon` 字段或传了 `icon` 插槽 |
-| `content` | 标题点击区（含图标、标题与 extra），选中、悬浮、放入内部的高亮都落在这里 | `gap-1.5 rounded-sm px-1.5 py-0.5 hover:bg-gray-2`；`blockNode` 下追加 `flex-1` | 每个节点 |
-| `title` | 标题文本 | `truncate`；`filterTreeNode` 命中时追加 `font-medium` 与主题色文字 | 每个节点 |
+| `content` | 标题点击区（含图标、标题与 extra），选中、悬浮、放入内部的高亮都落在这里 | `gap-1.5 rounded-sm py-0.5 hover:bg-gray-2`；`blockNode` 下追加 `flex-1` | 每个节点 |
+| `title` | 标题文本 | `truncate px-2`；`filterTreeNode` 命中时追加 `font-medium` 与主题色文字 | 每个节点 |
 | `extra` | 标题后的附加内容容器（自带 `@click.stop`） | `ml-auto shrink-0 gap-1 pl-2` | 传了 `extra` 插槽 |
 | `dropIndicator` | 拖拽放置指示线 | `absolute right-0 z-10 h-0.5 rounded-full`，颜色随 `color` | 拖拽悬停在节点前/后间隙且 `allowDrop` 放行；放入内部不渲染，改由 `content` 描边高亮 |
 

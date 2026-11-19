@@ -4,6 +4,7 @@ import type { BreadcrumbContext, BreadcrumbDroplistItem, BreadcrumbRoute, Breadc
 import { cloneVNode, computed, Fragment, h, isVNode, provide } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
+import RebornTooltip from '../reborn-tooltip/RebornTooltip.vue'
 import theme, { BREADCRUMB_INJECTION_KEY } from './reborn-breadcrumb.config'
 import RebornBreadcrumbItem from './RebornBreadcrumbItem.vue'
 
@@ -16,6 +17,8 @@ export interface RebornBreadcrumbProps {
     routes?: BreadcrumbRoute[]
     /** 最多展示的面包屑数量，0 表示不限制，超出部分折叠为省略号 */
     maxCount?: number
+    /** 折叠省略号悬停时是否显示完整面包屑，沿用 Tooltip 默认行为 */
+    collapseTooltip?: boolean
     /** 自定义链接地址，入参为当前条目及其祖先的 path 数组 */
     customUrl?: (paths: string[]) => string
     /** 追加到面包屑根节点的自定义类名 */
@@ -27,6 +30,7 @@ export interface RebornBreadcrumbProps {
 const props = withDefaults(defineProps<RebornBreadcrumbProps>(), {
     separator: '/',
     maxCount: 0,
+    collapseTooltip: true,
     ui: () => ({})
 })
 
@@ -67,6 +71,30 @@ function countItems(nodes: VNodeArrayChildren): number {
     return count
 }
 
+/** 预览使用独立节点，移除外部引用，避免覆盖原条目及插槽元素的 ref。 */
+function clonePreviewNode(node: VNode): VNode {
+    const cloned = cloneVNode(node)
+    cloned.ref = null
+    if (Array.isArray(node.children)) {
+        cloned.children = clonePreviewChildren(node.children)
+    }
+    else if (node.children && typeof node.children === 'object') {
+        cloned.children = Object.fromEntries(Object.entries(node.children).map(([name, slot]) => [
+            name,
+            typeof slot === 'function' ? (...args: unknown[]) => {
+                const children = slot(...args)
+                return clonePreviewChildren(Array.isArray(children) ? children : [children])
+            } : slot
+        ]))
+    }
+    return cloned
+}
+
+/** 保留插槽中的文本与片段，递归克隆所有可复用的节点。 */
+function clonePreviewChildren(nodes: VNodeArrayChildren): VNodeArrayChildren {
+    return nodes.map(node => isVNode(node) ? clonePreviewNode(node) : Array.isArray(node) ? clonePreviewChildren(node) : node)
+}
+
 /**
  * 根因：默认插槽的条目由使用者书写，若让条目在 setup 时向容器登记，下标是 setup 的先后顺序而不是插槽位置，
  * v-if / v-for 中途插入的条目会排到末尾，折叠时隐藏错项；服务端渲染时容器先于条目渲染，首屏也拿不到总数。
@@ -94,6 +122,17 @@ const BreadcrumbTrail = (_props: unknown, { slots: own }: { slots: Slots }) => {
     const range = collapseRangeOf(countItems(nodes))
     let index = 0
 
+    // 使用同一批条目生成完整预览，保留自定义文字、图标、分隔符与排序。
+    const renderFullTrail = () => {
+        let itemIndex = 0
+        return flatten(nodes).map(node => {
+            const preview = clonePreviewNode(node)
+            return isItemNode(preview)
+                ? cloneVNode(preview, { internalIndex: itemIndex++, internalCollapsed: false })
+                : preview
+        })
+    }
+
     const layout = (list: VNodeArrayChildren): VNodeArrayChildren => {
         const out: VNodeArrayChildren = []
         for (const node of list) {
@@ -116,7 +155,7 @@ const BreadcrumbTrail = (_props: unknown, { slots: own }: { slots: Slots }) => {
             }))
             // 省略号紧跟首项；用固定 key 与条目区分，出现 / 消失时不会让后面的条目错位复用
             if (range && current === 0) {
-                out.push(h(Fragment, { key: '__reborn-breadcrumb-more__' }, own.more?.()))
+                out.push(h(Fragment, { key: '__reborn-breadcrumb-more__' }, own.more?.({ renderFullTrail })))
             }
         }
         return out
@@ -149,6 +188,7 @@ const ui = computed(() => {
     const styles = b()
     return {
         root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.customClass, props.ui?.root) }),
+        tooltipTrail: () => styles.tooltipTrail({ class: props.ui?.tooltipTrail }),
         item: (opts?: { class?: any }) => styles.item({ class: cn(opts?.class, props.ui?.item) }),
         more: (opts?: { class?: any }) => styles.more({ class: cn(opts?.class, props.ui?.more) }),
         moreIcon: (opts?: { class?: any }) => styles.moreIcon({ class: cn(opts?.class, props.ui?.moreIcon) }),
@@ -189,9 +229,21 @@ provide(BREADCRUMB_INJECTION_KEY, context)
       </template>
       <slot v-else />
 
-      <template #more>
+      <template #more="{ renderFullTrail }">
         <div :class="ui.item()">
-          <span :class="ui.more()">
+          <RebornTooltip v-if="props.collapseTooltip">
+            <span :class="ui.more()" aria-label="查看完整面包屑">
+              <slot name="more-icon">
+                <Icon name="lucide:ellipsis" :class="ui.moreIcon()" />
+              </slot>
+            </span>
+            <template #content>
+              <nav :class="ui.tooltipTrail()" aria-label="完整面包屑">
+                <component :is="renderFullTrail" />
+              </nav>
+            </template>
+          </RebornTooltip>
+          <span v-else :class="ui.more()">
             <slot name="more-icon">
               <Icon name="lucide:ellipsis" :class="ui.moreIcon()" />
             </slot>

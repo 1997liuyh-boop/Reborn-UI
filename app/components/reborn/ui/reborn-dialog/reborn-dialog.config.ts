@@ -18,17 +18,17 @@ export default {
     panelWrapper: "flex w-full justify-center pointer-events-none",
     /** 弹窗面板：四边内边距统一 20px，header / body / footer 三段之间间隔 20px */
     panel:
-      "pointer-events-auto relative flex w-full max-w-140 flex-col gap-[20px] overflow-hidden rounded-xl border border-black/5 bg-gray-1 p-5 text-gray-10 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
+      "pointer-events-auto relative flex w-full max-w-140 flex-col gap-5 overflow-hidden rounded-lg border border-black/5 bg-gray-1 p-5 text-gray-10 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
     /** 头部：无分隔线，内边距交由面板统一承担 */
     header: "flex items-start justify-between gap-4",
     /** 头部文字区：标题与描述之间间隔 8px */
-    headerContent: "flex min-w-0 flex-1 flex-col gap-[8px]",
+    headerContent: "flex min-w-0 flex-1 flex-col gap-2",
     /** 标题：text-lg（16px / 24px 行高）、500 字重、gray-10。改动须与 index.ts 里 confirm 的标题节点同步 */
     title: "text-lg font-medium text-gray-10",
     /** 描述：text-base（14px / 22px 行高）、gray-8 */
     description: "text-base text-gray-8",
     /** 关闭图标：固定 18px，不随父级字号浮动 */
-    close: "size-4.5 shrink-0 cursor-pointer text-gray-5 transition-colors hover:text-gray-7",
+    close: "size-4.5 shrink-0 cursor-pointer transition-colors text-gray-6 hover:text-gray-8 active:text-gray-9",
     body: "",
     /** 浮层滚动条根节点（RebornScrollbar），仅 scrollable 时渲染，类名见 scrollable 变体 */
     scrollbar: "",
@@ -72,7 +72,7 @@ export default {
         panel: "max-h-[min(86vh,760px)]",
         body: "flex min-h-0 flex-col overflow-visible",
         scrollbar: "-mr-[16px] flex min-h-0 flex-1 flex-col",
-        scrollbarWrap: "h-auto min-h-0 flex-1 pr-[16px]",
+        scrollbarWrap: "h-auto min-h-0 flex-1 pr-4",
       },
       false: {
         body: "overflow-visible",
@@ -82,7 +82,7 @@ export default {
       true: {
         shell: "p-0!",
         panelWrapper: "h-full",
-        panel: "h-full max-h-none max-w-none rounded-none border-0 px-[32px] py-[24px]",
+        panel: "h-full max-h-none max-w-none rounded-none border-0",
         body: "min-h-0 flex-1",
       },
       false: {},
@@ -101,7 +101,7 @@ export default {
          * 挤到标题旁边而不再贴右。左右各让出「图标 18px + 间距 8px」，标题在面板里真正居中，
          * 也不会被绝对定位的图标压住
          */
-        header: "justify-center px-[26px] text-center",
+        header: "justify-center px-6.5 text-center",
         headerContent: "flex-none",
         footer: "justify-center",
         /** 关闭图标脱离流、相对面板绝对定位钉在右上角，偏移与面板 20px 内边距对齐 */
@@ -138,14 +138,6 @@ export default {
         panel: "max-h-[min(80vh,760px)]",
       },
     },
-    // 全屏 + 头尾居中：面板内边距变成 px-[32px]/py-[24px]，绝对定位的关闭图标要跟着挪
-    {
-      fullscreen: true as const,
-      center: true as const,
-      class: {
-        close: "top-[24px] right-[32px]",
-      },
-    },
   ],
   defaultVariants: {
     modal: true,
@@ -154,6 +146,6 @@ export default {
     fullscreen: false,
     draggable: false,
     center: false,
-    alignCenter: false,
+    alignCenter: true,
   },
 };

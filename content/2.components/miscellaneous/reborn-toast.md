@@ -1,6 +1,6 @@
 ---
 title: Toast 消息提示
-description: 全局命令式消息提示：五种类型静态方法、Promise 接口、同 key 更新与全局配置，web 端由 Toast 升级而来。
+description: 全局命令式消息提示：按类型调用的静态方法、Promise 接口、同 key 更新与全局配置，web 端由 Toast 升级而来。
 category: 反馈
 platform: both
 ---
@@ -12,12 +12,12 @@ platform: both
 
 全局命令式的轻量反馈：一句 `message.success('已保存')` 即在页面顶部弹出一条消息，到时自动消失，不打断用户操作。组件本身不需要写在模板里，也没有 Props 与插槽——所有能力都通过 `message` 对象调用。两端导出同名的 `message` 对象，方法名与参数逐一对齐。
 
-`type` 决定语义（`info` / `success` / `warning` / `error` / `loading`，静态方法会自动带上），`variant` 决定视觉强度（`base` / `filled` / `outlined` / `soft` / `subtle`），`color` 缺省由 `type` 映射、也可单独覆盖，三者组合覆盖从中性浮层到强语义色块的梯度。
+`type` 决定语义（`info` / `success` / `warning` / `error` / `loading`，Web 另支持 `primary`，静态方法会自动带上），`variant` 决定视觉强度（`base` / `filled` / `outlined` / `soft` / `subtle`），`color` 缺省由 `type` 映射、也可单独覆盖，三者组合覆盖从中性浮层到强语义色块的梯度。
 
 其余能力分三组：`duration` / `pauseOnHover` 控制自动关闭计时；`key` 让同一条消息原位更新，配合返回的 Promise 做「loading → 结果」的串联；`message.config` / `message.destroy` 是全局配置与销毁入口，`classNames` / `styles` 按 `root` / `icon` / `content` 三个节点覆盖样式。
 
 ::tip
-**两端 API 已对齐**：方法名（`open` / `info` / `success` / `warning` / `error` / `loading` / `config` / `destroy`）、静态方法签名、`config` 对象字段名、全局配置字段名逐一相同，下方表格为两端通用。差异集中在 `content` / `icon` 的取值形态、`top` 默认值单位与容器挂载方式，详见「两端差异对照」。
+**两端共用的 API**：方法名（`open` / `info` / `success` / `warning` / `error` / `loading` / `config` / `destroy`）、静态方法签名、`config` 对象字段名、全局配置字段名逐一相同，下方表格为两端通用。Web 另支持 `message.primary()`。其他差异涉及 `content` / `icon` 的取值形态、`top` 默认值单位与容器挂载方式，详见「两端差异对照」。
 ::
 
 ### 何时使用
@@ -54,7 +54,7 @@ import { message } from '@/components/reborn-toast'
 **小程序端必须在页面里渲染 `<RebornToast />`**（`RebornPage` 已内置，用 `RebornPage` 包页面则无需处理）。小程序无 DOM，容器无法像 Web / H5 那样在首次调用时动态挂载。
 ::
 
-五个静态方法对应五种消息类型，签名一致：
+两端共用以下五种消息类型，Web 另支持同签名的 `message.primary()`。
 
 ```ts
 message.success(content, [duration], onClose);
@@ -77,15 +77,15 @@ message.info("已复制到剪贴板", 3, () => console.log("closed"));
 
 ### 视觉变体
 
-需要用到 `variant`、`color`、`key` 等进阶配置时改传 config 对象，此时第二、三个参数被忽略。`variant` 默认 `base`，其余四种配色与按钮组件的同名变体一致：
+需要用到 `variant`、`color`、`key` 等进阶配置时改传 config 对象，此时第二、三个参数被忽略。`variant` 默认 `base`，可用的视觉变体如下。
 
 | 变体 | 外观 | 典型用途 |
 | --- | --- | --- |
 | `base`（默认） | `gray-1` 白底 + 投影，图标为语义色圆形底 + 白色符号 | 绝大多数操作反馈，不抢页面主色 |
 | `filled` | 语义色实底 + 白字 | 需要强提醒的失败 / 警告 |
 | `outlined` | `gray-1` 底 + 语义色 1px 描边与文字 | 深色或花哨背景上需要清晰边界 |
-| `soft` | 同色相 1 阶实色浅底 + 语义色文字 | 语义明确但不想太重的提示 |
-| `subtle` | `soft` 的浅底 + 语义色描边 | 比 `soft` 更明确的边界 |
+| `soft` | 同色相一阶实色浅底，Web 使用六阶文字 | 语义明确但不想太重的提示 |
+| `subtle` | `soft` 的浅底和文字，Web 另加二阶边框 | 比 `soft` 更明确的边界 |
 
 ```ts
 message.open(config);
@@ -181,8 +181,8 @@ message.config({
 | -------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------- |
 | `content`      | 提示内容                                                        | `MessageNode`                                                                          | -        |
 | `duration`     | 自动关闭的延时，单位秒。设为 0 时不自动关闭                     | `number`                                                                               | `3`      |
-| `type`         | 消息类型，决定默认图标与配色（静态方法会自动带上）              | `'info' \| 'success' \| 'warning' \| 'error' \| 'loading'`                              | `'info'` |
-| `variant`      | 视觉变体，配色与按钮组件同名变体一致                            | `'base' \| 'filled' \| 'outlined' \| 'soft' \| 'subtle'`                               | `'base'` |
+| `type`         | 消息类型，决定默认图标与配色（静态方法会自动带上，`primary` 仅 Web）              | `'primary' \| 'info' \| 'success' \| 'warning' \| 'error' \| 'loading'`                              | `'info'` |
+| `variant`      | 消息提示的视觉变体                            | `'base' \| 'filled' \| 'outlined' \| 'soft' \| 'subtle'`                               | `'base'` |
 | `color`        | 配色覆盖；缺省由类型映射（loading → primary）                   | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | -        |
 | `icon`         | 自定义图标。Web 传图标名或 VNode，UniApp 传图标类名（如 `i-lucide-star`） | `MessageNode`                                                                | 按 `type` 取 |
 | `pauseOnHover` | 悬停（UniApp 小程序端为按住）时是否暂停计时器                   | `boolean`                                                                              | `true`   |
@@ -236,16 +236,16 @@ message.success({
 
 ## 视觉规格
 
-Web 的 `base` 图标圆底使用六阶颜色：`info` 为 `bg-blue-6`、`success` 为 `bg-green-6`、`warning` 为 `bg-orange-6`、`error` 为 `bg-red-6`。成功图标为 `lucide:check`。所有变体未自定义 `icon` 的加载消息均使用 `outline` 加载组件，底圈保持静止、短弧围绕中心匀速旋转；`base` 为 14px，图标无背景、弧线使用语义色，其他变体为 16px、继承文字色。
+Web 的 `base` 图标圆底使用六阶颜色：`info` 为 `bg-blue-6`、`success` 为 `bg-green-6`、`warning` 为 `bg-orange-6`、`error` 为 `bg-red-6`。`primary` 和 `info` 使用 `ant-design:info-outlined`，`success` 使用 `lucide:check`，`warning` 使用 `ant-design:exclamation-outlined`，`error` 使用 `lucide:x`。所有变体未自定义 `icon` 的加载消息均使用 `outline` 加载组件，底圈保持静止、短弧围绕中心匀速旋转；`base` 为 14px，图标无背景、弧线使用语义色，其他变体为 16px、继承文字色。
 
-`base` 变体为 `gray-1` 白底 + 投影，非加载图标为语义色圆形底 + 白色符号；`filled` / `outlined` / `soft` / `subtle` 配色对齐按钮组件的同名变体（不含 circle）。消息是悬浮层，`soft` / `subtle` 的底色用同色相 1 阶**实色**填充令牌等效替代半透明底，`outlined` 垫 `gray-1` 底，避免透出页面内容。
+`base` 变体为 `gray-1` 白底 + 投影，非加载图标为语义色圆形底 + 白色符号；Web 的 `filled` 图标用六阶底色，`soft` 和 `subtle` 均使用一阶实色底与六阶文字，`subtle` 另加二阶边框。`outlined` 垫 `gray-1` 底，避免透出页面内容。
 
 | 项目              | Web                                | UniApp                               |
 | ----------------- | ---------------------------------- | ------------------------------------ |
 | 单条高度          | 40px                               | 80rpx                                |
 | 水平内边距        | 12px                               | 24rpx                                |
 | 字号 / 行高       | 14px / 150%                        | 28rpx / 150%                         |
-| 圆角              | `rounded-lg`（8px）             | `rounded-lg`                      |
+| 圆角              | `rounded-sm`（4px）             | `rounded-lg`                      |
 | 图标与文字间距    | 8px                                | 16rpx                                |
 | 多条消息间距      | 8px                                | 16rpx                                |
 | 投影              | `0 2px 12px rgba(0,0,0,.15)`       | `0 4rpx 24rpx rgba(0,0,0,.15)`       |

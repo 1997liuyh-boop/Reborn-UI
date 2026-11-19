@@ -1,5 +1,5 @@
 {
-  "description": "全局命令式消息提示（Message）：五种类型静态方法、Promise 接口、同 key 更新与全局配置；web 端由 Toast 升级而来。",
+  "description": "全局命令式消息提示（Message）：按类型调用的静态方法、Promise 接口、同 key 更新与全局配置；web 端由 Toast 升级而来。",
   "aliases": [
     "toast",
     "message",
@@ -11,7 +11,7 @@
     "操作反馈"
   ],
   "whenToUse": [
-    "操作反馈的轻量全局提示（success / error / info / warning / loading 五种类型）。",
+    "操作反馈的轻量全局提示（success / error / info / warning / loading，Web 另支持 primary）。",
     "需要 Promise 串联后续动作（message.loading(...).then(...)）或同 key 原位更新（loading → success）。",
     "需要全局配置 top / duration / maxCount / rtl / getContainer，或用 message.destroy 主动关闭。"
   ],
@@ -23,7 +23,7 @@
   "pitfalls": [
     "duration 单位是秒且默认 3（旧 Toast API 是毫秒）；设 0 不自动关闭。",
     "loading 同样默认 3 秒关闭，常驻需 duration: 0 并配合 key + destroy(key) 或同 key 更新。",
-    "双端 message API 同名同形（open/info/success/warning/error/loading/config/destroy）；差异只有三处：uniapp 的 MessageNode 仅 string、getContainer 仅 H5 生效、小程序端页面须渲染 <RebornToast />（RebornPage 已内置）。",
+    "两端共用 open/info/success/warning/error/loading/config/destroy，Web 另支持 primary。其他差异包括：uniapp 的 MessageNode 仅 string、getContainer 仅 H5 生效、小程序端页面须渲染 <RebornToast />（RebornPage 已内置）。",
     "消息容器首次调用时自动挂载（默认 body），无需在模板放组件；getContainer 变更会移动容器节点。",
     "悬停消息默认暂停自动关闭计时（pauseOnHover: true）。",
     "soft / subtle 变体底色用同色相 1 阶实色令牌替代按钮的半透明底，outlined 垫 gray-1，避免悬浮层透出页面内容。",

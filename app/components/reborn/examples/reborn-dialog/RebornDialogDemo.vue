@@ -518,7 +518,7 @@ onBeforeUnmount(() => {
           <span class="text-dimmed text-xs font-medium">精简模式 · <code>ui</code> 深度重写</span>
           <DemoBlock>
             <RebornDialog :show-close="false" title="精简模式" :ui="{
-              panel: 'max-w-[360px] rounded-3xl',
+              panel: 'max-w-90 rounded-3xl',
               header: 'border-0 pb-0',
               body: 'text-center pt-2 pb-6',
               footer: 'border-0 pt-0 justify-center pb-6',

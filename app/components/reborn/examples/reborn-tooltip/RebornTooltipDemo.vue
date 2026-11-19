@@ -91,6 +91,16 @@ const emptyTitle = shallowRef(false);
 
 /** 自定义背景颜色演示色板 */
 const colors = ["#8358F6", "#1b6dfa", "#f50", "#2db7f5", "#87d068", "#108ee9"];
+const virtualAnchor = shallowRef<HTMLElement | null>(null);
+const sharedAnchor = shallowRef<HTMLElement | null>(null);
+const sharedText = shallowRef("");
+const sharedOpen = shallowRef(false);
+function showSharedTooltip(event: Event, label: string) {
+  if (!(event.currentTarget instanceof HTMLElement)) return;
+  sharedAnchor.value = event.currentTarget;
+  sharedText.value = label;
+  sharedOpen.value = true;
+}
 </script>
 
 <template>
@@ -239,6 +249,34 @@ const colors = ["#8358F6", "#1b6dfa", "#f50", "#2db7f5", "#87d068", "#108ee9"];
           </template>
           <RebornButton>HTML 片段</RebornButton>
         </RebornTooltip>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="HTML 字符串" description="使用受信任的 HTML 字符串展示加粗与换行。">
+      <DemoBlock>
+        <RebornTooltip raw-content content="<strong>保存成功</strong><br>可以关闭此页面">
+          <RebornButton>HTML 提示</RebornButton>
+        </RebornTooltip>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="虚拟触发" description="将提示绑定到独立的按钮，支持悬停和键盘焦点。">
+      <DemoBlock>
+        <button ref="virtualAnchor" type="button" class="cursor-pointer rounded-sm bg-gray-2 px-3 py-2 text-base text-gray-9">外部按钮</button>
+        <RebornTooltip virtual-triggering :virtual-ref="virtualAnchor" :trigger="['hover', 'focus']" content="提示与按钮分别声明" />
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="单例复用" description="两个按钮共用一个提示，切换焦点时同步更新位置和文案。">
+      <DemoBlock>
+        <button
+          v-for="label in ['保存', '预览']" :key="label" type="button"
+          class="cursor-pointer rounded-sm bg-gray-2 px-3 py-2 text-base text-gray-9"
+          @mouseenter="showSharedTooltip($event, label)" @focus="showSharedTooltip($event, label)"
+        >
+          {{ label }}
+        </button>
+        <RebornTooltip v-model:open="sharedOpen" virtual-triggering :virtual-ref="sharedAnchor" :content="sharedText" :trigger="['hover', 'focus']" />
       </DemoBlock>
     </DemoSection>
 

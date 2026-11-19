@@ -178,3 +178,65 @@ it('关闭自动高度时保持 rows 与手动缩放行为', async () => {
     assert.ok((await geometry(page)).height > 350);
   });
 });
+
+
+it('拖拽提示为 8px，距内边缘 4px；内外统计保持分色且外置统计不影响拖拽', async () => {
+  await withInput(async page => {
+    for (const wordLimitPosition of ['inside', 'outside']) {
+      await configure(page, { wordLimitPosition });
+      await page.locator('textarea').fill('输入');
+      const result = await page.locator('svg[viewBox="0 0 8 8"]').evaluate(icon => {
+        const box = icon.getBoundingClientRect();
+        const wrapper = icon.parentElement!;
+        const outer = wrapper.getBoundingClientRect();
+        const border = getComputedStyle(wrapper);
+        const count = document.querySelector('.fixture-count')!;
+        return { width: box.width, height: box.height,
+          right: outer.right - Number.parseFloat(border.borderRightWidth) - box.right,
+          bottom: outer.bottom - Number.parseFloat(border.borderBottomWidth) - box.bottom,
+          pointerEvents: getComputedStyle(icon).pointerEvents,
+          current: getComputedStyle(count.firstElementChild!).color,
+          total: getComputedStyle(count).color };
+      });
+      assert.deepEqual([result.width, result.height, result.right, result.bottom], [8, 8, 4, 4]);
+      assert.equal(result.pointerEvents, 'none');
+      assert.notEqual(result.current, result.total);
+      // 从真实主题工具类取解析后的色值，避免写死某个主题的 RGB。
+      const colors = await page.evaluate(() => {
+        const probe = document.createElement('span');
+        document.body.appendChild(probe);
+        probe.className = 'text-gray-8'; const current = getComputedStyle(probe).color;
+        probe.className = 'text-gray-5'; const total = getComputedStyle(probe).color;
+        probe.remove(); return { current, total };
+      });
+      assert.equal(result.current, colors.current);
+      assert.equal(result.total, colors.total);
+      await dragHeight(page, 300);
+      assert.ok((await geometry(page)).height > 250);
+    }
+    await configure(page, { resize: 'none' });
+    assert.equal(await page.locator('svg[viewBox="0 0 8 8"]').count(), 0);
+  });
+});
+
+it('可清空输入框默认显示 lucide:x，并能清空内容', async () => {
+  await withInput(async page => {
+    await configure(page, { type: 'text', clearable: true });
+    await page.locator('input').fill('清空内容');
+    const icon = page.locator('svg[name="lucide:x"]');
+    await icon.click();
+    assert.equal(await page.locator('input').inputValue(), '');
+  });
+});
+
+
+it('无边框可拖拽文本域在所有尺寸下保留 2px 文本边距', async () => {
+  await withInput(async page => {
+    for (const size of ['sm', 'md', 'lg']) {
+      await configure(page, { variant: 'borderless', size, showWordLimit: false });
+      assert.equal(await page.locator('textarea').evaluate(el => getComputedStyle(el).paddingLeft), '2px');
+      await dragHeight(page, 300);
+      assert.ok((await geometry(page)).height > 250);
+    }
+  });
+});

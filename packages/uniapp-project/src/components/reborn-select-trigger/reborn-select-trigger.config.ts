@@ -11,7 +11,7 @@ export default {
     text: 'text-28 overflow-hidden text-ellipsis whitespace-nowrap',
     placeholder: 'text-28 text-gray-5',
     iconWrapper: 'flex flex-row items-center justify-center pl-2.5',
-    clearIcon: 'text-gray-4 text-40',
+    clearIcon: 'text-40 text-gray-6 hover:text-gray-8 active:text-gray-9',
     arrowIcon: 'text-gray-4 text-40 transition-transform duration-200 origin-center',
   },
   variants: {

@@ -1,10 +1,10 @@
 import { tv } from '~/lib/tv';
 
 /** 警告提示的类型（决定默认图标与配色） */
-export const alertTypes = ['info', 'success', 'warning', 'error'] as const;
+export const alertTypes = ['primary', 'info', 'success', 'warning', 'error', 'loading'] as const;
 export type AlertType = (typeof alertTypes)[number];
 
-/** 视觉变体：filled 使用一阶浅底与六阶图标底色，其余保留同名按钮变体配色。 */
+/** 视觉变体：filled 使用一阶浅底与六阶图标底色，soft 使用一阶底色与六阶文字，subtle 另加二阶描边。 */
 export const alertVariants = ['filled', 'outlined', 'soft', 'subtle', 'text', 'round'] as const;
 export type AlertVariant = (typeof alertVariants)[number];
 
@@ -18,18 +18,22 @@ export type AlertDirection = (typeof alertDirections)[number];
 
 /** type → 默认配色 */
 export const ALERT_TYPE_COLOR: Record<AlertType, AlertColor> = {
+  primary: 'primary',
   info: 'info',
   success: 'success',
   warning: 'warning',
   error: 'error',
+  loading: 'primary',
 };
 
 /** type → 默认图标名 */
 export const ALERT_TYPE_ICON: Record<AlertType, string> = {
-  info: 'lucide:info',
-  success: 'lucide:circle-check',
-  warning: 'lucide:circle-alert',
-  error: 'lucide:circle-x',
+  primary: 'ant-design:info-outlined',
+  info: 'ant-design:info-outlined',
+  success: 'lucide:check',
+  warning: 'ant-design:exclamation-outlined',
+  error: 'lucide:x',
+  loading: 'lucide:loader-2',
 };
 
 export const alertTheme = tv({
@@ -43,7 +47,7 @@ export const alertTheme = tv({
     title: 'font-medium',
     description: 'min-w-0',
     action: 'flex min-h-5 shrink-0 items-center',
-    closeButton: 'flex size-5 shrink-0 items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none',
+    closeButton: 'flex size-5 shrink-0 items-center justify-center rounded-full cursor-pointer transition-colors focus:outline-none text-gray-6 hover:text-gray-8 active:text-gray-9',
     closeIcon: 'size-3.5 shrink-0',
     // 位于内容列中，不能带 flex-1：不定高列容器里 basis 0% 会退化为按内容计算，顶掉多行模式的显式高度
     carouselWrapper: 'relative min-w-0 overflow-hidden',
@@ -61,11 +65,10 @@ export const alertTheme = tv({
         root: 'text-base text-gray-8',
         // 16px 圆形图标在 22px 首行行盒中居中。
         icon: 'size-4 mt-0.75 justify-center rounded-full text-gray-1',
-        title: 'text-gray-10',
         description: 'text-gray-8',
         action: 'min-h-5.5',
         closeButton: 'size-5.5',
-        closeIcon: 'text-gray-6',
+        closeIcon: 'text-inherit',
       },
       outlined: '',
       soft: '',
@@ -83,6 +86,13 @@ export const alertTheme = tv({
       warning: {},
       error: {},
       neutral: {},
+    },
+    hasDescription: {
+      true: { title: 'text-gray-10 leading-[150%]' },
+    },
+    loading: {
+      true: {},
+      false: {},
     },
     /** 顶部公告模式：去除边框和圆角，铺满容器宽度 */
     banner: {
@@ -107,6 +117,15 @@ export const alertTheme = tv({
     // 灰色一阶与页面底色相同，中性提示使用二阶底色保留可见背景。
     { variant: 'filled', color: 'neutral', class: { root: 'bg-gray-2', icon: 'bg-gray-6' } },
 
+    // 加载图标与基础消息使用相同的透明背景和语义色。
+    { variant: 'filled', loading: true, color: 'primary', class: { icon: 'bg-transparent text-primary' } },
+    { variant: 'filled', loading: true, color: 'secondary', class: { icon: 'bg-transparent text-secondary' } },
+    { variant: 'filled', loading: true, color: 'success', class: { icon: 'bg-transparent text-green-6' } },
+    { variant: 'filled', loading: true, color: 'info', class: { icon: 'bg-transparent text-blue-6' } },
+    { variant: 'filled', loading: true, color: 'warning', class: { icon: 'bg-transparent text-orange-6' } },
+    { variant: 'filled', loading: true, color: 'error', class: { icon: 'bg-transparent text-red-6' } },
+    { variant: 'filled', loading: true, color: 'neutral', class: { icon: 'bg-transparent text-neutral' } },
+
     // 胶囊形状：语义色实底与配套前景，随主题保持可读。
     { variant: 'round', color: 'primary', class: { root: 'bg-primary text-primary-foreground' } },
     { variant: 'round', color: 'secondary', class: { root: 'bg-secondary text-secondary-foreground' } },
@@ -125,23 +144,23 @@ export const alertTheme = tv({
     { variant: 'outlined', color: 'error', class: { root: 'bg-transparent border border-error text-error' } },
     { variant: 'outlined', color: 'neutral', class: { root: 'bg-transparent border border-neutral text-neutral' } },
 
-    // Soft：同 reborn-button 的 soft（语义色 10% 透明底 + 语义色文字）
-    { variant: 'soft', color: 'primary', class: { root: 'bg-primary/10 text-primary' } },
-    { variant: 'soft', color: 'secondary', class: { root: 'bg-secondary/10 text-secondary' } },
-    { variant: 'soft', color: 'success', class: { root: 'bg-success/10 text-success' } },
-    { variant: 'soft', color: 'info', class: { root: 'bg-info/10 text-info' } },
-    { variant: 'soft', color: 'warning', class: { root: 'bg-warning/10 text-warning' } },
-    { variant: 'soft', color: 'error', class: { root: 'bg-error/10 text-error' } },
-    { variant: 'soft', color: 'neutral', class: { root: 'bg-neutral/10 text-neutral' } },
+    // Soft：一阶底色和六阶文字。
+    { variant: 'soft', color: 'primary', class: { root: 'bg-brand-1 text-brand-6' } },
+    { variant: 'soft', color: 'secondary', class: { root: 'bg-secondary-1 text-secondary-6' } },
+    { variant: 'soft', color: 'success', class: { root: 'bg-green-1 text-green-6' } },
+    { variant: 'soft', color: 'info', class: { root: 'bg-blue-1 text-blue-6' } },
+    { variant: 'soft', color: 'warning', class: { root: 'bg-orange-1 text-orange-6' } },
+    { variant: 'soft', color: 'error', class: { root: 'bg-red-1 text-red-6' } },
+    { variant: 'soft', color: 'neutral', class: { root: 'bg-gray-1 text-gray-6' } },
 
-    // Subtle：soft + 语义色边框
-    { variant: 'subtle', color: 'primary', class: { root: 'bg-primary/10 border border-primary text-primary' } },
-    { variant: 'subtle', color: 'secondary', class: { root: 'bg-secondary/10 border border-secondary text-secondary' } },
-    { variant: 'subtle', color: 'success', class: { root: 'bg-success/10 border border-success text-success' } },
-    { variant: 'subtle', color: 'info', class: { root: 'bg-info/10 border border-info text-info' } },
-    { variant: 'subtle', color: 'warning', class: { root: 'bg-warning/10 border border-warning text-warning' } },
-    { variant: 'subtle', color: 'error', class: { root: 'bg-error/10 border border-error text-error' } },
-    { variant: 'subtle', color: 'neutral', class: { root: 'bg-neutral/10 border border-neutral text-neutral' } },
+    // Subtle：在 soft 的基础上加二阶描边。
+    { variant: 'subtle', color: 'primary', class: { root: 'bg-brand-1 border border-brand-2 text-brand-6' } },
+    { variant: 'subtle', color: 'secondary', class: { root: 'bg-secondary-1 border border-secondary-2 text-secondary-6' } },
+    { variant: 'subtle', color: 'success', class: { root: 'bg-green-1 border border-green-2 text-green-6' } },
+    { variant: 'subtle', color: 'info', class: { root: 'bg-blue-1 border border-blue-2 text-blue-6' } },
+    { variant: 'subtle', color: 'warning', class: { root: 'bg-orange-1 border border-orange-2 text-orange-6' } },
+    { variant: 'subtle', color: 'error', class: { root: 'bg-red-1 border border-red-2 text-red-6' } },
+    { variant: 'subtle', color: 'neutral', class: { root: 'bg-gray-1 border border-gray-2 text-gray-6' } },
 
     // Text：无背景/边框，仅语义色文字
     { variant: 'text', color: 'primary', class: { root: 'bg-transparent text-primary' } },

@@ -172,7 +172,7 @@ it('末项与前项均分宽度，长描述在可用轨道内换行并保留连�
   });
 });
 
-it('进度圆环在各尺寸和方向真实绘制，保留 3px 空隙、2px 线宽与完整可见边界', { skip: !browserAvailable }, async () => {
+it('进度圆环在各尺寸和方向真实绘制，默认节点使用 1px 线宽及分档空隙', { skip: !browserAvailable }, async () => {
   await withSteps(async (page) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     function progressMembers(progress: number) {
@@ -214,15 +214,15 @@ it('进度圆环在各尺寸和方向真实绘制，保留 3px 空隙、2px 线�
         };
       });
     }
-    function verifyRing(paint: Awaited<ReturnType<typeof ringGeometry>>, scale: number, label: string) {
+    function verifyRing(paint: Awaited<ReturnType<typeof ringGeometry>>, scale: number, label: string, stroke = 1, gap = 1) {
       const track = paint.circles[0]!;
-      near(track.strokeWidth, 2 * scale, `${label} 实际圆环线宽`);
+      near(track.strokeWidth, stroke * scale, `${label} 实际圆环线宽`);
       assert.ok(track.width > 0 && track.height > 0 && track.length > 0, `${label} 浏览器生成真实圆路径`);
       near(track.width, track.height, `${label} 轨道保持正圆`);
-      near(paint.marker.left - (paint.svg.left + track.x + track.strokeWidth / 2), 3 * scale, `${label} 左侧内部空隙`);
-      near((paint.svg.left + track.x + track.width - track.strokeWidth / 2) - paint.marker.right, 3 * scale, `${label} 右侧内部空隙`);
-      near(paint.marker.top - (paint.svg.top + track.y + track.strokeWidth / 2), 3 * scale, `${label} 顶部内部空隙`);
-      near((paint.svg.top + track.y + track.height - track.strokeWidth / 2) - paint.marker.bottom, 3 * scale, `${label} 底部内部空隙`);
+      near(paint.marker.left - (paint.svg.left + track.x + track.strokeWidth / 2), gap * scale, `${label} 左侧内部空隙`);
+      near((paint.svg.left + track.x + track.width - track.strokeWidth / 2) - paint.marker.right, gap * scale, `${label} 右侧内部空隙`);
+      near(paint.marker.top - (paint.svg.top + track.y + track.strokeWidth / 2), gap * scale, `${label} 顶部内部空隙`);
+      near((paint.svg.top + track.y + track.height - track.strokeWidth / 2) - paint.marker.bottom, gap * scale, `${label} 底部内部空隙`);
       assert.equal(track.stroke, paint.gray, `${label} 灰色轨道使用 gray-3`);
       assert.equal(track.fill, 'none', `${label} 圆环中心透明`);
       assert.ok(paint.svg.left >= paint.root.left - 0.1 && paint.svg.right <= paint.root.right + 0.1, `${label} 根节点留白完整容纳首步圆环左右边界`);
@@ -237,16 +237,17 @@ it('进度圆环在各尺寸和方向真实绘制，保留 3px 空隙、2px 线�
           assert.equal(await page.locator('svg[role="progressbar"]').count(), 1, `${label} 仅当前步骤显示圆环`);
           assert.ok(await page.locator('svg[role="progressbar"]').isVisible(), `${label} 进度圆环可见`);
           const zero = await ringGeometry();
-          verifyRing(zero, 1, label);
+          verifyRing(zero, 1, label, type === 'default' ? 1 : 2, type === 'dot' ? 3 : size === 'lg' ? 2 : 1);
+          near(zero.marker.right - zero.marker.left, type === 'default' ? { sm: 20, md: 24, lg: 32 }[size]! : { sm: 4, md: 6, lg: 8 }[size]!, `${label} 有环节点直径`);
           assert.equal(zero.circles.length, 1, `${label} 0% 只显示灰轨`);
           for (const progress of [50, 100]) {
             await configure(page, { members: progressMembers(progress) });
             const paint = await ringGeometry();
-            const track = verifyRing(paint, 1, `${label} ${progress}%`);
+            const track = verifyRing(paint, 1, `${label} ${progress}%`, type === 'default' ? 1 : 2, type === 'dot' ? 3 : size === 'lg' ? 2 : 1);
             const foreground = paint.circles[1]!;
             assert.equal(paint.circles.length, 2, `${label} 非零进度绘制前景圆环`);
             near(foreground.width, track.width, `${label} 进度和轨道使用相同半径`);
-            near(foreground.strokeWidth, 2, `${label} 进度线宽`);
+            near(foreground.strokeWidth, type === 'default' ? 1 : 2, `${label} 进度线宽`);
             assert.equal(foreground.stroke, paint.color, `${label} 进度使用当前步骤主题色`);
             assert.equal(foreground.pathLength, 100, `${label} 路径以百分比归一化`);
             assert.deepEqual(foreground.dasharray.split(/[,\s]+/).filter(Boolean).map(Number.parseFloat), [progress, 100], `${label} 实际绘制 ${progress}% 弧长`);
@@ -259,7 +260,7 @@ it('进度圆环在各尺寸和方向真实绘制，保留 3px 空隙、2px 线�
     const scaled = await ringGeometry();
     verifyRing(scaled, 1.25, '根字号 20px');
     assert.equal(scaled.circles[1]!.stroke, scaled.color, '替换主题后前景沿用步骤颜色');
-    near(scaled.circles[1]!.strokeWidth, 2.5, '根字号 20px 时前景线宽随 Tailwind 刻度缩放');
+    near(scaled.circles[1]!.strokeWidth, 1.25, '根字号 20px 时前景线宽随 Tailwind 刻度缩放');
     await page.screenshot({ path: resolve('node_modules/.cache/steps-progress-browser.png') });
   });
 });
@@ -289,7 +290,7 @@ it('窄容器横向滚动保留最短连线和 24px 间隔，滚动后仍与标�
 
 it('三个尺寸档位与点状尺寸正确，原生 Tailwind 尺寸随根字号缩放', { skip: !browserAvailable }, async () => {
   await withSteps(async (page) => {
-    for (const [size, marker, title, description, dot] of [['sm', 24, 14, 12, 4], ['md', 32, 16, 14, 6], ['lg', 40, 18, 16, 8]] as const) {
+    for (const [size, marker, title, description, dot] of [['sm', 24, 14, 12, 4], ['md', 28, 16, 14, 6], ['lg', 32, 18, 16, 8]] as const) {
       await configure(page, { size, type: 'default' });
       const item = (await geometry(page))[0]!;
       near(item.marker.width, marker, `${size} 圆形宽度`);
@@ -303,7 +304,7 @@ it('三个尺寸档位与点状尺寸正确，原生 Tailwind 尺寸随根字号
     await configure(page, { size: 'md', type: 'default', space: 220 });
     await page.evaluate(() => { document.documentElement.style.fontSize = '20px'; });
     const item = (await geometry(page))[0]!;
-    near(item.marker.width, 40, '标记沿用原生 rem 刻度');
+    near(item.marker.width, 35, '标记沿用原生 rem 刻度');
     near(item.title.left - item.marker.right, 10, '间距沿用原生 rem 刻度');
     near(item.title.y, item.marker.y, '根字号变化后标题仍与标记垂直居中');
     near(item.line!.y, item.marker.y, '根字号变化后连线仍与标记垂直居中');
@@ -436,9 +437,9 @@ it('单步上下方覆盖与右侧文案混排时仍从左侧起排，进度环�
       ] });
       const items = await geometry(page);
       const root = await page.locator('ol').boundingBox();
-      near(items[0]!.marker.left - root!.x, 5, `${direction} 只保留圆环所需 5px 边界`);
+      near(items[0]!.marker.left - root!.x, 5, `${direction} 节点保留圆环与布局占位所需边界`);
       const ring = await page.locator('[role="progressbar"]').boundingBox();
-      near(ring!.x, root!.x, `${direction} 进度环紧贴容器左边界且完整可见`);
+      near(ring!.x - root!.x, 3, `${direction} 进度环位于安全内边距内且完整可见`);
       const axis = direction === 'horizontal' ? items[0]!.marker.y : items[0]!.marker.x;
       for (const item of items) near(direction === 'horizontal' ? item.marker.y : item.marker.x, axis, `${direction} 混排共用节点轴`);
       if (direction === 'vertical') {
@@ -961,6 +962,164 @@ it('上下方文案使用显式 space 时保留数字与百分比步距，竖向
       for (const height of heights) near(height, 200, `${placement} 竖向 space 决定单步高度`);
       const items = await geometry(page);
       for (let index = 1; index < items.length; index++) near(items[index]!.marker.y - items[index - 1]!.marker.y, 200, `${placement} 竖向节点实际步距`);
+    }
+  });
+});
+
+it('文本步骤箭头在标题与描述整体高度内居中，尺寸和描述显隐切换不影响对齐', { skip: !browserAvailable }, async () => {
+  await withSteps(async (page) => {
+    for (const placement of [undefined, 'top', 'bottom', 'left', 'right']) {
+      for (const size of ['sm', 'md', 'lg']) {
+        for (const simple of [false, true]) {
+        await configure(page, { type: 'text', lineType: 'arrow', size, simple, placement, alignCenter: true, width: 480 });
+        const items = await geometry(page);
+        for (const item of items.slice(0, -1)) {
+          const bottom = item.description?.bottom ?? item.title.bottom;
+          near(item.connector!.y, (item.title.top + bottom) / 2, `${size} 文本连接器对齐整组文案`);
+          const arrow = await page.locator('.fixture-arrow').nth(items.indexOf(item)).boundingBox();
+          near(arrow!.y + arrow!.height / 2, item.connector!.y, '箭头与连接器中轴一致');
+          if (item.description) {
+            near(item.description.left, item.title.left, '标题和描述不保留节点空列');
+            near(item.description.top - item.title.bottom, 8, '标题和描述间距');
+          }
+        }
+      }
+    }
+    }
+  });
+});
+
+it('tabs 当前下边框包含前一步分隔符，首末项收边且不产生纵向滚动', { skip: !browserAvailable }, async () => {
+  await withSteps(async (page) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const size of ['sm', 'md', 'lg']) {
+      for (const simple of [false, true]) {
+        for (const active of [0, 1, 2]) {
+          await configure(page, { type: 'tabs', lineType: 'arrow', size, simple, active, alignCenter: true });
+          const rows = await page.locator('li[data-step-index]').evaluateAll(items => items.map(item => {
+            const rect = item.getBoundingClientRect();
+            const style = getComputedStyle(item);
+            const after = getComputedStyle(item, '::after');
+            const connector = item.querySelector('.fixture-connector');
+            const connectorLeft = connector ? connector.getBoundingClientRect().left - Number.parseFloat(getComputedStyle(connector).marginLeft) : rect.right;
+            return { left: rect.left, right: rect.right, connectorLeft, placement: item.getAttribute('data-placement'), current: item.getAttribute('aria-current'), paddingTop: style.paddingTop, paddingBottom: style.paddingBottom, baseline: style.borderBottomWidth, baselineColor: style.borderBottomColor, underlineLeft: rect.left + Number.parseFloat(after.left), underlineRight: rect.right - Number.parseFloat(after.right), underlineWidth: after.borderBottomWidth, underlineStyle: after.borderBottomStyle, underlineColor: after.borderBottomColor, content: after.content };
+          }));
+          for (const item of rows) {
+            assert.equal(item.placement, 'right', '标签导航保持横向节点与内容排列');
+            assert.equal(item.paddingTop, '12px');
+            assert.equal(item.paddingBottom, '12px');
+            assert.equal(item.baseline, '1px');
+          }
+          const selected = rows[active]!;
+          assert.equal(selected.current, 'step');
+          assert.equal(selected.underlineWidth, '2px');
+          assert.equal(selected.underlineStyle, 'solid');
+          assert.notEqual(selected.underlineColor, selected.baselineColor);
+          near(selected.underlineLeft, active ? rows[active - 1]!.connectorLeft : selected.left, '高亮从前一步分隔符区域开始');
+          near(selected.underlineRight, selected.connectorLeft, '高亮避开当前项的后置分隔符，末项延伸到边缘');
+          assert.equal(rows.filter(item => item.content !== 'none').length, 1, '只有实际当前步骤显示下划线');
+          const overflow = await page.locator('ol').evaluate(element => ({ client: element.clientHeight, scroll: element.scrollHeight }));
+          assert.equal(overflow.scroll, overflow.client, '下划线不产生纵向溢出');
+        }
+      }
+    }
+    await configure(page, { width: 320, size: 'lg', simple: false });
+    const compact = await page.locator('ol').evaluate(element => ({ width: element.clientWidth, scroll: element.scrollWidth, height: element.clientHeight, scrollHeight: element.scrollHeight }));
+    assert.ok(compact.scroll > compact.width, '窄屏横向滚动，节点和分隔符保留空间');
+    assert.equal(compact.height, compact.scrollHeight);
+  }, false);
+});
+
+it('各外观完成文字使用步骤色，处理中的标题、描述和节点内容使用指定灰阶', { skip: !browserAvailable }, async () => {
+  await withSteps(async (page) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const type of ['default', 'dot', 'text', 'tabs']) {
+      for (const color of ['primary', 'secondary', 'neutral']) {
+        await configure(page, { active: 1, type, color });
+        const paint = await page.locator('ol').evaluate(root => {
+          const items = root.querySelectorAll('li');
+          const colors = ['var(--step-color)', 'var(--color-gray-10)', 'var(--color-gray-7)', 'var(--color-gray-3)'].map(value => {
+            const probe = document.createElement('span');
+            probe.style.color = value;
+            items[0]!.append(probe);
+            const color = getComputedStyle(probe).color;
+            probe.remove();
+            return color;
+          });
+          return { finishedTitle: getComputedStyle(items[0]!.querySelector('.fixture-title')!).color, finishedDescription: getComputedStyle(items[0]!.querySelector('.fixture-description')!).color, finishedColor: colors[0], title: getComputedStyle(items[1]!.querySelector('.fixture-title')!).color, description: getComputedStyle(items[1]!.querySelector('.fixture-description')!).color, marker: items[1]!.querySelector('.fixture-marker') ? getComputedStyle(items[1]!.querySelector('.fixture-marker')!).color : null, gray10: colors[1], gray7: colors[2], gray3: colors[3] };
+        });
+        assert.equal(paint.finishedTitle, paint.finishedColor, `${type} ${color} 完成标题`);
+        assert.equal(paint.finishedDescription, paint.finishedColor, `${type} ${color} 完成描述`);
+        assert.equal(paint.title, paint.gray10, `${type} 处理中标题`);
+        assert.equal(paint.description, paint.gray7, `${type} 处理中描述`);
+        if (paint.marker) assert.equal(paint.marker, paint.gray3, `${type} 处理中节点内容`);
+      }
+    }
+  });
+});
+
+it('默认进度节点在尺寸、方向与文案方位切换时保持同组连接轴', { skip: !browserAvailable }, async () => {
+  await withSteps(async (page) => {
+    for (const size of ['sm', 'md', 'lg']) {
+      for (const direction of ['horizontal', 'vertical']) {
+        for (const placement of ['left', 'right', 'top', 'bottom']) {
+          for (const active of [0, 1, 2]) {
+            await configure(page, { type: 'default', size, direction, placement, active, alignCenter: true, members: [
+              { key: 'a', title: '第一步', description: '说明', progress: 50 },
+              { key: 'b', title: '第二步', description: '说明', progress: 50 },
+              { key: 'c', title: '第三步', description: '说明', progress: 50 },
+            ] });
+            const items = await geometry(page);
+            const diameter = { sm: 20, md: 24, lg: 32 }[size]!;
+            near(items[active]!.marker.width, diameter, `${size} 当前进度节点直径`);
+            if (direction === 'horizontal') {
+              for (const item of items) near(item.marker.y, items[0]!.marker.y, `${size} ${placement} 节点横轴一致`);
+              for (const item of items.slice(0, -1)) near(item.line!.y, item.marker.y, `${size} ${placement} 水平连线中轴`);
+            } else {
+              for (const item of items) near(item.marker.x, items[0]!.marker.x, `${size} ${placement} 节点纵轴一致`);
+              for (const item of items.slice(0, -1)) near(item.line!.x, item.marker.x, `${size} ${placement} 纵向连线中轴`);
+            }
+          }
+        }
+      }
+    }
+  });
+});
+
+it('步骤灰色边框使用 gray-3，文本错误步骤标题与描述均使用错误色', { skip: !browserAvailable }, async () => {
+  await withSteps(async (page) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const type of ['tabs', 'dot']) {
+      await configure(page, { type, active: 0 });
+      const paint = await page.locator('li[data-step-index]').nth(1).evaluate((item, type) => {
+        const marker = item.querySelector('.fixture-marker')!;
+        const probe = document.createElement('span');
+        probe.style.color = 'var(--color-gray-3)';
+        item.append(probe);
+        const expected = getComputedStyle(probe).color;
+        probe.remove();
+        return { actual: type === 'tabs' ? getComputedStyle(item).borderBottomColor : getComputedStyle(marker).borderColor, expected };
+      }, type);
+      assert.equal(paint.actual, paint.expected, `${type} 灰色边框`);
+    }
+    for (const direction of ['horizontal', 'vertical']) {
+      for (const lineType of ['solid', 'dashed', 'arrow']) {
+        await configure(page, { type: 'text', active: 1, direction, lineType, members: [
+          { key: 'a', title: '已完成', description: '说明' },
+          { key: 'b', title: '出错步骤', description: '错误说明', status: 'error' },
+          { key: 'c', title: '等待步骤', description: '说明' },
+        ] });
+        const paint = await page.locator('li[data-status=error]').evaluate(item => {
+          const probe = document.createElement('span');
+          probe.style.color = 'var(--color-error)';
+          item.append(probe);
+          const expected = getComputedStyle(probe).color;
+          probe.remove();
+          return { title: getComputedStyle(item.querySelector('.fixture-title')!).color, description: getComputedStyle(item.querySelector('.fixture-description')!).color, expected };
+        });
+        assert.equal(paint.title, paint.expected, '错误标题使用错误色');
+        assert.equal(paint.description, paint.expected, '错误描述使用错误色');
+      }
     }
   });
 });

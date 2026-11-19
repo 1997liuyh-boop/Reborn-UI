@@ -6,7 +6,7 @@ import type { TimeRangeRole } from "./reborn-time-panel.config";
 import type { timePickerColors, timePickerSizes } from "./reborn-time-picker.config";
 import type { TimePanelProps } from "./RebornTimePanel.vue";
 import dayjs from "dayjs";
-import { computed, nextTick, shallowRef, useAttrs, useId, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, shallowRef, useAttrs, useId, useTemplateRef, watch } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -41,7 +41,7 @@ const props = withDefaults(defineProps<TimePickerProps>(), {
   color: "primary",
   bordered: true,
   showArrow: true,
-  arrowAnimation: true,
+  arrowAnimation: false,
   portal: true,
   autoAdjustOverflow: true,
   disabledHours: () => [],
@@ -146,6 +146,8 @@ export interface TimePickerProps {
     placeholder: ClassValue;
     dropdown: ClassValue;
     rangeText: ClassValue;
+    rangeSegment: ClassValue;
+    rangeIndicator: ClassValue;
     separator: ClassValue;
   }>;
 }
@@ -172,6 +174,34 @@ const panelRef = useTemplateRef<InstanceType<typeof RebornTimePanel>>("panelRef"
 const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
 const inputValue = shallowRef("");
 const inputInvalid = shallowRef(false);
+const activeRangeRole = shallowRef<TimeRangeRole>("start");
+const rangeRef = useTemplateRef<HTMLElement>("rangeRef");
+const rangeStartRef = useTemplateRef<HTMLButtonElement>("rangeStartRef");
+const rangeEndRef = useTemplateRef<HTMLButtonElement>("rangeEndRef");
+const rangeIndicatorStyle = shallowRef({ width: "0px", transform: "translateX(0px)" });
+let rangeObserver: ResizeObserver | undefined;
+let rangeSwitchTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** 滑块按真实文本区宽度定位，支持自定义分隔图标和尺寸。 */
+function syncRangeIndicator() {
+  nextTick(() => {
+    const segment = activeRangeRole.value === "start" ? rangeStartRef.value : rangeEndRef.value;
+    if (segment) rangeIndicatorStyle.value = { width: `${segment.offsetWidth}px`, transform: `translateX(${segment.offsetLeft}px)` };
+  });
+}
+watch(rangeRef, element => {
+  rangeObserver?.disconnect();
+  if (element && typeof ResizeObserver !== "undefined") {
+    rangeObserver = new ResizeObserver(syncRangeIndicator);
+    rangeObserver.observe(element);
+  }
+  syncRangeIndicator();
+});
+watch([activeRangeRole, isOpen, mergedSize], syncRangeIndicator);
+onBeforeUnmount(() => {
+  rangeObserver?.disconnect();
+  clearTimeout(rangeSwitchTimer);
+});
 
 /**
  * 生成及管理样式映射表
@@ -214,6 +244,10 @@ const ui = computed(() => {
       s.placeholder({ class: cn(opts?.class, uiOverrides.value.placeholder) }),
     rangeText: (opts?: { class?: any }) =>
       s.rangeText({ class: cn(opts?.class, uiOverrides.value.rangeText) }),
+    rangeSegment: (opts?: { class?: any }) =>
+      s.rangeSegment({ class: cn(opts?.class, uiOverrides.value.rangeSegment) }),
+    rangeIndicator: (opts?: { class?: any }) =>
+      s.rangeIndicator({ class: cn(opts?.class, uiOverrides.value.rangeIndicator) }),
     separator: (opts?: { class?: any }) =>
       s.separator({ class: cn(opts?.class, uiOverrides.value.separator) }),
   };
@@ -259,7 +293,15 @@ watch(
   },
   { immediate: true },
 );
-watch(isOpen, (value) => emit("visibleChange", value));
+watch(isOpen, (value) => {
+  clearTimeout(rangeSwitchTimer);
+  if (value && props.isRange) syncRangeIndicator();
+  emit("visibleChange", value);
+});
+watch([() => props.isRange, () => props.format], () => {
+  clearTimeout(rangeSwitchTimer);
+  activeRangeRole.value = "start";
+});
 watch(
   () => isDisabled.value,
   (value) => {
@@ -268,19 +310,66 @@ watch(
 );
 
 function openPanel() {
-  if (!isDisabled.value) isOpen.value = true;
+  if (isDisabled.value) return;
+  if (!isOpen.value) activeRangeRole.value = "start";
+  isOpen.value = true;
 }
 
 function toggle() {
   if (isDisabled.value) return;
-  isOpen.value = !isOpen.value;
+  if (isOpen.value) isOpen.value = false;
+  else openPanel();
 }
+
+/** 区间一次只编辑一个端点，开始时间为空时先补全开始时间。 */
+function activateRangeRole(role: TimeRangeRole) {
+  if (isDisabled.value) return;
+  clearTimeout(rangeSwitchTimer);
+  activeRangeRole.value = role === "end" && !rangeDisplay.value?.start ? "start" : role;
+  isOpen.value = true;
+}
+
+function handleSelectionComplete() {
+  if (!props.isRange || activeRangeRole.value !== "start") return;
+  clearTimeout(rangeSwitchTimer);
+  const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  // 让最后一列先完成向上滑动，再切换到结束时间。
+  rangeSwitchTimer = setTimeout(() => {
+    if (isOpen.value && !isDisabled.value) activateRangeRole("end");
+  }, props.interaction === "click" && !reduced ? 220 : 0);
+}
+
+const panelValue = computed(() => {
+  if (!props.isRange) return typeof modelValue.value === "string" ? modelValue.value : "";
+  return Array.isArray(modelValue.value) ? modelValue.value[activeRangeRole.value === "start" ? 0 : 1] || "" : "";
+});
+const comparingValue = computed(() => props.isRange && Array.isArray(modelValue.value)
+  ? modelValue.value[activeRangeRole.value === "start" ? 1 : 0] || null : null);
+const panelRole = computed<TimeRangeRole>(() => props.isRange ? activeRangeRole.value : "start");
+const panelDisabledHours = computed(() => {
+  const callback = props.disabledHours; const role = panelRole.value; const comparing = comparingValue.value;
+  return () => callback(role, comparing);
+});
+const panelDisabledMinutes = computed(() => {
+  const callback = props.disabledMinutes; const role = panelRole.value; const comparing = comparingValue.value;
+  return (hour: number) => callback(hour, role, comparing);
+});
+const panelDisabledSeconds = computed(() => {
+  const callback = props.disabledSeconds; const role = panelRole.value; const comparing = comparingValue.value;
+  return (hour: number, minute: number) => callback(hour, minute, role, comparing);
+});
+const panelDisabledMilliseconds = computed(() => {
+  const callback = props.disabledMilliseconds; const role = panelRole.value; const comparing = comparingValue.value;
+  return (hour: number, minute: number, second: number) => callback(hour, minute, second, role, comparing);
+});
 
 function clear() {
   if (isDisabled.value) return;
   modelValue.value = props.isRange ? [] : "";
   inputValue.value = "";
   inputInvalid.value = false;
+  clearTimeout(rangeSwitchTimer);
+  activeRangeRole.value = "start";
   emit("change", modelValue.value);
   validate("change");
   emit("clear");
@@ -292,16 +381,57 @@ function clear() {
  */
 function handlePanelChange(value: string | string[]) {
   if (isDisabled.value) return;
-  modelValue.value = value;
-  emit("change", value);
+  const range = Array.isArray(modelValue.value) ? [modelValue.value[0] || "", modelValue.value[1] || ""] : ["", ""];
+  if (props.isRange && typeof value === "string") range[activeRangeRole.value === "start" ? 0 : 1] = value;
+  const nextValue = props.isRange ? value === "" ? [] : range : value;
+  if (props.isRange && value === "") {
+    clearTimeout(rangeSwitchTimer);
+    activeRangeRole.value = "start";
+  }
+  modelValue.value = nextValue;
+  emit("change", nextValue);
   validate("change");
 }
 
-function handleConfirm(value: string | string[]) {
+async function handleConfirm(value: string | string[]) {
   if (isDisabled.value) return;
+  if (props.isRange) {
+    // 子面板会先发 change 再发 confirm，等待受控绑定回流后读取起止值。
+    await nextTick();
+    if (isDisabled.value || !props.isRange) return;
+    if (activeRangeRole.value === "start") {
+      activateRangeRole("end");
+      return;
+    }
+    const range = Array.isArray(modelValue.value) ? [...modelValue.value] : [];
+    if (!range[0] || !range[1]) return;
+    const numberOf = (text: string) => {
+      const time = parseTimeValue(text, props.format);
+      return time ? ((time.hour * 60 + time.minute) * 60 + time.second) * 1000 + time.millisecond : 0;
+    };
+    range.sort((start, end) => numberOf(start) - numberOf(end));
+    if (range.some((item, index) => isTimeBlocked(item, index === 0 ? "start" : "end", range[1 - index] || null))) return;
+    if (range.some((item, index) => item !== modelValue.value[index])) {
+      modelValue.value = range;
+      emit("change", range);
+      validate("change");
+    }
+    value = range;
+  }
   isOpen.value = false;
   emit("confirm", value);
   nextTick(() => inputRef.value?.focus());
+}
+
+/** 手动输入和区间最终确认都按真实端点校验禁用规则。 */
+function isTimeBlocked(value: string, role: TimeRangeRole = "start", comparing: string | null = null) {
+  const state = parseTimeValue(value, props.format);
+  if (!state) return true;
+  const units = getTimeUnits(props.format);
+  return (units.includes("hour") && props.disabledHours(role, comparing).includes(state.hour)) ||
+    (units.includes("minute") && props.disabledMinutes(state.hour, role, comparing).includes(state.minute)) ||
+    (units.includes("second") && props.disabledSeconds(state.hour, state.minute, role, comparing).includes(state.second)) ||
+    (units.includes("millisecond") && props.disabledMilliseconds(state.hour, state.minute, state.second, role, comparing).includes(state.millisecond));
 }
 
 /** 手动输入与面板共用格式和禁用规则，不把非法值写入表单。 */
@@ -313,20 +443,7 @@ function commitInput() {
     inputInvalid.value = false;
     return true;
   }
-  const state = parseTimeValue(value, props.format);
-  const units = getTimeUnits(props.format);
-  const blocked =
-    state &&
-    ((units.includes("hour") && props.disabledHours("start", null).includes(state.hour)) ||
-      (units.includes("minute") &&
-        props.disabledMinutes(state.hour, "start", null).includes(state.minute)) ||
-      (units.includes("second") &&
-        props.disabledSeconds(state.hour, state.minute, "start", null).includes(state.second)) ||
-      (units.includes("millisecond") &&
-        props
-          .disabledMilliseconds(state.hour, state.minute, state.second, "start", null)
-          .includes(state.millisecond)));
-  if (!state || blocked) {
+  if (isTimeBlocked(value)) {
     inputInvalid.value = true;
     emit("invalid", value);
     return false;
@@ -414,7 +531,7 @@ function onOutsideClose() {
         :error="inputInvalid || isError"
         :bordered="bordered"
         :show-arrow="showArrow"
-        :arrow-animation="arrowAnimation"
+        :arrow-animation="interaction === 'click' ? false : arrowAnimation"
         @click="toggle"
         @clear="clear"
       >
@@ -443,15 +560,17 @@ function onOutsideClose() {
           >
             <div
               v-if="isRange && rangeDisplay"
+              ref="rangeRef"
               :class="ui.rangeText()"
             >
-              <span :class="rangeDisplay.start ? ui.triggerText() : ui.placeholder()">{{
-                rangeDisplay.start || startPlaceholder
-              }}</span>
-              <span :class="ui.separator()">{{ rangeSeparator }}</span>
-              <span :class="rangeDisplay.end ? ui.triggerText() : ui.placeholder()">{{
-                rangeDisplay.end || endPlaceholder
-              }}</span>
+              <button ref="rangeStartRef" type="button" :class="ui.rangeSegment()" :disabled="isDisabled" :aria-pressed="isOpen && activeRangeRole === 'start'" :aria-label="startPlaceholder" data-range-role="start" @click.stop="activateRangeRole('start')">
+                <span :class="rangeDisplay.start ? ui.triggerText() : ui.placeholder()">{{ rangeDisplay.start || startPlaceholder }}</span>
+              </button>
+              <span :class="ui.separator()"><slot name="range-separator">{{ rangeSeparator }}</slot></span>
+              <button ref="rangeEndRef" type="button" :class="ui.rangeSegment()" :disabled="isDisabled" :aria-pressed="isOpen && activeRangeRole === 'end'" :aria-label="endPlaceholder" data-range-role="end" @click.stop="activateRangeRole('end')">
+                <span :class="rangeDisplay.end ? ui.triggerText() : ui.placeholder()">{{ rangeDisplay.end || endPlaceholder }}</span>
+              </button>
+              <span v-if="isOpen" :class="ui.rangeIndicator()" :style="rangeIndicatorStyle" aria-hidden="true" />
             </div>
             <input
               v-else
@@ -485,12 +604,13 @@ function onOutsideClose() {
     <template #content>
       <RebornTimePanel
         :id="panelId"
+        :key="isRange ? activeRangeRole : 'single'"
         ref="panelRef"
-        :model-value="modelValue"
+        :model-value="panelValue"
         role="dialog"
         aria-label="时间选择"
         :format="format"
-        :is-range="isRange"
+        :is-range="false"
         :follow-system-time="followSystemTime"
         :interaction="interaction"
         :arrow-control="arrowControl"
@@ -500,12 +620,13 @@ function onOutsideClose() {
         :disabled="isDisabled"
         :size="mergedSize"
         :color="color"
-        :disabled-hours="disabledHours"
-        :disabled-minutes="disabledMinutes"
-        :disabled-seconds="disabledSeconds"
-        :disabled-milliseconds="disabledMilliseconds"
+        :disabled-hours="panelDisabledHours"
+        :disabled-minutes="panelDisabledMinutes"
+        :disabled-seconds="panelDisabledSeconds"
+        :disabled-milliseconds="panelDisabledMilliseconds"
         @change="handlePanelChange"
         @confirm="handleConfirm"
+        @select-complete="handleSelectionComplete"
         @clear="emit('clear')"
         @keydown.esc.stop="cancelInput"
       >

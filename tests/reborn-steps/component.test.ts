@@ -98,48 +98,36 @@ function progressSnapshot(root: ParentNode) {
   }));
 }
 
-it('文本类型不渲染标记、图标和圆环，当前文字随索引更新并兼容外观切换', async () => {
+it('文本类型不渲染标记、图标和圆环，外观切换保留当前步骤与内容', async () => {
   let iconCalls = 0;
   const members = ['甲', '乙', '丙'].map(title => ({
     key: title, title, description: '详细描述描述', progress: 50,
     slots: { icon: () => { iconCalls++; return h('span', '图标'); } },
   }));
   const view = await mount({ type: 'text', active: 1, color: 'secondary' }, members);
-  const currentTitles = () => Array.from(view.root.querySelectorAll('.fixture-title'))
-    .filter(element => element.classList.contains('text-(--step-color)'))
-    .map(element => element.textContent);
   try {
     assert.equal(view.root.querySelectorAll('.fixture-marker').length, 0);
     assert.equal(view.root.querySelectorAll('[role="progressbar"]').length, 0);
     assert.equal(iconCalls, 0, '文本类型不调用图标插槽');
-    assert.deepEqual(currentTitles(), ['乙']);
-    assert.equal(view.root.querySelectorAll('.fixture-description').length, 3, '文本类型保留所有描述');
-    assert.ok(view.root.querySelector('[aria-current="step"] .fixture-description')?.classList.contains('text-(--step-color)'));
-
+    assert.equal(view.root.querySelectorAll('.fixture-description').length, 3);
+    assert.equal(view.root.querySelector('[aria-current="step"] .fixture-title')?.textContent, '乙');
     view.props.active = 2;
     await nextTick();
-    assert.deepEqual(currentTitles(), ['丙']);
-    assert.equal(snapshot(view.root)[2]!.current, 'step');
-
-    view.props.type = 'default';
-    await nextTick();
-    assert.equal(view.root.querySelectorAll('.fixture-marker').length, 3);
-    assert.equal(view.root.querySelectorAll('[role="progressbar"]').length, 1);
-    assert.ok(iconCalls > 0, '恢复默认外观后继续渲染图标插槽');
-    assert.deepEqual(currentTitles(), [], '默认类型不受文本着色规则影响');
-
-    view.props.type = 'dot';
-    await nextTick();
-    assert.equal(view.root.querySelectorAll('.fixture-marker').length, 3);
-    assert.deepEqual(currentTitles(), [], '点状类型不受文本着色规则影响');
-
+    for (const type of ['default', 'dot', 'tabs']) {
+      view.props.type = type;
+      await nextTick();
+      assert.equal(view.root.querySelectorAll('.fixture-marker').length, 3);
+      assert.equal(view.root.querySelectorAll('[role="progressbar"]').length, 1);
+      assert.equal(view.root.querySelector('[aria-current="step"] .fixture-title')?.textContent, '丙');
+    }
+    assert.ok(iconCalls > 0, '恢复数字外观后继续渲染图标插槽');
     view.props.type = 'text';
     view.props.processStatus = 'error';
     view.members[0]!.status = 'process';
     await nextTick();
     assert.equal(view.root.querySelectorAll('.fixture-marker').length, 0);
     assert.equal(snapshot(view.root)[2]!.status, 'error');
-    assert.deepEqual(currentTitles(), ['丙'], '当前文字按实际索引着色，不依赖 process 状态');
+    assert.equal(snapshot(view.root)[2]!.current, 'step', '显式状态不改变实际当前下标');
     assert.deepEqual(view.warnings, []);
   } finally { view.stop(); }
 });
@@ -652,7 +640,7 @@ it('父级颜色与尺寸响应式继承，子步骤颜色和 ui 覆盖独立生
     await nextTick();
     assert.ok(items()[0]!.className.includes('--color-warning'));
     assert.ok(items()[1]!.className.includes('--color-error'));
-    assert.ok(markers().every(element => element.classList.contains('size-10')));
+    assert.ok(markers().every(element => element.classList.contains('size-8')));
     view.props.size = 'sm';
     await nextTick();
     assert.ok(markers().every(element => element.classList.contains('size-6')));

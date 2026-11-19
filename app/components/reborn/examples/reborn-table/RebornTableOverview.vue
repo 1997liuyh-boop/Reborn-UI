@@ -30,7 +30,7 @@ const ui = {
 </script>
 
 <template>
-  <div class="w-[200px]">
+  <div class="w-50">
     <RebornTable
       :data="rows"
       :columns="columns"

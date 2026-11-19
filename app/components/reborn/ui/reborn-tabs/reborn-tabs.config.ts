@@ -129,8 +129,7 @@ const theme = tv({
     tab: "group/tab flex shrink-0 cursor-pointer select-none items-center gap-2 whitespace-nowrap px-0 transition-colors duration-200 motion-reduce:transition-none",
     // z-[1] 让标题浮在选中底板之上：底板滑过相邻标签时不会把它们的文字盖住
     tabTitle: "relative z-[1] truncate",
-    tabClose:
-      "relative z-[1] -mr-1 inline-flex shrink-0 items-center justify-center rounded-sm text-gray-6 transition-colors hover:bg-gray-2 hover:text-gray-9 motion-reduce:transition-none",
+    tabClose: "relative z-[1] -mr-1 inline-flex shrink-0 items-center justify-center rounded-sm transition-colors hover:bg-gray-2 motion-reduce:transition-none text-gray-6 hover:text-gray-8 active:text-gray-9",
     // 指示条位置由组件测量标题（横向 stretch 时测量整个标签）后写入行内样式；底色由 color 变体给
     indicator:
       "pointer-events-none absolute rounded-full transition-all duration-300 ease-out motion-reduce:transition-none",
@@ -145,11 +144,11 @@ const theme = tv({
     // 滚动箭头与省略号按钮，箭头在滚到对应边界时禁用。
     navButton:
       "flex size-6 shrink-0 cursor-pointer select-none items-center justify-center rounded-md text-gray-6 transition-colors duration-200 hover:bg-gray-2 hover:text-gray-9 disabled:cursor-not-allowed disabled:text-gray-4 disabled:hover:bg-transparent motion-reduce:transition-none",
-    // 下拉选标的定位锚点：面板相对开关按钮摆放，展开方向见 position 变体
-    dropdown: "relative flex size-6 shrink-0 items-center justify-center self-center",
+    // 省略号左右留 16px，伪元素在靠近滚动内容的一侧绘制渐变阴影。
+    dropdown: "relative flex shrink-0 items-center justify-center self-stretch px-4 before:pointer-events-none before:absolute before:inset-y-0 before:-left-2 before:w-2 before:bg-[linear-gradient(270deg,#0000000d_0%,#00000000_100%)] before:content-[''] data-[tabs-overflow=start]:before:left-auto data-[tabs-overflow=start]:before:-right-2 data-[tabs-overflow=start]:before:rotate-180",
     // 投影取 reborn-context-menu 同款：菜单类面板的统一投影，比 shadow-lg 更看得出悬浮感
     dropdownPanel:
-      "absolute z-10 flex max-h-64 min-w-32 flex-col overflow-auto rounded-lg border border-gray-3 bg-gray-1 p-1 shadow-[0_2px_16px_0_rgba(1,27,70,0.1)]",
+      "min-w-32 rounded-lg border-0 bg-gray-1 p-1 shadow-[0_2px_16px_0_rgba(1,27,70,0.1)]",
     // 下拉选标的单个选项，选中 / 禁用态与标签共用 active / disabled 变体
     dropdownItem:
       "flex w-full shrink-0 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-left text-sm text-gray-9 transition-colors duration-200 hover:bg-gray-2 motion-reduce:transition-none",
@@ -174,7 +173,6 @@ const theme = tv({
         list: "flex-row items-end",
         indicator: "bottom-0 h-0.5",
         content: "pt-4",
-        dropdownPanel: "top-full mt-2",
       },
       bottom: {
         root: "flex-col-reverse",
@@ -184,7 +182,6 @@ const theme = tv({
         list: "flex-row items-start",
         indicator: "top-0 h-0.5",
         content: "pb-4",
-        dropdownPanel: "bottom-full mb-2",
       },
       left: {
         root: "flex-row",
@@ -194,7 +191,6 @@ const theme = tv({
         list: "w-full flex-col items-stretch",
         indicator: "right-0 w-0.5",
         content: "pl-4",
-        dropdownPanel: "left-full ml-2",
       },
       right: {
         root: "flex-row-reverse",
@@ -204,7 +200,6 @@ const theme = tv({
         list: "w-full flex-col items-stretch",
         indicator: "left-0 w-0.5",
         content: "pr-4",
-        dropdownPanel: "right-full mr-2",
       },
     },
     type: {
@@ -385,9 +380,9 @@ const theme = tv({
       size: "sm",
       class: { tab: "h-8", addButton: "w-8" },
     },
-    // card-fill 比其余卡片再矮一档：只有 lg 是 40px，md 与 sm 都收到 32px
-    { type: "card-fill", size: "lg", class: { tab: "h-10", addButton: "w-10" } },
-    { type: "card-fill", size: ["sm", "md"], class: { tab: "h-8", addButton: "w-8" } },
+    // card-fill 的 md / lg 为 40px，sm 为 32px；新增按钮与标签等高等宽。
+    { type: "card-fill", size: ["md", "lg"], class: { tab: "h-10", addButton: "w-10" } },
+    { type: "card-fill", size: "sm", class: { tab: "h-8", addButton: "w-8" } },
     // card 类型相邻标签无边框直接相接成一排，只在背离内容的两个角保留 6px 圆角（首末位置由 tabPlace 显式判定）；
     // 增加按钮不在标签列内、与标签列之间隔着 8px，首尾圆角规则对它不成立，改为整条背离内容的边都倒角
     { type: "card", position: "top", class: { addButton: "rounded-t-md" } },

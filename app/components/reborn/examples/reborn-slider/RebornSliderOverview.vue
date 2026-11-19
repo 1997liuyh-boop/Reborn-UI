@@ -11,7 +11,7 @@ const volume = shallowRef(40)
 </script>
 
 <template>
-  <div class="w-[180px]">
+  <div class="w-45">
     <RebornSlider v-model="volume" />
   </div>
 </template>

@@ -300,7 +300,7 @@ function onChange(value: any) {
         </RebornButton>
       </template>
 
-      <div class="flex w-full max-w-[360px] flex-col gap-3">
+      <div class="flex w-full max-w-90 flex-col gap-3">
         <RebornCascader
           v-model="playgroundValue"
           :options="options"

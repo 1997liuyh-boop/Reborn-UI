@@ -3,14 +3,16 @@ import { tv } from "~/lib/tv";
 /** 语义色：决定有事项日期的底色、描边、日期文字，以及选中 / 今天标记的颜色 */
 const colors = ["primary", "secondary", "success", "info", "warning", "error"] as const;
 /** 视图模式：month 按日排的月视图 / year 按月排的年视图 */
+const sizes = ["sm", "md", "lg"] as const;
 const modes = ["month", "year"] as const;
 /** 工具栏左侧的切换控件：select 年月下拉 / button 前后翻页按钮 */
 const controllerTypes = ["select", "button"] as const;
 /** 表头星期与日期标题的水平对齐 */
 const titleAligns = ["left", "center", "right"] as const;
 
-export { colors as calendarColors, controllerTypes as calendarControllerTypes, modes as calendarModes, titleAligns as calendarTitleAligns };
+export { colors as calendarColors, controllerTypes as calendarControllerTypes, modes as calendarModes, sizes as calendarSizes, titleAligns as calendarTitleAligns };
 
+export type CalendarSize = (typeof sizes)[number];
 export type CalendarColor = (typeof colors)[number];
 export type CalendarMode = (typeof modes)[number];
 export type CalendarControllerType = (typeof controllerTypes)[number];
@@ -19,7 +21,7 @@ export type CalendarTitleAlign = (typeof titleAligns)[number];
 /**
  * 每种语义色用到的完整类名，写成字面量 Tailwind 才扫得到。
  * 日期文字用语义令牌，暗色下自动换成对比度更好的第 5 阶；primary 随站点主题色切换。
- * 单元格浅底固定取色板第 1 阶，顶边固定取第 6 阶；选中与本日日期仅通过文字颜色强调。
+ * 选中浅底取色板第 1 阶、文字取第 6 阶；仅今天或本月的顶边强调为第 6 阶。
  * 描边只给顶边上色（border-t-*）：边框模式下单元格还有左边线，整圈上色会把相邻格的分隔线也染掉
  */
 const tones: Record<CalendarColor, { solid: string; soft: string; text: string; border: string; hoverText: string }> = {
@@ -34,7 +36,7 @@ const tones: Record<CalendarColor, { solid: string; soft: string; text: string; 
 /**
  * 尺寸全部取自设计稿：
  * | 部位         | 规格                                                        |
- * | 工具栏       | 左侧控件间隔 8px，与日历主体间隔 24px                        |
+ * | 工具栏       | 左侧控件间隔 8px，头部内边距 12px                        |
  * | 表头         | 高 28px，14px 字号，gray-5                                   |
  * | 单元格       | 内边距 4px，顶边 1px gray-4，左右间隔 8px                    |
  * | 日期标题     | 14px 字号，gray-9                                            |
@@ -48,7 +50,7 @@ export const calendarTheme = tv({
     /** 根容器 */
     root: "reborn-calendar w-full min-w-0",
     /** 工具栏：左侧切换控件，右侧「今天」；窄屏时换行 */
-    header: "flex flex-wrap items-center justify-between gap-2",
+    header: "flex flex-wrap items-center justify-between gap-2 p-3",
     /** 工具栏左侧：年月下拉或翻页按钮 + 月 / 年切换，间隔 8px */
     controller: "flex flex-wrap items-center gap-2",
     /** 翻页模式与区间模式下的年月标题 */
@@ -59,21 +61,21 @@ export const calendarTheme = tv({
     select: "",
     /** 翻页按钮：与 md 按钮等高的正方形 */
     navButton: "w-8 px-0",
-    /** 日历主体，与工具栏间隔 24px */
-    body: "mt-6",
+    /** 日历主体：上下 8px、左右 12px */
+    body: "px-3 py-2",
     /** 一行：表头行、每一周、年视图的每一季 */
     row: "grid gap-x-2",
     /** 表头星期；文字套一层与日期标题等宽的盒子，靠左 / 居中 / 靠右时都与下方日期对齐 */
     weekday: "flex h-7 items-center px-1 text-base text-gray-5",
-    /** 单元格：日期标题 + 事项区；group/cell 让悬停时日期文字也跟着变色 */
-    cell: "group/cell relative min-w-0 cursor-pointer border-t border-gray-4 p-1 transition-colors",
+    /** 单元格：日期标题 + 事项区，普通格与选中格的顶边保持灰色 */
+    cell: "group/cell relative min-w-0 cursor-pointer border-t border-t-gray-4 p-1 transition-colors",
     /** 日期标题：普通模式一行，农历模式通过变体改为上下两行 */
-    cellHeader: "flex h-6 min-w-0 items-center",
+    cellHeader: "flex h-8 min-w-0 items-center",
     /**
      * 日期标题：做成按钮，键盘可聚焦、回车即选中；
      * 选中与今天仅使用文字高亮，不添加日期底色或描边
      */
-    date: "inline-flex h-6 min-w-6 items-center justify-center px-1 text-base whitespace-nowrap tabular-nums transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
+    date: "inline-flex size-8 shrink-0 items-center justify-center px-0 text-base whitespace-nowrap tabular-nums transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
     /** 农历文字：公历下方的小字；限制宽度，节日名称不会撑破日期格 */
     lunar: "max-w-full min-w-0 truncate text-sm text-gray-6",
     /** 事项区 */
@@ -91,11 +93,16 @@ export const calendarTheme = tv({
     eventTitle: "min-w-0 flex-1 truncate text-base leading-normal text-gray-8",
   },
   variants: {
+    size: {
+      sm: { date: "size-6", cellHeader: "h-6", weekday: "[&>span]:min-w-6" },
+      md: { date: "size-8", cellHeader: "h-8", weekday: "[&>span]:min-w-8" },
+      lg: { date: "size-10", cellHeader: "h-10", weekday: "[&>span]:min-w-10" },
+    },
     color: Object.fromEntries(colors.map(c => [c, {}])) as Record<CalendarColor, object>,
     /** 月视图 7 列，年视图 4 列 */
     view: {
       month: { row: "grid-cols-7" },
-      year: { row: "grid-cols-4" },
+      year: { row: "grid-cols-4", date: "w-auto min-w-6 px-1" },
     },
     /** 表头星期与日期标题的水平对齐 */
     titleAlign: {
@@ -114,7 +121,7 @@ export const calendarTheme = tv({
         body: "overflow-hidden rounded-none border border-gray-4",
         row: "gap-x-0",
         weekday: "border-l border-gray-4 first:border-l-0",
-        cell: "border-l first:border-l-0",
+        cell: "border-l border-l-gray-4 first:border-l-0",
       },
       false: {},
     },
@@ -144,9 +151,13 @@ export const calendarTheme = tv({
       false: {},
     },
     /** 是否选中 */
+    disabled: {
+      true: { cell: "cursor-not-allowed", date: "cursor-not-allowed text-gray-5", lunar: "text-gray-5", eventTitle: "text-gray-5" },
+      false: {},
+    },
     selected: {
       true: {},
-      false: { cell: "hover:bg-gray-2" },
+      false: {},
     },
   },
   compoundVariants: [
@@ -154,20 +165,17 @@ export const calendarTheme = tv({
     { lunar: true, titleAlign: "center" as const, class: { cellHeader: "items-center" } },
     { lunar: true, titleAlign: "right" as const, class: { cellHeader: "items-end" } },
     ...Object.entries(tones).flatMap(([color, tone]) => [
-      // 有事项：浅底 + 深色顶边 + 深色日期
-      { color: color as CalendarColor, hasEvents: true, class: { cell: `${tone.soft} ${tone.border}` } },
-      { color: color as CalendarColor, hasEvents: true, inMonth: true, selected: false, class: { date: tone.text } },
-      // 悬停只改变未选中单元格的底色，选中格始终保留主题浅底与第 6 阶顶边。
-      { color: color as CalendarColor, inMonth: true, selected: false, class: { date: tone.hoverText } },
-      { color: color as CalendarColor, selected: true, class: { cell: `${tone.soft} ${tone.border}` } },
-      { color: color as CalendarColor, highlightToday: true, today: true, class: { cell: tone.border, date: `${tone.text} font-medium` } },
-      { color: color as CalendarColor, festival: true, class: { lunar: tone.text } },
-      // 选中日期仅高亮文字，保留日期标题的透明背景。
-      { color: color as CalendarColor, selected: true, class: { date: `${tone.text} font-medium` } },
+      // 悬停不染色文字，选中格保留浅底；禁用状态不参与悬停和选中配色。
+      { color: color as CalendarColor, disabled: false, selected: false, class: { cell: "hover:bg-gray-2" } },
+      { color: color as CalendarColor, disabled: false, selected: true, class: { cell: tone.soft, date: [tone.text, "font-medium"].join(" ") } },
+      { color: color as CalendarColor, highlightToday: true, today: true, class: { cell: tone.border } },
+      { color: color as CalendarColor, disabled: false, highlightToday: true, today: true, class: { date: [tone.text, "font-medium"].join(" ") } },
+      { color: color as CalendarColor, disabled: false, festival: true, class: { lunar: tone.text } },
     ]),
   ],
   defaultVariants: {
     color: "primary",
+    size: "md",
     view: "month",
     titleAlign: "right",
     lunar: false,
@@ -176,8 +184,9 @@ export const calendarTheme = tv({
     hasEvents: false,
     inMonth: true,
     today: false,
-    highlightToday: false,
+    highlightToday: true,
     selected: false,
+    disabled: false,
   },
 });
 

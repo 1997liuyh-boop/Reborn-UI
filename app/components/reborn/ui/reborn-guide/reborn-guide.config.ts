@@ -47,7 +47,7 @@ export default {
     dialogOverlay: "fixed inset-0 touch-none",
     dialogBox: `${panel} w-120 max-w-[calc(100vw-32px)]`,
     closeRow: "relative flex justify-end",
-    closeButton: "flex size-5 cursor-pointer items-center justify-center rounded-sm text-gray-8 hover:text-gray-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+    closeButton: "flex size-5 cursor-pointer items-center justify-center rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary text-gray-6 hover:text-gray-8 active:text-gray-9",
     // 外层 gap-2 加 mb-2，使封面与后面的标题相隔 16px。
     cover: "relative mb-2 block w-full rounded-lg object-cover",
     indicators: "flex flex-wrap items-center gap-2",
@@ -76,7 +76,7 @@ export default {
       class: {
         guideBox: "bg-(--reborn-guide-internal-surface) text-(--reborn-guide-internal-foreground)", dialogBox: "bg-(--reborn-guide-internal-surface) text-(--reborn-guide-internal-foreground)",
         guideTitle: "text-(--reborn-guide-internal-foreground)", guideBody: "text-(--reborn-guide-internal-foreground)", counter: "text-(--reborn-guide-internal-foreground)",
-        closeButton: "text-(--reborn-guide-internal-foreground) hover:text-(--reborn-guide-internal-foreground) focus-visible:outline-(--reborn-guide-internal-foreground)",
+        closeButton: "focus-visible:outline-(--reborn-guide-internal-foreground)",
       },
     },
     { color: [...guideColors], active: true, class: { indicatorDot: "bg-(--reborn-guide-internal-foreground)" } },

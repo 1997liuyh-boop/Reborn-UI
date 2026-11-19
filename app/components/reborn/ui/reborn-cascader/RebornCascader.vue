@@ -732,7 +732,7 @@ defineExpose({
             :key="item.key"
             color="neutral"
             variant="subtle"
-            size="sm"
+            :size="currentSize"
             :closable="!isDisabled"
             close-icon="lucide:x"
             :ui="{
@@ -757,7 +757,7 @@ defineExpose({
               :label="`+${collapsedTags.length}`"
               color="neutral"
               variant="subtle"
-              size="sm"
+              :size="currentSize"
               :ui="{
                 root: 'min-w-0 shrink-0',
                 base: ui.tag({ class: ui.collapseTag() }),

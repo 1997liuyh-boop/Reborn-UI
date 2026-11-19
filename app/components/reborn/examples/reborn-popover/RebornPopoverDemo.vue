@@ -158,7 +158,7 @@ const actions = [
         >
           <RebornButton
             size="lg" :variant="state.mode === 'hover' ? 'soft' : 'filled'"
-            :label="state.mode === 'hover' ? '悬停触发' : '点击触发'" class="min-w-[140px]"
+            :label="state.mode === 'hover' ? '悬停触发' : '点击触发'" class="min-w-35"
           />
 
           <!-- 浮层自带底色、阴影与内边距，插槽只排列内容。 -->

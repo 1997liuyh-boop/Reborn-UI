@@ -204,7 +204,7 @@ onMounted(restart);
 
 | 键名 | 说明 |
 | --- | --- |
-| root | 根容器，默认纵向排列，间隔 4px。 |
+| root | 根容器，默认纵向排列，间隔 4px。标题与数值行高均为各自字号的 150%。 |
 | title | 标题，默认 `text-base text-gray-8`；没有标题与插槽时不渲染。 |
 | content | 数字区，默认 `text-2xl font-medium text-gray-10 tabular-nums`，包含前后缀。 |
 | prefix | 前缀容器，仅有文字或插槽时渲染。 |

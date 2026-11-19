@@ -23,7 +23,7 @@ const expandedKeys = ['src']
 </script>
 
 <template>
-  <div class="w-[180px]">
+  <div class="w-45">
     <RebornTree
       :tree-data="treeData"
       :default-expanded-keys="expandedKeys"

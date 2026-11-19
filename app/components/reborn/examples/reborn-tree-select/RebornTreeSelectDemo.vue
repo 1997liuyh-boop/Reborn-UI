@@ -3,7 +3,7 @@ import type { TreeSelectValue } from "~/components/reborn/ui/reborn-tree-select/
 import type { TreeSelectProps, TreeSelectSearchContext } from "~/components/reborn/ui/reborn-tree-select/RebornTreeSelect.vue";
 import type { TreeDataNode } from "~/components/reborn/ui/reborn-tree/reborn-tree.config";
 import { DemoBlock, DemoItem, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, shallowRef } from "vue";
+import { computed, ref, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 import { treeSelectColors, treeSelectSizes, treeSelectVariants } from "~/components/reborn/ui/reborn-tree-select/reborn-tree-select.config";
@@ -83,6 +83,7 @@ const multiple = shallowRef<TreeSelectValue>(["design", "content"]);
 /** 严格模式初值只勾父级，对照子级不受牵连。 */
 const strictMultiple = shallowRef<TreeSelectValue>(["product"]);
 /** 自定义节点示例独立维护选中值，展示插槽的 selected 状态。 */
+const limitedValue = shallowRef<TreeSelectValue>(["web"]);
 const customItem = shallowRef<TreeSelectValue>("design");
 const selectValue = shallowRef("web");
 const selectOptions = [{ label: "前端开发", value: "web" }];
@@ -103,6 +104,20 @@ function searchTeamNodes(nodes: TreeDataNode[], keyword: string): TreeDataNode[]
 async function searchTeams(keyword: string, { signal }: TreeSelectSearchContext) {
   await new Promise(resolve => setTimeout(resolve, 350));
   if (!signal.aborted) remoteTreeData.value = searchTeamNodes(treeData, keyword.toLowerCase());
+}
+const region = shallowRef<TreeSelectValue>("330100");
+const regions = [{ key: "zhejiang", code: "330000", label: "浙江省", children: [{ key: "hangzhou", code: "330100", label: "杭州市" }] }];
+const regionFields = { key: "code", title: "label" };
+const department = shallowRef<TreeSelectValue>(null);
+const loadedDepartmentKeys = ref<string[]>([]);
+const departments = ref<TreeDataNode[]>([{ key: "root", title: "总部" }]);
+
+async function loadDepartments(node: TreeDataNode) {
+  await new Promise(resolve => setTimeout(resolve, 350));
+  node.children = [
+    { key: "design-dept", title: "设计部", isLeaf: true },
+    { key: "support-dept", title: "服务部", isLeaf: true },
+  ];
 }
 </script>
 
@@ -184,6 +199,12 @@ async function searchTeams(keyword: string, { signal }: TreeSelectSearchContext)
         联动模式的绑定值包含全部勾选节点，父级全选时父级 key 与子级 key 同时出现。
       </DemoNote>
     </DemoSection>
+    <DemoSection title="限制数量" description="最多选中四项，选择框右侧显示选中数量。">
+      <DemoBlock>
+        <RebornTreeSelect v-model="limitedValue" :tree-data="treeData" multiple check-strictly :max-count="4" show-word-limit clearable default-expand-all />
+      </DemoBlock>
+    </DemoSection>
+
     <DemoSection title="标签折叠">
       <template #description><code>collapseTags</code> 将超出 <code>maxCollapseTags</code> 的标签合并为数量，<code>collapseTagsTooltip</code> 悬浮展示隐藏项。</template>
       <DemoBlock layout="stack">
@@ -239,6 +260,17 @@ async function searchTeams(keyword: string, { signal }: TreeSelectSearchContext)
         <DemoItem label="自定义空态（empty）" class="w-full max-w-sm">
           <RebornTreeSelect class="w-full"><template #empty>暂无可选团队，请先创建团队</template></RebornTreeSelect>
         </DemoItem>
+      </DemoBlock>
+    </DemoSection>
+    <DemoSection title="绑定值字段" description="用业务数据的 code 作为绑定值，用 label 显示名称。">
+      <DemoBlock>
+        <RebornTreeSelect v-model="region" :tree-data="regions" :field-names="regionFields" allow-search />
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="异步加载" description="展开总部时加载部门，收起后再展开会复用已加载的结果。">
+      <DemoBlock>
+        <RebornTreeSelect v-model="department" v-model:loaded-keys="loadedDepartmentKeys" :tree-data="departments" :load-data="loadDepartments" />
       </DemoBlock>
     </DemoSection>
   </div>

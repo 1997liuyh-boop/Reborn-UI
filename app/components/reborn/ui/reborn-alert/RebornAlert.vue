@@ -3,8 +3,15 @@ import type { AlertColor, AlertDirection, AlertType, AlertUI, AlertVariant } fro
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useSlots, useTemplateRef, watch } from 'vue';
 import { useBooleanModel } from '~/composables/useControlledModel';
 import { cn } from '~/lib/utils';
+import RebornLoading from '../reborn-loading/RebornLoading.vue';
 import RebornTransition from '../reborn-transition/RebornTransition.vue';
 import { ALERT_TYPE_COLOR, ALERT_TYPE_ICON, alertTheme } from './reborn-alert.config';
+
+// 随组件提供状态图标，避免在运行时请求外部图标集。
+const feedbackIconPaths = new Map<string, string>([
+  ["ant-design:info-outlined", "M448 224a64 64 0 1 0 128 0a64 64 0 1 0-128 0m96 168h-64c-4.4 0-8 3.6-8 8v464c0 4.4 3.6 8 8 8h64c4.4 0 8-3.6 8-8V400c0-4.4-3.6-8-8-8"],
+  ["ant-design:exclamation-outlined", "M448 804a64 64 0 1 0 128 0a64 64 0 1 0-128 0m32-168h64c4.4 0 8-3.6 8-8V164c0-4.4-3.6-8-8-8h-64c-4.4 0-8 3.6-8 8v464c0 4.4 3.6 8 8 8"],
+]);
 
 export interface AlertProps {
   /**
@@ -31,6 +38,8 @@ export interface AlertProps {
   closable?: boolean;
   /** 警告提示的标题 */
   title?: string;
+  /** 辅助文字，默认插槽可覆盖 */
+  description?: string;
   /**
    * 是否作为顶部公告使用（去除边框和圆角）
    * @defaultValue false
@@ -107,12 +116,15 @@ const resolvedColor = computed(() => props.color ?? ALERT_TYPE_COLOR[props.type]
 
 /** 图标：显式 icon 优先，否则按 type 取默认图标 */
 const iconName = computed(() => props.icon ?? ALERT_TYPE_ICON[props.type]);
+const iconPath = computed(() => feedbackIconPaths.get(iconName.value));
+const loading = computed(() => props.type === 'loading' && !props.icon && !slots.icon);
 
 const uiOverrides = computed(() => props.ui || {});
 const ui = computed(() => {
   const styles = alertTheme({
     variant: props.variant,
     color: resolvedColor.value,
+    loading: loading.value,
     banner: props.banner,
     center: props.center,
   });
@@ -120,7 +132,7 @@ const ui = computed(() => {
     root: () => styles.root({ class: cn(uiOverrides.value.root, props.class) }),
     icon: () => styles.icon({ class: cn(uiOverrides.value.icon) }),
     content: () => styles.content({ class: cn(uiOverrides.value.content) }),
-    title: () => styles.title({ class: cn(uiOverrides.value.title) }),
+    title: (hasDescription: boolean) => styles.title({ hasDescription, class: cn(uiOverrides.value.title) }),
     description: () => styles.description({ class: cn(uiOverrides.value.description) }),
     action: () => styles.action({ class: cn(uiOverrides.value.action) }),
     closeButton: () => styles.closeButton({ class: cn(uiOverrides.value.closeButton) }),
@@ -298,12 +310,16 @@ function handleClose(e: MouseEvent) {
     <div :class="ui.root()" role="alert" @mouseenter="isPaused = true" @mouseleave="isPaused = false">
       <span v-if="showIcon" :class="ui.icon()">
         <slot name="icon">
-          <Icon :name="iconName" class="size-4" />
+          <RebornLoading v-if="loading" type="outline" color="currentColor" :size="16" />
+          <svg v-else-if="iconPath" class="size-3" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">
+            <path :d="iconPath" />
+          </svg>
+          <Icon v-else :name="iconName" class="size-3" />
         </slot>
       </span>
 
       <div :class="ui.content()">
-        <div v-if="title || slots.title" :class="ui.title()">
+        <div v-if="title || slots.title" :class="ui.title(!isCarousel && Boolean(slots.default || description))">
           <slot name="title">{{ title }}</slot>
         </div>
 
@@ -340,8 +356,8 @@ function handleClose(e: MouseEvent) {
             </div>
           </Transition>
         </div>
-        <div v-else-if="slots.default" :class="ui.description()">
-          <slot />
+        <div v-else-if="slots.default || description" :class="ui.description()">
+          <slot>{{ description }}</slot>
         </div>
       </div>
 

@@ -47,6 +47,10 @@ export default {
         magnifierLens: "absolute bg-black/30 border border-white/20 pointer-events-none z-10 rounded-lg backdrop-blur-[2px]",
         magnifierView: "absolute top-0 left-[calc(100%+16px)] border border-gray-3 bg-gray-1 shadow-2xl overflow-hidden pointer-events-none z-50 rounded-xl",
         magnifierViewImage: "absolute max-w-none origin-top-left",
+        /** 图片与视频共用预览遮罩，ViewerJS 的默认背景类在挂载时移除。 */
+        previewBackdrop: "bg-[rgba(25,30,39,0.5)]",
+        previewError: "pointer-events-none absolute left-1/2 top-1/2 flex size-200 max-h-[calc(100%-32px)] max-w-[calc(100%-32px)] -translate-x-1/2 -translate-y-1/2 items-center justify-center bg-gray-2",
+        previewErrorIcon: "size-56 text-gray-5 icon-[lucide--image-off]",
         /**
          * 预览菜单栏：插在 viewerjs 底部区域的标题与缩略图条之间。
          * 用块级 flex + w-fit + mx-auto 居中而不是 inline-flex：viewerjs 的标题是 inline-block，
@@ -54,18 +58,21 @@ export default {
          * mb-6（24px）与两侧箭头离屏幕边缘的距离一致：缩略图列表默认隐藏，菜单就是底部区域的最后一块，
          * 太小会贴着屏幕底边；开启缩略图列表时，它是菜单与缩略图之间的间距。
          */
-        previewToolbar: "mx-auto mb-6 flex w-fit items-center gap-4 rounded-lg bg-gray-1 px-10 py-2",
+        previewToolbar: "mx-auto mb-6 flex w-fit max-w-[calc(100%-32px)] flex-wrap items-center justify-center gap-4 rounded-lg bg-gray-1 px-10 py-2",
         /** 菜单按钮：图标继承按钮的文字色，hover / 按下时一起转为主题色 */
         previewAction: "flex size-14 cursor-pointer items-center justify-center rounded-lg text-gray-8 transition-colors hover:bg-gray-2 hover:text-primary active:bg-gray-2 active:text-primary focus-visible:outline-2 focus-visible:outline-primary",
-        previewActionIcon: "size-6",
+        previewActionIcon: "size-5",
         /** oneToOne 按钮的「1:1」文字 */
         previewActionText: "text-base font-semibold",
         /**
          * 多图预览时遮罩两侧的切换箭头，相对预览容器垂直居中。
          * 不放进 viewerjs 的画布（canvas）：点画布会关闭预览，箭头必须在画布之外。
          */
-        previewArrow: "absolute top-1/2 flex size-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-1 text-gray-8 transition-colors hover:bg-gray-2 hover:text-primary active:bg-gray-2 active:text-primary focus-visible:outline-2 focus-visible:outline-primary",
-        previewArrowIcon: "size-6",
+        previewArrow: "absolute top-1/2 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-[rgba(255,255,255,0.25)] text-gray-1 transition-colors hover:bg-[rgba(255,255,255,0.5)] focus-visible:outline-2 focus-visible:outline-primary",
+        previewArrowIcon: "size-4.5",
+        /** 图片与视频预览的关闭图标统一使用 gray-1，交互时只改变背景。 */
+        previewClose: "absolute right-8 top-8 z-10 flex size-9 cursor-pointer items-center justify-center rounded-full bg-[rgba(25,30,39,0.25)] transition-colors text-gray-1 hover:bg-[rgba(25,30,39,0.5)] focus-visible:outline-2 focus-visible:outline-primary",
+        previewCloseIcon: "icon-[lucide--x] size-5",
     },
     variants: {
         /** 箭头左右各一，只有定位不同 */

@@ -114,10 +114,10 @@ it('交错跨行与多列合并保留空洞，filled 不越过占用列', async 
   for (const layout of ['horizontal', 'vertical']) {
     for (const bordered of [true, false]) {
       const p = mount({ bordered, layout, column: 3, items }); await tick();
-      const cells = grid(p, layout === 'horizontal' && bordered ? 6 : 3);
+      const cells = grid(p, layout === 'horizontal' ? 6 : 3);
       assert.ok(cells.length >= 4);
       assert.equal(cell(p, 'D').rowSpan, layout === 'vertical' ? 3 : 2);
-      assert.equal(cell(p, 'D').colSpan, layout === 'horizontal' && bordered ? 3 : 2);
+      assert.equal(cell(p, 'D').colSpan, layout === 'horizontal' ? 3 : 2);
       assert.ok(p.container.textContent.includes('F'));
       assert.ok([...p.container.querySelectorAll('td')].every(td => td.textContent.trim() !== '：'), '空占位不能显示孤立冒号');
     }
@@ -162,11 +162,11 @@ it('无 rowspan 的原布局保留 span、filled 和末项补齐', async () => {
   for (const layout of ['horizontal', 'vertical']) {
     for (const bordered of [true, false]) {
       const p = mount({ bordered, layout, column: 3, items }); await tick();
-      const cells = grid(p, layout === 'horizontal' && bordered ? 6 : 3);
+      const cells = grid(p, layout === 'horizontal' ? 6 : 3);
       assert.equal(cells.length, layout === 'vertical' ? 6 : 3);
-      assert.equal(cell(p, 'E').colSpan, layout === 'horizontal' && bordered ? 5 : 3);
+      assert.equal(cell(p, 'E').colSpan, layout === 'horizontal' ? 5 : 3);
       assert.equal(p.container.querySelector('[rowspan]'), null);
-      assert.equal(cell(p, 'D').colSpan, layout === 'horizontal' && bordered ? 3 : 2);
+      assert.equal(cell(p, 'D').colSpan, layout === 'horizontal' ? 3 : 2);
     }
   }
 });
@@ -174,7 +174,7 @@ it('无 rowspan 的原布局保留 span、filled 和末项补齐', async () => {
 it('rowspan 的无效值归一为 1，小数向下取整，并保留末尾空行', async () => {
   for (const rowspan of [-4, 0, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
     const p = mount({ column: 1, items: [field('A', { rowspan })] }); await tick();
-    assert.equal(grid(p, 1).length, 1);
+    assert.equal(grid(p, 2).length, 1);
     assert.equal(cell(p, 'A').rowSpan, 1);
   }
   const p = mount({ bordered: true, column: 1, items: [field('A', { rowspan: 3.8 })] }); await tick();
@@ -188,7 +188,7 @@ it('多组跨行跨列组合在四种布局下均无重叠', async () => {
     for (const layout of ['horizontal', 'vertical']) {
       for (const bordered of [true, false]) {
         const p = mount({ column: 4, layout, bordered, items }); await tick();
-        grid(p, layout === 'horizontal' && bordered ? 8 : 4);
+        grid(p, layout === 'horizontal' ? 8 : 4);
       }
     }
   }
@@ -205,7 +205,7 @@ it('直接或响应式 column 的非有限值回退为 3，非有限 span 回退
 
 it('声明式子项的裸 colon 与字符串 span/rowspan 按 Vue 属性语义归一',async()=>{
  const p=mount({column:2},{default:()=>[h(Item,{label:'A',colon:'',span:'2',rowspan:'2',contentClass:'cell-A'},()=> 'A')]});await tick();
- assert.ok(p.container.textContent.includes('：'));assert.equal(cell(p,'A').rowSpan,2);assert.equal(cell(p,'A').colSpan,2);
+ assert.ok(p.container.textContent.includes('：'));assert.equal(cell(p,'A').rowSpan,2);assert.equal(cell(p,'A').colSpan,3);
 });
 it('内容内有状态的组件在样式更新后保留实例',async()=>{
  const Editor=defineComponent({setup(){ const value=shallowRef('初值');return ()=>h('input',{value:value.value,onInput:event=>value.value=event.target.value}); }});

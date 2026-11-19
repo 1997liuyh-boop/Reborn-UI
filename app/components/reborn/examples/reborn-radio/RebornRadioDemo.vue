@@ -301,7 +301,7 @@ const plans = [
           <RebornRadio v-for="plan in plans" :key="plan.value" :value="plan.value">
             <template #radio="{ checked }">
               <div
-                class="w-[140px] rounded-md border border-solid px-4 py-3 transition-colors"
+                class="w-35 rounded-md border border-solid px-4 py-3 transition-colors"
                 :class="checked ? 'border-primary bg-primary/5' : 'border-gray-3'"
               >
                 <div class="text-base font-medium" :class="checked ? 'text-primary' : 'text-gray-8'">

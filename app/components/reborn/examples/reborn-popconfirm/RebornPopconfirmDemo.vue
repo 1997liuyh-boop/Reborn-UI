@@ -76,7 +76,7 @@ const controls: PlaygroundControlGroup[] = [
 /** 完整参数代码，可复制到真实页面。 */
 const popconfirmCode = computed(() => {
   const s = state.value;
-  return `<RebornPopconfirm\n  title="${s.title}"\n  description="${s.description}"\n  confirm-text="${s.confirmText}"\n  cancel-text="${s.cancelText}"\n  placement="${s.placement}"\n  :side-offset="${s.sideOffset}"\n  :arrow="${s.arrow}"\n  :hide-cancel="${s.hideCancel}"\n  :dismissible="${s.dismissible}"\n  :close-on-scroll="${s.closeOnScroll}"\n  @confirm="onConfirm"\n  @cancel="onCancel"\n>\n  <RebornButton size="sm" variant="outlined" color="neutral">删除</RebornButton>\n</RebornPopconfirm>`;
+  return `<RebornPopconfirm icon="ant-design:question-circle-filled"\n  title="${s.title}"\n  description="${s.description}"\n  confirm-text="${s.confirmText}"\n  cancel-text="${s.cancelText}"\n  placement="${s.placement}"\n  :side-offset="${s.sideOffset}"\n  :arrow="${s.arrow}"\n  :hide-cancel="${s.hideCancel}"\n  :dismissible="${s.dismissible}"\n  :close-on-scroll="${s.closeOnScroll}"\n  @confirm="onConfirm"\n  @cancel="onCancel"\n>\n  <RebornButton size="sm" variant="outlined" color="neutral">删除</RebornButton>\n</RebornPopconfirm>`;
 });
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
@@ -113,12 +113,13 @@ onBeforeUnmount(() => {
     <Playground v-model="state" :controls="controls" :code="popconfirmCode" component-name="RebornPopconfirm" title="交互演练场" description="调整文案、定位与按钮配置，点击触发按钮实时预览气泡确认框。">
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
-          <template #leading><span class="icon-[lucide--rotate-ccw] size-[12px]" /></template>
+          <template #leading><span class="icon-[lucide--rotate-ccw] size-3" /></template>
           重置配置
         </RebornButton>
       </template>
       <div class="flex w-full min-w-0 flex-col items-center gap-6 py-16">
         <RebornPopconfirm
+          icon="ant-design:question-circle-filled"
           :title="state.title" :description="state.description || undefined" :confirm-text="state.confirmText" :cancel-text="state.cancelText"
           :placement="state.placement" :side-offset="state.sideOffset" :arrow="state.arrow" :hide-cancel="state.hideCancel"
           :dismissible="state.dismissible" :close-on-scroll="state.closeOnScroll"
@@ -132,10 +133,10 @@ onBeforeUnmount(() => {
 
     <DemoSection title="基础用法" description="默认插槽放触发器，点击后在上方弹出确认气泡；confirm / cancel 事件对应两个按钮，点击外部同样关闭。">
       <DemoBlock layout="row" class="gap-6 py-10">
-        <RebornPopconfirm title="确定删除这条数据吗？" description="删除后不可恢复，关联的引用也会一并失效。" @confirm="lastAction = '基础用法：确认'" @cancel="lastAction = '基础用法：取消'">
+        <RebornPopconfirm icon="ant-design:question-circle-filled" title="确定删除这条数据吗？" description="删除后不可恢复，关联的引用也会一并失效。" @confirm="lastAction = '基础用法：确认'" @cancel="lastAction = '基础用法：取消'">
           <RebornButton size="sm" variant="outlined" color="error">删除</RebornButton>
         </RebornPopconfirm>
-        <RebornPopconfirm title="确认提交本次修改？" @confirm="lastAction = '仅标题：确认'">
+        <RebornPopconfirm icon="ant-design:question-circle-filled" title="确认提交本次修改？" @confirm="lastAction = '仅标题：确认'">
           <RebornButton size="sm">仅标题</RebornButton>
         </RebornPopconfirm>
       </DemoBlock>
@@ -146,9 +147,9 @@ onBeforeUnmount(() => {
         <code>placement</code> 取值与 <code>reborn-tooltip</code> 完全一致：四个方向各带 <code>-start</code> / <code>-end</code> 对齐，共 12 种；超出视口时自动翻转到对侧，<code>sideOffset</code> 调整与触发器的间距。
       </template>
       <DemoBlock layout="stack" align="center" class="py-14">
-        <div class="grid w-full max-w-[528px] grid-cols-5 gap-2 sm:gap-3">
+        <div class="grid w-full max-w-132 grid-cols-5 gap-2 sm:gap-3">
           <div v-for="item in placementExamples" :key="item.placement" :class="item.cell">
-            <RebornPopconfirm title="确定执行该操作吗？" :placement="item.placement" class="w-full" :ui="fullWidthTriggerUi">
+            <RebornPopconfirm icon="ant-design:question-circle-filled" title="确定执行该操作吗？" :placement="item.placement" class="w-full" :ui="fullWidthTriggerUi">
               <RebornButton size="sm" class="w-full px-1" :aria-label="item.placement">{{ item.label }}</RebornButton>
             </RebornPopconfirm>
           </div>
@@ -158,10 +159,10 @@ onBeforeUnmount(() => {
 
     <DemoSection title="按钮定制：文案、语义色与隐藏取消" description="confirmColor / cancelColor 换语义色，confirmText / cancelText 换文案，hideCancel 只留确认按钮。">
       <DemoBlock layout="row" class="gap-6 py-10">
-        <RebornPopconfirm title="确定移除该成员吗？" description="移除后对方将立即失去项目访问权限。" confirm-color="error" confirm-text="移除" cancel-text="再想想">
+        <RebornPopconfirm icon="ant-design:question-circle-filled" title="确定移除该成员吗？" description="移除后对方将立即失去项目访问权限。" confirm-color="error" confirm-text="移除" cancel-text="再想想">
           <RebornButton size="sm" variant="outlined" color="error">危险操作</RebornButton>
         </RebornPopconfirm>
-        <RebornPopconfirm title="已阅读并知晓以上提醒？" hide-cancel confirm-text="知道了">
+        <RebornPopconfirm icon="ant-design:question-circle-filled" title="已阅读并知晓以上提醒？" hide-cancel confirm-text="知道了">
           <RebornButton size="sm" variant="outlined" color="neutral">仅确认</RebornButton>
         </RebornPopconfirm>
       </DemoBlock>
@@ -169,7 +170,7 @@ onBeforeUnmount(() => {
 
     <DemoSection title="异步确认：loading 与 v-model:open" description="loading 让确认按钮进入加载态且点击不再自动关闭，配合 v-model:open 在异步完成后手动收起。">
       <DemoBlock layout="row" class="gap-6 py-10">
-        <RebornPopconfirm v-model:open="asyncOpen" title="确定删除所选的 3 项吗？" description="删除请求完成前请勿关闭页面。" :loading="asyncLoading" confirm-color="error" confirm-text="删除" @confirm="onAsyncConfirm" @cancel="lastAction = '异步删除已取消'">
+        <RebornPopconfirm icon="ant-design:question-circle-filled" v-model:open="asyncOpen" title="确定删除所选的 3 项吗？" description="删除请求完成前请勿关闭页面。" :loading="asyncLoading" confirm-color="error" confirm-text="删除" @confirm="onAsyncConfirm" @cancel="lastAction = '异步删除已取消'">
           <RebornButton size="sm" variant="outlined" color="error">异步删除</RebornButton>
         </RebornPopconfirm>
         <DemoNote tone="dimmed">{{ lastAction }}</DemoNote>
@@ -181,13 +182,13 @@ onBeforeUnmount(() => {
         默认点击气泡外部或滚动页面就收起（<code>dismissible</code>、<code>closeOnScroll</code> 都为 true）；关掉 <code>closeOnScroll</code> 后气泡跟着触发器移动；关掉 <code>dismissible</code> 后只能点按钮、再次点击触发器或调用 <code>close()</code> 关闭。
       </template>
       <DemoBlock layout="row" class="gap-6 py-10">
-        <RebornPopconfirm title="点外部或滚动页面试试" @confirm="lastAction = '默认：确认'">
+        <RebornPopconfirm icon="ant-design:question-circle-filled" title="点外部或滚动页面试试" @confirm="lastAction = '默认：确认'">
           <RebornButton size="sm">默认</RebornButton>
         </RebornPopconfirm>
-        <RebornPopconfirm title="滚动时气泡跟随按钮" :close-on-scroll="false" @confirm="lastAction = '滚动跟随：确认'">
+        <RebornPopconfirm icon="ant-design:question-circle-filled" title="滚动时气泡跟随按钮" :close-on-scroll="false" @confirm="lastAction = '滚动跟随：确认'">
           <RebornButton size="sm" variant="outlined">滚动时跟随</RebornButton>
         </RebornPopconfirm>
-        <RebornPopconfirm title="必须点按钮才能关闭" :dismissible="false" :close-on-scroll="false" @confirm="lastAction = '必须确认：确认'">
+        <RebornPopconfirm icon="ant-design:question-circle-filled" title="必须点按钮才能关闭" :dismissible="false" :close-on-scroll="false" @confirm="lastAction = '必须确认：确认'">
           <RebornButton size="sm" variant="outlined" color="neutral">只能点按钮关闭</RebornButton>
         </RebornPopconfirm>
       </DemoBlock>
@@ -198,16 +199,13 @@ onBeforeUnmount(() => {
 
     <DemoSection title="自定义内容：标题与按钮区插槽" description="title / description 插槽替换文字内容，footer 插槽接管按钮区并拿到 confirm / cancel 回调。">
       <DemoBlock layout="row" class="gap-6 py-10">
-        <RebornPopconfirm description="发布后将对全部用户可见，可随时在后台下线。" @confirm="lastAction = '自定义标题：确认'">
+        <RebornPopconfirm icon="ant-design:question-circle-filled" description="发布后将对全部用户可见，可随时在后台下线。" @confirm="lastAction = '自定义标题：确认'">
           <template #title>
-            <span class="inline-flex items-center gap-[4px]">
-              <span class="icon-[lucide--rocket] size-[14px] text-primary" />
-              确认发布新版本？
-            </span>
+            确认发布新版本？
           </template>
           <RebornButton size="sm">自定义标题</RebornButton>
         </RebornPopconfirm>
-        <RebornPopconfirm title="对本次改动满意吗？">
+        <RebornPopconfirm icon="ant-design:question-circle-filled" title="对本次改动满意吗？">
           <template #footer="{ confirm, cancel }">
             <RebornButton size="sm" variant="text" color="neutral" @click="cancel">不满意</RebornButton>
             <RebornButton size="sm" variant="soft" color="success" @click="confirm">满意</RebornButton>

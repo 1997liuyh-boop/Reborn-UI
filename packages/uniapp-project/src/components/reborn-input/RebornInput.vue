@@ -326,7 +326,7 @@ function buildUi({ hasPrefix, hasSuffix, hasPrepend, hasAppend }: SlotVariants) 
     suffix: (opts?: { class?: any }) =>
       styles.iconSection({ class: cn(opts?.class, uiOverrides.value.suffix) }),
     clear: (opts?: { class?: any }) =>
-      styles.icon({ class: cn(opts?.class, uiOverrides.value.clear) }),
+      styles.icon({ class: cn('text-gray-6 hover:text-gray-8 active:text-gray-9 hover:opacity-100', opts?.class, uiOverrides.value.clear) }),
     password: (opts?: { class?: any }) =>
       styles.iconSection({ class: cn(opts?.class, uiOverrides.value.password) }),
     separator: (opts?: { class?: any }) =>

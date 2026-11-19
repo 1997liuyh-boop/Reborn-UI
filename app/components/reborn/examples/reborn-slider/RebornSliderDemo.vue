@@ -151,7 +151,7 @@ function onSliderComplete(value: number | number[]) {
   lastComplete.value = JSON.stringify(value);
 }
 /** 外形走公开 UI 键，组件仍负责滑块交互。 */
-const customThumbUi = { thumb: "h-5 w-[30px] rounded-full bg-warning" };
+const customThumbUi = { thumb: "h-5 w-7.5 rounded-full bg-warning" };
 </script>
 
 <template>

@@ -30,6 +30,10 @@ export interface TreeSelectProps {
   fieldNames?: RebornTreeProps["fieldNames"];
   /** 多选时展示复选框，默认父子联动勾选 */
   multiple?: boolean;
+  /** 多选最多选中的节点数，按实际标签数量计算；0 表示不限制 */
+  maxCount?: number;
+  /** 多选时在右侧显示选中数量；设置最大数量后显示为当前数/最大数 */
+  showWordLimit?: boolean;
   /** 多选时父子勾选互不关联，各节点独立勾选 */
   checkStrictly?: boolean;
   /** 多选时将超出保留数量的标签折叠为 +N */
@@ -87,7 +91,7 @@ export interface TreeSelectProps {
 }
 
 const props = withDefaults(defineProps<TreeSelectProps>(), {
-  treeData: () => [], multiple: false, checkStrictly: false, placeholder: "请选择", disabled: false,
+  treeData: () => [], multiple: false, maxCount: 0, showWordLimit: false, checkStrictly: false, placeholder: "请选择", disabled: false,
   collapseTags: false, collapseTagsTooltip: false, maxCollapseTags: 1, allowSearch: false,
   clearable: false, size: "md", color: "primary", variant: "outlined",
   defaultExpandAll: false, defaultExpandedKeys: () => [], showLine: false,
@@ -218,9 +222,11 @@ const collapsedTags = computed(() => props.collapseTags
 const collapsedText = computed(() => collapsedTags.value.map(item => item.label).join("、"));
 const searchPlaceholder = computed(() => selectedItems.value.length ? (props.multiple ? "" : selectedItems.value[0]?.label) : props.placeholder);
 const showClear = computed(() => props.clearable && !isDisabled.value && selectedKeys.value.length > 0);
+const maxCount = computed(() => Number.isFinite(props.maxCount) ? Math.max(0, Math.floor(props.maxCount)) : 0);
 const ui = computed(() => b({
   size: fieldSize.value, color: props.color, variant: props.variant, multiple: props.multiple,
-  wrapTags: props.multiple && !props.collapseTags && selectedKeys.value.length > 0, open: isOpen.value,
+  hasTags: props.multiple && selectedKeys.value.length > 0,
+  wrapTags: props.multiple && !props.collapseTags && selectedKeys.value.length > 0, open: isOpen.value && !isSearching.value,
   clearable: showClear.value, disabled: isDisabled.value, error: isError.value,
 }));
 
@@ -229,11 +235,14 @@ const ui = computed(() => b({
  * 受控绑定下赋值要等父组件回流才在本地可见，紧接着读 model.value 仍是旧值，所以事件载荷用本地算好的新值。
  */
 function updateValue(keys: TreeKey[]) {
-  if (isDisabled.value) return;
+  if (isDisabled.value) return false;
+  // 先验证完整联动结果，超限时不拆分父子关系；外部回填超限后仍允许取消已选项。
+  if (props.multiple && maxCount.value && keys.length > maxCount.value && keys.some(key => !selectedKeys.value.includes(key))) return false;
   const next = props.multiple ? keys : (keys[0] ?? null);
   model.value = next;
   emit("change", next);
   validate("change");
+  return true;
 }
 function selectNode(keys: TreeKey[]) {
   updateValue(keys);
@@ -241,18 +250,20 @@ function selectNode(keys: TreeKey[]) {
 }
 function checkNodes(keys: TreeCheckedKeys, info: { checked: boolean; node: TreeDataNode }) {
   const entity = isConduct.value ? entities.value.map.get(info.node[fields.value.key] as TreeKey) : undefined;
+  let nextKeys: TreeKey[];
   if (entity) {
     // 联动：在完整树上推导，搜索时被隐藏的后代也随父节点一起勾选或取消
     const result = info.checked
       ? conductCheck([...selectedKeys.value, entity.key], entities.value, isConductBlocked)
       : conductUncheck(selectedKeys.value, entity, entities.value, isConductBlocked);
-    updateValue([...result.checked]);
+    nextKeys = [...result.checked];
   } else {
     // 独立勾选：树只回传当前展示的节点，需并回搜索时被隐藏的已选值
     const checked = Array.isArray(keys) ? keys : keys.checked;
     const hidden = keyword.value ? selectedKeys.value.filter(key => !filteredTree.value.keys.has(key)) : [];
-    updateValue([...new Set([...hidden, ...checked])]);
+    nextKeys = [...new Set([...hidden, ...checked])];
   }
+  if (!updateValue(nextKeys)) return;
   if (props.allowSearch) {
     searchValue.value = "";
     nextTick(() => searchInput.value?.focus());
@@ -354,18 +365,18 @@ watch(isSearching, async (searching) => {
         <div v-if="multiple && selectedItems.length" :class="ui.tagList({ class: cn(props.ui?.tagList) })">
           <RebornBadge
             v-for="item in visibleTags" :key="item.key" :label="item.label" color="neutral"
-            variant="subtle" size="sm" :closable="!isDisabled && !item.disabled" close-icon="lucide:x"
+            variant="subtle" :size="fieldSize" :closable="!isDisabled && !item.disabled" close-icon="lucide:x"
             :ui="{ root: 'min-w-0 max-w-full', base: ui.tag({ class: cn(props.ui?.tag) }), label: ui.tagLabel(), closeButton: ui.tagClose(), closeIcon: ui.tagCloseIcon() }"
             @close="removeTag(item.key, $event)"
           />
           <RebornTooltip v-if="collapsedTags.length && collapseTagsTooltip" :content="collapsedText">
             <RebornBadge
-              :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" size="sm"
+              :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" :size="fieldSize"
               :ui="{ root: 'shrink-0', base: ui.tag({ class: cn(ui.collapseTag(), props.ui?.collapseTag) }), label: ui.tagLabel() }"
             />
           </RebornTooltip>
           <RebornBadge
-            v-else-if="collapsedTags.length" :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" size="sm"
+            v-else-if="collapsedTags.length" :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" :size="fieldSize"
             :ui="{ root: 'shrink-0', base: ui.tag({ class: cn(ui.collapseTag(), props.ui?.collapseTag) }), label: ui.tagLabel() }"
           />
           <input
@@ -379,14 +390,19 @@ watch(isSearching, async (searching) => {
         >
         <span v-else-if="selectedItems.length" :class="ui.triggerText({ class: cn(fieldUi.triggerText) })">{{ selectedItems[0]?.label }}</span>
         <span v-else :class="ui.placeholder({ class: cn(fieldUi.placeholder) })">{{ placeholder }}</span>
-        <div :class="ui.triggerIconWrapper({ class: cn(fieldUi.triggerIconWrapper) })">
-          <Icon name="lucide:chevron-down" :class="ui.arrow({ class: cn(fieldUi.arrow) })" />
-          <button
-            v-if="showClear" type="button" aria-label="清空选择"
-            :class="ui.clearBtn({ class: cn(fieldUi.clearBtn) })" @click.stop="clear"
-          >
-            <Icon name="lucide:x" class="size-full" />
-          </button>
+        <div :class="ui.suffix({ class: cn(props.ui?.suffix) })">
+          <span v-if="multiple && showWordLimit" :class="ui.count({ class: cn(props.ui?.count) })" role="status" aria-live="polite">
+            {{ selectedItems.length }}<template v-if="maxCount">/{{ maxCount }}</template>
+          </span>
+          <div :class="ui.triggerIconWrapper({ class: cn(fieldUi.triggerIconWrapper) })">
+            <Icon :name="isSearching ? 'lucide:search' : 'lucide:chevron-down'" :class="ui.arrow({ class: cn(fieldUi.arrow) })" />
+            <button
+              v-if="showClear" type="button" aria-label="清空选择"
+              :class="ui.clearBtn({ class: cn(fieldUi.clearBtn) })" @click.stop="clear"
+            >
+              <Icon name="lucide:x" class="size-full" />
+            </button>
+          </div>
         </div>
       </div>
     </template>
@@ -399,6 +415,7 @@ watch(isSearching, async (searching) => {
             {{ searchLoading ? "搜索中…" : "搜索失败，请重新输入" }}
           </span>
         </div>
+        <!-- 勾选更新统一由check事件决定；显式监听模型更新，防止拒绝超限后内部树保留本地勾选。 -->
         <RebornTree
           v-else-if="filteredTree.data.length" :id="treeId" :key="keyword" v-model:expanded-keys="displayedExpandedKeys"
           :tree-data="filteredTree.data" :field-names="fields" :selected-keys="treeSelectedKeys"
@@ -406,7 +423,7 @@ watch(isSearching, async (searching) => {
           :selectable="!multiple" block-node :disabled="isDisabled" :color="color"
           :default-expand-all="defaultExpandAll" :default-expanded-keys="defaultExpandedKeys"
           :show-line="showLine" :show-icon="showIcon" :load-data="treeLoadData" :loaded-keys="loadedKeys"
-          :height="height" :virtual="virtual" :ui="treeUi" @select="selectNode" @check="checkNodes"
+          :height="height" :virtual="virtual" :ui="treeUi" @select="selectNode" @check="checkNodes" @update:checked-keys="() => {}"
         >
           <!-- item 只替换树的节点标题区；展开与选择仍由树处理。未提供时不传插槽，树按 fieldNames.title 渲染默认标题。 -->
           <template v-if="$slots.item" #title="{ node, selected, expanded }">

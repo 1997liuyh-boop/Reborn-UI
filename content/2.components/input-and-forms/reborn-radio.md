@@ -406,7 +406,7 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 | 事件绑定                 | `@click`                                                        | `@tap`                                                  |
 | `change` 第二参数        | 原生 `Event`                                                    | uni 合成事件对象（H5 下即原生 `Event`）                 |
 | 无障碍属性               | 带 `role="radio"` / `role="radiogroup"` / `aria-checked`        | 不声明（小程序无对应语义）                              |
-| 悬停预示                 | 未选中项有 `group-hover` / `hover` 语义色预示                   | 触屏端无 hover 态，不声明                               |
+| 悬停预示                 | 圆点形态未选中项有语义色预示；button 形态悬停仅显示指针，不改变颜色                   | 触屏端无 hover 态，不声明                               |
 | `button` 切换选中        | 组容器的滑块做液体形变：朝新选项拉长后收拢回弹                  | 选中项直接换底色，无滑动                                |
 | `pure-button` 未选中文字 | `gray-9`                                                        | `gray-8`（UniApp 灰阶止于 gray-8）                      |
 | `pure-button` 禁用态     | 需 `bg-gray-2!` 提权压住 `RebornButton` 遗留的 `dark:bg-gray-8` | 直接复用 `RebornButton` 自带禁用灰阶，无需提权          |

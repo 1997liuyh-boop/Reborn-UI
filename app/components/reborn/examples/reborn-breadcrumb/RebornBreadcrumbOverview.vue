@@ -7,7 +7,7 @@ import RebornBreadcrumbItem from "~/components/reborn/ui/reborn-breadcrumb/Rebor
 </script>
 
 <template>
-  <div class="flex w-full max-w-[210px] justify-center text-sm">
+  <div class="flex w-full max-w-52.5 justify-center text-sm">
     <RebornBreadcrumb>
       <RebornBreadcrumbItem to="/">
         首页

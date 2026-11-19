@@ -30,30 +30,18 @@ Object.defineProperties(dom.window.HTMLElement.prototype, {
   } },
 });
 
-const { createApp, h, onMounted, onUnmounted, ref } = await import('vue');
+const { createApp, h, ref } = await import('vue');
 const { default: Menu } = await loadAppModule<typeof import('../../app/components/reborn/ui/reborn-menu/RebornMenu.vue')>('app/components/reborn/ui/reborn-menu/RebornMenu.vue');
 after(() => dom.window.close());
 
 it('插槽模式开启 ellipsis：选中项回写引起的更新不重切、不重建「更多」，条目数变化才补量', async () => {
   const selected = ref<string[]>([]);
   const count = ref(6);
-  let mounts = 0;
-  let unmounts = 0;
-  // 「更多」子菜单的替身：只记录挂载 / 卸载次数
-  const SubMenuStub = {
-    props: ['index'],
-    setup(_props: unknown, { slots }: { slots: any }) {
-      onMounted(() => { mounts++; });
-      onUnmounted(() => { unmounts++; });
-      return () => h('li', null, slots.default?.());
-    },
-  };
   const app = createApp({ render: () => h(Menu, {
     'mode': 'horizontal', 'ellipsis': true, 'selectedKeys': selected.value,
+    'menuTrigger': 'click', 'collapseTransition': false,
     'onUpdate:selectedKeys': (value: string[]) => { selected.value = value; },
   }, () => Array.from({ length: count.value }, (_, index) => h('li', { key: index, class: 'fixture-item' }, `项${index}`))) });
-  app.component('RebornSubMenu', SubMenuStub);
-  app.component('RebornMenuItems', { render: () => null });
   app.component('Icon', { render: () => h('i') });
   const container = document.createElement('div');
   document.body.append(container);
@@ -63,7 +51,6 @@ it('插槽模式开启 ellipsis：选中项回写引起的更新不重切、不�
     for (let i = 0; i < 4; i++) await wait();
     // 可用 300 - 预留 56 = 244：第 3 项（右缘 300）起折叠
     assert.deepEqual(visible(), ['项0', '项1']);
-    assert.equal(mounts, 1);
     const ellipsis = container.querySelector('[data-reborn-menu-ellipsis="true"]');
     assert.ok(ellipsis);
 
@@ -71,14 +58,17 @@ it('插槽模式开启 ellipsis：选中项回写引起的更新不重切、不�
     selected.value = ['项1'];
     for (let i = 0; i < 4; i++) await wait();
     assert.deepEqual(visible(), ['项0', '项1']);
-    assert.equal(mounts, 1, '「更多」子菜单不应被卸载重挂');
-    assert.equal(unmounts, 0);
+    // 验证真实子菜单节点仍是同一个，不依赖已被显式 import 取代的全局替身。
     assert.equal(container.querySelector('[data-reborn-menu-ellipsis="true"]'), ellipsis);
 
     // 新增的条目全落在「更多」里，菜单栏 DOM 不变：靠条目数变化补量，结果仍正确
     count.value = 8;
     for (let i = 0; i < 4; i++) await wait();
     assert.deepEqual(visible(), ['项0', '项1']);
-    assert.equal(container.querySelector('[data-reborn-menu-ellipsis="true"]')!.querySelectorAll('.fixture-item').length, 6);
+    (ellipsis.firstElementChild as HTMLElement).click();
+    for (let i = 0; i < 4; i++) await wait();
+    const popup = document.querySelector('body > [data-menu-path]');
+    assert.ok(popup, '真实「更多」子菜单应展开');
+    assert.equal(popup.querySelectorAll('.fixture-item').length, 6);
   } finally { app.unmount(); container.remove(); }
 });
