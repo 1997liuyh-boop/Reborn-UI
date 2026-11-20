@@ -26,6 +26,8 @@
     "dev": "tsx src/index.ts --kb-dir ../../knowledge",
     "clean": "rimraf dist",
     "kb:snapshot": "tsx src/scripts/snapshot-kb.ts",
+    "kb:snapshot:check": "tsx src/scripts/snapshot-kb.ts --check",
+    "test:kb": "tsx --test src/scripts/snapshot.test.ts",
     "spec:snapshot": "tsx src/scripts/snapshot-spec.ts",
     "prepack": "npm run build && npm run kb:snapshot && npm run spec:snapshot"
   },

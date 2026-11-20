@@ -67,6 +67,19 @@ claude mcp add reborn-ui -- npx -y reborn-ui-mcp@latest
 
 规范正文的真源是仓库的 [`docs/authoring/`](../../docs/authoring/)：发布包内置一份 `spec/` 快照（`prepack` 时由 `spec:snapshot` 生成）；仓库内开发时自动解析 monorepo 根的 `docs/authoring/`，也可用 `--spec-dir` / `REBORN_SPEC_DIR` 指向快照目录做发布前验证。
 
+## 版本化知识库快照
+
+在 Git 工作区先运行 `pnpm kb:bootstrap` 和 `pnpm kb:check`，再生成并校验快照：
+
+```bash
+pnpm --filter reborn-ui-mcp run kb:snapshot
+pnpm --filter reborn-ui-mcp run kb:snapshot:check
+```
+
+产物位于 `packages/mcp/knowledge/`。`manifest.json` 记录快照版本、Schema 版本、源码提交、工作区是否有未提交变更、组件数及内联 Demo 后每个文件的 SHA-256。`registryVersion` 来自本次构建使用的 registry 包版本，`registryHash` 标识实际参与构建的 registry 内容。快照版本标识这份产物的内容与来源。只有候选快照通过校验后，才替换本地上一份快照。
+
+CI 在知识库校验后生成并复检快照，主分支成功运行会把快照保存为 GitHub Actions 构建产物。MCP 打包时使用同一快照生成脚本；下载某次构建的快照后，可以用 `--kb-dir` 指向解压目录来读取该版本。
+
 ## 本地调试
 
 ```bash
