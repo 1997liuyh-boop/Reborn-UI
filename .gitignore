@@ -88,6 +88,9 @@ public/r
 # Playground 补全数据(构建时由 modules/playground-completions.ts 从知识库生成)
 public/playground-completions.json
 
+# WebMCP 数据(构建时由 modules/webmcp-kb.ts 从知识库生成)
+public/webmcp/
+
 # ================================
 # 构建产物：registry 与知识库快照（不入库，用时现生成）
 # ================================
