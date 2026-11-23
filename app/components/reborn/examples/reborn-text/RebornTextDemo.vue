@@ -290,13 +290,17 @@ const textCode = computed(() => {
         </div>
         <div class="flex flex-col gap-1">
           <span class="text-dimmed text-xs">符号后置 + precision=0</span>
-          <RebornText type="amount" :value="12345.6" currency="元" currency-position="after" :precision="0"
-            thousands-icon="," />
+          <RebornText
+            type="amount" :value="12345.6" currency="元" currency-position="after" :precision="0"
+            thousands-icon=","
+          />
         </div>
         <div class="flex flex-col gap-1">
           <span class="text-dimmed text-xs">ui.currency 单独缩小符号</span>
-          <RebornText type="amount" :value="12345.6" currency="¥" thousands-icon=","
-            :ui="{ base: 'font-semibold text-error', currency: 'mr-0.5 text-xs' }" />
+          <RebornText
+            type="amount" :value="12345.6" currency="¥" thousands-icon=","
+            :ui="{ base: 'font-semibold text-error', currency: 'mr-0.5 text-xs' }"
+          />
         </div>
       </DemoBlock>
     </DemoSection>

@@ -181,7 +181,7 @@ const payrollRows = [
               class="flex justify-between text-sm"
             >
               <span class="text-muted">{{ row.label }}</span>
-              <span :class="['font-mono', row.accent ? 'text-success' : 'text-default']">{{ row.amount }}</span>
+              <span class="font-mono" :class="[row.accent ? 'text-success' : 'text-default']">{{ row.amount }}</span>
             </div>
             <div class="border-default flex justify-between border-t pt-4 text-sm font-bold">
               <span class="text-highlighted">实发金额 (NET)</span>

@@ -184,7 +184,7 @@ onBeforeUnmount(() => {
 
     <DemoSection title="异步确认：loading 与 v-model:open" description="loading 让确认按钮进入加载态且点击不再自动关闭，配合 v-model:open 在异步完成后手动收起。">
       <DemoBlock layout="row" class="gap-6 py-10">
-        <RebornPopconfirm icon="ant-design:question-circle-filled" v-model:open="asyncOpen" title="确定删除所选的 3 项吗？" description="删除请求完成前请勿关闭页面。" :loading="asyncLoading" confirm-color="error" confirm-text="删除" @confirm="onAsyncConfirm" @cancel="lastAction = '异步删除已取消'">
+        <RebornPopconfirm v-model:open="asyncOpen" icon="ant-design:question-circle-filled" title="确定删除所选的 3 项吗？" description="删除请求完成前请勿关闭页面。" :loading="asyncLoading" confirm-color="error" confirm-text="删除" @confirm="onAsyncConfirm" @cancel="lastAction = '异步删除已取消'">
           <RebornButton size="sm" variant="outlined" color="error">异步删除</RebornButton>
         </RebornPopconfirm>
         <DemoNote tone="dimmed">{{ lastAction }}</DemoNote>

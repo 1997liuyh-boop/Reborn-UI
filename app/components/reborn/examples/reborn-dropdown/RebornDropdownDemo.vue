@@ -226,8 +226,10 @@ const dropdownCode = computed(() => {
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" :code="dropdownCode" component-name="RebornDropdown" title="交互演练场"
-      description="调节触发方式、弹出位置与箭头，实时预览下拉菜单的展开表现。">
+    <Playground
+      v-model="state" :controls="controls" :code="dropdownCode" component-name="RebornDropdown" title="交互演练场"
+      description="调节触发方式、弹出位置与箭头，实时预览下拉菜单的展开表现。"
+    >
       <div class="flex flex-col items-center gap-4 py-16">
         <!-- 树形结构才提供 content 插槽；不提供时按 options 渲染单层列表 -->
         <RebornDropdown
@@ -301,8 +303,10 @@ const dropdownCode = computed(() => {
       <DemoBlock layout="row" align="center">
         <div class="grid w-fit grid-cols-5 gap-2">
           <template v-for="(p, i) in placementGrid" :key="i">
-            <RebornDropdown v-if="p" :options="options" :placement="p" show-arrow class="w-full"
-              :ui="{ trigger: 'w-full' }" @select="handleSelect">
+            <RebornDropdown
+              v-if="p" :options="options" :placement="p" show-arrow class="w-full"
+              :ui="{ trigger: 'w-full' }" @select="handleSelect"
+            >
               <RebornButton :label="p" size="sm" variant="outlined" color="neutral" class="w-full" />
             </RebornDropdown>
             <div v-else />
@@ -311,11 +315,15 @@ const dropdownCode = computed(() => {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="带下拉框的按钮：手动触发"
-      description="trigger=manual 时组件不绑定触发行为，默认插槽下发 open / close / toggle 与 visible：整组按钮作为触发器占位，只让右侧箭头按钮调用 toggle 展开，主按钮执行默认操作；下拉从整组的右下角弹出。">
+    <DemoSection
+      title="带下拉框的按钮：手动触发"
+      description="trigger=manual 时组件不绑定触发行为，默认插槽下发 open / close / toggle 与 visible：整组按钮作为触发器占位，只让右侧箭头按钮调用 toggle 展开，主按钮执行默认操作；下拉从整组的右下角弹出。"
+    >
       <DemoBlock layout="row" align="center">
-        <RebornDropdown v-slot="{ toggle, visible }" :options="submitOptions" trigger="manual" placement="bottom-end"
-          @select="handleSelect">
+        <RebornDropdown
+          v-slot="{ toggle, visible }" :options="submitOptions" trigger="manual" placement="bottom-end"
+          @select="handleSelect"
+        >
           <div class="inline-flex">
             <RebornButton label="发布" class="rounded-r-none!" @click="handleSelect('publish')" />
             <RebornButton class="rounded-l-none! border-l border-white/20" aria-label="更多发布方式" @click="toggle">
@@ -325,8 +333,10 @@ const dropdownCode = computed(() => {
             </RebornButton>
           </div>
         </RebornDropdown>
-        <RebornDropdown v-slot="{ toggle, visible }" :options="submitOptions" trigger="manual" placement="bottom-end"
-          @select="handleSelect">
+        <RebornDropdown
+          v-slot="{ toggle, visible }" :options="submitOptions" trigger="manual" placement="bottom-end"
+          @select="handleSelect"
+        >
           <div class="inline-flex">
             <RebornButton label="导出" variant="outlined" class="rounded-r-none!" @click="handleSelect('export')" />
             <RebornButton variant="outlined" class="-ml-px rounded-l-none!" aria-label="更多导出方式" @click="toggle">
@@ -339,8 +349,10 @@ const dropdownCode = computed(() => {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="多级菜单与选项组"
-      description="RebornDgroup 用标题把选项分组；RebornDsubmenu 作为入口展开下一级菜单（默认悬停、从右上角弹出），可无限嵌套，任一层选中都会冒泡到最外层的 select 并整体收起。">
+    <DemoSection
+      title="多级菜单与选项组"
+      description="RebornDgroup 用标题把选项分组；RebornDsubmenu 作为入口展开下一级菜单（默认悬停、从右上角弹出），可无限嵌套，任一层选中都会冒泡到最外层的 select 并整体收起。"
+    >
       <DemoBlock layout="row" align="center">
         <RebornDropdown @select="handleSelect">
           <RebornButton label="多级菜单" variant="outlined">

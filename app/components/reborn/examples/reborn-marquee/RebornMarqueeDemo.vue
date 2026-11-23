@@ -137,76 +137,100 @@ const marqueeCode = computed(() => `<RebornMarquee
 </script>
 
 <template>
-    <div class="flex w-full min-w-0 flex-col">
-        <Playground v-model="state" :controls="controls" :code="marqueeCode" component-name="RebornMarquee" title="交互演练场"
-            description="调节滚动方向、悬停暂停与遮罩，观察跑马灯的实时表现。">
-            <RebornMarquee :reverse="state.reverse" :pause-on-hover="state.pauseOnHover" :overlay="state.overlay" :repeat="state.repeat" :orientation="state.orientation" :class="marqueeClass" :style="{ '--duration': `${state.duration}s` }">
-                <div v-for="logo in logos" :key="logo"
-                    class="border-default rounded-lg text-muted mx-2 flex items-center justify-center gap-2 border px-6 py-4">
-                    <UIcon :name="logo" class="size-8" />
-                    <span class="text-sm font-semibold">{{ logo.split('-').pop() }}</span>
-                </div>
-            </RebornMarquee>
-        </Playground>
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state" :controls="controls" :code="marqueeCode" component-name="RebornMarquee" title="交互演练场"
+      description="调节滚动方向、悬停暂停与遮罩，观察跑马灯的实时表现。"
+    >
+      <RebornMarquee :reverse="state.reverse" :pause-on-hover="state.pauseOnHover" :overlay="state.overlay" :repeat="state.repeat" :orientation="state.orientation" :class="marqueeClass" :style="{ '--duration': `${state.duration}s` }">
+        <div
+          v-for="logo in logos" :key="logo"
+          class="border-default rounded-lg text-muted mx-2 flex items-center justify-center gap-2 border px-6 py-4"
+        >
+          <UIcon :name="logo" class="size-8" />
+          <span class="text-sm font-semibold">{{ logo.split('-').pop() }}</span>
+        </div>
+      </RebornMarquee>
+    </Playground>
 
-        <DemoSection title="3D 截图墙"
-            description="纵向跑马灯配合 CSS 3D 变换，可用 ui.root 直接改写根节点类名以叠加透视与定位。">
-            <!-- 3D 透视舞台：只描边不填充，内部旋转的图片就是被演示的对象 -->
-            <div class="border-default rounded-xl relative h-[400px] w-full overflow-hidden border">
-                <RebornMarquee reverse orientation="vertical" :overlay="false" :ui="{
-                    root: '[--duration:40s] absolute w-[460px] -left-[100px] -top-[300px] h-[940px] transform-3d [transform:rotateX(55deg)_rotateZ(30deg)]'
-                }">
-                    <img v-for="i in screenshotSets[0]" :key="i" :src="`https://picsum.photos/460/258?random=${i}`"
-                        width="460" height="258" class="border-default rounded-md my-4 aspect-video border shadow-lg">
-                </RebornMarquee>
+    <DemoSection
+      title="3D 截图墙"
+      description="纵向跑马灯配合 CSS 3D 变换，可用 ui.root 直接改写根节点类名以叠加透视与定位。"
+    >
+      <!-- 3D 透视舞台：只描边不填充，内部旋转的图片就是被演示的对象 -->
+      <div class="border-default rounded-xl relative h-[400px] w-full overflow-hidden border">
+        <RebornMarquee
+          reverse orientation="vertical" :overlay="false" :ui="{
+            root: '[--duration:40s] absolute w-[460px] -left-[100px] -top-[300px] h-[940px] transform-3d [transform:rotateX(55deg)_rotateZ(30deg)]'
+          }"
+        >
+          <img
+            v-for="i in screenshotSets[0]" :key="i" :src="`https://picsum.photos/460/258?random=${i}`"
+            width="460" height="258" class="border-default rounded-md my-4 aspect-video border shadow-lg"
+          >
+        </RebornMarquee>
 
-                <RebornMarquee orientation="vertical" :overlay="false" :ui="{
-                    root: '[--duration:40s] absolute w-[460px] -top-[400px] left-[480px] h-[1160px] transform-3d [transform:rotateX(55deg)_rotateZ(30deg)]'
-                }">
-                    <img v-for="i in screenshotSets[1]" :key="i" :src="`https://picsum.photos/460/258?random=${i}`"
-                        width="460" height="258" class="border-default rounded-md my-4 aspect-video border shadow-lg">
-                </RebornMarquee>
+        <RebornMarquee
+          orientation="vertical" :overlay="false" :ui="{
+            root: '[--duration:40s] absolute w-[460px] -top-[400px] left-[480px] h-[1160px] transform-3d [transform:rotateX(55deg)_rotateZ(30deg)]'
+          }"
+        >
+          <img
+            v-for="i in screenshotSets[1]" :key="i" :src="`https://picsum.photos/460/258?random=${i}`"
+            width="460" height="258" class="border-default rounded-md my-4 aspect-video border shadow-lg"
+          >
+        </RebornMarquee>
 
-                <RebornMarquee reverse orientation="vertical" :overlay="false" :ui="{
-                    root: 'hidden md:flex [--duration:40s] absolute w-[460px] -top-[300px] left-[1020px] h-[1060px] transform-3d [transform:rotateX(55deg)_rotateZ(30deg)]'
-                }">
-                    <img v-for="i in screenshotSets[2]" :key="i" :src="`https://picsum.photos/460/258?random=${i}`"
-                        width="460" height="258" class="border-default rounded-md my-4 aspect-video border shadow-lg">
-                </RebornMarquee>
+        <RebornMarquee
+          reverse orientation="vertical" :overlay="false" :ui="{
+            root: 'hidden md:flex [--duration:40s] absolute w-[460px] -top-[300px] left-[1020px] h-[1060px] transform-3d [transform:rotateX(55deg)_rotateZ(30deg)]'
+          }"
+        >
+          <img
+            v-for="i in screenshotSets[2]" :key="i" :src="`https://picsum.photos/460/258?random=${i}`"
+            width="460" height="258" class="border-default rounded-md my-4 aspect-video border shadow-lg"
+          >
+        </RebornMarquee>
+      </div>
+    </DemoSection>
+
+    <DemoSection
+      title="用户评价墙"
+      description="两条方向相反的跑马灯上下叠放，配合 pause-on-hover 即可构成常见的口碑展示区。"
+    >
+      <DemoBlock layout="stack" class="gap-6 overflow-hidden">
+        <RebornMarquee pause-on-hover class="[--duration:35s] [--gap:1.5rem]">
+          <div
+            v-for="review in firstRow" :key="review.username"
+            class="border-default rounded-xl flex w-[320px] flex-col gap-3 border p-5"
+          >
+            <div class="flex items-center gap-3">
+              <img :src="review.img" class="size-10 rounded-full object-cover">
+              <div>
+                <h4 class="text-highlighted text-sm font-bold">{{ review.name }}</h4>
+                <span class="text-dimmed text-xs">{{ review.username }}</span>
+              </div>
             </div>
-        </DemoSection>
+            <p class="text-muted text-sm leading-relaxed">{{ review.body }}</p>
+          </div>
+        </RebornMarquee>
 
-        <DemoSection title="用户评价墙"
-            description="两条方向相反的跑马灯上下叠放，配合 pause-on-hover 即可构成常见的口碑展示区。">
-            <DemoBlock layout="stack" class="gap-6 overflow-hidden">
-                <RebornMarquee pause-on-hover class="[--duration:35s] [--gap:1.5rem]">
-                    <div v-for="review in firstRow" :key="review.username"
-                        class="border-default rounded-xl flex w-[320px] flex-col gap-3 border p-5">
-                        <div class="flex items-center gap-3">
-                            <img :src="review.img" class="size-10 rounded-full object-cover">
-                            <div>
-                                <h4 class="text-highlighted text-sm font-bold">{{ review.name }}</h4>
-                                <span class="text-dimmed text-xs">{{ review.username }}</span>
-                            </div>
-                        </div>
-                        <p class="text-muted text-sm leading-relaxed">{{ review.body }}</p>
-                    </div>
-                </RebornMarquee>
-
-                <RebornMarquee reverse pause-on-hover class="[--duration:40s] [--gap:1.5rem]">
-                    <div v-for="review in secondRow" :key="review.username"
-                        class="border-default rounded-xl flex w-[320px] flex-col gap-3 border p-5">
-                        <div class="flex items-center gap-3">
-                            <img :src="review.img" class="size-10 rounded-full object-cover">
-                            <div>
-                                <h4 class="text-highlighted text-sm font-bold">{{ review.name }}</h4>
-                                <span class="text-dimmed text-xs">{{ review.username }}</span>
-                            </div>
-                        </div>
-                        <p class="text-muted text-sm leading-relaxed">{{ review.body }}</p>
-                    </div>
-                </RebornMarquee>
-            </DemoBlock>
-        </DemoSection>
-    </div>
+        <RebornMarquee reverse pause-on-hover class="[--duration:40s] [--gap:1.5rem]">
+          <div
+            v-for="review in secondRow" :key="review.username"
+            class="border-default rounded-xl flex w-[320px] flex-col gap-3 border p-5"
+          >
+            <div class="flex items-center gap-3">
+              <img :src="review.img" class="size-10 rounded-full object-cover">
+              <div>
+                <h4 class="text-highlighted text-sm font-bold">{{ review.name }}</h4>
+                <span class="text-dimmed text-xs">{{ review.username }}</span>
+              </div>
+            </div>
+            <p class="text-muted text-sm leading-relaxed">{{ review.body }}</p>
+          </div>
+        </RebornMarquee>
+      </DemoBlock>
+    </DemoSection>
+  </div>
 </template>

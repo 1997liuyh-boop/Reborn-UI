@@ -111,4 +111,4 @@ export default {
     },
 } as const
 
-export { size as formItemLabelSize, labelPositions as formItemLabelPositions }
+export { labelPositions as formItemLabelPositions, size as formItemLabelSize }

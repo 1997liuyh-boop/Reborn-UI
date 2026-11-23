@@ -156,8 +156,10 @@ function handleBeforeChange() {
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" :code="switchCode" component-name="RebornSwitch" title="交互演练场"
-      description="点「参数修改」调节参数，实时查看开关表现；点击开关观察 change 事件回显。">
+    <Playground
+      v-model="state" :controls="controls" :code="switchCode" component-name="RebornSwitch" title="交互演练场"
+      description="点「参数修改」调节参数，实时查看开关表现；点击开关观察 change 事件回显。"
+    >
       <template #tag>
         <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
@@ -168,9 +170,11 @@ function handleBeforeChange() {
       </template>
 
       <div class="flex w-full flex-col items-center gap-6">
-        <RebornSwitch v-model="playValue" :size="state.size" :color="state.color" :type="state.type"
+        <RebornSwitch
+          v-model="playValue" :size="state.size" :color="state.color" :type="state.type"
           :active-label="state.activeLabel" :inactive-label="state.inactiveLabel" :inline-prompt="state.inlinePrompt"
-          :auto-width="state.autoWidth" :wave="state.wave" :disabled="state.disabled" :loading="state.loading" @change="onPlayChange" />
+          :auto-width="state.autoWidth" :wave="state.wave" :disabled="state.disabled" :loading="state.loading" @change="onPlayChange"
+        />
         <DemoNote tone="dimmed" class="font-mono text-xs">
           value: {{ playValue }} · change × {{ changeCount }} · 最近载荷: {{ lastChange }}
         </DemoNote>
@@ -226,17 +230,23 @@ function handleBeforeChange() {
       </template>
       <DemoBlock class="items-center gap-8">
         <RebornSwitch v-model="inlineValue" inline-prompt active-label="开" inactive-label="关" />
-        <RebornSwitch v-model="inlineValue" inline-prompt type="round" size="lg" color="success" active-label="ON"
-          inactive-label="OFF" />
+        <RebornSwitch
+          v-model="inlineValue" inline-prompt type="round" size="lg" color="success" active-label="ON"
+          inactive-label="OFF"
+        />
       </DemoBlock>
       <DemoBlock class="items-center gap-8 mt-8">
         <RebornSwitch v-model="inlineValue" inline-prompt size="lg" active-label="超出省略" inactive-label="超出省略" />
-        <RebornSwitch v-model="inlineValue" inline-prompt auto-width size="lg" active-label="完整展示多个内容"
-          inactive-label="多个内容" />
+        <RebornSwitch
+          v-model="inlineValue" inline-prompt auto-width size="lg" active-label="完整展示多个内容"
+          inactive-label="多个内容"
+        />
       </DemoBlock>
       <DemoBlock class="items-center gap-8 mt-8">
-        <RebornSwitch v-model="inlineValue" inline-prompt auto-width size="lg"
-          :ui="emojiPromptUi">
+        <RebornSwitch
+          v-model="inlineValue" inline-prompt auto-width size="lg"
+          :ui="emojiPromptUi"
+        >
           <template #inactiveLabel>
             <div class="flex items-center gap-1 text-white">
               我很不开心
@@ -285,8 +295,10 @@ function handleBeforeChange() {
         <span class="text-dimmed text-xs font-medium">
           当前值 <code class="text-primary font-mono">{{ customValue }}</code>
         </span>
-        <RebornSwitch v-model="customValue" active-value="yes" inactive-value="no" active-label="Yes"
-          inactive-label="No" />
+        <RebornSwitch
+          v-model="customValue" active-value="yes" inactive-value="no" active-label="Yes"
+          inactive-label="No"
+        />
       </DemoBlock>
     </DemoSection>
 
@@ -339,10 +351,14 @@ function handleBeforeChange() {
         <code>ui.track</code> 写两态通用的轨道样式。状态样式在通用样式之后合并，所以同类原子类以状态样式为准。
       </template>
       <DemoBlock class="items-center gap-8">
-        <RebornSwitch v-model="customColorValue"
-          :ui="greenRedTrackUi" />
-        <RebornSwitch v-model="customColorValue"
-          :ui="outlinedTrackUi" />
+        <RebornSwitch
+          v-model="customColorValue"
+          :ui="greenRedTrackUi"
+        />
+        <RebornSwitch
+          v-model="customColorValue"
+          :ui="outlinedTrackUi"
+        />
       </DemoBlock>
     </DemoSection>
 
@@ -355,13 +371,17 @@ function handleBeforeChange() {
       <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">方形轨道 · <code>ui.track</code> / <code>ui.thumb</code></span>
-          <RebornSwitch v-model="styledValue" active-label="方形 UI"
-            :ui="squareUi" />
+          <RebornSwitch
+            v-model="styledValue" active-label="方形 UI"
+            :ui="squareUi"
+          />
         </div>
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">超大尺寸 · 设置滑块尺寸变量，位移自动适配</span>
-          <RebornSwitch v-model="styledValue" active-label="自定义 XL"
-            :ui="extraLargeUi" />
+          <RebornSwitch
+            v-model="styledValue" active-label="自定义 XL"
+            :ui="extraLargeUi"
+          />
         </div>
       </DemoBlock>
     </DemoSection>

@@ -331,42 +331,52 @@ const formRules = z.object({
     stack: z.array(z.string()).min(2, "技术栈至少选择 2 项"),
 });
 
+/** 在对应场景回显校验结果和选中值。 */
+const formStatus = shallowRef("");
+const selectionStatus = shallowRef("");
+
 async function submitForm() {
     const valid = await formRef.value?.validate();
-    console.log("[RebornSelect] 表单校验结果：", valid, formModel);
+    formStatus.value = valid ? "校验通过" : "请检查表单中的提示";
 }
 
 function resetForm() {
     formRef.value?.resetFields();
+    formStatus.value = "";
 }
 
-function onChange(value: any) {
-    console.log("[RebornSelect] 选中值变化：", value);
+function onChange(value: unknown) {
+    selectionStatus.value = JSON.stringify(value) ?? "未选择";
 }
 </script>
 
 <template>
-    <div class="flex w-full flex-col">
-        <!-- 1. 交互演练场：Playground 自带标题栏，不再额外套 DemoSection -->
-        <Playground v-model="state" :controls="controls" component-name="RebornSelect" title="交互体验"
-            description="点「参数修改」调节参数实时查看反馈；数据源为 60 个站点，展开时会自动定位到已选项">
-            <template #tag>
-                <RebornButton variant="soft" size="md" @click="resetState">
-                    <template #leading>
-                        <Icon name="lucide:rotate-ccw" size="12" />
-                    </template>
-                    重置配置
-                </RebornButton>
-            </template>
+  <div class="flex w-full flex-col">
+    <!-- 1. 交互演练场：Playground 自带标题栏，不再额外套 DemoSection -->
+    <Playground
+      v-model="state" :controls="controls" component-name="RebornSelect" title="交互体验"
+      description="点「参数修改」调节参数实时查看反馈；数据源为 60 个站点，展开时会自动定位到已选项"
+    >
+      <template #tag>
+        <RebornButton variant="soft" size="md" @click="resetState">
+          <template #leading>
+            <Icon name="lucide:rotate-ccw" size="12" />
+          </template>
+          重置配置
+        </RebornButton>
+      </template>
 
-            <RebornSelect v-model="state.value" :options="cityOptions" :size="state.size" :color="state.color"
-                :variant="state.variant" :multiple="state.multiple" :collapse-tags="state.collapseTags"
-                :collapse-tags-tooltip="state.collapseTagsTooltip" :max-collapse-tags="state.maxCollapseTags"
-                :multiple-limit="state.multipleLimit" :clearable="state.clearable" :allow-search="state.allowSearch"
-                :loading="state.loading" :disabled="state.disabled" :show-arrow="state.showArrow"
-                :arrow-animation="state.arrowAnimation" :icon="state.icon" :close-on="state.closeOn" :portal="state.portal" :placeholder="state.placeholder" class="min-w-64"
-                @change="onChange" />
-        </Playground>
+      <RebornSelect
+        v-model="state.value" :options="cityOptions" :size="state.size" :color="state.color"
+        :variant="state.variant" :multiple="state.multiple" :collapse-tags="state.collapseTags"
+        :collapse-tags-tooltip="state.collapseTagsTooltip" :max-collapse-tags="state.maxCollapseTags"
+        :multiple-limit="state.multipleLimit" :clearable="state.clearable" :allow-search="state.allowSearch"
+        :loading="state.loading" :disabled="state.disabled" :show-arrow="state.showArrow"
+        :arrow-animation="state.arrowAnimation" :icon="state.icon" :close-on="state.closeOn" :portal="state.portal" :placeholder="state.placeholder" class="min-w-64"
+        @change="onChange"
+      />
+      <DemoNote v-if="selectionStatus" tone="dimmed">选中值：{{ selectionStatus }}</DemoNote>
+    </Playground>
 
     <!-- 2. 基础用法 -->
     <DemoSection
@@ -521,221 +531,257 @@ function onChange(value: any) {
       </DemoBlock>
     </DemoSection>
 
-        <!-- 4. 搜索过滤 -->
-        <DemoSection title="搜索过滤：allow-search / filter-option"
-            description="allow-search 让触发器在展开后变成输入框；filter-option 决定匹配规则：默认按 label 包含匹配，传函数可自定义，传 false 则关闭本地过滤、把列表交给远程数据源。">
-            <DemoBlock layout="grid" :columns="3" align="start">
-                <DemoItem label="allow-search" note="默认按选项 label 做不区分大小写的包含匹配，无结果时展示「无匹配结果」">
-                    <RebornSelect v-model="searchValue" :options="frameworkOptions" allow-search placeholder="输入关键词筛选"
-                        class="w-full" />
-                </DemoItem>
+    <!-- 4. 搜索过滤 -->
+    <DemoSection
+      title="搜索过滤：allow-search / filter-option"
+      description="allow-search 让触发器在展开后变成输入框；filter-option 决定匹配规则：默认按 label 包含匹配，传函数可自定义，传 false 则关闭本地过滤、把列表交给远程数据源。"
+    >
+      <DemoBlock layout="grid" :columns="3" align="start">
+        <DemoItem label="allow-search" note="默认按选项 label 做不区分大小写的包含匹配，无结果时展示「无匹配结果」">
+          <RebornSelect
+            v-model="searchValue" :options="frameworkOptions" allow-search placeholder="输入关键词筛选"
+            class="w-full"
+          />
+        </DemoItem>
 
-                <DemoItem label="filter-option 自定义" note="传入函数后关键词同时命中 label 与 desc：输入「编译」也能找到 Svelte" mono>
-                    <RebornSelect v-model="customFilterValue" :options="frameworkOptions" multiple allow-search
-                        :filter-option="filterByLabelOrDesc" color="success" placeholder="按名称或描述搜索" class="w-full" />
-                </DemoItem>
+        <DemoItem label="filter-option 自定义" note="传入函数后关键词同时命中 label 与 desc：输入「编译」也能找到 Svelte" mono>
+          <RebornSelect
+            v-model="customFilterValue" :options="frameworkOptions" multiple allow-search
+            :filter-option="filterByLabelOrDesc" color="success" placeholder="按名称或描述搜索" class="w-full"
+          />
+        </DemoItem>
 
-                <DemoItem label="远程搜索" note="filter-option=false 关闭本地过滤，search 事件里发请求；展开先给默认推荐，请求期间用 loading 接管面板" mono>
-                    <RebornSelect v-model="remoteValue" :options="remoteOptions" allow-search :filter-option="false"
-                        :loading="remoteLoading" color="info" placeholder="输入数字搜索站点" class="w-full"
-                        @search="onRemoteSearch" @visible-change="onRemoteVisibleChange" />
-                </DemoItem>
-            </DemoBlock>
-        </DemoSection>
+        <DemoItem label="远程搜索" note="filter-option=false 关闭本地过滤，search 事件里发请求；展开先给默认推荐，请求期间用 loading 接管面板" mono>
+          <RebornSelect
+            v-model="remoteValue" :options="remoteOptions" allow-search :filter-option="false"
+            :loading="remoteLoading" color="info" placeholder="输入数字搜索站点" class="w-full"
+            @search="onRemoteSearch" @visible-change="onRemoteVisibleChange"
+          />
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
 
-        <!-- 5. 加载状态 -->
-        <DemoSection title="加载状态：loading" description="loading 同时作用于两处：触发器箭头替换为转圈图标，下拉面板改为加载中占位。">
-            <DemoBlock layout="grid" :columns="2" align="start">
-                <DemoItem label="loading" note="加载期间清空按钮自动让位，避免与转圈图标争抢同一格；展开可见面板占位">
-                    <RebornSelect v-model="loadingValue" :options="frameworkOptions" loading class="w-full" />
-                </DemoItem>
+    <!-- 5. 加载状态 -->
+    <DemoSection title="加载状态：loading" description="loading 同时作用于两处：触发器箭头替换为转圈图标，下拉面板改为加载中占位。">
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="loading" note="加载期间清空按钮自动让位，避免与转圈图标争抢同一格；展开可见面板占位">
+          <RebornSelect v-model="loadingValue" :options="frameworkOptions" loading class="w-full" />
+        </DemoItem>
 
-                <DemoItem label="对照组" note="非加载态：箭头正常显示，悬停时清空按钮盖上来">
-                    <RebornSelect v-model="loadingValue" :options="frameworkOptions" class="w-full" />
-                </DemoItem>
-            </DemoBlock>
-        </DemoSection>
+        <DemoItem label="对照组" note="非加载态：箭头正常显示，悬停时清空按钮盖上来">
+          <RebornSelect v-model="loadingValue" :options="frameworkOptions" class="w-full" />
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
 
-        <!-- 6. 页头与页脚 -->
-        <DemoSection title="页头与页脚插槽：header / footer" description="header 与 footer 位于滚动列表之外，列表滚动时二者固定不动，适合放统计信息、批量操作或「新建」入口。">
-            <DemoBlock layout="grid" :columns="2" align="start">
-                <DemoItem label="header + footer" note="页头展示已选统计，页脚放置操作入口；点击页脚不会收起面板">
-                    <RebornSelect v-model="headerFooterValue" :options="frameworkOptions" multiple placeholder="可多选框架"
-                        class="w-full">
-                        <template #header>
-                            已选 {{ headerFooterValue.length }} / {{ frameworkOptions.length }} 项
-                        </template>
-                        <template #footer>
-                            <div class="flex items-center justify-between">
-                                <span>找不到想要的？</span>
-                                <span class="text-primary cursor-pointer">新建选项</span>
-                            </div>
-                        </template>
-                    </RebornSelect>
-                </DemoItem>
+    <!-- 6. 页头与页脚 -->
+    <DemoSection title="页头与页脚插槽：header / footer" description="header 与 footer 位于滚动列表之外，列表滚动时二者固定不动，适合放统计信息、批量操作或「新建」入口。">
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="header + footer" note="页头展示已选统计，页脚放置操作入口；点击页脚不会收起面板">
+          <RebornSelect
+            v-model="headerFooterValue" :options="frameworkOptions" multiple placeholder="可多选框架"
+            class="w-full"
+          >
+            <template #header>
+              已选 {{ headerFooterValue.length }} / {{ frameworkOptions.length }} 项
+            </template>
+            <template #footer>
+              <div class="flex items-center justify-between">
+                <span>找不到想要的？</span>
+                <span class="text-primary cursor-pointer">新建选项</span>
+              </div>
+            </template>
+          </RebornSelect>
+        </DemoItem>
 
-                <DemoItem label="仅 header" note="两个插槽相互独立，可只用其中一个">
-                    <RebornSelect v-model="loadingValue" :options="frameworkOptions" color="info" class="w-full">
-                        <template #header>请选择你最熟悉的框架</template>
-                    </RebornSelect>
-                </DemoItem>
-            </DemoBlock>
-        </DemoSection>
+        <DemoItem label="仅 header" note="两个插槽相互独立，可只用其中一个">
+          <RebornSelect v-model="loadingValue" :options="frameworkOptions" color="info" class="w-full">
+            <template #header>请选择你最熟悉的框架</template>
+          </RebornSelect>
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
 
-        <!-- 7. 滚动加载 -->
-        <DemoSection title="滚动加载：dropdown-scroll" description="dropdown-scroll 原样透出下拉列表的原生滚动事件，据此判断触底即可实现分页续接。">
-            <DemoItem label="dropdown-scroll" note="初始只有 12 项，滚动到底部自动追加下一页；加载提示放在固定不动的页脚里，滚动位置不会丢失">
-                <RebornSelect v-model="scrollLoadValue" :options="scrollLoadOptions" color="warning"
-                    placeholder="向下滚动加载更多" class="w-full max-w-md" @dropdown-scroll="onDropdownScroll">
-                    <template #footer>
-                        <div class="flex items-center justify-center gap-2">
-                            <Icon v-if="scrollLoadPending" name="lucide:loader-2" class="size-3.5 animate-spin" />
-                            <span>
-                                {{ scrollLoadDone
-                                    ? `已加载全部 ${scrollLoadOptions.length} 项`
-                                    : scrollLoadPending
-                                        ? "加载中..."
-                                        : `已加载 ${scrollLoadOptions.length} / ${cityOptions.length} 项` }}
-                            </span>
-                        </div>
-                    </template>
-                </RebornSelect>
-            </DemoItem>
-        </DemoSection>
-
-        <!-- 8. 虚拟滚动 -->
-        <DemoSection title="虚拟滚动：virtual"
-            description="virtual 开启后只渲染可视区内的选项，DOM 数量与数据量脱钩；代价是每项高度必须恒定，由 virtual-item-height 声明（默认 33px = 29px 行高 + 4px 行距）。">
-            <DemoBlock layout="grid" :columns="2" align="start">
-                <DemoItem label="virtual" note="一万条选项，展开仍是瞬时的；已选项照旧被定位到可视区中央，键盘上下键也能正常翻越">
-                    <RebornSelect v-model="virtualValue" :options="hugeOptions" virtual placeholder="一万条资产编号"
-                        class="w-full" />
-                </DemoItem>
-
-                <DemoItem label="virtual + allow-search + multiple" note="搜索会重排列表，此时虚拟窗口自动回到顶部；多选标签与虚拟列表互不干扰">
-                    <RebornSelect v-model="virtualSearchValue" :options="hugeOptions" virtual multiple allow-search
-                        color="success" placeholder="输入编号搜索" class="w-full" />
-                </DemoItem>
-            </DemoBlock>
-        </DemoSection>
-
-        <!-- 9. 浮层定位 -->
-        <DemoSection title="浮层定位：portal 与自动翻转" description="portal 默认开启，浮层传送至 body 并按文档坐标锚定触发器，不受祖先 overflow 裁剪；auto-adjust-overflow 在下方空间不足时向上展开。">
-            <DemoBlock layout="grid" :columns="2" align="start">
-                <DemoItem label="滚动容器内" note="展开后滚动下方区域：浮层实时跟随触发器，且不会被容器的 overflow-hidden 裁掉">
-                    <!-- 滚动容器本身就是被演示的对象，属规范里唯一允许的那层浅填充 -->
-                    <div class="bg-elevated rounded-lg h-56 w-full overflow-y-auto p-4">
-                        <DemoNote tone="dimmed" class="pb-4 text-xs">向下滚动一段距离后再展开选择器 ↓</DemoNote>
-                        <div class="h-24" />
-                        <RebornSelect v-model="scrollBoxValue" :options="cityOptions" color="info" class="w-full" />
-                        <div class="h-72" />
-                        <DemoNote tone="dimmed" class="text-xs">容器底部</DemoNote>
-                    </div>
-                </DemoItem>
-
-                <DemoItem label="对照组：:portal=&quot;false&quot;"
-                    note="浮层留在触发器内，被容器 overflow 截断；需要浮层随父容器一起滚动、一起裁剪时才关掉 portal">
-                    <div class="bg-elevated rounded-lg h-56 w-full overflow-y-auto p-4">
-                        <DemoNote tone="dimmed" class="pb-4 text-xs">展开后与左侧对比 ↓</DemoNote>
-                        <div class="h-24" />
-                        <RebornSelect v-model="clippedValue" :options="cityOptions" color="error" :portal="false"
-                            class="w-full" />
-                        <div class="h-72" />
-                        <DemoNote tone="dimmed" class="text-xs">容器底部</DemoNote>
-                    </div>
-                </DemoItem>
-            </DemoBlock>
-
-            <div class="border-default mt-6 border-t pt-6">
-                <DemoItem label="自动翻转与定位" note="下方空间不足时自动向上展开；60 项长列表在展开瞬间即滚动到已选项，无需手动查找">
-                    <RebornSelect v-model="followValue" :options="cityOptions" color="warning"
-                        class="w-full max-w-md" />
-                </DemoItem>
-                <ul class="text-muted grid gap-2 pt-2 text-xs sm:grid-cols-3">
-                    <li class="flex gap-2">
-                        <span class="text-dimmed font-black">01</span>
-                        展开方向在展开瞬间锁定，滚动中不会翻转，浮层始终贴住触发器
-                    </li>
-                    <li class="flex gap-2">
-                        <span class="text-dimmed font-black">02</span>
-                        浮层最小宽度对齐触发器，内容更宽时向右扩展并留出视口边距
-                    </li>
-                    <li class="flex gap-2">
-                        <span class="text-dimmed font-black">03</span>
-                        支持 <code>↑ ↓</code> 移动高亮、<code>Enter</code> 选中、<code>Esc</code> 收起
-                    </li>
-                </ul>
+    <!-- 7. 滚动加载 -->
+    <DemoSection title="滚动加载：dropdown-scroll" description="dropdown-scroll 原样透出下拉列表的原生滚动事件，据此判断触底即可实现分页续接。">
+      <DemoItem label="dropdown-scroll" note="初始只有 12 项，滚动到底部自动追加下一页；加载提示放在固定不动的页脚里，滚动位置不会丢失">
+        <RebornSelect
+          v-model="scrollLoadValue" :options="scrollLoadOptions" color="warning"
+          placeholder="向下滚动加载更多" class="w-full max-w-md" @dropdown-scroll="onDropdownScroll"
+        >
+          <template #footer>
+            <div class="flex items-center justify-center gap-2">
+              <Icon v-if="scrollLoadPending" name="lucide:loader-2" class="size-3.5 animate-spin" />
+              <span>
+                {{ scrollLoadDone
+                  ? `已加载全部 ${scrollLoadOptions.length} 项`
+                  : scrollLoadPending
+                    ? "加载中..."
+                    : `已加载 ${scrollLoadOptions.length} / ${cityOptions.length} 项` }}
+              </span>
             </div>
-        </DemoSection>
+          </template>
+        </RebornSelect>
+      </DemoItem>
+    </DemoSection>
 
-        <!-- 10. 自定义渲染 -->
-        <DemoSection title="自定义渲染：option / cover 插槽" description="option 插槽替换单个选项的内容，作用域给出 option 与 active；cover 插槽接管触发器盒子内的全部内容，连箭头与清空按钮一并交给调用方。">
-            <DemoBlock layout="grid" :columns="2" align="start">
-                <DemoItem label="option 插槽" note="在选项内渲染图标与副标题，作用域提供 option 与 active" mono>
-                    <RebornSelect v-model="slotOptionValue" :options="frameworkOptions"
-                        :ui="twoLineOptionUi" class="w-full">
-                        <template #option="{ option, active }">
-                            <div class="flex w-full items-center gap-3">
-                                <Icon :name="option.icon" class="size-5 shrink-0" />
-                                <div class="flex min-w-0 flex-1 flex-col">
-                                    <span class="truncate text-sm font-medium">{{ option.label }}</span>
-                                    <span class="text-dimmed truncate text-xs">{{ option.desc }}</span>
-                                </div>
-                                <Icon v-if="active" name="lucide:check" class="text-primary size-4 shrink-0" />
-                            </div>
-                        </template>
-                    </RebornSelect>
-                </DemoItem>
+    <!-- 8. 虚拟滚动 -->
+    <DemoSection
+      title="虚拟滚动：virtual"
+      description="virtual 开启后只渲染可视区内的选项，DOM 数量与数据量脱钩；代价是每项高度必须恒定，由 virtual-item-height 声明（默认 33px = 29px 行高 + 4px 行距）。"
+    >
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="virtual" note="一万条选项，展开仍是瞬时的；已选项照旧被定位到可视区中央，键盘上下键也能正常翻越">
+          <RebornSelect
+            v-model="virtualValue" :options="hugeOptions" virtual placeholder="一万条资产编号"
+            class="w-full"
+          />
+        </DemoItem>
 
-                <DemoItem label="cover 插槽" note="完全接管触发器内容，自带箭头与状态样式由业务决定" mono>
-                    <RebornSelect v-model="coverValue" :options="frameworkOptions"
-                        :trigger-ui="bareTriggerUi" class="w-full">
-                        <template #cover="{ displayText, placeholder, isOpen }">
-                            <div
-                                class="rounded-2xl flex w-full cursor-pointer items-center gap-3 bg-linear-to-r from-violet-500 to-fuchsia-500 px-5 py-3.5 text-white transition-all active:scale-[0.98]">
-                                <Icon name="lucide:sparkles" class="size-4 shrink-0" />
-                                <span class="flex-1 truncate text-sm font-semibold">
-                                    {{ displayText || placeholder }}
-                                </span>
-                                <Icon name="lucide:chevron-down"
-                                    :class="['size-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-180']" />
-                            </div>
-                        </template>
-                    </RebornSelect>
-                </DemoItem>
-            </DemoBlock>
-        </DemoSection>
+        <DemoItem label="virtual + allow-search + multiple" note="搜索会重排列表，此时虚拟窗口自动回到顶部；多选标签与虚拟列表互不干扰">
+          <RebornSelect
+            v-model="virtualSearchValue" :options="hugeOptions" virtual multiple allow-search
+            color="success" placeholder="输入编号搜索" class="w-full"
+          />
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
 
-        <!-- 11. 与表单联动 -->
-        <DemoSection title="与表单联动" description="尺寸、禁用与校验态由 RebornForm 下发。">
-            <DemoBlock layout="stack" class="gap-6">
-                <DemoNote class="text-xs">
-                    选择器不需要自己接错误状态：<code>size</code>、<code>disabled</code>、<code>error</code>
-                    都从表单上下文注入。选中触发 change 校验，收起面板触发 blur 校验
-                </DemoNote>
+    <!-- 9. 浮层定位 -->
+    <DemoSection title="浮层定位：portal 与自动翻转" description="portal 默认开启，浮层传送至 body 并按文档坐标锚定触发器，不受祖先 overflow 裁剪；auto-adjust-overflow 在下方空间不足时向上展开。">
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="滚动容器内" note="展开后滚动下方区域：浮层实时跟随触发器，且不会被容器的 overflow-hidden 裁掉">
+          <!-- 滚动容器本身就是被演示的对象，属规范里唯一允许的那层浅填充 -->
+          <div class="bg-elevated rounded-lg h-56 w-full overflow-y-auto p-4">
+            <DemoNote tone="dimmed" class="pb-4 text-xs">向下滚动一段距离后再展开选择器 ↓</DemoNote>
+            <div class="h-24" />
+            <RebornSelect v-model="scrollBoxValue" :options="cityOptions" color="info" class="w-full" />
+            <div class="h-72" />
+            <DemoNote tone="dimmed" class="text-xs">容器底部</DemoNote>
+          </div>
+        </DemoItem>
 
-                <RebornForm ref="formRef" :model-value="formModel" :rules="formRules" label-width="100px"
-                    label-position="left" size="md" :trigger="formTrigger" class="w-full max-w-lg">
-                    <RebornFormItem prop="framework" label="主框架" required>
-                        <RebornSelect v-model="formModel.framework" :options="frameworkOptions" placeholder="请选择主框架" />
-                    </RebornFormItem>
+        <DemoItem
+          label="对照组：:portal=&quot;false&quot;"
+          note="浮层留在触发器内，被容器 overflow 截断；需要浮层随父容器一起滚动、一起裁剪时才关掉 portal"
+        >
+          <div class="bg-elevated rounded-lg h-56 w-full overflow-y-auto p-4">
+            <DemoNote tone="dimmed" class="pb-4 text-xs">展开后与左侧对比 ↓</DemoNote>
+            <div class="h-24" />
+            <RebornSelect
+              v-model="clippedValue" :options="cityOptions" color="error" :portal="false"
+              class="w-full"
+            />
+            <div class="h-72" />
+            <DemoNote tone="dimmed" class="text-xs">容器底部</DemoNote>
+          </div>
+        </DemoItem>
+      </DemoBlock>
 
-                    <RebornFormItem prop="stack" label="技术栈" required>
-                        <RebornSelect v-model="formModel.stack" :options="frameworkOptions" multiple
-                            placeholder="至少选择 2 项" />
-                    </RebornFormItem>
-                </RebornForm>
+      <div class="border-default mt-6 border-t pt-6">
+        <DemoItem label="自动翻转与定位" note="下方空间不足时自动向上展开；60 项长列表在展开瞬间即滚动到已选项，无需手动查找">
+          <RebornSelect
+            v-model="followValue" :options="cityOptions" color="warning"
+            class="w-full max-w-md"
+          />
+        </DemoItem>
+        <ul class="text-muted grid gap-2 pt-2 text-xs sm:grid-cols-3">
+          <li class="flex gap-2">
+            <span class="text-dimmed font-black">01</span>
+            展开方向在展开瞬间锁定，滚动中不会翻转，浮层始终贴住触发器
+          </li>
+          <li class="flex gap-2">
+            <span class="text-dimmed font-black">02</span>
+            浮层最小宽度对齐触发器，内容更宽时向右扩展并留出视口边距
+          </li>
+          <li class="flex gap-2">
+            <span class="text-dimmed font-black">03</span>
+            支持 <code>↑ ↓</code> 移动高亮、<code>Enter</code> 选中、<code>Esc</code> 收起
+          </li>
+        </ul>
+      </div>
+    </DemoSection>
 
-                <div class="flex gap-3">
-                    <RebornButton color="primary" @click="submitForm">校验并提交</RebornButton>
-                    <RebornButton color="neutral" variant="outlined" @click="resetForm">重置</RebornButton>
+    <!-- 10. 自定义渲染 -->
+    <DemoSection title="自定义渲染：option / cover 插槽" description="option 插槽替换单个选项的内容，作用域给出 option 与 active；cover 插槽接管触发器盒子内的全部内容，连箭头与清空按钮一并交给调用方。">
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="option 插槽" note="在选项内渲染图标与副标题，作用域提供 option 与 active" mono>
+          <RebornSelect
+            v-model="slotOptionValue" :options="frameworkOptions"
+            :ui="twoLineOptionUi" class="w-full"
+          >
+            <template #option="{ option, active }">
+              <div class="flex w-full items-center gap-3">
+                <Icon :name="option.icon" class="size-5 shrink-0" />
+                <div class="flex min-w-0 flex-1 flex-col">
+                  <span class="truncate text-sm font-medium">{{ option.label }}</span>
+                  <span class="text-dimmed truncate text-xs">{{ option.desc }}</span>
                 </div>
-            </DemoBlock>
-        </DemoSection>
+                <Icon v-if="active" name="lucide:check" class="text-primary size-4 shrink-0" />
+              </div>
+            </template>
+          </RebornSelect>
+        </DemoItem>
 
-        <!-- 12. 自定义样式 -->
-        <DemoSection title="自定义样式：ui / triggerUi" description="triggerUi 覆盖触发器各槽位，ui 覆盖下拉列表各槽位，二者都会与内置类做 twMerge 合并。">
-            <RebornSelect v-model="customUiValue" :options="frameworkOptions" :trigger-ui="dashedTriggerUi" :ui="indigoDropdownUi" class="w-full max-w-md" />
-        </DemoSection>
-    </div>
+        <DemoItem label="cover 插槽" note="完全接管触发器内容，自带箭头与状态样式由业务决定" mono>
+          <RebornSelect
+            v-model="coverValue" :options="frameworkOptions"
+            :trigger-ui="bareTriggerUi" class="w-full"
+          >
+            <template #cover="{ displayText, placeholder, isOpen }">
+              <div
+                class="rounded-2xl flex w-full cursor-pointer items-center gap-3 bg-linear-to-r from-violet-500 to-fuchsia-500 px-5 py-3.5 text-white transition-all active:scale-[0.98]"
+              >
+                <Icon name="lucide:sparkles" class="size-4 shrink-0" />
+                <span class="flex-1 truncate text-sm font-semibold">
+                  {{ displayText || placeholder }}
+                </span>
+                <Icon
+                  name="lucide:chevron-down"
+                  class="size-4 shrink-0 transition-transform duration-200" :class="[isOpen && 'rotate-180']"
+                />
+              </div>
+            </template>
+          </RebornSelect>
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
+
+    <!-- 11. 与表单联动 -->
+    <DemoSection title="与表单联动" description="尺寸、禁用与校验态由 RebornForm 下发。">
+      <DemoBlock layout="stack" class="gap-6">
+        <DemoNote class="text-xs">
+          选择器不需要自己接错误状态：<code>size</code>、<code>disabled</code>、<code>error</code>
+          都从表单上下文注入。选中触发 change 校验，收起面板触发 blur 校验
+        </DemoNote>
+
+        <RebornForm
+          ref="formRef" :model-value="formModel" :rules="formRules" label-width="100px"
+          label-position="left" size="md" :trigger="formTrigger" class="w-full max-w-lg"
+        >
+          <RebornFormItem prop="framework" label="主框架" required>
+            <RebornSelect v-model="formModel.framework" :options="frameworkOptions" placeholder="请选择主框架" />
+          </RebornFormItem>
+
+          <RebornFormItem prop="stack" label="技术栈" required>
+            <RebornSelect
+              v-model="formModel.stack" :options="frameworkOptions" multiple
+              placeholder="至少选择 2 项"
+            />
+          </RebornFormItem>
+        </RebornForm>
+
+        <div class="flex gap-3">
+          <RebornButton color="primary" @click="submitForm">校验并提交</RebornButton>
+          <RebornButton color="neutral" variant="outlined" @click="resetForm">重置</RebornButton>
+        </div>
+        <DemoNote v-if="formStatus" tone="dimmed">{{ formStatus }}</DemoNote>
+      </DemoBlock>
+    </DemoSection>
+
+    <!-- 12. 自定义样式 -->
+    <DemoSection title="自定义样式：ui / triggerUi" description="triggerUi 覆盖触发器各槽位，ui 覆盖下拉列表各槽位，二者都会与内置类做 twMerge 合并。">
+      <RebornSelect v-model="customUiValue" :options="frameworkOptions" :trigger-ui="dashedTriggerUi" :ui="indigoDropdownUi" class="w-full max-w-md" />
+    </DemoSection>
+  </div>
 </template>

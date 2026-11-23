@@ -175,9 +175,11 @@ function onSkuChange(key: string, value: unknown) {
 
 <template>
   <div class="flex w-full flex-col">
-    <Playground v-model="state" :controls="controls" :code="searchBoxCode" component-name="RebornSearchBox"
+    <Playground
+      v-model="state" :controls="controls" :code="searchBoxCode" component-name="RebornSearchBox"
       title="交互演练场"
-      description="点「参数修改」调节参数，实时查看搜索框表现；所有区域全是插槽、无任何默认内容。外层边框把外置插槽一并囊括进来并恒为 gray-4，输入框聚焦时只在输入框区内另起一圈 color 对应色的描边——点左侧选择器或右侧按钮都不会点亮任何描边。">
+      description="点「参数修改」调节参数，实时查看搜索框表现；所有区域全是插槽、无任何默认内容。外层边框把外置插槽一并囊括进来并恒为 gray-4，输入框聚焦时只在输入框区内另起一圈 color 对应色的描边——点左侧选择器或右侧按钮都不会点亮任何描边。"
+    >
       <template #tag>
         <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
@@ -188,8 +190,10 @@ function onSkuChange(key: string, value: unknown) {
       </template>
 
       <div class="flex w-full flex-col gap-8 pb-40">
-        <RebornSearchBox v-model="playgroundValue" v-model:history="playgroundHistory" :size="state.size" :color="state.color" :shape="state.shape"
-          :placeholder="state.placeholder" :show-dropdown="state.showDropdown" @search="onSearch">
+        <RebornSearchBox
+          v-model="playgroundValue" v-model:history="playgroundHistory" :size="state.size" :color="state.color" :shape="state.shape"
+          :placeholder="state.placeholder" :show-dropdown="state.showDropdown" @search="onSearch"
+        >
           <!-- 外置前置插槽（在边框内、输入框之外，聚焦不点亮边框）：自行组合 RebornSelect，分隔线等装饰样式自行提供 -->
           <template #leading>
             <!--
@@ -199,16 +203,19 @@ function onSkuChange(key: string, value: unknown) {
             -->
             <div
               class="bg-gray-2 text-gray-8 text-md px-[12px] -my-px -ml-px h-[calc(100%+2px)] border-r border-r-gray-4 flex items-center justify-center"
-              :class="state.shape === 'circle' ? 'rounded-l-full pl-[16px]' : 'rounded-l-md'">
+              :class="state.shape === 'circle' ? 'rounded-l-full pl-[16px]' : 'rounded-l-md'"
+            >
               http://
             </div>
           </template>
 
           <!-- 内置后置插槽（落在输入框内部，随输入框一起进入激活态）：拍照搜索入口 -->
           <template #input-trailing>
-            <Icon name="lucide:camera"
+            <Icon
+              name="lucide:camera"
               class="text-2xl text-gray-5 cursor-pointer hover:text-gray-7/80 transition-colors"
-              @click.stop="onCameraClick" />
+              @click.stop="onCameraClick"
+            />
           </template>
 
           <!-- 外置后置插槽：搜索按钮，点击调用作用域的 search 触发搜索 -->
@@ -216,7 +223,8 @@ function onSkuChange(key: string, value: unknown) {
             <!-- 同 leading：端部圆角 + 外扩 1px 盖到外框线上，色块弧线与外形轮廓重合、与聚焦描边等高 -->
             <div
               class="text-md bg-brand-6 text-white px-[12px] flex items-center justify-center -my-px -mr-px h-[calc(100%+2px)] border-l border-l-brand-5"
-              :class="state.shape === 'circle' ? 'rounded-r-full pr-[16px]' : 'rounded-r-md'">
+              :class="state.shape === 'circle' ? 'rounded-r-full pr-[16px]' : 'rounded-r-md'"
+            >
               <Icon name="lucide:search" />
             </div>
           </template>
@@ -226,16 +234,20 @@ function onSkuChange(key: string, value: unknown) {
             <div class="flex flex-col gap-3">
               <div class="text-lg font-bold text-gray-8 flex items-center justify-between">
                 <span>搜索历史</span>
-                <div v-if="history.length > 0"
+                <div
+                  v-if="history.length > 0"
                   class="text-base font-normal text-gray-5 cursor-pointer hover:underline flex items-center gap-1"
-                  @click="clearHistory">
+                  @click="clearHistory"
+                >
                   <Icon name="lucide:trash-2" />
                   清空
                 </div>
               </div>
               <div v-if="history.length > 0" class="flex flex-wrap gap-2">
-                <RebornBadge v-for="h in history" :key="h" :label="h" closable variant="soft" color="neutral" size="md"
-                  :ui="historyBadgeUi" @click="selectHistory(h)" @close="removeHistoryItem(h)" />
+                <RebornBadge
+                  v-for="h in history" :key="h" :label="h" closable variant="soft" color="neutral" size="md"
+                  :ui="historyBadgeUi" @click="selectHistory(h)" @close="removeHistoryItem(h)"
+                />
               </div>
               <div v-else class="text-sm text-gray-4 py-2">
                 暂无最近的搜索记录
@@ -247,9 +259,11 @@ function onSkuChange(key: string, value: unknown) {
                 热门搜索
               </div>
               <div class="flex flex-col">
-                <div v-for="item in recommendKeywords" :key="item"
+                <div
+                  v-for="item in recommendKeywords" :key="item"
                   class="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-gray-1 rounded-lg transition-colors text-base text-gray-8"
-                  @click="selectRecommend(item)">
+                  @click="selectRecommend(item)"
+                >
                   <Icon name="lucide:trending-up" class="size-4 text-gray-4 shrink-0" />
                   <span>{{ item }}</span>
                 </div>
@@ -264,11 +278,15 @@ function onSkuChange(key: string, value: unknown) {
       </div>
     </Playground>
 
-    <DemoSection class="relative z-50" title="基础用法"
-      description="不填任何插槽并关闭 show-dropdown，即为一只只剩输入能力的搜索框；回车仍会触发 search 并写入历史。">
+    <DemoSection
+      class="relative z-50" title="基础用法"
+      description="不填任何插槽并关闭 show-dropdown，即为一只只剩输入能力的搜索框；回车仍会触发 search 并写入历史。"
+    >
       <DemoBlock layout="stack">
-        <RebornSearchBox v-model="pureValue" history-key="reborn-demo-pureValue" :show-dropdown="false" placeholder="无插槽 + 不展开面板，回车触发搜索"
-          @search="onSearch" />
+        <RebornSearchBox
+          v-model="pureValue" history-key="reborn-demo-pureValue" :show-dropdown="false" placeholder="无插槽 + 不展开面板，回车触发搜索"
+          @search="onSearch"
+        />
       </DemoBlock>
     </DemoSection>
 
@@ -281,12 +299,16 @@ function onSkuChange(key: string, value: unknown) {
         <code>lg</code> 为 12px。
       </template>
       <DemoBlock layout="stack">
-        <RebornSearchBox v-model="outerSlotValue" history-key="reborn-demo-outerSlotValue" size="md" shape="square" :show-dropdown="false"
-          placeholder="点选择器不会出现描边，点这里才会">
+        <RebornSearchBox
+          v-model="outerSlotValue" history-key="reborn-demo-outerSlotValue" size="md" shape="square" :show-dropdown="false"
+          placeholder="点选择器不会出现描边，点这里才会"
+        >
           <!-- 外置前置：搜索源选择器 + 分隔线（分隔线样式自行提供） -->
           <template #leading>
-            <RebornSelect v-model="outerSlotValue.selectValue" :options="selectOptions" size="md" :clearable="false"
-              :bordered="false" :trigger-ui="selectTriggerUi" @click.stop />
+            <RebornSelect
+              v-model="outerSlotValue.selectValue" :options="selectOptions" size="md" :clearable="false"
+              :bordered="false" :trigger-ui="selectTriggerUi" @click.stop
+            />
             <div class="w-px h-5 shrink-0 bg-[#D3D2D9]!" />
           </template>
 
@@ -307,8 +329,10 @@ function onSkuChange(key: string, value: unknown) {
         随输入框一起进入激活态；作用域除 <code>ui</code> 外还额外透出 <code>inputUi</code>，可直接套用输入框自身的样式键。
       </template>
       <DemoBlock layout="stack">
-        <RebornSearchBox v-model="innerSlotValue" history-key="reborn-demo-innerSlotValue" size="md" shape="square" :show-dropdown="false"
-          placeholder="放大镜与相机都在输入框里" @search="onSearch">
+        <RebornSearchBox
+          v-model="innerSlotValue" history-key="reborn-demo-innerSlotValue" size="md" shape="square" :show-dropdown="false"
+          placeholder="放大镜与相机都在输入框里" @search="onSearch"
+        >
           <!-- 内置前置：放大镜 -->
           <template #input-leading>
             <Icon name="lucide:search" class="size-5" />
@@ -316,9 +340,11 @@ function onSkuChange(key: string, value: unknown) {
 
           <!-- 内置后置：相机入口 -->
           <template #input-trailing>
-            <Icon name="lucide:camera"
+            <Icon
+              name="lucide:camera"
               class="text-2xl text-gray-5 cursor-pointer hover:text-gray-7/80 transition-colors"
-              @click.stop="onCameraClick" />
+              @click.stop="onCameraClick"
+            />
           </template>
         </RebornSearchBox>
       </DemoBlock>
@@ -330,8 +356,10 @@ function onSkuChange(key: string, value: unknown) {
         <code>input-attrs</code> 会 v-bind 透传给内部 <code>RebornInput</code>（显式 prop 优先）。
       </template>
       <DemoBlock layout="stack">
-        <RebornSearchBox v-model="squareValue" history-key="reborn-demo-squareValue" shape="square" size="md" placeholder="方形圆角 + maxlength 透传..."
-          :input-attrs="squareInputAttrs" @search="onSearch">
+        <RebornSearchBox
+          v-model="squareValue" history-key="reborn-demo-squareValue" shape="square" size="md" placeholder="方形圆角 + maxlength 透传..."
+          :input-attrs="squareInputAttrs" @search="onSearch"
+        >
           <template #input-trailing="{ search }">
             <RebornButton size="sm" color="primary" @click.stop="search">
               <Icon name="lucide:search" class="size-5" />
@@ -343,9 +371,11 @@ function onSkuChange(key: string, value: unknown) {
                 热门搜索
               </div>
               <div class="flex flex-col">
-                <div v-for="item in recommendKeywords" :key="item"
+                <div
+                  v-for="item in recommendKeywords" :key="item"
                   class="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-gray-1 rounded-lg transition-colors text-base text-gray-8"
-                  @click="selectRecommend(item)">
+                  @click="selectRecommend(item)"
+                >
                   <Icon name="lucide:trending-up" class="size-4 text-gray-4 shrink-0" />
                   <span>{{ item }}</span>
                 </div>
@@ -362,16 +392,18 @@ function onSkuChange(key: string, value: unknown) {
         带 <code>slots</code> 的属性项可用 <code>RebornSku</code> 的同名插槽自定义选择方式。
       </template>
       <DemoBlock layout="stack">
-        <RebornSearchBox v-model="skuSearchValue" history-key="reborn-demo-skuSearchValue" placeholder="搜索商品属性..." @search="onSearch" size="lg">
+        <RebornSearchBox v-model="skuSearchValue" history-key="reborn-demo-skuSearchValue" placeholder="搜索商品属性..." size="lg" @search="onSearch">
           <template #input-trailing="{ search }">
             <RebornButton size="sm" color="primary" round variant="filled" @click.stop="search">
               <Icon name="lucide:search" class="size-5" />
             </RebornButton>
           </template>
           <template #dropdown>
-            <RebornSku v-model="skuSearchValue" :options="skuAttributes"
+            <RebornSku
+              v-model="skuSearchValue" :options="skuAttributes"
               @change="onSkuChange"
-              @click.stop>
+              @click.stop
+            >
               <template #language>
                 <RebornRadioGroup v-model="skuSearchValue.language">
                   <RebornRadio value="cn">

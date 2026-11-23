@@ -266,8 +266,10 @@ function parseThousands(text: string) {
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" :code-extras="codeExtras" component-name="RebornInput"
-      title="交互演练场" description="调节尺寸、配色、形态与行为开关，实时预览输入框表现；filled 形态聚焦时背景转为 bg-gray-1 并出现主题色描边。">
+    <Playground
+      v-model="state" :controls="controls" :code-extras="codeExtras" component-name="RebornInput"
+      title="交互演练场" description="调节尺寸、配色、形态与行为开关，实时预览输入框表现；filled 形态聚焦时背景转为 bg-gray-1 并出现主题色描边。"
+    >
       <template #tag>
         <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
@@ -373,8 +375,10 @@ function parseThousands(text: string) {
         </DemoItem>
 
         <DemoItem label="prefix-icon / suffix-icon" mono>
-          <RebornInput v-model="iconValue" prefix-icon="lucide:search" suffix-icon="lucide:calendar"
-            placeholder="搜索日期" />
+          <RebornInput
+            v-model="iconValue" prefix-icon="lucide:search" suffix-icon="lucide:calendar"
+            placeholder="搜索日期"
+          />
         </DemoItem>
 
         <DemoItem label="#prepend / #append（连体块）" mono>
@@ -402,27 +406,33 @@ function parseThousands(text: string) {
       </template>
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem mono>
-          <RebornInput v-model="adornmentValue" placeholder="请输入内容" :ui="{
-            append: 'bg-brand-6 text-white px-3 border border-brand-6'
-          }">
+          <RebornInput
+            v-model="adornmentValue" placeholder="请输入内容" :ui="{
+              append: 'bg-brand-6 text-white px-3 border border-brand-6'
+            }"
+          >
             <template #append>
               搜索
             </template>
           </RebornInput>
         </DemoItem>
         <DemoItem mono>
-          <RebornInput v-model="adornmentValue" disabled placeholder="请输入内容" :ui="{
-            append: 'bg-brand-3 text-gray-2 px-3 border border-brand-3'
-          }">
+          <RebornInput
+            v-model="adornmentValue" disabled placeholder="请输入内容" :ui="{
+              append: 'bg-brand-3 text-gray-2 px-3 border border-brand-3'
+            }"
+          >
             <template #append>
               搜索
             </template>
           </RebornInput>
         </DemoItem>
         <DemoItem mono>
-          <RebornInput v-model="adornmentValue" placeholder="请输入内容" :ui="{
-            append: 'bg-white text-gray-10 px-2'
-          }">
+          <RebornInput
+            v-model="adornmentValue" placeholder="请输入内容" :ui="{
+              append: 'bg-white text-gray-10 px-2'
+            }"
+          >
             <template #prepend>
               <div class="px-3">
                 https://
@@ -434,9 +444,11 @@ function parseThousands(text: string) {
           </RebornInput>
         </DemoItem>
         <DemoItem mono>
-          <RebornInput v-model="adornmentValue" disabled placeholder="请输入内容" :ui="{
-            append: 'bg-gray-2 text-gray-5 px-2'
-          }">
+          <RebornInput
+            v-model="adornmentValue" disabled placeholder="请输入内容" :ui="{
+              append: 'bg-gray-2 text-gray-5 px-2'
+            }"
+          >
             <template #prepend>
               <div class="px-3 text-gray-5">
                 https://
@@ -461,13 +473,17 @@ function parseThousands(text: string) {
         </DemoItem>
 
         <DemoItem label="outside" mono>
-          <RebornInput v-model="limitOutsideValue" :maxlength="10" show-word-limit word-limit-position="outside"
-            placeholder="统计显示在下方" />
+          <RebornInput
+            v-model="limitOutsideValue" :maxlength="10" show-word-limit word-limit-position="outside"
+            placeholder="统计显示在下方"
+          />
         </DemoItem>
 
         <DemoItem label="textarea（统计落在右下角）" mono>
-          <RebornInput v-model="limitAreaValue" type="textarea" :rows="3" :maxlength="50" show-word-limit
-            placeholder="多行文本统计" />
+          <RebornInput
+            v-model="limitAreaValue" type="textarea" :rows="3" :maxlength="50" show-word-limit
+            placeholder="多行文本统计"
+          />
         </DemoItem>
       </DemoBlock>
     </DemoSection>
@@ -479,8 +495,10 @@ function parseThousands(text: string) {
       </template>
       <DemoBlock layout="stack" align="start">
         <DemoItem label="千分位分隔" mono :note="`绑定值：${formattedValue}`" class="w-full max-w-sm">
-          <RebornInput v-model="formattedValue" :formatter="formatThousands" :parser="parseThousands"
-            placeholder="输入数字" />
+          <RebornInput
+            v-model="formattedValue" :formatter="formatThousands" :parser="parseThousands"
+            placeholder="输入数字"
+          />
         </DemoItem>
       </DemoBlock>
     </DemoSection>
@@ -520,13 +538,17 @@ function parseThousands(text: string) {
         </DemoItem>
 
         <DemoItem label="autosize = { minRows: 2, maxRows: 6 }" mono>
-          <RebornInput v-model="autosizeValue" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }"
-            placeholder="高度自适应..." />
+          <RebornInput
+            v-model="autosizeValue" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }"
+            placeholder="高度自适应..."
+          />
         </DemoItem>
 
         <DemoItem label="resize=&quot;vertical&quot;（允许纵向拖拽）" mono>
-          <RebornInput v-model="resizeValue" type="textarea" :rows="3" resize="vertical" maxlength="100"
-            show-word-limit placeholder="右下角可拖拽" />
+          <RebornInput
+            v-model="resizeValue" type="textarea" :rows="3" resize="vertical" maxlength="100"
+            show-word-limit placeholder="右下角可拖拽"
+          />
         </DemoItem>
       </DemoBlock>
     </DemoSection>

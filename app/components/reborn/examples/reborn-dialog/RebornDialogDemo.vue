@@ -207,17 +207,22 @@ function openModalError() {
   }));
 }
 
+/** 记录弹窗的操作结果，供示例回显。 */
+const dialogResult = shallowRef("");
+const modalConfirmResult = shallowRef("");
+const delayedResult = shallowRef("");
+
 function openModalConfirm() {
   modals.push(Modal.confirm({
     title: "确认删除该分支？",
     content: "删除后分支上的未合并提交将无法恢复，此操作不可撤销。",
     okText: "删除",
     onOk: (close) => {
-      console.log("已确认删除");
+      modalConfirmResult.value = "已确认删除";
       close();
     },
     onCancel: (close) => {
-      console.log("已取消");
+      modalConfirmResult.value = "已取消删除";
       close();
     },
   }));
@@ -324,7 +329,7 @@ async function openPlaygroundDialog() {
 // 打开编辑个人资料 Dialog
 async function openEditProfileDialog() {
   const result = await editProfileDialog.open();
-  console.log("编辑个人资料结果:", result);
+  dialogResult.value = result === "confirm" ? "已确认个人资料" : "已关闭个人资料弹窗";
 }
 
 // 打开嵌套 Dialog
@@ -354,9 +359,9 @@ async function openSuccessDialog() {
 
 // 打开延迟效果 Dialog
 async function openDelayedDialog() {
-  console.log("开始打开（延迟 500ms）...");
+  delayedResult.value = "等待打开对话框";
   await delayedDialog.open();
-  console.log("已关闭（延迟 500ms）");
+  delayedResult.value = "对话框已关闭";
 }
 
 // 打开全屏模式 Dialog
@@ -378,19 +383,25 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" component-name="RebornDialog" title="交互演练场"
-      description="点「参数修改」调节属性，实时预览 Dialog 的视觉效果与交互反馈；属性命名与 Element Plus Dialog 对齐。">
+    <Playground
+      v-model="state" :controls="controls" component-name="RebornDialog" title="交互演练场"
+      description="点「参数修改」调节属性，实时预览 Dialog 的视觉效果与交互反馈；属性命名与 Element Plus Dialog 对齐。"
+    >
       <DemoBlock>
-        <RebornDialog v-bind="state" @confirm="() => console.log('Confirm clicked')"
-          @cancel="() => console.log('Cancel clicked')">
+        <RebornDialog
+          v-bind="state" @confirm="dialogResult = '已确认'"
+          @cancel="dialogResult = '已取消'"
+        >
           <template #trigger>
             <RebornButton label="打开对话框（组件式）" color="primary" variant="filled" />
           </template>
 
           <!-- 只读字段列表：靠分隔线区分行，不额外铺底色 -->
           <div class="divide-default flex flex-col divide-y">
-            <div v-for="field in profileFields" :key="field.label"
-              class="flex items-center justify-between gap-4 py-2.5">
+            <div
+              v-for="field in profileFields" :key="field.label"
+              class="flex items-center justify-between gap-4 py-2.5"
+            >
               <span class="text-muted text-sm">{{ field.label }}</span>
               <span class="text-highlighted text-sm font-medium">{{ field.value }}</span>
             </div>
@@ -400,10 +411,13 @@ onBeforeUnmount(() => {
         <RebornButton label="打开对话框（服务式）" color="secondary" variant="outlined" @click="openPlaygroundDialog" />
         <RebornButton label="二次封装组件" color="neutral" variant="soft" @click="openEditProfileDialog" />
       </DemoBlock>
+      <DemoNote v-if="dialogResult" tone="dimmed">{{ dialogResult }}</DemoNote>
     </Playground>
 
-    <DemoSection title="命令式调用：Modal 类型方法"
-      description="Modal.info / success / warning / error / confirm 直接以函数打开确认框；onBeforeOk 支持返回 false 阻断或 done 异步关闭，onOk / onCancel 返回 Promise 时 resolve 关闭、reject 保持；Modal.destroyAll() 可在路由切换等场景批量销毁。">
+    <DemoSection
+      title="命令式调用：Modal 类型方法"
+      description="Modal.info / success / warning / error / confirm 直接以函数打开确认框；onBeforeOk 支持返回 false 阻断或 done 异步关闭，onOk / onCancel 返回 Promise 时 resolve 关闭、reject 保持；Modal.destroyAll() 可在路由切换等场景批量销毁。"
+    >
       <DemoBlock>
         <RebornButton label="Modal.info" color="info" variant="soft" @click="openModalInfo" />
         <RebornButton label="Modal.success" color="success" variant="soft" @click="openModalSuccess" />
@@ -413,37 +427,45 @@ onBeforeUnmount(() => {
         <RebornButton label="onBeforeOk 异步关闭" color="primary" variant="outlined" @click="openModalAsyncConfirm" />
         <RebornButton label="destroyAll 批量销毁" color="neutral" variant="outlined" @click="openModalBatch" />
       </DemoBlock>
-      <DemoNote tone="dimmed" class="mt-3">confirm 的回调结果会打印在浏览器控制台。</DemoNote>
+      <DemoNote v-if="modalConfirmResult" tone="dimmed" class="mt-3">{{ modalConfirmResult }}</DemoNote>
     </DemoSection>
 
-    <DemoSection title="布局：顶部落位、垂直居中与头尾居中"
-      description="默认按 top（15vh）顶部落位；align-center 改为水平垂直居中；center 让 header 与 footer 内容居中排列；width 支持数字（px）或任意 CSS 宽度。">
+    <DemoSection
+      title="布局：顶部落位、垂直居中与头尾居中"
+      description="默认按 top（15vh）顶部落位；align-center 改为水平垂直居中；center 让 header 与 footer 内容居中排列；width 支持数字（px）或任意 CSS 宽度。"
+    >
       <DemoBlock>
         <RebornButton label="top: 8vh 顶部落位" variant="outlined" @click="openLayoutDialog('top')" />
         <RebornButton label="align-center 垂直居中" variant="outlined" @click="openLayoutDialog('alignCenter')" />
         <RebornButton label="center 头尾居中 + width 360" variant="outlined" @click="openLayoutDialog('center')" />
 
-        <RebornDialog v-model="layoutOpen" title="布局演示"
+        <RebornDialog
+          v-model="layoutOpen" title="布局演示"
           :describe="layoutMode === 'top' ? '当前按 top: 8vh 顶部落位。' : layoutMode === 'alignCenter' ? '当前为 align-center 垂直居中。' : '当前 center 头尾居中，宽度 360px。'"
           :top="layoutMode === 'top' ? '8vh' : '15vh'" :align-center="layoutMode !== 'top'"
           :center="layoutMode === 'center'" :width="layoutMode === 'center' ? 360 : ''" confirm-btn="知道了"
-          :cancel-btn="false">
+          :cancel-btn="false"
+        >
           <p class="text-muted text-sm">切换不同按钮可对比三种布局形态的差异。</p>
         </RebornDialog>
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="过渡动画预设"
-      description="transition 支持四种语义预设：scale 缩放（默认，带回弹）/ slide 滑动（自上方滑入）/ fade 淡入淡出 / bounce 弹跳（关键帧入场）；也接受任意 RebornTransition 过渡名或属性对象。">
+    <DemoSection
+      title="过渡动画预设"
+      description="transition 支持四种语义预设：scale 缩放（默认，带回弹）/ slide 滑动（自上方滑入）/ fade 淡入淡出 / bounce 弹跳（关键帧入场）；也接受任意 RebornTransition 过渡名或属性对象。"
+    >
       <DemoBlock>
         <RebornButton label="scale 缩放" color="primary" variant="outlined" @click="openTransitionDialog('scale')" />
         <RebornButton label="slide 滑动" color="primary" variant="outlined" @click="openTransitionDialog('slide')" />
         <RebornButton label="fade 淡入淡出" color="primary" variant="outlined" @click="openTransitionDialog('fade')" />
         <RebornButton label="bounce 弹跳" color="primary" variant="outlined" @click="openTransitionDialog('bounce')" />
 
-        <RebornDialog v-model="transitionOpen" title="过渡动画演示" :transition="transitionMode"
+        <RebornDialog
+          v-model="transitionOpen" title="过渡动画演示" :transition="transitionMode"
           :describe="`当前动画：${transitionMode}，重新打开可回放入场效果。`" align-center confirm-btn="再看一次" cancel-btn="关闭"
-          @confirm="replayTransition">
+          @confirm="replayTransition"
+        >
           <p class="text-muted text-sm">关闭时同样带有对应的离场动画，可用 ESC / 遮罩点击观察。</p>
         </RebornDialog>
       </DemoBlock>
@@ -458,7 +480,8 @@ onBeforeUnmount(() => {
 
           <!-- 业务内容占位：只描边不填充，避免在弹窗面板内再叠一层表面 -->
           <div
-            class="border-default text-dimmed rounded-lg flex items-center justify-center border border-dashed py-10 text-sm">
+            class="border-default text-dimmed rounded-lg flex items-center justify-center border border-dashed py-10 text-sm"
+          >
             第一层业务内容区域
           </div>
 
@@ -497,9 +520,11 @@ onBeforeUnmount(() => {
 
     <DemoSection title="异步确认：按钮 loading" description="confirmBtn 传入对象可携带 loading 状态，模拟后端请求成功后再关闭弹窗。">
       <DemoBlock>
-        <RebornDialog v-model="asyncOpen" title="同步云端设置" describe="正在将您的配置上传至私有云端节点..."
+        <RebornDialog
+          v-model="asyncOpen" title="同步云端设置" describe="正在将您的配置上传至私有云端节点..."
           :confirm-btn="{ label: '立即同步', loading: saving }" :cancel-btn="saving ? false : '稍后再说'"
-          @confirm="handleAsyncConfirm">
+          @confirm="handleAsyncConfirm"
+        >
           <template #trigger>
             <RebornButton label="执行同步（组件式）" color="secondary" variant="soft" />
           </template>
@@ -544,17 +569,20 @@ onBeforeUnmount(() => {
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">精简模式 · <code>ui</code> 深度重写</span>
           <DemoBlock>
-            <RebornDialog :show-close="false" title="精简模式" :ui="{
-              panel: 'max-w-90 rounded-3xl',
-              header: 'border-0 pb-0',
-              body: 'text-center pt-2 pb-6',
-              footer: 'border-0 pt-0 justify-center pb-6',
-            }">
+            <RebornDialog
+              :show-close="false" title="精简模式" :ui="{
+                panel: 'max-w-90 rounded-3xl',
+                header: 'border-0 pb-0',
+                body: 'text-center pt-2 pb-6',
+                footer: 'border-0 pt-0 justify-center pb-6',
+              }"
+            >
               <template #trigger>
                 <RebornButton label="自定义 UI（组件式）" variant="outlined" />
               </template>
               <div
-                class="bg-success/10 text-success mx-auto mb-4 flex size-16 items-center justify-center rounded-full">
+                class="bg-success/10 text-success mx-auto mb-4 flex size-16 items-center justify-center rounded-full"
+              >
                 <Icon name="lucide:check-circle-2" class="size-8" />
               </div>
               <h4 class="text-highlighted mb-1 text-base font-semibold">操作已成功</h4>
@@ -576,7 +604,7 @@ onBeforeUnmount(() => {
         <RebornButton label="全屏模式" color="neutral" variant="outlined" @click="openFullscreenDialog" />
         <RebornButton label="自定义关闭图标" color="neutral" variant="outlined" @click="openCustomIconDialog" />
       </DemoBlock>
-      <DemoNote tone="dimmed" class="mt-3">延迟示例的开关时机会打印在浏览器控制台。</DemoNote>
+      <DemoNote v-if="delayedResult" tone="dimmed" class="mt-3">{{ delayedResult }}</DemoNote>
     </DemoSection>
   </div>
 </template>

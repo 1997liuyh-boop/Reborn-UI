@@ -324,8 +324,10 @@ onBeforeUnmount(() => {
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <!-- 交互演练场：Playground 自带标题栏 -->
-    <Playground v-model="state" :controls="controls" :code="codeString" component-name="v-loading" title="交互演练场"
-      description="实时调节遮罩参数；开启全屏模式后遮罩将覆盖整页并在 2 秒后自动关闭">
+    <Playground
+      v-model="state" :controls="controls" :code="codeString" component-name="v-loading" title="交互演练场"
+      description="实时调节遮罩参数；开启全屏模式后遮罩将覆盖整页并在 2 秒后自动关闭"
+    >
       <template #tag>
         <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
@@ -339,11 +341,13 @@ onBeforeUnmount(() => {
         宿主容器：遮罩必须覆盖在一个真实区域上，这个区域本身就是被演示的对象，
         属示例规范里唯一允许的那层浅填充；其内部不再出现任何填充盒。
       -->
-      <div v-loading="{ loading: state.loading, fullscreen: state.fullscreen, lock: state.lock }"
+      <div
+        v-loading="{ loading: state.loading, fullscreen: state.fullscreen, lock: state.lock }"
         :reborn-loading-text="state.text || null" :reborn-loading-type="state.type"
-        :reborn-loading-color="playgroundColor" :reborn-loading-size="state.size + 'px'"
+        :reborn-loading-color="playgroundColor" :reborn-loading-size="`${state.size }px`"
         :reborn-loading-background="playgroundBackground"
-        class="bg-elevated rounded-2xl h-[400px] w-full max-w-2xl overflow-y-auto">
+        class="bg-elevated rounded-2xl h-[400px] w-full max-w-2xl overflow-y-auto"
+      >
         <!-- 表头需遮挡下方滚过的行，沿用与容器同色的底，视觉上仍是同一层表面 -->
         <div class="bg-elevated border-default sticky top-0 z-[1] flex items-center justify-between border-b px-6 py-4">
           <div class="flex flex-col">
@@ -357,8 +361,10 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="divide-default flex flex-col divide-y">
-          <div v-for="order in orders" :key="order.id"
-            class="hover:bg-accented/60 flex items-center gap-4 px-6 py-4 transition-colors">
+          <div
+            v-for="order in orders" :key="order.id"
+            class="hover:bg-accented/60 flex items-center gap-4 px-6 py-4 transition-colors"
+          >
             <div class="flex min-w-0 flex-1 flex-col">
               <span class="text-default truncate text-sm font-semibold">{{ order.name }}</span>
               <span class="text-dimmed font-mono text-[10px]">{{ order.id }}</span>
@@ -377,11 +383,15 @@ onBeforeUnmount(() => {
     <DemoSection title="区域加载" description="最常见的用法：在数据请求期间为看板 / 表格覆盖遮罩，宿主定位由指令自动修正。">
       <DemoBlock layout="stack" class="gap-4">
         <!-- 看板同样是遮罩宿主，沿用那唯一一层浅填充 -->
-        <div v-loading="boardLoading" reborn-loading-text="正在同步看板数据…"
-          class="bg-elevated rounded-lg flex w-full flex-col gap-5 p-5">
+        <div
+          v-loading="boardLoading" reborn-loading-text="正在同步看板数据…"
+          class="bg-elevated rounded-lg flex w-full flex-col gap-5 p-5"
+        >
           <div class="divide-default grid grid-cols-3 sm:divide-x">
-            <div v-for="(stat, i) in boardStats" :key="stat.label" class="flex flex-col gap-1.5"
-              :class="i === 0 ? 'sm:pr-4' : i === boardStats.length - 1 ? 'sm:pl-4' : 'sm:px-4'">
+            <div
+              v-for="(stat, i) in boardStats" :key="stat.label" class="flex flex-col gap-1.5"
+              :class="i === 0 ? 'sm:pr-4' : i === boardStats.length - 1 ? 'sm:pl-4' : 'sm:px-4'"
+            >
               <span class="text-dimmed flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase">
                 <Icon :name="stat.icon" size="12" class="text-primary" />
                 {{ stat.label }}
@@ -393,9 +403,11 @@ onBeforeUnmount(() => {
 
           <!-- 模拟趋势条：柱体是内容标记，不构成额外的背景层 -->
           <div class="flex h-16 items-end gap-1.5">
-            <div v-for="(h, i) in trendBars" :key="i"
+            <div
+              v-for="(h, i) in trendBars" :key="i"
               class="bg-primary/50 hover:bg-primary flex-1 rounded-t-sm transition-all duration-500"
-              :style="{ height: h + '%' }" />
+              :style="{ height: `${h }%` }"
+            />
           </div>
         </div>
 
@@ -407,8 +419,10 @@ onBeforeUnmount(() => {
             </DemoNote>
             <DemoNote v-else key="idle" tone="dimmed" class="font-mono text-[10px]">v-loading="boardLoading"</DemoNote>
           </Transition>
-          <RebornButton label="刷新看板" color="primary" variant="soft" size="sm" :disabled="boardLoading"
-            @click="refreshBoard">
+          <RebornButton
+            label="刷新看板" color="primary" variant="soft" size="sm" :disabled="boardLoading"
+            @click="refreshBoard"
+          >
             <template #leading>
               <Icon name="lucide:refresh-cw" size="14" :class="boardLoading ? 'animate-spin' : ''" />
             </template>
@@ -422,27 +436,34 @@ onBeforeUnmount(() => {
         <div v-for="item in attrCases" :key="item.label" class="flex flex-col gap-2">
           <span class="text-dimmed text-xs font-medium">{{ item.label }}</span>
           <!-- 宿主只描边不填充：遮罩自带背景，这里只需要一块可辨认的落点 -->
-          <div v-loading="true" :reborn-loading-type="item.type" :reborn-loading-color="item.color"
+          <div
+            v-loading="true" :reborn-loading-type="item.type" :reborn-loading-color="item.color"
             :reborn-loading-text="item.text" :reborn-loading-size="item.size"
             :reborn-loading-background="item.background"
-            class="border-default rounded-lg relative h-40 overflow-hidden border border-dashed" />
+            class="border-default rounded-lg relative h-40 overflow-hidden border border-dashed"
+          />
         </div>
       </DemoBlock>
     </DemoSection>
 
     <DemoSection title="全屏加载" description="`.fullscreen` 将遮罩挂载至 body 铺满视口，`.lock` 以全局引用计数锁定页面滚动。">
-      <div v-loading.fullscreen.lock="fullscreenOn" reborn-loading-text="整页处理中 · 2 秒后自动关闭"
-        reborn-loading-type="gooey-balls" reborn-loading-size="34px" class="flex flex-col gap-4">
+      <div
+        v-loading.fullscreen.lock="fullscreenOn" reborn-loading-text="整页处理中 · 2 秒后自动关闭"
+        reborn-loading-type="gooey-balls" reborn-loading-size="34px" class="flex flex-col gap-4"
+      >
         <DemoNote class="max-w-2xl">
           适合支付、发布等不可中断流程。遮罩层级默认 <code>3000</code>，滚动锁与 Overlay 共享同一个全局计数器，互不踩踏；重复触发全屏遮罩时复用同一单例。
         </DemoNote>
 
         <pre
-          class="bg-elevated rounded-lg text-muted w-fit px-4 py-3 font-mono text-[11px] leading-relaxed"><code>&lt;section v-loading.fullscreen.lock="submitting"&gt;</code></pre>
+          class="bg-elevated rounded-lg text-muted w-fit px-4 py-3 font-mono text-[11px] leading-relaxed"
+        ><code>&lt;section v-loading.fullscreen.lock="submitting"&gt;</code></pre>
 
         <div class="flex items-center gap-4">
-          <RebornButton label="触发全屏加载" color="primary" variant="filled" :disabled="fullscreenOn"
-            @click="triggerFullscreen">
+          <RebornButton
+            label="触发全屏加载" color="primary" variant="filled" :disabled="fullscreenOn"
+            @click="triggerFullscreen"
+          >
             <template #leading>
               <Icon name="lucide:expand" size="14" />
             </template>
@@ -455,14 +476,18 @@ onBeforeUnmount(() => {
     <DemoSection title="服务式调用" description="showLoading 命令式创建遮罩，返回实例句柄进行 setText / patch / close 全流程控制。">
       <DemoBlock layout="stack" class="gap-4">
         <div class="flex flex-wrap gap-3">
-          <RebornButton label="模拟发布流程 (全屏分步)" color="primary" variant="soft" size="sm" :disabled="publishing"
-            @click="runPublishFlow">
+          <RebornButton
+            label="模拟发布流程 (全屏分步)" color="primary" variant="soft" size="sm" :disabled="publishing"
+            @click="runPublishFlow"
+          >
             <template #leading>
               <Icon name="lucide:rocket" size="14" />
             </template>
           </RebornButton>
-          <RebornButton label="局部遮罩 (target 选择器)" color="secondary" variant="soft" size="sm" :disabled="targetRunning"
-            @click="runTargetLoading">
+          <RebornButton
+            label="局部遮罩 (target 选择器)" color="secondary" variant="soft" size="sm" :disabled="targetRunning"
+            @click="runTargetLoading"
+          >
             <template #leading>
               <Icon name="lucide:crosshair" size="14" />
             </template>
@@ -470,8 +495,10 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- 调用日志面板：它同时是局部遮罩的 target 容器，即被演示的宿主，故保留这层浅填充 -->
-        <div id="reborn-loading-service-panel"
-          class="bg-elevated rounded-lg flex min-h-[220px] w-full flex-col gap-2 overflow-hidden p-5 font-mono text-[11px]">
+        <div
+          id="reborn-loading-service-panel"
+          class="bg-elevated rounded-lg flex min-h-[220px] w-full flex-col gap-2 overflow-hidden p-5 font-mono text-[11px]"
+        >
           <div class="text-dimmed mb-1 flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase">
             <span class="flex gap-1.5">
               <span class="bg-error/70 size-2 rounded-full" />

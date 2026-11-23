@@ -248,16 +248,19 @@ const showcaseOpenKeys = shallowRef<string[]>([]);
 /** 「垂直菜单」示例的折叠开关 */
 const isCollapse = shallowRef(false);
 
+/** 回显最近一次菜单事件。 */
+const menuEvent = shallowRef("");
+
 function handleSelect(index: string) {
-  console.log("select", index);
+  menuEvent.value = `选中 ${index}`;
 }
 
 function handleOpen(index: string) {
-  console.log("open", index);
+  menuEvent.value = `展开 ${index}`;
 }
 
 function handleClose(index: string) {
-  console.log("close", index);
+  menuEvent.value = `折叠 ${index}`;
 }
 
 // ─── 父级可选 ───────────────────────────────────────────────────
@@ -521,6 +524,7 @@ const codeString = computed(() => {
           </RebornMenuItem>
         </RebornMenu>
       </div>
+      <DemoNote v-if="menuEvent" tone="dimmed">{{ menuEvent }}</DemoNote>
     </Playground>
 
     <DemoSection
@@ -642,6 +646,7 @@ const codeString = computed(() => {
           </RebornMenu>
         </div>
       </DemoBlock>
+      <DemoNote v-if="menuEvent" tone="dimmed">{{ menuEvent }}</DemoNote>
     </DemoSection>
 
     <DemoSection title="子菜单缩进：no-indent">
