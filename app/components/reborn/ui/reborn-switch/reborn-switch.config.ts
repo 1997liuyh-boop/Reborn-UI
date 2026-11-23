@@ -17,7 +17,7 @@ export default {
       "relative inline-flex items-center rounded-full transition-colors ring-1 ring-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 peer-disabled:cursor-not-allowed data-[loading=true]:cursor-wait data-[loading=true]:opacity-80",
     // 胶囊和圆角型两端留白 2px；细线型由组合变体贴齐轨道边缘，不叠加横向位移和负边距。
     thumb:
-      "absolute left-0.5 right-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] top-0.5 w-auto flex items-center justify-center rounded-full bg-white shadow transition-[left,right] duration-200 ease-[ease-in-out] motion-reduce:transition-none",
+      "absolute left-[2px] right-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] top-[2px] w-auto flex items-center justify-center rounded-full bg-white shadow transition-[left,right] duration-200 ease-[ease-in-out] motion-reduce:transition-none",
     /**
      * 点内文案的网格容器：两态文案叠在同一格里，独立裁剪不影响滑块和波纹。
      * 固定宽度下 flex-1 + min-w-0 只吃轨道剩余空间，超出由文案自己省略。
@@ -37,7 +37,7 @@ export default {
   },
   variants: {
     /**
-     * 尺寸规格：胶囊和圆角型滑块四周留白固定 2px（基础槽的 left-0.5 / top-0.5），
+     * 尺寸规格：胶囊和圆角型滑块四周留白固定 2px，与滑块直径使用的 4px 扣减保持一致，
      * 选中位移 = 轨道宽 − 滑块直径 − 4px 留白。
      */
     // 按压只向轨道内侧加宽，松开后恢复；禁用、加载和减弱动效时不拉伸。
@@ -89,7 +89,7 @@ export default {
       },
       line: {
         track: "overflow-visible",
-        // top-1/2 + translate-y 居中盖掉基础槽的 top-0.5；补一圈淡描边把白滑块从浅色背景里衬出来
+        // top-1/2 + translate-y 居中盖掉基础槽的 top-[2px]；补一圈淡描边把白滑块从浅色背景里衬出来
         thumb: "top-1/2 -translate-y-1/2 ring-1 ring-black/10",
       },
     },
@@ -128,7 +128,7 @@ export default {
         inlineActive: "translate-x-0",
         inlineInactive: "translate-x-full",
         // 开态固定右边界，按压只向左侧伸展；关态方向相反。
-        thumb: "left-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] right-0.5 motion-safe:group-[:active:not([data-disabled=true])]/switch:left-[max(2px,calc(100%_-_var(--re-switch-thumb-size)*1.3_-_2px))]",
+        thumb: "left-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] right-[2px] motion-safe:group-[:active:not([data-disabled=true])]/switch:left-[max(2px,calc(100%_-_var(--re-switch-thumb-size)*1.3_-_2px))]",
         activeLabel: "font-medium",
         inactiveLabel: "text-gray-5",
       },
