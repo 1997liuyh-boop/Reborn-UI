@@ -6,6 +6,7 @@ import {
   tabsOverflows,
   tabsPositions,
   tabsSizes,
+  tabsTriggers,
   tabsTypes,
 } from "~/components/reborn/ui/reborn-tabs/reborn-tabs.config";
 import RebornTabPane from "~/components/reborn/ui/reborn-tabs/RebornTabPane.vue";
@@ -15,6 +16,7 @@ const typeOptions = tabsTypes.map((t) => ({ label: t, value: t }));
 const sizeOptions = tabsSizes.map((s) => ({ label: s, value: s }));
 const positionOptions = tabsPositions.map((p) => ({ label: p, value: p }));
 const colorOptions = tabsColors.map((c) => ({ label: c, value: c }));
+const triggerOptions = tabsTriggers.map((t) => ({ label: t === "click" ? "click（点击）" : "hover（悬停）", value: t }));
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -24,6 +26,9 @@ const defaultState: Record<string, any> = {
   size: "md",
   position: "top",
   color: "primary",
+  stretch: false,
+  trigger: "click",
+  draggable: false,
   editable: false,
   showAddButton: false,
   animation: false,
@@ -80,11 +85,27 @@ const controls: any = [
         defaultValue: "primary",
         props: { options: colorOptions },
       },
+      {
+        // 只在头部位于上下两侧时生效
+        label: "标签均分头部宽度",
+        key: "stretch",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: unknown, s: Record<string, any>) => s.position === "left" || s.position === "right",
+      },
     ],
   },
   {
     title: "行为",
     children: [
+      {
+        label: "触发方式",
+        key: "trigger",
+        component: "select" as const,
+        defaultValue: "click",
+        props: { options: triggerOptions },
+      },
+      { label: "拖拽排序", key: "draggable", component: "checkbox" as const, defaultValue: false },
       { label: "可编辑模式", key: "editable", component: "checkbox" as const, defaultValue: false },
       {
         label: "显示增加按钮",
@@ -117,6 +138,9 @@ const tabsCode = computed(() => {
     `size="${s.size}"`,
     `position="${s.position}"`,
     `color="${s.color}"`,
+    `:stretch="${s.stretch}"`,
+    `trigger="${s.trigger}"`,
+    `:draggable="${s.draggable}"`,
     `:editable="${s.editable}"`,
     `:show-add-button="${s.showAddButton}"`,
     `:animation="${s.animation}"`,
@@ -227,10 +251,10 @@ function handleDelete(key: TabKey) {
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="tabsCode" component-name="RebornTabs" title="交互演练场"
-      description="调节上方参数，实时查看标签页表现。左右位置会把布局转成横向。"
+      description="点「参数修改」调节参数，实时查看标签页表现。左右位置会把布局转成横向。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -247,8 +271,8 @@ function handleDelete(key: TabKey) {
         >
           <RebornTabs
             v-model:active-key="playKey" :type="state.type" :size="state.size" :position="state.position"
-            :color="state.color" :editable="state.editable" :show-add-button="state.showAddButton"
-            :animation="state.animation" :hide-content="state.hideContent" class="h-full" @change="changeCount++"
+            :color="state.color" :stretch="state.stretch" :trigger="state.trigger" :draggable="state.draggable"
+            :editable="state.editable" :show-add-button="state.showAddButton" :animation="state.animation" :hide-content="state.hideContent" class="h-full" @change="changeCount++"
           >
             <RebornTabPane key="overview" pane-key="overview" title="概览">
               <p class="text-muted text-sm">概览内容</p>

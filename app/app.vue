@@ -92,6 +92,16 @@ provide("navigation", sharedNavigation);
 const { isPanelVisible } = useUniDemoPanel();
 
 /**
+ * 回顶按钮的右侧让位：UniApp 预览面板占右缘 420px；演练场参数抽屉占着右栏目录时再让出 244px
+ * （抽屉 228px + 16px 间距），按钮不压在抽屉的表单上。
+ */
+const drawerDocked = usePlaygroundDrawerDocked();
+const backTopOffset = computed(() => {
+  if (drawerDocked.value) return isPanelVisible.value ? "lg:right-[244px] 2xl:right-[664px]" : "lg:right-[244px]";
+  return isPanelVisible.value ? "2xl:right-[420px]" : undefined;
+});
+
+/**
  * 顶栏与页脚跟随「已渲染的页面」而不是目标路由：
  * 客户端跳转时路由先变、新页面要等异步 setup 完成才替换旧页面，
  * 直接读 $route.meta 会让新页面的顶栏提前盖在旧页面上（如从首页点进组件总览）。
@@ -139,12 +149,12 @@ useNuxtApp().hook("page:finish", () => {
     <template v-if="!$route.path.endsWith('/reborn-back-top') && $route.meta.backTop !== false">
       <RebornBackTop
         :bottom="228" show-progress size="md" shape="square" icon="lucide:arrow-big-up"
-        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }"
+        :ui="{ wrapper: ['z-50', backTopOffset], icon: 'size-6' }"
       />
       <RebornBackTop
         direction="bottom" :bottom="180" show-progress size="md" shape="square"
         icon="lucide:arrow-big-down"
-        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }"
+        :ui="{ wrapper: ['z-50', backTopOffset], icon: 'size-6' }"
       />
     </template>
 

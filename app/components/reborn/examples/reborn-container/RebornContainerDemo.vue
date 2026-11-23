@@ -81,10 +81,10 @@ const containerCode = computed(() => {
       :code="containerCode"
       component-name="RebornContainer"
       title="交互演练场"
-      description="调节上方参数，实时查看容器的渲染标签与最大宽度；虚线是容器边界，浅色块与虚线之间的空隙是水平内边距。"
+      description="点「参数修改」调节参数，实时查看容器的渲染标签与最大宽度；虚线是容器边界，浅色块与虚线之间的空隙是水平内边距。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

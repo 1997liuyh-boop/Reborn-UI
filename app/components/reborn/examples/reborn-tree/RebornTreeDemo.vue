@@ -72,9 +72,25 @@ const defaultState: Record<string, any> = {
   draggable: false,
   disabled: false,
   animated: true,
+  heightPreset: "auto",
+  virtual: true,
+  itemHeight: 28,
 };
 
 const state = shallowRef<Record<string, any>>({ ...defaultState });
+
+/** 滚动区高度选项：auto 表示不传 height */
+const heightPresetOptions = [
+  { label: "不设置（按内容撑开）", value: "auto" },
+  { label: "120px", value: 120 },
+  { label: "200px", value: 200 },
+];
+
+/** 高度预设为 auto 时不下发 height */
+const playHeight = computed(() => {
+  const preset = state.value.heightPreset;
+  return preset === "auto" ? undefined : (preset as number);
+});
 
 /** 演练场的树数据：末尾带一个 disabled 节点，方便观察禁用态对点选/勾选/拖拽的屏蔽 */
 function makePlayTreeData(): TreeDataNode[] {
@@ -111,7 +127,34 @@ const controls: any = [
       { label: "多选", key: "multiple", component: "checkbox" as const, defaultValue: false },
       { label: "父子勾选不关联", key: "checkStrictly", component: "checkbox" as const, defaultValue: false },
       { label: "可拖拽", key: "draggable", component: "checkbox" as const, defaultValue: false },
-      { label: "展开动画", key: "animated", component: "checkbox" as const, defaultValue: true },
+      { label: "展开动画（虚拟滚动生效时关闭）", key: "animated", component: "checkbox" as const, defaultValue: true },
+    ],
+  },
+  {
+    title: "滚动区",
+    children: [
+      {
+        label: "滚动区最大高度（height）",
+        key: "heightPreset",
+        component: "select" as const,
+        defaultValue: "auto",
+        props: { options: heightPresetOptions },
+      },
+      {
+        label: "虚拟滚动",
+        key: "virtual",
+        component: "checkbox" as const,
+        defaultValue: true,
+        hide: (_: any, s: Record<string, any>) => s.heightPreset === "auto",
+      },
+      {
+        label: "虚拟滚动行高（px）",
+        key: "itemHeight",
+        component: "input-number" as const,
+        defaultValue: 28,
+        props: { min: 24, max: 48 },
+        hide: (_: any, s: Record<string, any>) => s.heightPreset === "auto" || !s.virtual,
+      },
     ],
   },
   {
@@ -140,6 +183,11 @@ const treeCode = computed(() => {
     `:animated="${s.animated}"`,
     `color="${s.color}"`,
   ];
+  // virtual 与 itemHeight 只在传了 height 时生效
+  if (playHeight.value !== undefined) {
+    props.push(`:height="${playHeight.value}"`, `:virtual="${s.virtual}"`);
+    if (s.virtual) props.push(`:item-height="${s.itemHeight}"`);
+  }
   return `<RebornTree\n  ${props.join("\n  ")}\n/>`;
 });
 
@@ -438,10 +486,10 @@ function scrollToGroup25() {
   <div class="flex w-full flex-col">
     <Playground
       v-model="state" :controls="controls" :code="treeCode" component-name="RebornTree"
-      title="交互演练场" description="调节上方参数，实时查看树在勾选、点选、连接线与拖拽等模式下的表现。"
+      title="交互演练场" description="点「参数修改」调节参数，实时查看树在勾选、点选、连接线与拖拽等模式下的表现。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -465,6 +513,9 @@ function scrollToGroup25() {
           :draggable="state.draggable"
           :disabled="state.disabled"
           :animated="state.animated"
+          :height="playHeight"
+          :virtual="state.virtual"
+          :item-height="state.itemHeight"
           @select="onPlaySelect"
           @check="onPlayCheck"
           @expand="onPlayExpand"

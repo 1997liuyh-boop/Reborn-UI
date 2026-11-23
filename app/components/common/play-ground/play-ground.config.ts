@@ -10,8 +10,7 @@
  * 文档页 /getting-started/demo-guidelines。
  * ────────────────────────────────────────────────────────────────
  *
- * 布局：上方控制区、下方预览区。分组用细分隔线组织，字段统一使用中号控件；
- * 按控制区自身宽度切换列数，避免文档侧栏挤窄后仍强行排四列。
+ * 布局：预览区占满卡片；控件不在卡片里，点标题栏的「参数修改」后在右侧抽屉的竖排表单里调。
  */
 export default {
     slots: {
@@ -21,46 +20,42 @@ export default {
         /** 小节标题：不再使用页面级 3xl 字号，避免与文档页大标题抢层级 */
         headerTitle: "text-highlighted text-base font-semibold tracking-tight",
         headerDesc: "text-muted mt-1 text-sm",
+        /** 标题栏右侧：参数入口 + tag 插槽（重置按钮等） */
+        headerActions: "flex shrink-0 items-center gap-2",
         headerTag: "text-muted border-default shrink-0 rounded-md border px-2 py-0.5 text-sm font-medium",
 
         /**
-         * 主体容器：上下排布，无背景、无投影，仅靠分隔线切分控制区与预览区。
-         * 容器只留圆角不裁剪，把裁剪下移到 previewPanel：
-         * 容器裁剪会切掉控件的 1px 边框与滑块在最小值时溢出的拖柄。
+         * 主体容器：无背景、无投影，补充内容与预览区之间靠分隔线切分。
+         * 容器只留圆角不裁剪，把裁剪下移到 previewPanel。
          */
         container: "divide-default flex flex-col divide-y rounded-sm",
-        /** 控制区：无底色，与预览区靠 divide 分隔 */
-        controlPanel: "@container flex min-w-0 flex-col gap-5 py-5",
-        /** 分组标题与横线承接字段，减少竖向装饰条的视觉干扰 */
-        group: "flex min-w-0 flex-col gap-3",
-        groupTitleWrapper: "flex min-w-0 items-center gap-3",
-        groupTitleText: "text-highlighted shrink-0 text-sm font-semibold",
-        groupTitleLine: "bg-gray-3 h-px min-w-4 flex-1",
-        /** 控件栅格按容器宽度排一、二或四列；最大列数改动时同步 Playground 里的 COLUMNS */
-        controlGrid: "grid grid-cols-1 gap-x-4 gap-y-3 @sm:grid-cols-2 @4xl:grid-cols-4",
-        /**
-         * 一格：标签在上、控件在下，算作一行里的一个控件。
-         * 组内底部对齐，长标签自然换行；纯勾选框行不再预留空标签。
-         * 子项要 min-w-0：栅格项默认按内容最小宽度撑开，长选项文案的下拉框会顶出格子
-         */
-        fieldWrapper: "flex min-w-0 flex-col justify-end gap-1.5 *:min-w-0",
-        fieldLabel: "text-muted flex min-w-0 items-end justify-between gap-2 text-sm font-medium",
-        fieldValue: "text-default bg-elevated shrink-0 rounded-sm px-1.5 font-mono text-sm tabular-nums",
-        /** 状态项整行可点，文字与勾选框分居两端，并与输入框保持相同的高度 */
-        checkboxControl: "border-gray-3 hover:border-gray-4 hover:bg-elevated/50 focus-within:border-primary/50 has-[:checked]:border-primary/40 has-[:checked]:bg-primary/5 flex min-h-8 w-full flex-row-reverse items-center justify-between gap-3 rounded-md border px-2.5 py-1.5 transition-colors data-[disabled=true]:opacity-50",
-        checkboxLabel: "min-w-0 text-sm font-medium wrap-break-word",
-        checkboxIndicator: "shrink-0 bg-gray-1",
-        sliderControl: "flex min-h-8 items-center px-1",
+        /** 补充内容区（extra 插槽，如事件回执） */
+        extraPanel: "flex min-w-0 flex-col gap-5 py-5",
 
         /**
-         * 折叠区内容：在组件默认的 overflow-hidden 外留出 8px，
-         * 否则控件的聚焦描边、滑块拖柄贴着边缘会被裁掉；内层再用负外边距抵消，保持与上方栅格对齐
+         * 参数抽屉：落在右栏目录里时与目录同宽，只有两百来像素，内边距收到 16px；
+         * 去掉大投影换成左描边，贴着正文时不压住内容。
          */
-        collapseContent: "-mx-2 px-2",
-        collapseInner: "flex flex-col gap-5 pt-3",
-        collapseToggle: "border-default text-muted hover:text-highlighted hover:bg-elevated/50 focus-visible:ring-primary/40 mt-4 flex min-h-8 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed px-3 py-1.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
-        collapseCount: "text-dimmed font-mono text-sm tabular-nums",
-        collapseIcon: "size-3.5 shrink-0 transition-transform duration-200 motion-reduce:transition-none",
+        drawerRoot: "border-gray-3 border-l shadow-none",
+        drawerHeader: "border-gray-3 border-b px-4 py-3",
+        drawerTitle: "text-base font-semibold",
+        drawerBody: "min-h-full p-4",
+        drawerFooter: "border-gray-3 flex gap-2 border-t px-4 py-3 *:flex-1",
+        /** 竖排表单：分组之间留 20px；表单项之间的间距用 RebornFormItem 自带的，不另设 */
+        form: "flex flex-col gap-5",
+        group: "flex min-w-0 flex-col",
+        groupTitleWrapper: "mb-3 flex min-w-0 items-center gap-3",
+        groupTitleText: "text-highlighted shrink-0 text-sm font-semibold",
+        groupTitleLine: "bg-gray-3 h-px min-w-4 flex-1",
+        /** 标签在上、控件在下：标签不设 py / mb，与控件的间隔沿用表单项自带的 */
+        formItemLabel: "text-muted min-w-0 items-start gap-1 text-sm leading-5 font-medium",
+        formItemContent: "min-w-0 *:min-w-0",
+        /** 抽屉只有两百来像素宽，长标签换行而不是截断 */
+        fieldLabelText: "min-w-0 wrap-break-word",
+        /** 问号按钮：悬停或聚焦时显示「参数名: 当前值」 */
+        fieldHelp: "text-dimmed hover:text-highlighted focus-visible:text-primary flex h-5 shrink-0 cursor-help items-center rounded-full focus-visible:outline-none",
+        fieldValue: "text-default bg-elevated ml-auto shrink-0 rounded-sm px-1.5 font-mono text-sm leading-5 tabular-nums",
+        sliderControl: "flex min-h-8 items-center px-1",
 
         /** 预览区：无底色、无光晕，示例本体直接落在画布表面上；这里承接容器让出的裁剪职责，拦住过宽示例 */
         previewPanel: "relative flex min-h-[320px] flex-col overflow-hidden",
@@ -78,7 +73,7 @@ export default {
         surface: {
             true: {
                 container: "border-gray-3 border",
-                controlPanel: "px-4 sm:px-5",
+                extraPanel: "px-4 sm:px-5",
                 previewPanel: "px-4",
             },
             false: {},

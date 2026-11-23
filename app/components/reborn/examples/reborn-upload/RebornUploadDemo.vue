@@ -97,6 +97,8 @@ const defaultState: Record<string, any> = {
   listType: 'text',
   drag: false,
   multiple: true,
+  directory: false,
+  accept: '',
   showFileList: true,
   disabled: false,
   autoUpload: true,
@@ -169,6 +171,8 @@ const controls: any = [
       { label: '列表形态', key: 'listType', component: 'select' as const, defaultValue: 'text', props: { options: listTypeOptions } },
       { label: '拖拽上传（drag）', key: 'drag', component: 'checkbox' as const, defaultValue: false },
       { label: '多选（multiple）', key: 'multiple', component: 'checkbox' as const, defaultValue: true },
+      { label: '只选文件夹（directory）', key: 'directory', component: 'checkbox' as const, defaultValue: false },
+      { label: '可选文件类型（accept，如 image/*）', key: 'accept', component: 'input' as const, defaultValue: '' },
       { label: '显示文件列表（show-file-list）', key: 'showFileList', component: 'checkbox' as const, defaultValue: true },
     ],
   },
@@ -189,7 +193,11 @@ const controls: any = [
 ]
 
 /** 演练场提示文字，与 tip 插槽内容一致 */
-const playTip = computed(() => (state.value.limit > 0 ? `最多上传 ${state.value.limit} 个文件` : '支持任意类型的文件'))
+const playTip = computed(() => {
+  const s = state.value
+  const type = s.accept ? `仅接受 ${s.accept}` : '支持任意类型的文件'
+  return s.limit > 0 ? `最多上传 ${s.limit} 个文件${s.accept ? `，${type}` : ''}` : type
+})
 
 /** 演练场右上角展示的传参明细：完整列出当前所有参数（含默认值） */
 const uploadCode = computed(() => {
@@ -200,10 +208,12 @@ const uploadCode = computed(() => {
     `list-type="${s.listType}"`,
     `:drag="${s.drag}"`,
     `:multiple="${s.multiple}"`,
+    `:directory="${s.directory}"`,
     `:show-file-list="${s.showFileList}"`,
     `:disabled="${s.disabled}"`,
     `:auto-upload="${s.autoUpload}"`,
   ]
+  if (s.accept) props.push(`accept="${s.accept}"`)
   if (s.limit > 0) props.push(`:limit="${s.limit}"`, ':on-exceed="handleExceed"')
   props.push(':on-change="handleChange"', ':on-remove="handleRemove"')
   if (!s.autoUpload) props.unshift('ref="uploadRef"')
@@ -620,7 +630,7 @@ const disabledCardFiles = ref<UploadUserFile[]>([
       title="交互演练场" description="切换列表形态与行为开关，选择文件后观察状态流转与钩子回调。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -631,7 +641,8 @@ const disabledCardFiles = ref<UploadUserFile[]>([
       <div class="flex w-full max-w-130 flex-col gap-4">
         <RebornUpload
           ref="playRef" v-model:file-list="playFiles" :list-type="state.listType" :drag="state.drag"
-          :multiple="state.multiple" :show-file-list="state.showFileList" :disabled="state.disabled"
+          :multiple="state.multiple" :directory="state.directory" :accept="state.accept"
+          :show-file-list="state.showFileList" :disabled="state.disabled"
           :auto-upload="state.autoUpload" :limit="state.limit || undefined" :http-request="playRequest"
           :on-change="onPlayChange" :on-exceed="onPlayExceed" :on-remove="onPlayRemove"
         >

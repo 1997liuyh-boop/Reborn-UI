@@ -153,10 +153,10 @@ const focusPlanes = [0.2, 0.5, 0.8];
       :code="depthImageCode"
       component-name="RebornDepthImage"
       title="交互演练场"
-      description="调节上方参数，把指针移进预览区，查看位移幅度、焦平面与补光的变化。"
+      description="点「参数修改」调节参数，把指针移进预览区，查看位移幅度、焦平面与补光的变化。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

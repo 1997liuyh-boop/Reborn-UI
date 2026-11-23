@@ -36,6 +36,7 @@ const defaultPlaygroundState = {
   color: "primary" as TransferColor,
   disabled: false,
   showSearch: false,
+  searchPlaceholder: "请输入搜索内容",
   headerSelect: "both",
   oneWay: false,
   showUndo: false,
@@ -134,6 +135,13 @@ const controls: any = [
       },
       { label: "禁用整体", key: "disabled", component: "checkbox" as const, defaultValue: false },
       { label: "显示搜索", key: "showSearch", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "搜索框占位文本",
+        key: "searchPlaceholder",
+        component: "input" as const,
+        defaultValue: "请输入搜索内容",
+        hide: (_: any, s: Record<string, any>) => !s.showSearch,
+      },
       { label: "单向模式", key: "oneWay", component: "checkbox" as const, defaultValue: false },
       { label: "显示撤回", key: "showUndo", component: "checkbox" as const, defaultValue: false },
     ],
@@ -159,6 +167,10 @@ function handleUndo(
 const codeString = computed(() => {
   const heightAttr =
     playgroundHeight.value != null ? `\n  :height="${playgroundHeight.value}"` : "";
+  // 占位文本只在开启搜索时有意义
+  const searchPlaceholderAttr = state.value.showSearch
+    ? `\n  search-placeholder="${state.value.searchPlaceholder}"`
+    : "";
   return `<RebornTransfer
   v-model="targetKeys"
   :data-source="dataSource"
@@ -166,7 +178,7 @@ const codeString = computed(() => {
   variant="${state.value.variant}"
   color="${state.value.color}"
   :disabled="${state.value.disabled}"
-  :show-search="${state.value.showSearch}"
+  :show-search="${state.value.showSearch}"${searchPlaceholderAttr}
   header-select="${state.value.headerSelect}"
   :one-way="${state.value.oneWay}"
   :show-undo="${state.value.showUndo}"
@@ -397,6 +409,7 @@ function getRankClass(value: unknown): string {
           :height="playgroundHeight"
           :disabled="state.disabled"
           :show-search="state.showSearch"
+          :search-placeholder="state.searchPlaceholder"
           :header-select="state.headerSelect"
           :one-way="state.oneWay"
           :show-undo="state.showUndo"

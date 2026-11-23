@@ -40,7 +40,13 @@ const defaultState: PlaygroundState = {
   color: "primary",
   variant: "outlined",
   activeType: "fill",
+  format: "",
   placeholder: "",
+  startPlaceholder: "",
+  endPlaceholder: "",
+  rangeSeparator: "至",
+  icon: "lucide:calendar",
+  prefixIcon: "",
   showArrow: true,
   arrowAnimation: false,
   clearable: true,
@@ -51,6 +57,7 @@ const defaultState: PlaygroundState = {
   maxCollapseTags: 1,
   closeOn: "mousedown",
   portal: true,
+  autoAdjustOverflow: true,
   shortcuts: false,
   shortcutPosition: "left",
   showWeekNumber: false,
@@ -83,6 +90,19 @@ const playgroundShortcuts = computed(() => {
   if (type === "daterange" || type === "datetimerange") return rangeShortcuts;
   return [];
 });
+
+/** 触发器分成开始、结束两栏的范围类型，与组件内部的划分一致 */
+const dualTypes: DatePickerType[] = ["daterange", "datetimerange", "monthrange", "quarterrange", "yearrange", "weekrange"];
+
+/** 当前类型是否显示两栏占位 */
+function isDualType(type: DatePickerType) {
+  return dualTypes.includes(type);
+}
+
+/** 当前类型是否用到起止分隔符：范围类型与 week */
+function usesSeparator(type: DatePickerType) {
+  return isDualType(type) || type === "week";
+}
 
 /**
  * 演练场控制面板配置：按参数的作用对象分组。
@@ -131,6 +151,47 @@ const controls = [
         component: "input" as const,
         defaultValue: "",
       },
+      {
+        label: "展示格式（format，留空按类型给默认值）",
+        key: "format",
+        component: "input" as const,
+        defaultValue: "",
+        props: { placeholder: "YYYY 年 M 月 D 日" },
+      },
+      {
+        label: "开始占位（仅范围类型，留空按类型给默认值）",
+        key: "startPlaceholder",
+        component: "input" as const,
+        defaultValue: "",
+        hide: (_value: string, s: Record<string, any>) => !isDualType(s.type),
+      },
+      {
+        label: "结束占位（仅范围类型，留空按类型给默认值）",
+        key: "endPlaceholder",
+        component: "input" as const,
+        defaultValue: "",
+        hide: (_value: string, s: Record<string, any>) => !isDualType(s.type),
+      },
+      {
+        label: "起止分隔符（范围类型与 week）",
+        key: "rangeSeparator",
+        component: "input" as const,
+        defaultValue: "至",
+        hide: (_value: string, s: Record<string, any>) => !usesSeparator(s.type),
+      },
+      {
+        label: "尾部图标名（icon）",
+        key: "icon",
+        component: "input" as const,
+        defaultValue: "lucide:calendar",
+      },
+      {
+        label: "前缀图标名（prefix-icon，留空不显示）",
+        key: "prefixIcon",
+        component: "input" as const,
+        defaultValue: "",
+        props: { placeholder: "lucide:calendar-days" },
+      },
       { label: "显示箭头", key: "showArrow", component: "checkbox" as const, defaultValue: true },
       { label: "箭头旋转动画", key: "arrowAnimation", component: "checkbox" as const, defaultValue: false },
       { label: "可清空", key: "clearable", component: "checkbox" as const, defaultValue: true },
@@ -163,6 +224,12 @@ const controls = [
         },
       },
       { label: "浮层传送到 body（portal）", key: "portal", component: "checkbox" as const, defaultValue: true },
+      {
+        label: "下方空间不足时向上展开",
+        key: "autoAdjustOverflow",
+        component: "checkbox" as const,
+        defaultValue: true,
+      },
     ],
   },
   {
@@ -241,6 +308,14 @@ const pickerCode = computed(() => {
     `variant="${s.variant}"`,
   ];
   if (s.placeholder) props.push(`placeholder="${s.placeholder}"`);
+  if (s.format) props.push(`format="${s.format}"`);
+  if (isDualType(s.type)) {
+    if (s.startPlaceholder) props.push(`start-placeholder="${s.startPlaceholder}"`);
+    if (s.endPlaceholder) props.push(`end-placeholder="${s.endPlaceholder}"`);
+  }
+  if (usesSeparator(s.type)) props.push(`range-separator="${s.rangeSeparator}"`);
+  if (s.icon) props.push(`icon="${s.icon}"`);
+  if (s.prefixIcon) props.push(`prefix-icon="${s.prefixIcon}"`);
   props.push(
     `:show-arrow="${s.showArrow}"`,
     `:arrow-animation="${s.arrowAnimation}"`,
@@ -252,6 +327,7 @@ const pickerCode = computed(() => {
     `:max-collapse-tags="${s.maxCollapseTags}"`,
     `close-on="${s.closeOn}"`,
     `:portal="${s.portal}"`,
+    `:auto-adjust-overflow="${s.autoAdjustOverflow}"`,
     `active-type="${s.activeType}"`,
     playgroundShortcuts.value.length ? ':shortcuts="shortcuts"' : ':shortcuts="[]"',
     `shortcut-position="${s.shortcutPosition}"`,
@@ -449,10 +525,10 @@ const slotPrefixDate = ref();
       :code="pickerCode"
       component-name="RebornDatePicker"
       title="交互演练场"
-      description="上方参数按作用对象分组：共用参数同时作用于选择框与面板，选择框参数只改触发器与浮层，面板参数透传给内部 RebornDatePickerPanel。下方可查看绑定值与事件顺序。"
+      description="参数按作用对象分组：共用参数同时作用于选择框与面板，选择框参数只改触发器与浮层，面板参数透传给内部 RebornDatePickerPanel。下方可查看绑定值与事件顺序。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

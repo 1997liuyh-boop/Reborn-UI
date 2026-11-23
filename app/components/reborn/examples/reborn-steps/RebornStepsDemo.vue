@@ -206,7 +206,7 @@ const firstTwoItems = items.slice(0, 2);
       description="调节尺寸、状态、进度和布局，查看节点圆环与步骤之间的连接关系。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" />
           </template>

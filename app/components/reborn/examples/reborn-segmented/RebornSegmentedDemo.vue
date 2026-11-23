@@ -159,10 +159,10 @@ const switchOptions: SegmentedOption[] = [{ label: '开启', value: true }, { la
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="segmentedCode" component-name="RebornSegmented"
-      title="交互演练场" description="调节上方参数，点击选项或用方向键切换，查看选中块的滑动与各尺寸的比例。"
+      title="交互演练场" description="点「参数修改」调节参数，点击选项或用方向键切换，查看选中块的滑动与各尺寸的比例。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

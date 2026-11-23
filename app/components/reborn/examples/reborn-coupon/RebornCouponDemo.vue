@@ -216,6 +216,17 @@ const controls = computed(() => [
       },
     ],
   },
+  {
+    title: "行为",
+    children: [
+      {
+        label: "悬浮上浮（hoverable）",
+        key: "hoverable",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
+    ],
+  },
 ]);
 
 const activeCode = computed(() => {
@@ -235,7 +246,7 @@ const activeCode = computed(() => {
     showDashedLineSizeControls.value
       ? `  :size="[${state.value.lineWidth}, ${state.value.lineHeight}]"`
       : `  :size="${state.value.size}"`,
-    state.value.hoverable ? "  hoverable" : null,
+    `  :hoverable="${state.value.hoverable}"`,
     "/>",
   ].filter(Boolean);
 

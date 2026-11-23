@@ -103,10 +103,10 @@ function onBack(event: MouseEvent | KeyboardEvent) {
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="pageHeaderCode" component-name="RebornPageHeader"
-      title="交互演练场" description="调节上方参数，查看标题、内容、图标与面包屑、扩展操作两个插槽在页头里的排布。"
+      title="交互演练场" description="点「参数修改」调节参数，查看标题、内容、图标与面包屑、扩展操作两个插槽在页头里的排布。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

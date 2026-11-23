@@ -585,12 +585,12 @@ function stepClasses(on: boolean) {
       : ["transition-transform duration-400 ease-(--ov-ease-expo) motion-reduce:transition-none", on ? "scale-y-100" : "scale-y-0"],
     /** 分类名 */
     title: on
-      ? "text-(--ov-text) max-[901px]:text-primary-foreground"
+      ? "text-(--ov-text) max-[901px]:text-gray-1"
       : "text-(--ov-text-3) group-hover/step:text-(--ov-text-2)",
-    count: on ? "max-[901px]:text-primary-foreground" : "",
+    count: on ? "max-[901px]:text-gray-1" : "",
     /** 说明行：选中时最多三行 */
     desc: on ? "line-clamp-3 whitespace-normal text-ellipsis text-(--ov-text-2)" : "block truncate text-(--ov-text-3)",
-    box: on ? "max-[901px]:bg-primary" : "",
+    box: on ? "max-[901px]:bg-gray-10" : "",
   };
 }
 </script>
@@ -663,14 +663,14 @@ function stepClasses(on: boolean) {
           >
             <a
               :href="`#${frameId(section.name)}`" :aria-current="activeIndex === index ? 'true' : undefined"
-              class="group/step focus-visible:rounded-md focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+              class="group/step focus-visible:rounded-md focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--ov-text)"
               :class="[STEP_BOX, stepClasses(activeIndex === index).box]"
             >
               <!-- 竖轨 -->
               <span
                 class="absolute top-[9px] bottom-[9px] left-0 w-0.5 rounded-[2px] bg-[color-mix(in_oklab,var(--color-gray-10)_10%,transparent)] max-[901px]:hidden"
                 aria-hidden="true"
-              ><i class="absolute inset-0 origin-top rounded-[inherit] bg-primary" :class="stepClasses(activeIndex === index).fill" /></span>
+              ><i class="absolute inset-0 origin-top rounded-[inherit] bg-(--ov-text)" :class="stepClasses(activeIndex === index).fill" /></span>
               <span
                 class="block text-[16px] leading-[1.4] font-semibold tracking-[-0.01em] transition-[color] duration-300 ease-[ease] max-[901px]:text-[14.5px]"
                 :class="stepClasses(activeIndex === index).title"
@@ -689,9 +689,10 @@ function stepClasses(on: boolean) {
 
       <!-- 右侧：分类卡片 -->
       <div ref="main" class="ov-ba-main" :class="cls.main" @focusin="onFocusIn">
-        <!-- 切换时的主色环 -->
+        <!-- 切换时的玻璃环：半透明中性色 + 模糊，不取主题色 -->
         <i
-          v-if="live" ref="ring" class="ov-ba-ring pointer-events-none invisible absolute inset-[5px] z-2 rounded-[20px] bg-primary"
+          v-if="live" ref="ring"
+          class="ov-ba-ring pointer-events-none invisible absolute inset-[5px] z-2 rounded-[20px] bg-[color-mix(in_oklab,var(--color-gray-10)_24%,transparent)] backdrop-blur-[10px]"
           aria-hidden="true"
         />
 

@@ -15,6 +15,9 @@ const state = ref<Record<string, any>>({
   square: false,
   round: false,
   circle: false,
+  check: false,
+  checked: true,
+  disabled: false,
   show: true,
 });
 
@@ -54,6 +57,15 @@ const controls = [
       { label: "正方形", key: "square", component: "checkbox" as const, defaultValue: false },
       { label: "圆形（circle，优先于 round）", key: "circle", component: "checkbox" as const, defaultValue: false },
       { label: "圆角（round）", key: "round", component: "checkbox" as const, defaultValue: false },
+      { label: "可选中模式（check）", key: "check", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "选中（v-model:checked）",
+        key: "checked",
+        component: "checkbox" as const,
+        defaultValue: true,
+        hide: (_: unknown, s: Record<string, any>) => !s.check,
+      },
+      { label: "禁用（屏蔽点击、选中与关闭）", key: "disabled", component: "checkbox" as const, defaultValue: false },
       { label: "显示（v-model:show）", key: "show", component: "checkbox" as const, defaultValue: true },
     ],
   },
@@ -71,6 +83,8 @@ const badgeCode = computed(() => {
   if (s.square) props.push("square");
   if (s.round) props.push("round");
   if (s.circle) props.push("circle");
+  if (s.check) props.push("check", 'v-model:checked="checked"');
+  if (s.disabled) props.push("disabled");
 
   return `<RebornBadge\n  ${props.join("\n  ")}\n/>`;
 });
@@ -122,6 +136,7 @@ function beforeCloseVerify(): Promise<boolean> {
     >
       <RebornBadge
         v-model:show="state.show"
+        v-model:checked="state.checked"
         :label="state.label"
         :color="state.color"
         :variant="state.variant"
@@ -130,6 +145,8 @@ function beforeCloseVerify(): Promise<boolean> {
         :square="state.square"
         :round="state.round"
         :circle="state.circle"
+        :check="state.check"
+        :disabled="state.disabled"
       />
     </Playground>
 

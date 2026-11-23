@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import type { AlertColor, AlertDirection } from "~/components/reborn/ui/reborn-alert/reborn-alert.config";
 import {
+  alertColors,
+  alertDirections,
   alertTypes,
   alertVariants,
 } from "~/components/reborn/ui/reborn-alert/reborn-alert.config";
@@ -8,6 +11,19 @@ import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
 
 const typeOptions = alertTypes.map((t) => ({ label: t, value: t }));
 const variantOptions = alertVariants.map((v) => ({ label: v, value: v }));
+/** 空值表示不传 color，配色由 type 映射 */
+const colorOptions = [{ label: "跟随 type（不传）", value: "" }, ...alertColors.map((c) => ({ label: c, value: c }))];
+/** 空值表示不传 icon，图标由 type 决定 */
+const iconOptions = [
+  { label: "跟随 type（不传）", value: "" },
+  { label: "lucide:bell", value: "lucide:bell" },
+  { label: "lucide:megaphone", value: "lucide:megaphone" },
+  { label: "lucide:shield-alert", value: "lucide:shield-alert" },
+];
+const directionOptions = alertDirections.map((d) => ({
+  label: d === "vertical" ? "垂直 vertical" : "水平 horizontal",
+  value: d,
+}));
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -15,12 +31,19 @@ const variantOptions = alertVariants.map((v) => ({ label: v, value: v }));
 const defaultState = {
   type: "info" as const,
   variant: "filled" as const,
+  color: "" as AlertColor | "",
+  icon: "",
   title: "",
-  content: "这是一条警告提示的内容",
+  description: "这是一条警告提示的内容",
   showIcon: true,
   closable: false,
   banner: false,
   center: false,
+  carousel: false,
+  direction: "vertical" as AlertDirection,
+  interval: 3000,
+  speed: 60,
+  rows: 1,
 };
 const state = ref({ ...defaultState });
 const playgroundShow = shallowRef(true);
@@ -48,8 +71,29 @@ const controls = [
         defaultValue: "filled",
         props: { options: variantOptions },
       },
+      {
+        label: "配色覆盖",
+        key: "color",
+        component: "select" as const,
+        defaultValue: "",
+        props: { options: colorOptions },
+      },
+      {
+        label: "自定义图标",
+        key: "icon",
+        component: "select" as const,
+        defaultValue: "",
+        props: { options: iconOptions },
+        hide: (_: unknown, s: Record<string, any>) => !s.showIcon,
+      },
       { label: "标题", key: "title", component: "input" as const, defaultValue: "" },
-      { label: "提示内容", key: "content", component: "input" as const, defaultValue: "这是一条警告提示的内容" },
+      {
+        label: "辅助文字（轮播时不渲染）",
+        key: "description",
+        component: "input" as const,
+        defaultValue: "这是一条警告提示的内容",
+        hide: (_: unknown, s: Record<string, any>) => s.carousel,
+      },
     ],
   },
   {
@@ -61,6 +105,45 @@ const controls = [
       { label: "内容居中", key: "center", component: "checkbox" as const, defaultValue: false },
     ],
   },
+  {
+    title: "消息轮播",
+    children: [
+      // 辅助开关：messages 是数组，这里只切换是否传入示例消息
+      { label: "传入轮播消息（messages）", key: "carousel", component: "checkbox" as const, defaultValue: false, codeIgnore: true },
+      {
+        label: "轮播方向",
+        key: "direction",
+        component: "select" as const,
+        defaultValue: "vertical",
+        props: { options: directionOptions },
+        hide: (_: unknown, s: Record<string, any>) => !s.carousel,
+      },
+      {
+        label: "切换间隔（ms，垂直轮播）",
+        key: "interval",
+        component: "input-number" as const,
+        defaultValue: 3000,
+        props: { min: 500, step: 500 },
+        hide: (_: unknown, s: Record<string, any>) => !s.carousel || s.direction !== "vertical",
+      },
+      {
+        label: "同时展示行数（垂直轮播）",
+        key: "rows",
+        component: "input-number" as const,
+        defaultValue: 1,
+        props: { min: 1, max: 3, step: 1 },
+        hide: (_: unknown, s: Record<string, any>) => !s.carousel || s.direction !== "vertical",
+      },
+      {
+        label: "滚动速率（px/s，水平跑马灯）",
+        key: "speed",
+        component: "input-number" as const,
+        defaultValue: 60,
+        props: { min: 10, step: 10 },
+        hide: (_: unknown, s: Record<string, any>) => !s.carousel || s.direction !== "horizontal",
+      },
+    ],
+  },
 ];
 
 /** 演练场右上角展示的等价代码 */
@@ -68,12 +151,21 @@ const alertCode = computed(() => {
   const s = state.value;
   const attrs: string[] = [`type="${s.type}"`];
   if (s.variant !== "filled") attrs.push(`variant="${s.variant}"`);
+  if (s.color) attrs.push(`color="${s.color}"`);
+  if (s.icon && s.showIcon) attrs.push(`icon="${s.icon}"`);
   if (s.title) attrs.push(`title="${s.title}"`);
   if (!s.showIcon) attrs.push(':show-icon="false"');
   if (s.closable) attrs.push("closable");
   if (s.banner) attrs.push("banner");
   if (s.center) attrs.push("center");
-  return `<RebornAlert ${attrs.join(" ")}>${s.content}</RebornAlert>`;
+  if (s.carousel) {
+    attrs.push(':messages="messages"');
+    if (s.direction === "horizontal") attrs.push('direction="horizontal"', `:speed="${s.speed}"`);
+    else attrs.push(`:interval="${s.interval}"`, `:rows="${s.rows}"`);
+  } else if (s.description) {
+    attrs.push(`description="${s.description}"`);
+  }
+  return `<RebornAlert ${attrs.join(" ")} />`;
 });
 
 // ─── 场景演示 ───────────────────────────────────────────────────
@@ -118,7 +210,7 @@ function resetState() {
       description="调节参数实时预览警告提示；banner 模式会去除边框和圆角作为顶部公告使用。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           重置配置
         </RebornButton>
       </template>
@@ -126,14 +218,20 @@ function resetState() {
         v-model:show="playgroundShow"
         :type="state.type"
         :variant="state.variant"
+        :color="state.color || undefined"
+        :icon="state.icon || undefined"
         :title="state.title || undefined"
+        :description="state.description || undefined"
         :show-icon="state.showIcon"
         :closable="state.closable"
         :banner="state.banner"
         :center="state.center"
-      >
-        {{ state.content }}
-      </RebornAlert>
+        :messages="state.carousel ? noticeMessages : undefined"
+        :direction="state.direction"
+        :interval="state.interval || 3000"
+        :speed="state.speed || 60"
+        :rows="state.rows || 1"
+      />
     </Playground>
 
     <DemoSection title="基础用法">

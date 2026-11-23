@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { DropdownOption, DropdownPlacement, DropdownValue } from "~/components/reborn/ui/reborn-dropdown/reborn-dropdown.config";
-import { computed, shallowRef } from 'vue';
+import { computed, shallowRef, watch } from 'vue';
 import { dropdownPlacements, dropdownTriggers } from "~/components/reborn/ui/reborn-dropdown/reborn-dropdown.config";
 import RebornDgroup from "~/components/reborn/ui/reborn-dropdown/RebornDgroup.vue";
 import RebornDoption from "~/components/reborn/ui/reborn-dropdown/RebornDoption.vue";
@@ -22,11 +22,27 @@ const defaultState: Record<string, any> = {
   trigger: "click",
   placement: "bottom",
   showArrow: false,
+  popupOffset: 4,
   disabled: false,
   hideOnSelect: true,
+  closeOn: "mousedown",
+  autoAdjustOverflow: true,
 };
 
 const state = shallowRef<Record<string, any>>({ ...defaultState });
+
+/** 未传 popupOffset 时的间距：无箭头为 4，带箭头为 12 */
+function defaultPopupOffset(showArrow: boolean) {
+  return showArrow ? 12 : 4;
+}
+
+// 开关箭头时，间距跟着回到对应的默认值
+watch(
+  () => state.value.showArrow,
+  (showArrow) => {
+    state.value = { ...state.value, popupOffset: defaultPopupOffset(showArrow) };
+  },
+);
 
 /** 当前是否为树形菜单 */
 const isTree = computed(() => state.value.structure === "tree");
@@ -126,7 +142,32 @@ const controls: any = [
     title: "行为控制",
     children: [
       { label: "显示箭头", key: "showArrow", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "浮层间距（px，无箭头默认 4，带箭头默认 12）",
+        key: "popupOffset",
+        component: "input-number" as const,
+        defaultValue: 4,
+        props: { min: 0, max: 40, step: 2 },
+      },
       { label: "选择后收起", key: "hideOnSelect", component: "checkbox" as const, defaultValue: true },
+      {
+        label: "外部关闭时机（close-on）",
+        key: "closeOn",
+        component: "select" as const,
+        defaultValue: "mousedown",
+        props: {
+          options: [
+            { label: "外部按下时 mousedown", value: "mousedown" },
+            { label: "外部点击后 click", value: "click" },
+          ],
+        },
+      },
+      {
+        label: "空间不足时翻转到对侧",
+        key: "autoAdjustOverflow",
+        component: "checkbox" as const,
+        defaultValue: true,
+      },
       { label: "禁用菜单", key: "disabled", component: "checkbox" as const, defaultValue: false },
     ],
   },
@@ -162,7 +203,11 @@ const dropdownCode = computed(() => {
     `trigger="${s.trigger}"`,
     `placement="${s.placement}"`,
     `:show-arrow="${s.showArrow}"`,
+    // 间距等于当前箭头状态下的默认值时不必传
+    ...(s.popupOffset === defaultPopupOffset(s.showArrow) ? [] : [`:popup-offset="${s.popupOffset}"`]),
     `:hide-on-select="${s.hideOnSelect}"`,
+    `close-on="${s.closeOn}"`,
+    `:auto-adjust-overflow="${s.autoAdjustOverflow}"`,
     `:disabled="${s.disabled}"`,
     "@select=\"handleSelect\"",
   ];
@@ -190,7 +235,10 @@ const dropdownCode = computed(() => {
           :trigger="state.trigger"
           :placement="state.placement"
           :show-arrow="state.showArrow"
+          :popup-offset="state.popupOffset"
           :hide-on-select="state.hideOnSelect"
+          :close-on="state.closeOn"
+          :auto-adjust-overflow="state.autoAdjustOverflow"
           :disabled="state.disabled"
           @select="handleSelect"
           @popup-visible-change="handleVisibleChange"

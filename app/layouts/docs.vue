@@ -36,12 +36,11 @@ const threeColUi = {
 const { collapsed: asideCollapsed, toggle: toggleAside } = useDocsAside();
 
 /**
- * 折叠后的窄轨：RebornMenu 折叠态固定 64px 宽，左列给 5.5rem
- * （UPageAside 的 -ms-4 / ps-4 相抵，再扣掉 24px 的右内边距，内容区正好 64px），正文吃满其余宽度。
+ * 折叠后的窄轨：左列宽度与 RebornMenu 的 64px 窄轨一致，正文吃满其余宽度。
  * lg 起就生效——折叠的意义就是把宽度让给正文，lg~2xl 也一样。<lg 根节点是 flex 列，这条内联样式不起作用。
  */
 const pageStyle = computed(() =>
-  asideCollapsed.value ? { gridTemplateColumns: "5.5rem minmax(0, 1fr)" } : undefined,
+  asideCollapsed.value ? { gridTemplateColumns: "64px minmax(0, 1fr)" } : undefined,
 );
 
 /**
@@ -74,7 +73,7 @@ const isComposablesDoc = computed(() => /^\/composables(?:\/|$)/.test(route.path
     <DocsScoreBackground v-if="isComponentDoc" />
     <DocsPixelBackground v-if="isComposablesDoc" />
     <!-- 分类导航已并入主顶栏右侧（对齐 Arco header），不再渲染二级 AppHeaderNav -->
-    <UContainer :class="isComponentsOverview ? 'max-w-none px-0 sm:px-0 lg:px-0' : undefined">
+    <UContainer :class="isComponentsOverview ? 'max-w-none px-0 sm:px-0 lg:px-0' : { 'lg:pl-0': !isRoot }">
       <div class="min-w-0 transition-[padding] duration-200" :class="isPanelVisible ? '2xl:pr-[420px]' : undefined">
         <UPage :ui="isRoot ? undefined : threeColUi" :style="isRoot ? undefined : pageStyle">
           <template v-if="!isRoot" #left>
@@ -104,12 +103,8 @@ const isComposablesDoc = computed(() => /^\/composables(?:\/|$)/.test(route.path
                 </button>
               </div>
 
-              <!--
-                右内边距固定 24px（主题默认 lg 26px、2xl 20px）：窄轨 5.5rem 扣掉它正好是菜单折叠态的 64px。
-                不随折叠切换 class——侧栏是两千多个节点的祖先，换一次 class 就是一次子树样式重算。
-                overflow-x 裁掉：折叠时列宽先落定、菜单再花 300ms 收窄，这段时间菜单比列宽，不裁会冒出横向滚动条。
-              -->
-              <UPageAside class="lg:overflow-x-hidden lg:pe-6 2xl:pr-6">
+              <!-- 去掉侧栏内边距与对应的负边距；折叠过渡期间裁掉超宽内容。 -->
+              <UPageAside class="py-0 lg:ms-0 lg:overflow-x-hidden lg:ps-0 lg:pe-0 2xl:pr-0">
                 <DocsAsideLeftTop />
                 <DocsAsideLeftBody />
               </UPageAside>

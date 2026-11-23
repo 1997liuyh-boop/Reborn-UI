@@ -18,6 +18,7 @@ const defaultState = {
   mode: "popup" as "popup" | "dialog",
   placement: "bottom" as Placement,
   indicator: "counter" as "counter" | "dots",
+  highlightPadding: 4,
   showOverlay: true,
   hideCounter: false,
   hidePrev: false,
@@ -47,6 +48,7 @@ const controls = [
       { label: "展示模式", key: "mode", component: "select" as const, defaultValue: "popup", props: { options: guideModes.map(value => ({ label: value === "popup" ? "浮层" : "对话框", value })) } },
       { label: "浮层方向", key: "placement", component: "select" as const, defaultValue: "bottom", props: { options: guidePlacements.map(value => ({ label: value, value })) } },
       { label: "步骤指示", key: "indicator", component: "select" as const, defaultValue: "counter", props: { options: [{ label: "数字", value: "counter" }, { label: "点状", value: "dots" }] } },
+      { label: "高亮框内边距（px）", key: "highlightPadding", component: "slider" as const, defaultValue: 4, props: { min: 0, max: 24, step: 1 } },
     ],
   },
   {
@@ -66,6 +68,7 @@ const guideCode = computed(() => `<RebornGuide
   :steps="[{ element: '#target', title: '功能介绍', body: '阅读后继续。', placement: '${state.value.placement}' }]"
   mode="${state.value.mode}"
   indicator="${state.value.indicator}"
+  :highlight-padding="${state.value.highlightPadding}"
   :show-overlay="${state.value.showOverlay}"
   :hide-counter="${state.value.hideCounter}"
   :hide-prev="${state.value.hidePrev}"
@@ -138,7 +141,7 @@ const steps = computed<GuideStep[]>(() => {
 /** 场景示例固定基础行为，演练场参数只影响演练场。 */
 const guideOptions = computed(() => scenario.value === "playground"
   ? { ...state.value, color: state.value.color || undefined }
-  : { color: undefined, mode: "popup" as const, indicator: scenarioIndicator.value, showOverlay: true, hideCounter: false, hidePrev: false, hideSkip: true });
+  : { color: undefined, mode: "popup" as const, indicator: scenarioIndicator.value, highlightPadding: 4, showOverlay: true, hideCounter: false, hidePrev: false, hideSkip: true });
 
 /** 选定场景后从第一步开始。 */
 function startGuide(nextScenario: Scenario, indicator: "counter" | "dots" = "counter") {
@@ -158,7 +161,7 @@ function onChange(index: number) {
   <div class="flex w-full min-w-0 flex-col" data-guide-demo>
     <Playground v-model="state" :controls="controls" :code="guideCode" component-name="RebornGuide" title="交互演练场" description="调节面板颜色、方向、步骤指示与操作按钮，再开始引导查看效果。">
       <template #tag>
-        <RebornButton size="sm" color="neutral" variant="soft" @click="resetState">重置配置</RebornButton>
+        <RebornButton size="md" color="neutral" variant="soft" @click="resetState">重置配置</RebornButton>
       </template>
       <div class="flex w-full flex-col items-center gap-4">
         <div ref="playgroundTarget" class="w-full max-w-sm rounded-lg border border-gray-4 bg-gray-1 p-4" data-guide-target="playground">
@@ -226,7 +229,7 @@ function onChange(index: number) {
       </DemoBlock>
     </DemoSection>
 
-    <RebornGuide v-model:current="current" :steps="steps" :color="guideOptions.color" :mode="guideOptions.mode" :indicator="guideOptions.indicator" :show-overlay="guideOptions.showOverlay" :hide-counter="guideOptions.hideCounter" :hide-prev="guideOptions.hidePrev" :hide-skip="guideOptions.hideSkip" @change="onChange" @finish="lastEvent = '已完成引导'" @skip="lastEvent = '已跳过引导'" @close="lastEvent = '已关闭引导'">
+    <RebornGuide v-model:current="current" :steps="steps" :color="guideOptions.color" :mode="guideOptions.mode" :indicator="guideOptions.indicator" :highlight-padding="guideOptions.highlightPadding" :show-overlay="guideOptions.showOverlay" :hide-counter="guideOptions.hideCounter" :hide-prev="guideOptions.hidePrev" :hide-skip="guideOptions.hideSkip" @change="onChange" @finish="lastEvent = '已完成引导'" @skip="lastEvent = '已跳过引导'" @close="lastEvent = '已关闭引导'">
       <template #featureBody="{ current: stepNumber, total }">
         <div class="flex flex-col gap-2">
           <p>当前为第 {{ stepNumber }} / {{ total }} 步，只替换正文区域。</p>

@@ -2,6 +2,7 @@
 import { ref, shallowRef } from 'vue';
 import {
   inputColors,
+  inputResizes,
   inputShapes,
   inputSizes,
   inputVariants,
@@ -12,17 +13,50 @@ import {
 /** 演练场默认状态 */
 const defaultState: Record<string, any> = {
   value: "",
+  type: "text",
+  placeholder: "请输入内容",
   size: "md",
   color: "primary",
   variant: "filled",
   shape: "square",
+  prefixIcon: "",
+  suffixIcon: "",
   clearable: true,
   showPassword: false,
+  separator: true,
   disabled: false,
   readonly: false,
   showWordLimit: false,
+  wordLimitPosition: "inside",
   maxlength: 20,
+  rows: 2,
+  autosize: false,
+  resize: "",
 };
+
+/** 类型选项：textarea 渲染为多行文本域，其余原样下发给原生 type */
+const typeOptions = [
+  { label: "text 单行文本", value: "text" },
+  { label: "textarea 多行文本", value: "textarea" },
+  { label: "number 数字", value: "number" },
+  { label: "password 密码", value: "password" },
+];
+
+/** 缩放选项，空串代表不传 resize */
+const resizeOptions = [
+  { label: "不传（默认）", value: "" },
+  ...inputResizes.map((r) => ({ label: r, value: r })),
+];
+
+/** 当前是否为多行文本域 */
+function isTextarea(s: Record<string, any>) {
+  return s.type === "textarea";
+}
+
+/** 字数统计只在 text 与 textarea 下生效 */
+function supportsWordLimit(s: Record<string, any>) {
+  return s.type === "text" || s.type === "textarea";
+}
 
 const state = ref<Record<string, any>>({ ...defaultState });
 
@@ -41,6 +75,19 @@ function resetState() {
 
 /** 演练场控制面板配置 */
 const controls: any = [
+  {
+    title: "基础属性",
+    children: [
+      {
+        label: "输入类型（type）",
+        key: "type",
+        component: "select" as const,
+        defaultValue: "text",
+        props: { options: typeOptions },
+      },
+      { label: "占位文本", key: "placeholder", component: "input" as const, defaultValue: "", codeSkipEmpty: true },
+    ],
+  },
   {
     title: "外观",
     children: [
@@ -62,7 +109,7 @@ const controls: any = [
         label: "形态变体",
         key: "variant",
         component: "select" as const,
-        defaultValue: "filled",
+        defaultValue: "outlined",
         props: { options: inputVariants.map((v) => ({ label: v, value: v })) },
       },
       {
@@ -71,6 +118,24 @@ const controls: any = [
         component: "select" as const,
         defaultValue: "square",
         props: { options: inputShapes.map((s) => ({ label: s, value: s })) },
+      },
+      {
+        label: "前缀图标（仅单行）",
+        key: "prefixIcon",
+        component: "input" as const,
+        defaultValue: "",
+        codeSkipEmpty: true,
+        props: { placeholder: "如 lucide:search" },
+        hide: (_: string, s: Record<string, any>) => isTextarea(s),
+      },
+      {
+        label: "后缀图标（仅单行）",
+        key: "suffixIcon",
+        component: "input" as const,
+        defaultValue: "",
+        codeSkipEmpty: true,
+        props: { placeholder: "如 lucide:calendar" },
+        hide: (_: string, s: Record<string, any>) => isTextarea(s),
       },
       {
         label: "最大长度",
@@ -82,19 +147,91 @@ const controls: any = [
     ],
   },
   {
+    title: "多行文本域",
+    children: [
+      {
+        label: "行数（rows）",
+        key: "rows",
+        component: "slider" as const,
+        defaultValue: 2,
+        props: { min: 1, max: 10, step: 1 },
+        hide: (_: number, s: Record<string, any>) => !isTextarea(s),
+      },
+      {
+        label: "高度自适应（autosize）",
+        key: "autosize",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: boolean, s: Record<string, any>) => !isTextarea(s),
+      },
+      {
+        label: "手动缩放（resize）",
+        key: "resize",
+        component: "select" as const,
+        defaultValue: "",
+        codeSkipEmpty: true,
+        props: { options: resizeOptions },
+        hide: (_: string, s: Record<string, any>) => !isTextarea(s),
+      },
+    ],
+  },
+  {
     title: "行为",
     children: [
-      { label: "可清空", key: "clearable", component: "checkbox" as const, defaultValue: true },
-      { label: "密码切换", key: "showPassword", component: "checkbox" as const, defaultValue: false },
-      { label: "字数统计", key: "showWordLimit", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "可清空（仅单行）",
+        key: "clearable",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: boolean, s: Record<string, any>) => isTextarea(s),
+      },
+      {
+        label: "密码切换（仅单行）",
+        key: "showPassword",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: boolean, s: Record<string, any>) => isTextarea(s),
+      },
+      {
+        label: "竖分割线（清除、密码开关与后缀之间）",
+        key: "separator",
+        component: "checkbox" as const,
+        defaultValue: true,
+        hide: (_: boolean, s: Record<string, any>) => isTextarea(s),
+      },
+      {
+        label: "字数统计（需设最大长度）",
+        key: "showWordLimit",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: boolean, s: Record<string, any>) => !supportsWordLimit(s),
+      },
+      {
+        label: "字数统计位置",
+        key: "wordLimitPosition",
+        component: "select" as const,
+        defaultValue: "inside",
+        props: {
+          options: [
+            { label: "inside 输入框内", value: "inside" },
+            { label: "outside 输入框下方", value: "outside" },
+          ],
+        },
+        hide: (_: string, s: Record<string, any>) => !supportsWordLimit(s) || !s.showWordLimit,
+      },
+    ],
+  },
+  {
+    title: "状态",
+    children: [
       { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
       { label: "只读", key: "readonly", component: "checkbox" as const, defaultValue: false },
     ],
   },
 ];
 
-/** 传参明细由 Playground 按 controls 自动生成；这里只补 controls 之外的固定参数与事件 */
-const codeExtras = ['placeholder="请输入内容"', '@change="handleChange"'];
+/** 传参明细由 Playground 按 controls 自动生成；这里只补 controls 之外的事件监听 */
+const codeExtras = ['@change="handleChange"'];
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
@@ -132,7 +269,7 @@ function parseThousands(text: string) {
     <Playground v-model="state" :controls="controls" :code-extras="codeExtras" component-name="RebornInput"
       title="交互演练场" description="调节尺寸、配色、形态与行为开关，实时预览输入框表现；filled 形态聚焦时背景转为 bg-gray-1 并出现主题色描边。">
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -141,10 +278,30 @@ function parseThousands(text: string) {
       </template>
 
       <div class="flex w-full flex-col items-center gap-4">
-        <RebornInput v-model="state.value" class="max-w-sm" :size="state.size" :color="state.color"
-          :variant="state.variant" :shape="state.shape" :clearable="state.clearable" :show-password="state.showPassword"
-          :show-word-limit="state.showWordLimit" :maxlength="state.maxlength" :disabled="state.disabled"
-          :readonly="state.readonly" placeholder="请输入内容" @change="handleChange" />
+        <RebornInput
+          v-model="state.value"
+          class="max-w-sm"
+          :type="state.type"
+          :placeholder="state.placeholder"
+          :size="state.size"
+          :color="state.color"
+          :variant="state.variant"
+          :shape="state.shape"
+          :prefix-icon="state.prefixIcon"
+          :suffix-icon="state.suffixIcon"
+          :clearable="state.clearable"
+          :show-password="state.showPassword"
+          :separator="state.separator"
+          :show-word-limit="state.showWordLimit"
+          :word-limit-position="state.wordLimitPosition"
+          :maxlength="state.maxlength"
+          :rows="state.rows"
+          :autosize="state.autosize"
+          :resize="state.resize || undefined"
+          :disabled="state.disabled"
+          :readonly="state.readonly"
+          @change="handleChange"
+        />
 
         <DemoNote tone="dimmed">
           绑定值：<code>{{ state.value === "" ? "（空）" : state.value }}</code>

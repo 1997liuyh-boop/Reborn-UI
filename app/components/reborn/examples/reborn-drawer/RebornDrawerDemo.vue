@@ -13,7 +13,7 @@ import RebornInput from '~/components/reborn/ui/reborn-input/RebornInput.vue'
 const defaults = {
   direction: 'right' as DrawerDirection, size: '30%', title: '任务详情', withHeader: false,
   modal: true, modalPenetrable: false, lockScroll: true, closeOnClickModal: true,
-  closeOnPressEscape: true, openDelay: 0, closeDelay: 0, destroyOnClose: false, resizable: false,
+  closeOnPressEscape: true, openDelay: 0, closeDelay: 0, duration: 300, destroyOnClose: false, resizable: false,
 }
 const state = shallowRef({ ...defaults })
 const playgroundOpen = shallowRef(false)
@@ -24,15 +24,22 @@ const directions: { label: string, value: DrawerDirection }[] = [
 ]
 const controls: PlaygroundControlGroup[] = [
   { title: '面板', children: [
-    { label: '滑入方向', key: 'direction', component: 'select', props: { options: directions } },
-    { label: '尺寸（百分比或像素）', key: 'size', component: 'input' },
-    { label: '标题', key: 'title', component: 'input' },
-    ...['withHeader', 'resizable', 'destroyOnClose'].map((key, i) => ({ label: ['显示头部', '允许调整尺寸', '关闭后销毁'][i]!, key, component: 'checkbox' as const })),
+    { label: '滑入方向', key: 'direction', component: 'select', defaultValue: 'right', props: { options: directions } },
+    { label: '尺寸（百分比或像素）', key: 'size', component: 'input', defaultValue: '30%' },
+    { label: '显示头部', key: 'withHeader', component: 'checkbox', defaultValue: false },
+    { label: '标题（需显示头部）', key: 'title', component: 'input', defaultValue: '', hide: (_value, s) => !s.withHeader },
+    { label: '允许调整尺寸', key: 'resizable', component: 'checkbox', defaultValue: false },
+    { label: '关闭后销毁', key: 'destroyOnClose', component: 'checkbox', defaultValue: false },
   ] },
   { title: '遮罩与关闭', children: [
-    ...['modal', 'modalPenetrable', 'lockScroll', 'closeOnClickModal', 'closeOnPressEscape'].map((key, i) => ({ label: ['显示遮罩', '无遮罩时穿透', '锁定页面滚动', '点击遮罩关闭', 'ESC 关闭'][i]!, key, component: 'checkbox' as const })),
-    { label: '打开延迟（毫秒）', key: 'openDelay', component: 'input-number', props: { min: 0, step: 100 } },
-    { label: '关闭延迟（毫秒）', key: 'closeDelay', component: 'input-number', props: { min: 0, step: 100 } },
+    { label: '显示遮罩', key: 'modal', component: 'checkbox', defaultValue: true },
+    { label: '无遮罩时穿透', key: 'modalPenetrable', component: 'checkbox', defaultValue: false, hide: (_value, s) => s.modal },
+    { label: '锁定页面滚动', key: 'lockScroll', component: 'checkbox', defaultValue: true },
+    { label: '点击遮罩关闭', key: 'closeOnClickModal', component: 'checkbox', defaultValue: true },
+    { label: 'ESC 关闭', key: 'closeOnPressEscape', component: 'checkbox', defaultValue: true },
+    { label: '打开延迟（毫秒）', key: 'openDelay', component: 'input-number', defaultValue: 0, props: { min: 0, step: 100 } },
+    { label: '关闭延迟（毫秒）', key: 'closeDelay', component: 'input-number', defaultValue: 0, props: { min: 0, step: 100 } },
+    { label: '动画时长（毫秒）', key: 'duration', component: 'input-number', defaultValue: 300, props: { min: 0, max: 2000, step: 100 } },
   ] },
 ]
 const code = computed(() => `<RebornDrawer v-model="open"\n${Object.entries(state.value).map(([key, value]) => `  ${typeof value === 'string' ? '' : ':'}${key.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`)}="${value}"`).join('\n')}\n>\n  抽屉内容\n</RebornDrawer>`)
@@ -64,7 +71,7 @@ const childOpen = shallowRef(false)
 <template>
   <div class="flex w-full flex-col">
     <Playground v-model="state" :controls="controls" :code="code" component-name="RebornDrawer" title="交互演练场" description="调节参数后打开抽屉，查看方向、头部、遮罩和延迟关闭的实际效果。">
-      <template #tag><RebornButton size="sm" variant="text" @click="state = { ...defaults }">重置配置</RebornButton></template>
+      <template #tag><RebornButton size="md" variant="text" @click="state = { ...defaults }">重置配置</RebornButton></template>
       <div class="flex flex-col items-center gap-4">
         <RebornButton @click="playgroundOpen = true">打开抽屉</RebornButton>
         <DemoNote>{{ lastEvent }}</DemoNote>

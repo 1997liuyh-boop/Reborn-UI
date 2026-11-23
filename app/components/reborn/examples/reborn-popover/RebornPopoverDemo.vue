@@ -19,7 +19,12 @@ const defaultState: Record<string, any> = {
   modal: false,
   dismissible: true,
   closeOnScroll: true,
+  openDelay: 0,
+  closeDelay: 120,
 };
+
+/** 两个延时只在悬停触发时生效 */
+const hideUnlessHover = (_: any, s: Record<string, any>) => s.mode !== "hover";
 
 const state = ref<Record<string, any>>({ ...defaultState });
 
@@ -53,6 +58,22 @@ const controls: any = [
         defaultValue: "click",
         props: { options: [{ label: "点击 click", value: "click" }, { label: "悬停 hover", value: "hover" }] },
       },
+      {
+        label: "悬停打开延时 openDelay（ms）",
+        key: "openDelay",
+        component: "input-number" as const,
+        defaultValue: 0,
+        props: { min: 0, max: 2000, step: 50 },
+        hide: hideUnlessHover,
+      },
+      {
+        label: "移出关闭延时 closeDelay（ms）",
+        key: "closeDelay",
+        component: "input-number" as const,
+        defaultValue: 120,
+        props: { min: 0, max: 2000, step: 50 },
+        hide: hideUnlessHover,
+      },
       { label: "点击外部关闭 dismissible", key: "dismissible", component: "checkbox" as const, defaultValue: true },
       { label: "滚动关闭 closeOnScroll", key: "closeOnScroll", component: "checkbox" as const, defaultValue: true },
       { label: "遮罩 modal", key: "modal", component: "checkbox" as const, defaultValue: false },
@@ -68,6 +89,7 @@ const popoverCode = computed(() => {
     `  placement="${s.placement}"`,
     `  :side-offset="${s.sideOffset}"`,
     `  mode="${s.mode}"`,
+    ...(s.mode === "hover" ? [`  :open-delay="${s.openDelay}"`, `  :close-delay="${s.closeDelay}"`] : []),
     `  :arrow="${s.arrow}"`,
     `  :dismissible="${s.dismissible}"`,
     `  :close-on-scroll="${s.closeOnScroll}"`,
@@ -141,7 +163,7 @@ const actions = [
       title="交互演练场" description="调节方位、间距与关闭方式，点击按钮后再滚动页面或点击外部，查看气泡的定位与收起时机。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -153,7 +175,7 @@ const actions = [
         <RebornPopover
           v-model:open="playgroundOpen" :mode="state.mode" :placement="state.placement" :side-offset="state.sideOffset"
           :arrow="state.arrow" :modal="state.modal" :dismissible="state.dismissible"
-          :close-on-scroll="state.closeOnScroll"
+          :close-on-scroll="state.closeOnScroll" :open-delay="state.openDelay" :close-delay="state.closeDelay"
           :ui="{ content: 'w-48' }"
         >
           <RebornButton

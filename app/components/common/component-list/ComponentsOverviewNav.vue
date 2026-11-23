@@ -9,6 +9,8 @@ import { themeColors } from "~/utils/themeColor";
 const NAV_LINKS = [
   { label: "入门", to: "/getting-started" },
   { label: "组件", to: "/components" },
+  // 仓库：跳过总览，直接进组件文档
+  { label: "仓库", to: "/components/button/reborn-badge" },
   { label: "日志", to: "/changelogs" },
   { label: "Hook", to: "/composables" },
 ] as const;
@@ -101,7 +103,7 @@ const TONE = {
 
 /** 「工具」按钮 */
 const TOOLS = {
-  dark: "bg-white text-[#12141a] shadow-[inset_0_0_6px_1px_color-mix(in_oklab,var(--color-primary)_22%,transparent),0_4px_12px_-4px_rgb(8_10_16/0.35)] hover:bg-[color-mix(in_oklab,var(--color-primary)_6%,white)]",
+  dark: "bg-white text-[#12141a] shadow-[inset_0_0_6px_1px_rgb(8_8_10/0.1),0_4px_12px_-4px_rgb(8_8_10/0.35)] hover:bg-[#ececee]",
   light: "bg-[#12141a] text-white shadow-none hover:bg-[#2a2d36]",
 } as const;
 
@@ -124,10 +126,10 @@ const PANEL_ROW = "flex h-11 items-center justify-between gap-3 pr-2 pl-3";
       rounded-2xl py-0 pr-[7px] pl-[14px] text-[15px] tracking-[-0.01em] whitespace-nowrap backdrop-blur-[14px] backdrop-saturate-140
       [--nav-ease:cubic-bezier(0.2,0.8,0.2,1)]
       before:pointer-events-none before:absolute before:inset-0 before:-z-1 before:rounded-[inherit] before:bg-[rgb(8_10_16/0.38)]
-      before:bg-[linear-gradient(rgb(255_255_255/0.1),rgb(255_255_255/0.1))] before:shadow-[inset_0_1px_rgb(255_255_255/0.08)]
+      before:bg-[linear-gradient(rgb(255_255_255/0.12),rgb(255_255_255/0.07))] before:shadow-[inset_0_1px_rgb(255_255_255/0.16),inset_0_0_0_1px_rgb(255_255_255/0.06)]
       before:transition-opacity before:duration-[350ms] before:ease-[ease] before:content-['']
-      after:pointer-events-none after:absolute after:inset-0 after:-z-1 after:rounded-[inherit] after:bg-[rgb(255_255_255/0.74)]
-      after:shadow-[0_0_0_1px_rgb(10_14_24/0.06),0_8px_24px_-14px_rgb(10_20_50/0.3)]
+      after:pointer-events-none after:absolute after:inset-0 after:-z-1 after:rounded-[inherit] after:bg-[rgb(255_255_255/0.62)]
+      after:shadow-[0_0_0_1px_rgb(8_8_10/0.06),inset_0_1px_0_rgb(255_255_255/0.7),0_8px_24px_-14px_rgb(8_8_10/0.3)]
       after:transition-opacity after:duration-[350ms] after:ease-[ease] after:content-['']
       motion-reduce:before:transition-none motion-reduce:after:transition-none
       max-[641px]:top-3 max-[641px]:grid-cols-[1fr_auto] max-[641px]:pl-3"
@@ -174,7 +176,7 @@ const PANEL_ROW = "flex h-11 items-center justify-between gap-3 pr-2 pl-3";
     <div
       id="ov-nav-panel" :data-open="open" :inert="open ? undefined : true"
       class="ov-nav-panel absolute top-[calc(100%_+_8px)] right-0 w-[264px] rounded-2xl bg-gray-1 p-1.5 text-gray-10
-        shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-gray-10)_8%,transparent),0_1px_2px_rgb(8_10_16/0.05),0_24px_44px_-26px_rgb(10_20_50/0.34)]
+        shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-gray-10)_8%,transparent),0_1px_2px_rgb(8_10_16/0.05),0_24px_44px_-26px_rgb(8_8_10/0.34)]
         transition-[opacity,translate] ease-[ease] motion-reduce:transition-none max-[641px]:left-0 max-[641px]:w-auto"
       :class="open ? 'pointer-events-auto translate-y-0 opacity-100 duration-200' : 'pointer-events-none -translate-y-1.5 opacity-0 duration-[120ms]'"
     >

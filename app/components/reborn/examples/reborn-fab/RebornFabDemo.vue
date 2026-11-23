@@ -43,6 +43,11 @@ const state = ref<Record<string, any>>({
   expandable: true,
   attract: true,
   peekOnScroll: true,
+  disabled: false,
+  inactiveIcon: "lucide:plus",
+  activeIcon: "lucide:plus",
+  divider: true,
+  radius: 80,
 });
 
 /** 演练场控制面板配置 */
@@ -64,14 +69,52 @@ const controls = [
         defaultValue: "primary",
         props: { options: colorOptions },
       },
-      { label: "允许拖拽", key: "draggable", component: "checkbox" as const, defaultValue: true },
+      {
+        label: "未展开图标",
+        key: "inactiveIcon",
+        component: "input" as const,
+        defaultValue: "lucide:plus",
+        hide: (_: any, s: Record<string, any>) => s.useTriggerSlot,
+      },
+      {
+        label: "展开后图标",
+        key: "activeIcon",
+        component: "input" as const,
+        defaultValue: "lucide:plus",
+        hide: (_: any, s: Record<string, any>) => s.useTriggerSlot,
+      },
+      {
+        label: "分割线（仅 capsule）",
+        key: "divider",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: any, s: Record<string, any>) => s.useTriggerSlot || s.variant !== "capsule",
+      },
+      {
+        label: "环形半径（仅 circle，px）",
+        key: "radius",
+        component: "slider" as const,
+        defaultValue: 80,
+        props: { min: 40, max: 160, step: 4 },
+        hide: (_: any, s: Record<string, any>) => s.useTriggerSlot || s.variant !== "circle",
+      },
+    ],
+  },
+  {
+    title: "状态",
+    children: [{ label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false }],
+  },
+  {
+    title: "行为",
+    children: [
+      { label: "允许拖拽", key: "draggable", component: "checkbox" as const, defaultValue: false },
       { label: "开启展开", key: "expandable", component: "checkbox" as const, defaultValue: true },
       { label: "自动吸边", key: "attract", component: "checkbox" as const, defaultValue: true },
       {
         label: "滚动半隐藏",
         key: "peekOnScroll",
         component: "checkbox" as const,
-        defaultValue: true,
+        defaultValue: false,
       },
     ],
   },
@@ -115,19 +158,43 @@ const controls = [
   },
 ];
 
-/** 演练场右上角展示的等价代码 */
+/** 演练场右上角展示的传参明细：完整列出当前参数，变体专属的 prop 只在对应变体下出现 */
 const fabCode = computed(() => {
   const s = state.value;
-  const props: string[] = ['v-model="isActive"', `variant="${s.variant}"`];
 
-  if (s.color !== "primary") props.push(`color="${s.color}"`);
-  if (s.position !== "right-bottom") props.push(`position="${s.position}"`);
-  if (s.direction !== "top") props.push(`direction="${s.direction}"`);
-  if (s.trigger !== "click") props.push(`trigger="${s.trigger}"`);
-  if (!s.draggable) props.push(':draggable="false"');
-  if (!s.expandable) props.push(':expandable="false"');
-  if (!s.attract) props.push(':attract="false"');
-  if (!s.peekOnScroll) props.push(':peek-on-scroll="false"');
+  // 自定义触发器示例固定为不可展开，图标与展开方向都不参与
+  if (s.useTriggerSlot) {
+    const props: string[] = [
+      `color="${s.color}"`,
+      'position="right-bottom"',
+      `trigger="${s.trigger}"`,
+      `:disabled="${s.disabled}"`,
+      `:draggable="${s.draggable}"`,
+      ':expandable="false"',
+      `:attract="${s.attract}"`,
+      `:peek-on-scroll="${s.peekOnScroll}"`,
+      '@click="onClick"',
+    ];
+    return `<RebornFab\n  ${props.join("\n  ")}\n>\n  <template #trigger>\n    <!-- 自定义触发器 -->\n  </template>\n</RebornFab>`;
+  }
+
+  const props: string[] = [
+    'v-model="isActive"',
+    `variant="${s.variant}"`,
+    `color="${s.color}"`,
+    `position="${s.position}"`,
+    `direction="${s.direction}"`,
+    `trigger="${s.trigger}"`,
+    `inactive-icon="${s.inactiveIcon}"`,
+    `active-icon="${s.activeIcon}"`,
+    `:disabled="${s.disabled}"`,
+    `:draggable="${s.draggable}"`,
+    `:expandable="${s.expandable}"`,
+    `:attract="${s.attract}"`,
+    `:peek-on-scroll="${s.peekOnScroll}"`,
+  ];
+  if (s.variant === "capsule") props.push(`:divider="${s.divider}"`);
+  if (s.variant === "circle") props.push(`:radius="${s.radius}"`);
 
   return `<RebornFab\n  ${props.join("\n  ")}\n>\n  <!-- 展开后的操作项 -->\n</RebornFab>`;
 });
@@ -158,6 +225,9 @@ function handleAction(name: string) {
             v-model="state.isActive"
             :color="state.color"
             variant="float"
+            :disabled="state.disabled"
+            :inactive-icon="state.inactiveIcon"
+            :active-icon="state.activeIcon"
             :draggable="state.draggable"
             :attract="state.attract"
             :peek-on-scroll="state.peekOnScroll"
@@ -188,6 +258,9 @@ function handleAction(name: string) {
             v-model="state.isActive"
             :color="state.color"
             variant="capsule"
+            :disabled="state.disabled"
+            :inactive-icon="state.inactiveIcon"
+            :active-icon="state.activeIcon"
             :draggable="state.draggable"
             :attract="state.attract"
             :peek-on-scroll="state.peekOnScroll"
@@ -196,7 +269,7 @@ function handleAction(name: string) {
             :trigger="state.trigger"
             :top="state.customCoord ? '65vh' : undefined"
             :expandable="state.expandable"
-            divider
+            :divider="state.divider"
             :gap="{ top: 32, bottom: 32, left: 32, right: 32 }"
             :z-index="500"
           >
@@ -215,6 +288,10 @@ function handleAction(name: string) {
             v-model="state.isActive"
             :color="state.color"
             variant="circle"
+            :disabled="state.disabled"
+            :inactive-icon="state.inactiveIcon"
+            :active-icon="state.activeIcon"
+            :radius="state.radius"
             :draggable="state.draggable"
             :attract="state.attract"
             :peek-on-scroll="state.peekOnScroll"
@@ -241,6 +318,7 @@ function handleAction(name: string) {
         <RebornFab
           v-else
           position="right-bottom"
+          :disabled="state.disabled"
           :draggable="state.draggable"
           :expandable="false"
           :attract="state.attract"
@@ -300,7 +378,7 @@ function handleAction(name: string) {
       description="通过 #trigger 插槽可完全替换触发器结构，用于渲染带文字的胶囊按钮等复杂形态。"
     >
       <DemoNote tone="dimmed">
-        在演练场上方的控制区勾选「使用自定义触发器插槽」即可查看效果。
+        在演练场的「参数修改」里打开「使用自定义触发器插槽」即可查看效果。
       </DemoNote>
     </DemoSection>
   </div>

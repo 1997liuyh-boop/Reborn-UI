@@ -92,10 +92,10 @@ const brokenStatus = shallowRef("等待进入视口");
       :code="crowdCode"
       component-name="RebornCrowd"
       title="交互演练场"
-      description="调节上方参数，查看人群密度、行走速度与画布高度对人物大小的影响。"
+      description="点「参数修改」调节参数，查看人群密度、行走速度与画布高度对人物大小的影响。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

@@ -7,6 +7,9 @@
  * - <lg：退化为置顶的折叠条（与 UContentToc 的移动端形态一致），点标题展开目录。
  * 两个断点共用同一个 RebornAnchor 实例，只是外层显隐不同，不会重复挂两套滚动监听。
  *
+ * lg+ 根节点固定为一屏高，里面除了目录还留了一个铺满整栏的宿主节点（data-playground-drawer-host）：
+ * 演练场的「参数修改」抽屉挂进它里面，宽度与位置就和目录栏一致（见 Playground.vue）。
+ *
  * 本组件是 #right 槽里唯一的根节点：UPage 用 reka 的 Slot 把栅格类合并到槽内根节点上，
  * 多写一个根节点，栅格类只会落到第一个身上。
  *
@@ -74,13 +77,14 @@ const mobileOpen = shallowRef(false);
 
 <template>
   <!--
-    根节点即栅格单元：sticky 要能生效，元素得比行矮——max-h 把它限在一屏之内。
+    根节点即栅格单元：sticky 要能生效，元素得比行矮——<lg 用 max-h 限在一屏之内，lg+ 直接定为一屏高。
     <lg 的负外边距与半透明底、毛玻璃照抄 UContentToc 的移动端折叠条，lg+ 全部收回。
+    lg+ 滚动交给内层：根节点自己不滚，铺满它的抽屉宿主才不会跟着目录内容一起滚走。
   -->
   <nav
-    class="bg-default/75 sticky top-(--ui-header-height) z-10 -mx-4 max-h-[calc(100vh-var(--ui-header-height))] overflow-y-auto px-4 backdrop-blur sm:-mx-6 sm:px-6 lg:mx-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none scrollbar-hide"
+    class="bg-default/75 sticky top-(--ui-header-height) z-10 -mx-4 max-h-[calc(100vh-var(--ui-header-height))] overflow-y-auto px-4 backdrop-blur sm:-mx-6 sm:px-6 lg:mx-0 lg:h-[calc(100vh-var(--ui-header-height))] lg:overflow-visible lg:bg-transparent lg:px-0 lg:backdrop-blur-none scrollbar-hide"
   >
-    <div class="border-default flex flex-col border-b border-dashed pt-4 pb-2.5 sm:pt-6 sm:pb-4.5 lg:border-0 lg:py-8">
+    <div class="border-default flex flex-col border-b border-dashed pt-4 pb-2.5 sm:pt-6 sm:pb-4.5 lg:h-full lg:overflow-y-auto lg:border-0 lg:py-8 scrollbar-hide">
       <!-- <lg：标题行是折叠开关 -->
       <button
         type="button"
@@ -109,5 +113,11 @@ const mobileOpen = shallowRef(false);
       <!-- 社区链接（仅 lg+ 展示，组件自带断点） -->
       <DocsAsideRightBottom />
     </div>
+
+    <!--
+      演练场参数抽屉的宿主：左侧探进正文与目录之间的间隙 16px，右侧探到容器内边距的外沿（lg 起为 32px），
+      抽屉因此从目录栏左缘一直盖到右边界。自身不拦截指针，抽屉关着时目录照常可点。
+    -->
+    <div data-playground-drawer-host class="pointer-events-none absolute inset-y-0 -right-8 -left-4 hidden lg:block" />
   </nav>
 </template>

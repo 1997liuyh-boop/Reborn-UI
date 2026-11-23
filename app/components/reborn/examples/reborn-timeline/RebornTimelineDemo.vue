@@ -176,10 +176,10 @@ const stageItems: TimelineItemData[] = [
   <div class="flex w-full flex-col">
     <Playground
       v-model="state" :controls="controls" :code="timelineCode" component-name="RebornTimeline" title="交互演练场"
-      description="调节上方参数，实时查看时间线的方向、排序与时间戳落位。"
+      description="点「参数修改」调节参数，实时查看时间线的方向、排序与时间戳落位。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

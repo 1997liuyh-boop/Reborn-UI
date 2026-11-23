@@ -4,12 +4,16 @@ import { inputOtpColors, inputOtpSizes } from "~/components/reborn/ui/reborn-inp
 
 /** 演练场绑定值 */
 interface PlaygroundState {
+  length: number;
+  inputType: "text" | "number";
   size: typeof inputOtpSizes[number];
   color: typeof inputOtpColors[number];
   disabled: boolean;
 }
 
 const state = shallowRef<PlaygroundState>({
+  length: 4,
+  inputType: "number",
   size: "md",
   color: "primary",
   disabled: false,
@@ -20,6 +24,30 @@ const value2 = shallowRef("");
 
 /** 演练场控制面板配置 */
 const controls = [
+  {
+    title: "基础属性",
+    children: [
+      {
+        label: "位数（length）",
+        key: "length",
+        component: "slider" as const,
+        defaultValue: 4,
+        props: { min: 3, max: 8, step: 1 },
+      },
+      {
+        label: "输入类型（inputType）",
+        key: "inputType",
+        component: "select" as const,
+        defaultValue: "number",
+        props: {
+          options: [
+            { label: "number 仅数字", value: "number" },
+            { label: "text 任意字符", value: "text" },
+          ],
+        },
+      },
+    ],
+  },
   {
     title: "外观",
     children: [
@@ -54,6 +82,8 @@ const controls = [
     >
       <RebornInputOtp
         v-model="value1"
+        :length="state.length"
+        :input-type="state.inputType"
         :size="state.size"
         :color="state.color"
         :disabled="state.disabled"

@@ -21,6 +21,7 @@ const defaultState = {
   alt: '林舟的头像',
   icon: '',
   text: '林',
+  editable: false,
 };
 const state = ref({ ...defaultState });
 const editingIcon = ref(false);
@@ -49,11 +50,14 @@ const controls: PlaygroundControlGroup[] = [
     { label: '回退图标名称', key: 'icon', component: 'input', defaultValue: '', props: { ...inputProps, placeholder: 'lucide:user-round' } },
     { label: '回退文字', key: 'text', component: 'input', defaultValue: '林', props: inputProps },
   ] },
+  { title: '状态', children: [
+    { label: '可编辑遮罩（悬停或聚焦时显示）', key: 'editable', component: 'checkbox', defaultValue: false },
+  ] },
 ];
 /** 传参明细保留响应式图片候选和默认插槽。 */
 const avatarCode = computed(() => {
   const s = state.value;
-  return `<RebornAvatar\n  ${typeof s.size === 'number' ? ':size' : 'size'}="${s.size}"\n  shape="${s.shape}"\n  src="${s.src}"\n  src-set="${s.srcSet}"\n  alt="${s.alt}"\n  fit="${s.fit}"\n  icon="${s.icon}"\n  @error="handleError"\n>\n  ${s.text}\n</RebornAvatar>`;
+  return `<RebornAvatar\n  ${typeof s.size === 'number' ? ':size' : 'size'}="${s.size}"\n  shape="${s.shape}"\n  src="${s.src}"\n  src-set="${s.srcSet}"\n  alt="${s.alt}"\n  fit="${s.fit}"\n  icon="${s.icon}"\n  :editable="${s.editable}"\n  @error="handleError"\n>\n  ${s.text}\n</RebornAvatar>`;
 });
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
@@ -96,9 +100,9 @@ function toggleErrorImage() {
 <template>
   <div class="flex w-full flex-col">
     <Playground v-model="state" :controls="controls" :code="avatarCode" component-name="RebornAvatar" title="交互演练场" description="调节尺寸、形状和图片，查看图标与文字的回退顺序。">
-      <template #tag><RebornButton size="sm" variant="soft" color="neutral" @click="resetState"><Icon name="lucide:rotate-ccw" />重置配置</RebornButton></template>
+      <template #tag><RebornButton size="md" variant="soft" color="neutral" @click="resetState"><Icon name="lucide:rotate-ccw" />重置配置</RebornButton></template>
       <div class="flex flex-col items-center gap-6">
-        <RebornAvatar :size="state.size" :shape="state.shape" :src="state.src" :src-set="state.srcSet" :alt="state.alt" :fit="state.fit" :icon="state.icon" @error="handleError">{{ state.text }}</RebornAvatar>
+        <RebornAvatar :size="state.size" :shape="state.shape" :src="state.src" :src-set="state.srcSet" :alt="state.alt" :fit="state.fit" :icon="state.icon" :editable="state.editable" @error="handleError">{{ state.text }}</RebornAvatar>
         <DemoNote tone="dimmed">{{ lastEvent }}</DemoNote>
       </div>
     </Playground>

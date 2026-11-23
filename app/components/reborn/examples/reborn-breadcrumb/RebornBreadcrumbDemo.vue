@@ -134,7 +134,7 @@ const lastSelected = shallowRef("");
       description="切换分隔符样式、填入 Iconify 图标名替代文本分隔符，或调整最多展示数量观察折叠效果。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

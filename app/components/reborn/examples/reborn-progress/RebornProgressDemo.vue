@@ -17,6 +17,8 @@ const defaultState = {
   percent: 60, type: 'line' as ProgressType, size: 'md' as ProgressSize,
   status: 'default' as ProgressStatus, steps: 0, textInside: false, showText: true,
   strokeColor: '', customFormat: false,
+  // width / strokeWidth 组件默认不传；演练场用 0 表示不传，沿用 size 档位。
+  width: 0, strokeWidth: 0,
   striped: false, stripedFlow: false, duration: 3, flowDirection: 'normal' as ProgressFlowDirection,
 };
 const state = ref({ ...defaultState });
@@ -33,6 +35,8 @@ const controls: PlaygroundControlGroup[] = [
     { label: '尺寸', key: 'size', component: 'select', defaultValue: 'md', props: { options: progressSizes.map(value => ({ label: value.toUpperCase(), value })) } },
     { label: '百分比', key: 'percent', component: 'slider', defaultValue: 60, props: { min: 0, max: 100, step: 1 } },
     { label: '步骤数（0 为连续）', key: 'steps', component: 'input-number', defaultValue: 0, props: { min: 0, max: 20, step: 1 } },
+    { label: '宽度或外径（px，0 为按尺寸）', key: 'width', component: 'input-number', defaultValue: 0, props: { min: 0, max: 400, step: 10 } },
+    { label: '粗细（px，0 为按尺寸）', key: 'strokeWidth', component: 'input-number', defaultValue: 0, props: { min: 0, max: 32, step: 1 } },
     { label: '自定义颜色（留空用状态色）', key: 'strokeColor', component: 'input', defaultValue: '' },
     { label: '流动方向（normal 从左往右）', key: 'flowDirection', component: 'select', defaultValue: 'normal', props: { options: progressFlowDirections.map(value => ({ label: value, value })) } },
   ] },
@@ -57,7 +61,9 @@ function formatPercent(percentage: number) {
 /** 完整参数代码，可复制到真实页面。 */
 const progressCode = computed(() => {
   const s = state.value;
-  return `<RebornProgress\n  :percent="${s.percent}"\n  type="${s.type}"\n  size="${s.size}"\n  status="${s.status}"\n  :steps="${s.steps}"\n  :text-inside="${s.textInside}"\n  :show-text="${s.showText}"\n  :striped="${s.striped}"\n  :striped-flow="${s.stripedFlow}"\n  :duration="${s.duration}"\n  flow-direction="${s.flowDirection}"\n  :stroke-color='${JSON.stringify(s.strokeColor || undefined) || 'undefined'}'\n  :format="${s.customFormat ? `(percentage) => percentage + ' / 100'` : 'undefined'}"\n/>`;
+  // 0 表示未传，不写进代码。
+  const sizeLines = `${s.width > 0 ? `\n  :width="${s.width}"` : ''}${s.strokeWidth > 0 ? `\n  :stroke-width="${s.strokeWidth}"` : ''}`;
+  return `<RebornProgress\n  :percent="${s.percent}"\n  type="${s.type}"\n  size="${s.size}"${sizeLines}\n  status="${s.status}"\n  :steps="${s.steps}"\n  :text-inside="${s.textInside}"\n  :show-text="${s.showText}"\n  :striped="${s.striped}"\n  :striped-flow="${s.stripedFlow}"\n  :duration="${s.duration}"\n  flow-direction="${s.flowDirection}"\n  :stroke-color='${JSON.stringify(s.strokeColor || undefined) || 'undefined'}'\n  :format="${s.customFormat ? `(percentage) => percentage + ' / 100'` : 'undefined'}"\n/>`;
 });
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
@@ -90,13 +96,13 @@ function resetTask() {
   <div class="flex w-full flex-col">
     <Playground v-model="state" :controls="controls" :code="progressCode" component-name="RebornProgress" title="交互演练场" description="切换形态、步骤数、状态和文字设置，实时查看进度变化。">
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading><span class="icon-[lucide--rotate-ccw] size-3" /></template>
           重置配置
         </RebornButton>
       </template>
       <div class="flex w-full min-w-0 flex-col items-center gap-8 overflow-x-auto py-4">
-        <RebornProgress :percent="state.percent" :type="state.type" :size="state.size" :status="state.status" :steps="state.steps" :text-inside="state.textInside" :show-text="state.showText" :striped="state.striped" :striped-flow="state.stripedFlow" :duration="state.duration" :flow-direction="state.flowDirection" :stroke-color="state.strokeColor || undefined" :format="state.customFormat ? formatPercent : undefined" class="max-w-90" />
+        <RebornProgress :percent="state.percent" :type="state.type" :size="state.size" :width="state.width || undefined" :stroke-width="state.strokeWidth || undefined" :status="state.status" :steps="state.steps" :text-inside="state.textInside" :show-text="state.showText" :striped="state.striped" :striped-flow="state.stripedFlow" :duration="state.duration" :flow-direction="state.flowDirection" :stroke-color="state.strokeColor || undefined" :format="state.customFormat ? formatPercent : undefined" class="max-w-90" />
         <DemoNote tone="dimmed" class="font-mono text-xs">当前 {{ state.percent }}% · {{ state.type }} · {{ state.status }} · {{ state.steps || '连续' }}</DemoNote>
       </div>
     </Playground>

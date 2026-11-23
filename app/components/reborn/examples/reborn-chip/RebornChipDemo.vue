@@ -133,10 +133,10 @@ const hasUnread = shallowRef(true);
       :code="chipCode"
       component-name="RebornChip"
       title="交互演练场"
-      description="调节上方参数，实时查看角标在不同变体、语义色、尺寸与吸附位置下的表现。"
+      description="点「参数修改」调节参数，实时查看角标在不同变体、语义色、尺寸与吸附位置下的表现。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

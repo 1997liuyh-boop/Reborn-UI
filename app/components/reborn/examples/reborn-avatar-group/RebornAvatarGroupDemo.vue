@@ -60,7 +60,7 @@ const groupCode = computed(() => {
 <template>
   <div class="flex w-full flex-col">
     <Playground v-model="state" :controls="controls" :code="groupCode" component-name="RebornAvatarGroup" title="交互演练场" description="调节组尺寸、折叠数量和浮层主题，查看头像的继承与重叠。">
-      <template #tag><RebornButton size="sm" variant="soft" color="neutral" @click="resetState"><Icon name="lucide:rotate-ccw" />重置配置</RebornButton></template>
+      <template #tag><RebornButton size="md" variant="soft" color="neutral" @click="resetState"><Icon name="lucide:rotate-ccw" />重置配置</RebornButton></template>
       <div class="flex flex-col items-center gap-6 py-8">
         <RebornAvatarGroup
           :size="state.size" :shape="state.shape" :gap="state.gap" :collapse-avatars="state.collapseAvatars" :collapse-avatars-tooltip="state.collapseAvatarsTooltip" :max-collapse-avatars="state.maxCollapseAvatars"

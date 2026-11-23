@@ -327,7 +327,7 @@ onBeforeUnmount(() => {
     <Playground v-model="state" :controls="controls" :code="codeString" component-name="v-loading" title="交互演练场"
       description="实时调节遮罩参数；开启全屏模式后遮罩将覆盖整页并在 2 秒后自动关闭">
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

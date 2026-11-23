@@ -50,6 +50,7 @@ const defaultState = {
   highlightCurrentRow: false,
   pagination: false,
   showSummary: false,
+  sumText: '合计',
   emptyText: '暂无数据',
   emptyData: false,
 }
@@ -104,6 +105,7 @@ const controls: PlaygroundControlGroup[] = [
       { label: '高亮当前行', key: 'highlightCurrentRow', component: 'checkbox', defaultValue: false },
       { label: '启用本地分页', key: 'pagination', component: 'checkbox', defaultValue: false },
       { label: '显示合计', key: 'showSummary', component: 'checkbox', defaultValue: false },
+      { label: '合计行首列文字', key: 'sumText', component: 'input', defaultValue: '合计', hide: (value, model) => !model.showSummary },
     ],
   },
 ]
@@ -433,7 +435,7 @@ const tooltipArrow = shallowRef(true)
 const tooltipDisabled = shallowRef(false)
 /** 表级溢出提示：延迟 160ms 弹出，鼠标划过时不闪 */
 const overflowTooltip: TableProps['showOverflowTooltip'] = { openDelay: 160 }
-/** 表级提示样式：箭头与禁用由上方开关控制，只在这两个开关变化时重建 */
+/** 表级提示样式：箭头与禁用由演练场的开关控制，只在这两个开关变化时重建 */
 const tableTooltipOptions = computed<TableProps['tooltipOptions']>(() => ({ placement: 'top', closeDelay: 100, arrow: tooltipArrow.value, disabled: tooltipDisabled.value, ui: { content: 'max-w-80' } }))
 const formatTooltip: NonNullable<TableProps['tooltipFormatter']> = ({ column, content }) => `表级格式化 · ${  column.label  }：${  content}`
 const tooltipColumns: TableColumn[] = [
@@ -455,9 +457,9 @@ const fluidData = computed(() => fluidExpanded.value ? rows : rows2);
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" :code="tableCode" component-name="RebornTable" title="交互演练场" description="调节上方参数，查看表格外观、选择、展开与分页结果。">
+    <Playground v-model="state" :controls="controls" :code="tableCode" component-name="RebornTable" title="交互演练场" description="点「参数修改」调节参数，查看表格外观、选择、展开与分页结果。">
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading><Icon name="lucide:rotate-ccw" size="12" /></template>
           重置配置
         </RebornButton>

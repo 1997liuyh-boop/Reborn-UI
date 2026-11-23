@@ -31,9 +31,15 @@ const eccOptions = [
   { label: "H · 30% 容错", value: eccLevel.H },
 ];
 
+const logoShapeOptions = [
+  { label: "方形 square", value: "square" },
+  { label: "圆形 circle", value: "circle" },
+];
+
 const state = ref<Record<string, any>>({
   text: "https://www.leyifan.com/",
   ecc: eccLevel.H,
+  size: 200,
   mode: "circular",
   padding: 5,
   foreground: "#131313",
@@ -41,12 +47,21 @@ const state = ref<Record<string, any>>({
   backgroundTransparent: false,
   cornersSquareType: "extra-rounded",
   cornersDotType: "dot",
+  pdRadius: 10,
+  customPdColor: false,
+  pdColor: "#3b82f6",
   logo: "https://cms-image.leyifan.cn/img_reborn/index/icon-calculator.png",
   logoSize: 40,
   logoMargin: 4,
+  logoShape: "square",
   logoHideBackgroundDots: true,
   logoShadow: false,
 });
+
+/** pdRadius 是否参与计算：外框或内点没有指定具体样式时才回落到它 */
+function usesPdRadius(s: Record<string, any>) {
+  return !["rect", "extra-rounded", "dot"].includes(s.cornersSquareType) || !["rect", "dot"].includes(s.cornersDotType);
+}
 
 /** 演练场控制面板配置 */
 const controls = [
@@ -65,6 +80,13 @@ const controls = [
         component: "select" as const,
         defaultValue: eccLevel.H,
         props: { options: eccOptions },
+      },
+      {
+        label: "尺寸（px）",
+        key: "size",
+        component: "slider" as const,
+        defaultValue: 200,
+        props: { min: 120, max: 320, step: 10 },
       },
       {
         label: "内边距（px）",
@@ -98,6 +120,28 @@ const controls = [
         component: "select" as const,
         defaultValue: "dot",
         props: { options: cornerOptions },
+      },
+      {
+        label: "定位点圆角（外框或内点为默认时生效）",
+        key: "pdRadius",
+        component: "slider" as const,
+        defaultValue: 10,
+        props: { min: 0, max: 30, step: 1 },
+        hide: (_: any, s: Record<string, any>) => !usesPdRadius(s),
+      },
+      {
+        label: "自定义定位点颜色（关闭跟随前景色）",
+        key: "customPdColor",
+        component: "checkbox" as const,
+        defaultValue: false,
+        codeIgnore: true,
+      },
+      {
+        label: "定位点颜色",
+        key: "pdColor",
+        component: "color-picker" as const,
+        defaultValue: null,
+        hide: (_: any, s: Record<string, any>) => !s.customPdColor,
       },
       { label: "前景色", key: "foreground", component: "color-picker" as const, defaultValue: "#131313" },
       { label: "背景色", key: "background", component: "color-picker" as const, defaultValue: "#FFFFFF" },
@@ -133,6 +177,13 @@ const controls = [
         props: { min: 0, max: 20, step: 1 },
       },
       {
+        label: "Logo 形状",
+        key: "logoShape",
+        component: "select" as const,
+        defaultValue: "square",
+        props: { options: logoShapeOptions },
+      },
+      {
         label: "隐藏 Logo 下方码点",
         key: "logoHideBackgroundDots",
         component: "checkbox" as const,
@@ -149,13 +200,18 @@ const qrcodeCode = computed(() => {
   const props: string[] = [`text="${s.text}"`, `mode="${s.mode}"`];
 
   if (s.ecc !== eccLevel.H) props.push(`ecc="${s.ecc}"`);
+  if (s.size !== 200) props.push(`:size="${s.size}"`);
   if (s.padding !== 5) props.push(`:padding="${s.padding}"`);
   if (s.foreground !== "#131313") props.push(`foreground="${s.foreground}"`);
   if (s.backgroundTransparent) props.push("background-transparent");
   else if (s.background !== "#FFFFFF") props.push(`background="${s.background}"`);
   if (s.cornersSquareType !== "none") props.push(`corners-square-type="${s.cornersSquareType}"`);
   if (s.cornersDotType !== "none") props.push(`corners-dot-type="${s.cornersDotType}"`);
+  if (usesPdRadius(s) && s.pdRadius !== 10) props.push(`:pd-radius="${s.pdRadius}"`);
+  if (s.customPdColor) props.push(`pd-color="${s.pdColor}"`);
   if (s.logo) props.push(`logo="${s.logo}"`, `:logo-size="${s.logoSize}"`);
+  if (s.logo && s.logoMargin !== 4) props.push(`:logo-margin="${s.logoMargin}"`);
+  if (s.logo && s.logoShape === "circle") props.push('logo-shape="circle"');
   if (s.logoHideBackgroundDots) props.push("logo-hide-background-dots");
   if (s.logoShadow) props.push("logo-shadow");
 
@@ -259,6 +315,7 @@ function applyPreset(config: Record<string, any>) {
         <RebornQrcode
           :text="state.text"
           :ecc="state.ecc"
+          :size="state.size"
           :mode="state.mode"
           :padding="state.padding"
           :foreground="state.foreground"
@@ -266,9 +323,12 @@ function applyPreset(config: Record<string, any>) {
           :background-transparent="state.backgroundTransparent"
           :corners-square-type="state.cornersSquareType"
           :corners-dot-type="state.cornersDotType"
+          :pd-radius="state.pdRadius"
+          :pd-color="state.customPdColor ? state.pdColor : null"
           :logo="state.logo"
           :logo-size="state.logoSize"
           :logo-margin="state.logoMargin"
+          :logo-shape="state.logoShape"
           :logo-hide-background-dots="state.logoHideBackgroundDots"
           :logo-shadow="state.logoShadow"
         />

@@ -15,21 +15,34 @@ const sizeOptions = sliderSizes.map(s => ({ label: s.toUpperCase(), value: s as 
 const defaultState: Record<string, any> = {
   size: "md",
   color: "primary",
+  min: 0,
+  max: 100,
   step: 1,
+  prefixIcon: "",
+  suffixIcon: "",
+  showStops: false,
   reverse: false,
+  vertical: false,
+  height: 200,
   disabled: false,
   showValue: true,
+  range: false,
+  draggableTrack: false,
+  editable: false,
 };
 
 const state = ref<Record<string, any>>({ ...defaultState });
 
 /** 演练场滑块绑定值 */
 const playValue = shallowRef(40);
+/** 演练场范围模式的节点值 */
+const playValues = shallowRef([20, 60]);
 
 /** 重置演练场配置 */
 function resetState() {
   state.value = { ...defaultState };
   playValue.value = 40;
+  playValues.value = [20, 60];
 }
 
 /** 演练场控制面板配置 */
@@ -39,15 +52,63 @@ const controls: any = [
     children: [
       { label: "尺寸规格", key: "size", component: "select" as const, defaultValue: "md", props: { options: sizeOptions } },
       { label: "配色方案", key: "color", component: "select" as const, defaultValue: "primary", props: { options: colorOptions } },
+      // 两个区间错开，避免调出 min 大于 max 的无效组合
+      { label: "最小值", key: "min", component: "input-number" as const, defaultValue: 0, props: { min: -100, max: 50, step: 10 } },
+      { label: "最大值", key: "max", component: "input-number" as const, defaultValue: 100, props: { min: 60, max: 500, step: 10 } },
       { label: "步长", key: "step", component: "input-number" as const, defaultValue: 1, props: { min: 1, max: 25 } },
+      {
+        label: "左侧图标（Nuxt Icon 名）",
+        key: "prefixIcon",
+        component: "input" as const,
+        defaultValue: "",
+        props: { placeholder: "如 lucide:volume" },
+      },
+      {
+        label: "右侧图标（Nuxt Icon 名）",
+        key: "suffixIcon",
+        component: "input" as const,
+        defaultValue: "",
+        props: { placeholder: "如 lucide:volume-2" },
+      },
     ],
   },
   {
     title: "状态",
     children: [
+      { label: "显示间断点（步长调大后可见）", key: "showStops", component: "checkbox" as const, defaultValue: false },
       { label: "反向", key: "reverse", component: "checkbox" as const, defaultValue: false },
+      { label: "垂直模式", key: "vertical", component: "checkbox" as const, defaultValue: false },
+      {
+        // 仅垂直模式生效；组件不传时为 200px
+        label: "滑轨长度（px）",
+        key: "height",
+        component: "input-number" as const,
+        defaultValue: 200,
+        props: { min: 80, max: 400, step: 20 },
+        hide: (_: unknown, s: Record<string, any>) => !s.vertical,
+      },
       { label: "禁用", key: "disabled", component: "checkbox" as const, defaultValue: false },
       { label: "显示数值", key: "showValue", component: "checkbox" as const, defaultValue: true },
+    ],
+  },
+  {
+    title: "行为",
+    children: [
+      { label: "范围选择（绑定 v-model:values）", key: "range", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "选区整体拖拽",
+        key: "draggableTrack",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: unknown, s: Record<string, any>) => !s.range,
+      },
+      {
+        label: "可编辑节点（点轨道添加，拖离删除）",
+        key: "editable",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: unknown, s: Record<string, any>) => !s.range,
+      },
     ],
   },
 ];
@@ -56,14 +117,24 @@ const controls: any = [
 const sliderCode = computed(() => {
   const s = state.value;
   const props: string[] = [
-    `v-model="value"`,
+    s.range ? `v-model:values="values"` : `v-model="value"`,
     `size="${s.size}"`,
     `color="${s.color}"`,
+    `:min="${s.min}"`,
+    `:max="${s.max}"`,
     `:step="${s.step}"`,
+    `:show-stops="${s.showStops}"`,
     `:reverse="${s.reverse}"`,
+    `:vertical="${s.vertical}"`,
     `:disabled="${s.disabled}"`,
     `:show-value="${s.showValue}"`,
+    `:range="${s.range}"`,
   ];
+  // 只在各自生效的前提下列出
+  if (s.vertical) props.push(`:height="${s.height}"`);
+  if (s.range) props.push(`:draggable-track="${s.draggableTrack}"`, `:editable="${s.editable}"`);
+  if (s.prefixIcon) props.push(`prefix-icon="${s.prefixIcon}"`);
+  if (s.suffixIcon) props.push(`suffix-icon="${s.suffixIcon}"`);
   return `<RebornSlider\n  ${props.join("\n  ")}\n/>`;
 });
 
@@ -158,10 +229,10 @@ const customThumbUi = { thumb: "h-5 w-7.5 rounded-full bg-warning" };
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="sliderCode" component-name="RebornSlider" title="交互演练场"
-      description="调节上方参数，实时查看滑块表现；方向键 ←/→（↑/↓）可在聚焦滑块后步进取值。"
+      description="点「参数修改」调节参数，实时查看滑块表现；方向键 ←/→（↑/↓）可在聚焦滑块后步进取值。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -170,12 +241,17 @@ const customThumbUi = { thumb: "h-5 w-7.5 rounded-full bg-warning" };
       </template>
 
       <div class="flex w-full flex-col items-center gap-6">
+        <!-- 垂直模式的滑轨长度由 height 决定，不再套水平宽度 -->
         <RebornSlider
-          v-model="playValue" class="w-full max-w-sm" :size="state.size" :color="state.color"
-          :step="state.step" :reverse="state.reverse" :disabled="state.disabled" :show-value="state.showValue"
+          v-model="playValue" v-model:values="playValues" :class="state.vertical ? '' : 'w-full max-w-sm'"
+          :size="state.size" :color="state.color" :min="state.min" :max="state.max" :step="state.step"
+          :show-stops="state.showStops" :reverse="state.reverse" :vertical="state.vertical" :height="state.height"
+          :prefix-icon="state.prefixIcon || undefined" :suffix-icon="state.suffixIcon || undefined"
+          :disabled="state.disabled" :show-value="state.showValue" :range="state.range"
+          :draggable-track="state.draggableTrack" :editable="state.editable"
         />
         <DemoNote tone="dimmed" class="font-mono text-xs">
-          value: {{ playValue }} · Props: { size: '{{ state.size }}', color: '{{ state.color }}', step:
+          {{ state.range ? `values: ${JSON.stringify(playValues)}` : `value: ${playValue}` }} · Props: { size: '{{ state.size }}', color: '{{ state.color }}', step:
           {{ state.step }}, reverse: {{ state.reverse }} }
         </DemoNote>
       </div>

@@ -11,6 +11,10 @@ interface RatePlaygroundState {
   size: typeof rateSizes[number];
   color: typeof rateColors[number];
   count: number;
+  icon: string;
+  activeIcon: string;
+  halfIcon: string;
+  voidColor: string;
   trigger: typeof rateTriggers[number];
   allowHalf: boolean;
   clearable: boolean;
@@ -22,6 +26,10 @@ const state = ref<RatePlaygroundState>({
   size: "md",
   color: "warning",
   count: 5,
+  icon: "carbon:star-filled",
+  activeIcon: "carbon:star-filled",
+  halfIcon: "",
+  voidColor: "",
   trigger: "click",
   allowHalf: false,
   clearable: false,
@@ -57,6 +65,37 @@ const controls = [
         component: "slider" as const,
         defaultValue: 5,
         props: { min: 1, max: 10, step: 1 },
+      },
+      {
+        label: "未选中图标（Nuxt Icon 名）",
+        key: "icon",
+        component: "input" as const,
+        defaultValue: "carbon:star-filled",
+      },
+      {
+        label: "选中图标（Nuxt Icon 名）",
+        key: "activeIcon",
+        component: "input" as const,
+        defaultValue: "carbon:star-filled",
+      },
+      {
+        // 仅半星时生效；留空沿用选中图标
+        label: "半星图标（留空同选中图标）",
+        key: "halfIcon",
+        component: "input" as const,
+        defaultValue: "",
+        codeSkipEmpty: true,
+        props: { placeholder: "如 carbon:star-half" },
+        hide: (_: unknown, s: Record<string, any>) => !s.allowHalf,
+      },
+      {
+        // 留空表示不传，未选中图标取文字色的 30% 不透明度
+        label: "未选中颜色（留空用默认）",
+        key: "voidColor",
+        component: "input" as const,
+        defaultValue: "",
+        codeSkipEmpty: true,
+        props: { placeholder: "如 #FF383F" },
       },
     ],
   },
@@ -151,6 +190,10 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
         :size="state.size"
         :color="state.color"
         :count="state.count"
+        :icon="state.icon"
+        :active-icon="state.activeIcon"
+        :half-icon="state.halfIcon || undefined"
+        :void-color="state.voidColor || undefined"
         :trigger="state.trigger"
         :allow-half="state.allowHalf"
         :clearable="state.clearable"

@@ -59,8 +59,10 @@ const PLUGIN_COLUMNS: Array<{ label: string; items: PluginLink[] }> = [
 
 /** 胶囊里的普通链接；delay 是展开时逐个出现的延迟，沿用原模板从左到右递减的节奏 */
 const NAV_LINKS = [
-  { label: "入门", to: "/getting-started", delay: 640 },
-  { label: "组件", to: "/components", delay: 570 },
+  { label: "入门", to: "/getting-started", delay: 710 },
+  { label: "组件", to: "/components", delay: 640 },
+  // 仓库：跳过总览，直接进组件文档
+  { label: "仓库", to: "/components/button/reborn-badge", delay: 570 },
   { label: "Hook", to: "/composables", delay: 500 },
   { label: "安装", to: "/getting-started/installation", delay: 430 },
 ];

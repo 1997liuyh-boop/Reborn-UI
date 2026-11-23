@@ -26,6 +26,10 @@ export interface DatePickerPanelPlaygroundConfig {
   border: boolean;
   /** 是否挂上快捷项 globalShortcuts */
   shortcuts: boolean;
+  shortcutPosition: "left" | "right";
+  /** 可选范围的起止边界 */
+  start: string;
+  end: string;
   showWeekNumber: boolean;
   unlinkPanels: boolean;
   singlePanel: boolean;
@@ -97,6 +101,9 @@ function onPlaygroundChange(next: unknown) {
       :border="config.border"
       :disabled="config.disabled"
       :shortcuts="config.shortcuts ? globalShortcuts : []"
+      :shortcut-position="config.shortcutPosition"
+      :start="config.start"
+      :end="config.end"
       :show-week-number="config.showWeekNumber"
       :unlink-panels="config.unlinkPanels"
       :single-panel="config.singlePanel"

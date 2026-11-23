@@ -40,8 +40,8 @@ const subtitle = computed(() =>
   <NuxtLink
     :to="item.path"
     class="overview-card group/card relative isolate flex h-full min-w-0 flex-col rounded-[14px] bg-(--ov-card) p-3
-      shadow-[var(--ov-ring),0_1px_2px_rgb(8_10_16/0.04)] [--ov-preview-bottom:76px]
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary
+      shadow-[var(--ov-ring),var(--ov-glass-edge),0_1px_2px_rgb(8_8_10/0.04)] [--ov-preview-bottom:76px]
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ov-text)
       hover:shadow-(--ov-shadow-lift)
       motion-safe:[transition:box-shadow_0.24s_var(--ov-ease),translate_0.32s_var(--ov-ease),scale_0.6s_var(--ov-spring)]
       motion-safe:hover:-translate-y-[3px]
@@ -56,14 +56,14 @@ const subtitle = computed(() =>
     <span
       aria-hidden="true"
       class="pointer-events-none absolute -inset-px -z-1 hidden rounded-[inherit] opacity-0
-        bg-[radial-gradient(320px_circle_at_var(--mx,50%)_var(--my,50%),color-mix(in_oklab,var(--color-primary)_6%,transparent),transparent_70%)]
+        bg-[radial-gradient(320px_circle_at_var(--mx,50%)_var(--my,50%),color-mix(in_oklab,var(--color-gray-10)_5%,transparent),transparent_70%)]
         transition-opacity duration-[240ms] ease-(--ov-ease) group-hover/card:opacity-100 group-hover/card:duration-[90ms]
         motion-reduce:transition-none [@media(hover:hover)_and_(pointer:fine)]:block"
     />
     <span
       aria-hidden="true"
       class="pointer-events-none absolute -inset-px hidden rounded-[inherit] p-px opacity-0
-        bg-[radial-gradient(180px_circle_at_var(--mx,50%)_var(--my,50%),color-mix(in_oklab,var(--color-primary)_70%,transparent),transparent_72%)]
+        bg-[radial-gradient(180px_circle_at_var(--mx,50%)_var(--my,50%),color-mix(in_oklab,var(--color-gray-10)_46%,transparent),transparent_72%)]
         [mask:linear-gradient(#000_0_0)_content-box_exclude,linear-gradient(#000_0_0)]
         transition-opacity duration-[240ms] ease-(--ov-ease) group-hover/card:opacity-100 group-hover/card:duration-[90ms]
         motion-reduce:transition-none [@media(hover:hover)_and_(pointer:fine)]:block"
@@ -75,11 +75,11 @@ const subtitle = computed(() =>
     <!-- 标题行与信息行定高，--ov-preview-bottom（76px）据此计算 -->
     <div class="mt-3 flex h-6 min-w-0 items-center justify-between gap-2 px-1">
       <span class="truncate text-base font-medium text-gray-10">{{ item.title }}</span>
-      <!-- 箭头：悬停时着主色并右上移 -->
+      <!-- 箭头：悬停时加深并右上移 -->
       <UIcon
         name="i-lucide-arrow-up-right"
         class="size-4 shrink-0 text-gray-5 opacity-50 [transition:opacity_0.2s,translate_0.25s_var(--ov-ease),color_0.2s]
-          group-hover/card:translate-x-[2px] group-hover/card:-translate-y-[2px] group-hover/card:text-primary group-hover/card:opacity-100
+          group-hover/card:translate-x-[2px] group-hover/card:-translate-y-[2px] group-hover/card:text-gray-10 group-hover/card:opacity-100
           motion-reduce:transition-none"
       />
     </div>
@@ -89,7 +89,7 @@ const subtitle = computed(() =>
       <span class="truncate">{{ subtitle }}</span>
       <span class="flex shrink-0 items-center gap-2.5">
         <span v-for="badge in PLATFORM_BADGES[item.platform]" :key="badge.label" class="flex items-center gap-1 text-xs">
-          <span class="size-1.5 rounded-full" :class="badge.color === 'primary' ? 'bg-primary' : 'bg-success'" />
+          <span class="size-1.5 rounded-full" :class="badge.color === 'primary' ? 'bg-gray-9' : 'bg-success'" />
           {{ badge.text }}
         </span>
       </span>

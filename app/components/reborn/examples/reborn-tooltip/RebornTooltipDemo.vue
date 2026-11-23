@@ -28,6 +28,8 @@ const state = shallowRef<Record<string, any>>({
   useColor: false,
   color: "#8358F6",
   arrow: true,
+  openDelay: 100,
+  closeDelay: 100,
   disabled: false,
 });
 
@@ -65,6 +67,20 @@ const controls = [
         props: { options: triggerOptions },
       },
       { label: "显示箭头", key: "arrow", component: "checkbox" as const, defaultValue: true },
+      {
+        label: "打开延时（毫秒）",
+        key: "openDelay",
+        component: "input-number" as const,
+        defaultValue: 100,
+        props: { min: 0, max: 2000, step: 100 },
+      },
+      {
+        label: "关闭延时（毫秒）",
+        key: "closeDelay",
+        component: "input-number" as const,
+        defaultValue: 100,
+        props: { min: 0, max: 2000, step: 100 },
+      },
       { label: "禁用", key: "disabled", component: "checkbox" as const, defaultValue: false },
     ],
   },
@@ -79,6 +95,8 @@ const tooltipCode = computed(() => {
   if (s.useColor && s.color) props.push(`color="${s.color}"`);
   if (s.trigger !== "hover") props.push(`trigger="${s.trigger}"`);
   if (!s.arrow) props.push(':arrow="false"');
+  if (s.openDelay !== 100) props.push(`:open-delay="${s.openDelay}"`);
+  if (s.closeDelay !== 100) props.push(`:close-delay="${s.closeDelay}"`);
   if (s.disabled) props.push("disabled");
 
   return `<RebornTooltip\n  ${props.join("\n  ")}\n>\n  <RebornButton>触发元素</RebornButton>\n</RebornTooltip>`;
@@ -119,6 +137,8 @@ function showSharedTooltip(event: Event, label: string) {
         :color="state.useColor ? state.color : undefined"
         :trigger="state.trigger"
         :arrow="state.arrow"
+        :open-delay="state.openDelay"
+        :close-delay="state.closeDelay"
         :disabled="state.disabled"
       >
         <RebornButton>{{ state.trigger === 'contextMenu' ? '右键点击我' : '触发元素' }}</RebornButton>

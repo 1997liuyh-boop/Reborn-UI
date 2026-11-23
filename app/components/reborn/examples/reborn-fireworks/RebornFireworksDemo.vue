@@ -7,7 +7,7 @@ const defaultState = {
   angleCenter: 270,
   angleSpread: 130,
   speedMin: 8,
-  speedMax: 24,
+  speedMax: 25,
   particleScale: 1,
 };
 
@@ -27,7 +27,7 @@ const controls = [
     children: [
       { label: "粒子数量", key: "burstCount", component: "slider" as const, defaultValue: 160, props: { min: 20, max: 400, step: 10 } },
       { label: "最小速度", key: "speedMin", component: "slider" as const, defaultValue: 8, props: { min: 1, max: 30 } },
-      { label: "最大速度", key: "speedMax", component: "slider" as const, defaultValue: 24, props: { min: 1, max: 60 } },
+      { label: "最大速度", key: "speedMax", component: "slider" as const, defaultValue: 25, props: { min: 1, max: 60 } },
       { label: "粒子大小", key: "particleScale", component: "slider" as const, defaultValue: 1, props: { min: 0.2, max: 3, step: 0.1 } },
     ],
   },
@@ -49,7 +49,7 @@ const fireworksCode = computed(() => {
   if (s.angleCenter !== 270) props.push(`:angle-center="${s.angleCenter}"`);
   if (s.angleSpread !== 130) props.push(`:angle-spread="${s.angleSpread}"`);
   if (s.speedMin !== 8) props.push(`:speed-min="${s.speedMin}"`);
-  if (s.speedMax !== 24) props.push(`:speed-max="${s.speedMax}"`);
+  if (s.speedMax !== 25) props.push(`:speed-max="${s.speedMax}"`);
   if (particleScale.value !== 1) props.push(`:particle-scale="${particleScale.value}"`);
 
   const attrs = props.length ? `\n  ${props.join("\n  ")}\n` : "";

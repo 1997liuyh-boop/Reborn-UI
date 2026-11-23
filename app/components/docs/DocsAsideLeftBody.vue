@@ -2,40 +2,18 @@
 /**
  * DocsAsideLeftBody —— 文档页左侧导航（覆盖 Docus 层同名组件）
  *
- * 基于 RebornMenu 搭成三层结构：
- * - 分区 / 系列（入门指南、Reborn 组件、社区移植……）→ RebornSubMenu，一级标题，可收起；
- * - 分类小标题（组件分区的虚拟节点，`page: false`）→ RebornMenuItemGroup，只是一行标签，
- *   不可点击、不可收起，标题右侧带该分类的组件数；
- * - 页面 → RebornMenuItem，key 就是路由路径，菜单开 router 模式，点击即跳转；
- * - 其它分区仍是「分组 → 页面」两级；带子页面的目录页把子页缩进一档列在它下面。
+ * 展开态是拨轮（DocsWheel）：把导航树拍平成页面列表，在顶部显示当前条目的分类。
+ * 在侧栏上滚动滚轮只转拨轮，点中线卡片、箭头或任意页面才跳转；路由变化后拨轮转到当前页。
  *
- * 折叠：侧栏的折叠状态（useDocsAside，按钮在 layouts/docs.vue）直接传给 RebornMenu 的 collapse。
- * 折叠后菜单收成 64px 窄轨，每个分区只剩一枚图标，点击弹出浮层，浮层里按分类分组列出全部页面；
- * 一个分区可能有上百个页面，浮层限高并可滚动。
- * 图标展开态也渲染但藏起来（分区标题前不显示，保持原有侧栏观感），原因见模板里 #icon 插槽的说明。
- * expand-type 随折叠切换：RebornSubMenu 向浮层内再分发上下文时把 collapse 固定为 false，
- * 浮层里若还有子菜单，展开方式回落到根节点的 expand-type——传 normal 就会在浮层里平铺，
- * 所以折叠态传 popup、展开态传 normal。
+ * 折叠态（useDocsAside，按钮在 layouts/docs.vue）是 RebornMenu 的 64px 窄轨：每个分区只剩一枚图标，
+ * 点击弹出浮层，浮层里按分类分组列出全部页面；一个分区可能有上百个页面，浮层限高并可滚动。
+ * 窄轨菜单始终渲染、展开态用 v-show 藏起来，原因见模板里 #icon 插槽的说明。
  *
- * 展开状态：各分区默认全部展开，用户收起过的分区记在 useState 里，
- * 路由切换与布局再次挂载后依然保持收起。
- * 之所以显式绑定 open-keys 而不只靠 default-expand-all：后者是子菜单挂载后才逐个上报展开，
- * 首次挂载会从 0 高度撑开整列菜单；
- * 有了初始值，子菜单首帧就是展开态，没有这段动画。default-expand-all 仍然传着，
- * 只在用户把所有分区都收起后的下一次挂载兜底，避免侧栏空着一片。
- * 折叠态下 open-keys 固定为空：浮层形态里「全部展开」等于所有浮层同时弹出、互相遮挡，
- * 浮层的开合交给菜单自己按点击维护。
- *
- * 选中项：由当前路由推导完整路径（分区 → 页面；分组不是子菜单，不进路径），分区标题随之高亮；
- * auto-scroll-into-view 把选中项滚到侧栏可视区中部——只滚侧栏自身，不带动页面。
- *
- * 样式：不改组件源码，全部走 ui 传参。根节点去掉卡片投影与底色让菜单融入侧栏，
- * 三个层级再各用一份 ui 覆盖字号与间距：一级 18px 加粗、分类 14px 主色、页面 14px；
- * 折叠态换回组件默认的内边距，图标才会落在窄轨正中。
- * 适用端 / New 等徽标已不再出现：适用端由顶栏的 Web / UniApp 开关统一筛选
- * （useNavigation 已按档位裁剪），组件分区顶部只留一行当前平台与数量的说明。
+ * 适用端 / New 等徽标不出现：适用端由顶栏的 Web / UniApp 开关统一筛选
+ * （useNavigation 已按档位裁剪），组件分区顶部只留一行当前菜单分类与平台的说明。
  */
 import type { ContentNavigationItem } from "@nuxt/content";
+import type { DocsWheelRow } from "./DocsWheel.vue";
 import type { MenuUI } from "~/components/reborn/ui/reborn-menu/reborn-menu.config";
 import { navigationKey } from "~/utils/docsNavigation";
 
@@ -48,9 +26,6 @@ const { collapsed } = useDocsAside();
 
 /** 当前是否在组件分区：平台说明行只在这里出现 */
 const isComponentsSection = computed(() => route.path.startsWith("/components"));
-
-/** 当前平台下侧栏列出的组件数（穿透分类节点数叶子） */
-const componentCount = computed(() => countNavigationLeaves(nav.value));
 
 /** 平台说明行文案 */
 const platformCaption = computed(() =>
@@ -136,90 +111,68 @@ watch(
   { immediate: true },
 );
 
-// ---- 展开状态：记「收起过的」而不是「展开着的」 ----
+// ---- 拨轮（展开态）：导航树拍平成一列 ----
 
-/**
- * 用户手动收起过的分区 key，跨路由保留。
- * 记收起项而非展开项：切换 Web / UniApp 档位后分区可能增减，新出现的分区应当默认展开，
- * 记展开项的话它不在名单里就成了收起。
- */
-const closedKeys = useState<string[]>("docs-aside-closed-keys", () => []);
-
-/** 当前导航里所有可展开的节点：只有分区，分类是分组、不可收起 */
-const openableKeys = computed(() => nav.value.map((section) => sectionKey(section)));
-
-/**
- * 与菜单双向绑定的展开集合：全部分区减去用户收起过的。
- * 折叠态固定为空，且不接受菜单的回写：浮层的开合由菜单内部按点击维护，
- * 回写会把「只开着这一个浮层」误记成「其余全部收起」，展开侧栏时整列就塌了。
- */
-const openKeys = computed<string[]>({
-  get: () =>
-    collapsed.value ? [] : openableKeys.value.filter((key) => !closedKeys.value.includes(key)),
-  set: (value) => {
-    if (collapsed.value) return;
-    closedKeys.value = openableKeys.value.filter((key) => !value.includes(key));
-  },
+const wheelRows = computed<DocsWheelRow[]>(() => {
+  const rows: DocsWheelRow[] = [];
+  for (const section of nav.value) {
+    for (const item of section.children ?? []) {
+      if (isVirtualGroup(item)) {
+        for (const child of item.children ?? []) {
+          rows.push({ key: child.path, label: child.title, category: item.title });
+        }
+        continue;
+      }
+      rows.push({ key: item.path, label: item.title, category: section.title });
+      // 目录页的下级页面缩进一档
+      for (const child of item.children ?? []) {
+        rows.push({ key: child.path, label: child.title, depth: 2, category: section.title });
+      }
+    }
+  }
+  return rows;
 });
 
-// ---- 样式覆盖：只改尺寸与配色，交互态沿用组件默认 ----
+/** 当前路由对应的行 key；路由与导航的尾斜杠口径可能不同，按规范化后的路径比对 */
+const currentRowKey = computed(() => {
+  const current = normalizePath(route.path);
+  return wheelRows.value.find((row) => normalizePath(row.key) === current)?.key;
+});
+
+function onWheelConfirm(row: DocsWheelRow) {
+  navigateTo(row.key);
+}
+
+// ---- 窄轨菜单（折叠态）的样式覆盖 ----
 
 /**
- * 根节点：去掉卡片投影与底色让菜单融入侧栏。
- * 展开态分区之间留 20px、分区内条目间距 2px；
- * 折叠态窄轨里图标行之间只留 4px，分区浮层限高在顶栏以下一屏之内并可滚动——
- * 「Reborn 组件」有一百多个页面，不限高的浮层会超出视口、下半截点不到。
+ * 根节点去掉卡片投影与底色让菜单融入侧栏，图标行之间留 4px。
+ * 分区浮层限高在顶栏以下一屏之内并可滚动——「Reborn 组件」有一百多个页面，不限高的浮层会超出视口。
  * 96px = 顶栏 64px + 浮层贴边定位时留的 8px 安全距离，再留些余量。
  */
-const menuUi = computed<MenuUI>(() =>
-  collapsed.value
-    ? {
-        root: "shadow-none bg-transparent",
-        menu: "gap-y-1",
-        subMenuContent: "max-h-[calc(100vh-6rem)] overflow-y-auto overscroll-contain",
-      }
-    : { root: "shadow-none bg-transparent", menu: "gap-y-5", subMenuContent: "gap-y-0.5" },
-);
+const menuUi: MenuUI = {
+  root: "shadow-none bg-transparent",
+  menu: "gap-y-1",
+  subMenuContent: "max-h-[calc(100vh-6rem)] overflow-y-auto overscroll-contain",
+};
 
-/**
- * 一级分区标题：18px 加粗 gray-9，与旧版侧栏一致。
- * 标题行不要悬浮底色与按压缩放（它是分组标题，不是可选项）；
- * 文字色与箭头色钉死为灰阶，不跟随「后代被选中」的祖先高亮——分区标题变主色会抢过真正选中的页面。
- * 折叠态只剩图标：沿用组件默认的 px-4 让图标框落在 64px 窄轨正中，悬浮底色也留着当点击反馈。
- */
-const sectionUi = computed<MenuUI>(() =>
-  collapsed.value
-    ? { menuItem: "rounded-md active:scale-100" }
-    : {
-        menuItem: "mb-2 rounded-md px-3 py-0 bg-transparent shadow-none hover:bg-transparent active:scale-100",
-        menuItemTitle: "text-[18px] leading-[26px] font-semibold text-gray-9",
-        menuItemArrow: "text-gray-7 opacity-70",
-        // 图标框始终渲染、展开态只是藏起来（见模板里 #icon 插槽的说明）
-        menuItemIcon: "hidden",
-      },
-);
+/** 分区只剩图标：沿用组件默认的 px-4 让图标框落在 64px 窄轨正中 */
+const sectionUi: MenuUI = { menuItem: "rounded-md active:scale-100" };
 
-/**
- * 分类分组：标题 14px 主色、不大写不加字距（组件默认是小号灰色大写标签），右侧带组件数徽标；
- * 组内条目间距 2px，与分区内其它条目一致。展开态与浮层里用同一份。
- */
+/** 浮层里的分类分组：标题 14px 主色、不大写不加字距，右侧带组件数徽标 */
 const groupUi: MenuUI = {
   menuItemGroupTitle:
     "px-3 pt-0 pb-1 text-[14px] leading-[20px] font-medium normal-case tracking-normal text-primary",
   menuItemGroupContent: "gap-y-0.5",
 };
 
-/**
- * 页面条目：14px 单行截断，悬浮浅灰底与选中主色浅底都沿用组件默认。
- * 去掉选中态的投影（侧栏里的选中块不该浮起来）与按压缩放。
- * 标题色不写：level 变体给的 gray-9 已经合适，写了会连选中态的主色一起盖掉。
- */
+/** 浮层里的页面条目：14px 单行截断，去掉选中态的投影与按压缩放 */
 const pageUi: MenuUI = {
   menuItem: "rounded-md px-3 py-2 shadow-none active:scale-100",
   menuItemTitle: "text-[14px] leading-[20px] font-normal",
 };
 
-/** 目录页的下级页面：左侧再缩进一档、字号略小，区分于同级的目录页 */
+/** 目录页的下级页面：左侧再缩进一档、字号略小 */
 const subPageUi: MenuUI = {
   menuItem: "rounded-md py-1.5 pr-3 pl-6 shadow-none active:scale-100",
   menuItemTitle: "text-[12.5px] leading-[18px] font-normal",
@@ -227,38 +180,42 @@ const subPageUi: MenuUI = {
 </script>
 
 <template>
-  <div class="py-1">
-    <!-- 平台说明行：告知当前列出的是哪一端的组件（由顶栏开关切换）；gray 色阶自带明暗反转 -->
-    <div v-if="isComponentsSection" v-show="!collapsed" class="mb-5 flex items-center justify-between px-3 text-xs text-gray-6">
-      <span>{{ platformCaption }}</span>
-      <span class="tabular-nums">{{ componentCount }}</span>
-    </div>
+  <div>
+    <!-- 展开态：顶部显示拨轮中线所处的分类和当前平台 -->
+    <DocsWheel
+      v-show="!collapsed" :rows="wheelRows" :current-key="currentRowKey" label="文档导航"
+      class="h-[calc(100vh-var(--ui-header-height))]"
+      @confirm="onWheelConfirm"
+    >
+      <template v-if="isComponentsSection" #header="{ row }">
+        <div class="flex items-center justify-between gap-2 py-2 pr-3 pl-10 text-base text-gray-8">
+          <span class="truncate font-medium">{{ row?.category }}</span>
+          <span class="shrink-0 text-gray-6">{{ platformCaption }}</span>
+        </div>
+      </template>
+    </DocsWheel>
 
     <!--
-      展开态平铺展开 + 点击触发：各分区是可收起的子菜单，互不影响（不互斥、不手风琴）；
-      折叠态切成浮层展开，见顶部说明。
-      close-on-click-outside 只在折叠态打开：展开态它会把菜单外的任何点击当成「收起全部」，
-      读者一点正文整列侧栏就塌了；折叠态则要靠它把点开的浮层收掉。
-      no-indent：侧栏只有 248px，多层缩进会把组件名挤得没地方放。
+      折叠态：64px 窄轨，分区点开是浮层。
+      始终渲染、展开态只是藏起来，而不是 v-if 到折叠时才挂：Nuxt Icon 的 css 模式在图标首次出现时
+      往 head 最前面插一个 style，整页样式随之重算（这页六千多个节点，一次一两百毫秒）；
+      首屏渲染出来，规则在 SSR 阶段随页面一起下发，折叠时就没有注入。
     -->
     <RebornMenu
+      v-show="collapsed"
       v-model:selected-keys="selectedKeys"
-      v-model:open-keys="openKeys"
       mode="vertical"
-      :collapse="collapsed"
+      collapse
       :tooltip="true"
       menu-trigger="click"
       :unique-opened="false"
-      :expand-type="collapsed ? 'popup' : 'normal'"
+      expand-type="popup"
       :expand-mutex="false"
       :no-indent="true"
-      :default-expand-all="true"
       color="primary"
       :show-active-background="true"
       router
-      :close-on-click-outside="collapsed"
-      auto-scroll-into-view
-      :scroll-config="{ block: 'center' }"
+      close-on-click-outside
       :ui="menuUi"
     >
       <RebornSubMenu
@@ -267,24 +224,14 @@ const subPageUi: MenuUI = {
         :index="sectionKey(section)"
         :ui="sectionUi"
       >
-        <!--
-          折叠态窄轨里分区只剩这枚图标。展开态也照样渲染、由 sectionUi 的 menuItemIcon: hidden 藏起来，
-          而不是 v-if 到折叠时才挂：Nuxt Icon 的 css 模式在图标首次出现时往 head 最前面插一个 style，
-          整页样式随之重算（这页六千多个节点，一次一两百毫秒，几枚图标就是几百毫秒的卡顿）；
-          首屏渲染出来，规则在 SSR 阶段随页面一起下发，折叠时就没有注入。
-        -->
         <template #icon>
           <Icon :name="sectionIcon(section)" class="size-4" />
         </template>
         <template #title>{{ section.title }}</template>
 
         <template v-for="item in section.children" :key="item.path">
-          <!-- 组件分区的分类小标题：虚拟节点，渲染成分组标签，下面直接列组件页；分类之间展开态留 14px、浮层里留 8px -->
-          <RebornMenuItemGroup
-            v-if="isVirtualGroup(item)"
-            :class="collapsed ? 'pt-2 first:pt-0' : 'pt-3.5 first:pt-0'"
-            :ui="groupUi"
-          >
+          <!-- 组件分区的分类小标题：虚拟节点，渲染成分组标签，下面直接列组件页 -->
+          <RebornMenuItemGroup v-if="isVirtualGroup(item)" class="pt-2 first:pt-0" :ui="groupUi">
             <template #title>
               <span class="flex min-w-0 items-center justify-between gap-2">
                 <span class="min-w-0 truncate">{{ item.title }}</span>
@@ -293,12 +240,7 @@ const subPageUi: MenuUI = {
               </span>
             </template>
 
-            <RebornMenuItem
-              v-for="child in item.children"
-              :key="child.path"
-              :index="child.path"
-              :ui="pageUi"
-            >
+            <RebornMenuItem v-for="child in item.children" :key="child.path" :index="child.path" :ui="pageUi">
               {{ child.title }}
             </RebornMenuItem>
           </RebornMenuItemGroup>
@@ -310,10 +252,7 @@ const subPageUi: MenuUI = {
 
             <!-- 真实目录节点（有页面）的下级页面：缩进一档列在目录页下方 -->
             <RebornMenuItem
-              v-for="child in item.children ?? []"
-              :key="child.path"
-              :index="child.path"
-              :ui="subPageUi"
+              v-for="child in item.children ?? []" :key="child.path" :index="child.path" :ui="subPageUi"
             >
               {{ child.title }}
             </RebornMenuItem>

@@ -20,6 +20,7 @@ const defaultState: Record<string, any> = {
   activeLabel: "开启",
   inactiveLabel: "关闭",
   inlinePrompt: false,
+  autoWidth: false,
   wave: false,
   disabled: false,
   loading: false,
@@ -62,6 +63,14 @@ const controls: any = [
     title: "状态",
     children: [
       { label: "文本显示在开关内（line 型不生效）", key: "inlinePrompt", component: "checkbox" as const, defaultValue: false },
+      {
+        // 只对点内文本生效
+        label: "轨道随点内文本撑宽",
+        key: "autoWidth",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: unknown, s: Record<string, any>) => !s.inlinePrompt,
+      },
       { label: "切换波纹", key: "wave", component: "checkbox" as const, defaultValue: false },
       { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
       { label: "加载状态", key: "loading", component: "checkbox" as const, defaultValue: false },
@@ -80,6 +89,7 @@ const switchCode = computed(() => {
     `active-label="${s.activeLabel}"`,
     `inactive-label="${s.inactiveLabel}"`,
     `:inline-prompt="${s.inlinePrompt}"`,
+    `:auto-width="${s.autoWidth}"`,
     `:wave="${s.wave}"`,
     `:disabled="${s.disabled}"`,
     `:loading="${s.loading}"`,
@@ -147,9 +157,9 @@ function handleBeforeChange() {
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground v-model="state" :controls="controls" :code="switchCode" component-name="RebornSwitch" title="交互演练场"
-      description="调节上方参数，实时查看开关表现；点击开关观察 change 事件回显。">
+      description="点「参数修改」调节参数，实时查看开关表现；点击开关观察 change 事件回显。">
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -160,7 +170,7 @@ function handleBeforeChange() {
       <div class="flex w-full flex-col items-center gap-6">
         <RebornSwitch v-model="playValue" :size="state.size" :color="state.color" :type="state.type"
           :active-label="state.activeLabel" :inactive-label="state.inactiveLabel" :inline-prompt="state.inlinePrompt"
-          :wave="state.wave" :disabled="state.disabled" :loading="state.loading" @change="onPlayChange" />
+          :auto-width="state.autoWidth" :wave="state.wave" :disabled="state.disabled" :loading="state.loading" @change="onPlayChange" />
         <DemoNote tone="dimmed" class="font-mono text-xs">
           value: {{ playValue }} · change × {{ changeCount }} · 最近载荷: {{ lastChange }}
         </DemoNote>

@@ -28,8 +28,8 @@ const treeData = [
 // ─── 交互演练场 ───
 /** 演练场默认参数。 */
 const defaultState = {
-  color: "primary", multiple: false, disabled: false,
-  variant: "outlined", size: "md", allowSearch: false, clearable: true,
+  color: "primary", multiple: false, maxCount: 0, showWordLimit: false, disabled: false,
+  variant: "outlined", size: "md", placeholder: "请选择所属团队", allowSearch: false, clearable: true,
   collapseTags: false, collapseTagsTooltip: false, maxCollapseTags: 1, closeOn: "mousedown", portal: true,
   checkStrictly: false, showLine: false, showIcon: false, height: 240, virtual: true, defaultExpandAll: true
 } satisfies TreeSelectProps;
@@ -44,6 +44,8 @@ const controls = [
     title: "共用参数（两者同时生效）", children: [
       { label: "语义色", key: "color", component: "select" as const, props: { options: treeSelectColors.map(value => ({ label: value, value })) } },
       { label: "多选", key: "multiple", component: "checkbox" as const },
+      { label: "最多选中数量（0 不限制）", key: "maxCount", component: "input-number" as const, defaultValue: 0, props: { min: 0, step: 1 }, hide: (_: unknown, s: Record<string, any>) => !s.multiple },
+      { label: "显示选中数量", key: "showWordLimit", component: "checkbox" as const, defaultValue: false, hide: (_: unknown, s: Record<string, any>) => !s.multiple },
       { label: "禁用", key: "disabled", component: "checkbox" as const },
     ]
   },
@@ -51,6 +53,7 @@ const controls = [
     title: "选择框参数", children: [
       { label: "形态", key: "variant", component: "select" as const, props: { options: treeSelectVariants.map(value => ({ label: value, value })) } },
       { label: "尺寸", key: "size", component: "select" as const, props: { options: treeSelectSizes.map(value => ({ label: value, value })) } },
+      { label: "占位文本", key: "placeholder", component: "input" as const, defaultValue: "请选择" },
       { label: "允许搜索", key: "allowSearch", component: "checkbox" as const, defaultValue: false },
       { label: "可清空", key: "clearable", component: "checkbox" as const },
       { label: "折叠标签", key: "collapseTags", component: "checkbox" as const, defaultValue: false },
@@ -71,7 +74,7 @@ const controls = [
   },
 ];
 /** 代码包含演示数据，可直接复制。 */
-const code = computed(() => `<script setup>\nimport { shallowRef } from 'vue'\nconst value = shallowRef(${JSON.stringify(value.value)})\nconst treeData = ${JSON.stringify(treeData, null, 2)}\n<\/script>\n<template>\n  <RebornTreeSelect v-model="value" :tree-data="treeData"\n    color="${state.value.color}" :multiple="${state.value.multiple}" :disabled="${state.value.disabled}"\n    variant="${state.value.variant}" size="${state.value.size}" :allow-search="${state.value.allowSearch}" :clearable="${state.value.clearable}"\n    :collapse-tags="${state.value.collapseTags}" :collapse-tags-tooltip="${state.value.collapseTagsTooltip}" :max-collapse-tags="${state.value.maxCollapseTags}"\n    close-on="${state.value.closeOn}" :portal="${state.value.portal}"\n    :check-strictly="${state.value.checkStrictly}" :show-line="${state.value.showLine}" :show-icon="${state.value.showIcon}"\n    :height="${state.value.height}" :virtual="${state.value.virtual}" default-expand-all />\n</template>`);
+const code = computed(() => `<script setup>\nimport { shallowRef } from 'vue'\nconst value = shallowRef(${JSON.stringify(value.value)})\nconst treeData = ${JSON.stringify(treeData, null, 2)}\n<\/script>\n<template>\n  <RebornTreeSelect v-model="value" :tree-data="treeData"\n    color="${state.value.color}" :multiple="${state.value.multiple}" :max-count="${state.value.maxCount}" :show-word-limit="${state.value.showWordLimit}" :disabled="${state.value.disabled}"\n    variant="${state.value.variant}" size="${state.value.size}" placeholder="${state.value.placeholder}" :allow-search="${state.value.allowSearch}" :clearable="${state.value.clearable}"\n    :collapse-tags="${state.value.collapseTags}" :collapse-tags-tooltip="${state.value.collapseTagsTooltip}" :max-collapse-tags="${state.value.maxCollapseTags}"\n    close-on="${state.value.closeOn}" :portal="${state.value.portal}"\n    :check-strictly="${state.value.checkStrictly}" :show-line="${state.value.showLine}" :show-icon="${state.value.showIcon}"\n    :height="${state.value.height}" :virtual="${state.value.virtual}" default-expand-all />\n</template>`);
 /** 同时重置演练参数与选中值。 */
 function resetState() { state.value = { ...defaultState }; value.value = null; }
 
@@ -125,16 +128,16 @@ async function loadDepartments(node: TreeDataNode) {
   <div class="flex w-full flex-col">
     <Playground
       v-model="state" :controls="controls" :code="code" component-name="RebornTreeSelect" title="交互演练场"
-      description="上方参数按作用对象分组：共用参数同时作用于选择框与树，选择框参数只改触发器与浮层，树参数作用于浮层内的 RebornTree。"
+      description="参数按作用对象分组：共用参数同时作用于选择框与树，选择框参数只改触发器与浮层，树参数作用于浮层内的 RebornTree。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading><Icon name="lucide:rotate-ccw" class="size-3" /></template>
           重置配置
         </RebornButton>
       </template>
       <div class="flex w-full max-w-md flex-col gap-4 pb-40">
-        <RebornTreeSelect v-model="value" v-bind="state" :tree-data="treeData" placeholder="请选择所属团队" />
+        <RebornTreeSelect v-model="value" v-bind="state" :tree-data="treeData" />
         <DemoNote tone="dimmed">当前值：{{ JSON.stringify(value) }}</DemoNote>
       </div>
     </Playground>

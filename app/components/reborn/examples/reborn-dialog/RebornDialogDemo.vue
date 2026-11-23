@@ -22,6 +22,7 @@ const state = shallowRef({
   width: "",
   top: "15vh",
   modal: true,
+  modalPenetrable: false,
   closeOnClickModal: true,
   closeOnPressEscape: true,
   showClose: true,
@@ -50,7 +51,13 @@ const controls = [
       { label: "标题文本", key: "title", component: "input" as const, defaultValue: "编辑个人资料" },
       { label: "描述文本 describe", key: "describe", component: "input" as const, defaultValue: "" },
       { label: "宽度 width（如 480px / 60%）", key: "width", component: "input" as const, defaultValue: "" },
-      { label: "顶部距离 top", key: "top", component: "input" as const, defaultValue: "15vh" },
+      {
+        label: "顶部距离 top（垂直居中或全屏时无效）",
+        key: "top",
+        component: "input" as const,
+        defaultValue: "15vh",
+        hide: (_value: string, s: Record<string, any>) => s.alignCenter || s.fullscreen,
+      },
       {
         label: "过渡动画 transition",
         key: "transition",
@@ -73,13 +80,33 @@ const controls = [
     title: "交互行为",
     children: [
       { label: "显示遮罩 modal", key: "modal", component: "checkbox" as const, defaultValue: true },
+      {
+        label: "可穿透操作背后页面（仅无遮罩时）",
+        key: "modalPenetrable",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_value: boolean, s: Record<string, any>) => s.modal,
+      },
       { label: "点击遮罩关闭", key: "closeOnClickModal", component: "checkbox" as const, defaultValue: true },
       { label: "按 ESC 关闭", key: "closeOnPressEscape", component: "checkbox" as const, defaultValue: true },
       { label: "显示关闭按钮 show-close", key: "showClose", component: "checkbox" as const, defaultValue: true },
+      {
+        label: "关闭图标名 close-icon",
+        key: "closeIcon",
+        component: "input" as const,
+        defaultValue: "lucide:x",
+        hide: (_value: string, s: Record<string, any>) => !s.showClose,
+      },
       { label: "允许滚动正文", key: "scrollable", component: "checkbox" as const, defaultValue: false },
       { label: "全屏显示", key: "fullscreen", component: "checkbox" as const, defaultValue: false },
       { label: "允许拖拽头部", key: "draggable", component: "checkbox" as const, defaultValue: false },
-      { label: "拖拽可超出可视区 overflow", key: "overflow", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "拖拽可超出可视区 overflow",
+        key: "overflow",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_value: boolean, s: Record<string, any>) => !s.draggable,
+      },
       { label: "头尾居中 center", key: "center", component: "checkbox" as const, defaultValue: false },
       { label: "垂直居中 align-center", key: "alignCenter", component: "checkbox" as const, defaultValue: false },
       { label: "关闭时销毁内容", key: "destroyOnClose", component: "checkbox" as const, defaultValue: false },
@@ -352,7 +379,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground v-model="state" :controls="controls" component-name="RebornDialog" title="交互演练场"
-      description="调节上方属性，实时预览 Dialog 的视觉效果与交互反馈；属性命名与 Element Plus Dialog 对齐。">
+      description="点「参数修改」调节属性，实时预览 Dialog 的视觉效果与交互反馈；属性命名与 Element Plus Dialog 对齐。">
       <DemoBlock>
         <RebornDialog v-bind="state" @confirm="() => console.log('Confirm clicked')"
           @cancel="() => console.log('Cancel clicked')">

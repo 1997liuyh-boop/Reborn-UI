@@ -6,12 +6,15 @@ import DemoBlock from '~/components/common/demo/DemoBlock.vue';
 import DemoNote from '~/components/common/demo/DemoNote.vue';
 import DemoSection from '~/components/common/demo/DemoSection.vue';
 import Playground from '~/components/common/play-ground/Playground.vue';
+import { buttonColors } from '~/components/reborn/ui/reborn-button/reborn-button.config';
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue';
 import RebornPopconfirm from '~/components/reborn/ui/reborn-popconfirm/RebornPopconfirm.vue';
 import { placements } from '~/lib/placement';
 
 /** 12 种基础方位，取值与 reborn-tooltip 的 placement 完全一致。 */
 const placementOptions = placements.map(value => ({ label: value, value }));
+/** 确认 / 取消按钮的语义色，取值同按钮组件。 */
+const colorOptions = buttonColors.map(value => ({ label: value.charAt(0).toUpperCase() + value.slice(1), value }));
 
 /** 参考 Tooltip 的环绕布局，按钮简称与实际弹出方向一一对应。 */
 const placementExamples = [
@@ -37,12 +40,16 @@ const fullWidthTriggerUi: PopconfirmProps['ui'] = { popover: { trigger: 'w-full'
 const defaultState = {
   title: '确定删除这条数据吗？',
   description: '删除后不可恢复，关联的引用也会一并失效。',
+  icon: 'ant-design:question-circle-filled',
   confirmText: '确定',
   cancelText: '取消',
+  confirmColor: 'primary' as (typeof buttonColors)[number],
+  cancelColor: 'neutral' as (typeof buttonColors)[number],
   placement: 'top' as PopconfirmPlacement,
   sideOffset: 8,
   arrow: true,
   hideCancel: false,
+  loading: false,
   dismissible: true,
   closeOnScroll: true,
 };
@@ -58,6 +65,7 @@ const controls: PlaygroundControlGroup[] = [
   { title: '内容', children: [
     { label: '标题', key: 'title', component: 'input', defaultValue: defaultState.title },
     { label: '描述（留空隐藏）', key: 'description', component: 'input', defaultValue: defaultState.description },
+    { label: '标题图标（图标名，留空不显示）', key: 'icon', component: 'input', defaultValue: '' },
     { label: '确认按钮文字', key: 'confirmText', component: 'input', defaultValue: '确定' },
     { label: '取消按钮文字', key: 'cancelText', component: 'input', defaultValue: '取消' },
   ] },
@@ -65,7 +73,10 @@ const controls: PlaygroundControlGroup[] = [
     { label: '气泡位置', key: 'placement', component: 'select', defaultValue: 'top', props: { options: placementOptions } },
     { label: '与触发器间距', key: 'sideOffset', component: 'slider', defaultValue: 8, props: { min: 0, max: 24, step: 1 } },
     { label: '显示箭头', key: 'arrow', component: 'checkbox', defaultValue: true },
+    { label: '确认按钮语义色', key: 'confirmColor', component: 'select', defaultValue: 'primary', props: { options: colorOptions } },
+    { label: '取消按钮语义色', key: 'cancelColor', component: 'select', defaultValue: 'neutral', props: { options: colorOptions }, hide: (_, s) => s.hideCancel },
     { label: '隐藏取消按钮', key: 'hideCancel', component: 'checkbox', defaultValue: false },
+    { label: '确认按钮加载中（点确认不自动关闭）', key: 'loading', component: 'checkbox', defaultValue: false },
   ] },
   { title: '关闭方式', children: [
     { label: '点击外部关闭 dismissible', key: 'dismissible', component: 'checkbox', defaultValue: true },
@@ -76,7 +87,9 @@ const controls: PlaygroundControlGroup[] = [
 /** 完整参数代码，可复制到真实页面。 */
 const popconfirmCode = computed(() => {
   const s = state.value;
-  return `<RebornPopconfirm icon="ant-design:question-circle-filled"\n  title="${s.title}"\n  description="${s.description}"\n  confirm-text="${s.confirmText}"\n  cancel-text="${s.cancelText}"\n  placement="${s.placement}"\n  :side-offset="${s.sideOffset}"\n  :arrow="${s.arrow}"\n  :hide-cancel="${s.hideCancel}"\n  :dismissible="${s.dismissible}"\n  :close-on-scroll="${s.closeOnScroll}"\n  @confirm="onConfirm"\n  @cancel="onCancel"\n>\n  <RebornButton size="sm" variant="outlined" color="neutral">删除</RebornButton>\n</RebornPopconfirm>`;
+  // icon 留空时不传，标题前不渲染图标。
+  const iconLine = s.icon ? `\n  icon="${s.icon}"` : '';
+  return `<RebornPopconfirm${iconLine}\n  title="${s.title}"\n  description="${s.description}"\n  confirm-text="${s.confirmText}"\n  cancel-text="${s.cancelText}"\n  confirm-color="${s.confirmColor}"\n  cancel-color="${s.cancelColor}"\n  placement="${s.placement}"\n  :side-offset="${s.sideOffset}"\n  :arrow="${s.arrow}"\n  :hide-cancel="${s.hideCancel}"\n  :loading="${s.loading}"\n  :dismissible="${s.dismissible}"\n  :close-on-scroll="${s.closeOnScroll}"\n  @confirm="onConfirm"\n  @cancel="onCancel"\n>\n  <RebornButton size="sm" variant="outlined" color="neutral">删除</RebornButton>\n</RebornPopconfirm>`;
 });
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
@@ -112,17 +125,18 @@ onBeforeUnmount(() => {
   <div class="flex w-full flex-col">
     <Playground v-model="state" :controls="controls" :code="popconfirmCode" component-name="RebornPopconfirm" title="交互演练场" description="调整文案、定位与按钮配置，点击触发按钮实时预览气泡确认框。">
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading><span class="icon-[lucide--rotate-ccw] size-3" /></template>
           重置配置
         </RebornButton>
       </template>
       <div class="flex w-full min-w-0 flex-col items-center gap-6 py-16">
         <RebornPopconfirm
-          icon="ant-design:question-circle-filled"
+          :icon="state.icon || undefined"
           :title="state.title" :description="state.description || undefined" :confirm-text="state.confirmText" :cancel-text="state.cancelText"
+          :confirm-color="state.confirmColor" :cancel-color="state.cancelColor"
           :placement="state.placement" :side-offset="state.sideOffset" :arrow="state.arrow" :hide-cancel="state.hideCancel"
-          :dismissible="state.dismissible" :close-on-scroll="state.closeOnScroll"
+          :loading="state.loading" :dismissible="state.dismissible" :close-on-scroll="state.closeOnScroll"
           @confirm="lastAction = '点击了确认'" @cancel="lastAction = '点击了取消'"
         >
           <RebornButton size="sm" variant="outlined" color="neutral">删除</RebornButton>

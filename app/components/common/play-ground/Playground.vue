@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { tv } from "tailwind-variants";
-import { computed, onScopeDispose, reactive, shallowRef, watch } from "vue";
-import RebornCollapse from "~/components/reborn/ui/reborn-collapse/RebornCollapse.vue";
+import { computed, onBeforeUnmount, onScopeDispose, reactive, shallowRef, toRaw, watch } from "vue";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
+import RebornDrawer from "~/components/reborn/ui/reborn-drawer/RebornDrawer.vue";
+import RebornForm from "~/components/reborn/ui/reborn-form/RebornForm.vue";
+import RebornFormItem from "~/components/reborn/ui/reborn-form/RebornFormItem.vue";
 import RebornPopover from "~/components/reborn/ui/reborn-popover/RebornPopover.vue";
+import RebornTooltip from "~/components/reborn/ui/reborn-tooltip/RebornTooltip.vue";
 import config from "./play-ground.config";
+import { claimDrawer, releaseDrawer } from "./play-ground.drawer";
 import PlaygroundField from "./PlaygroundField.vue";
 
 /** 单个控件配置 */
@@ -57,12 +62,36 @@ export interface PlaygroundProps {
 
 const props = withDefaults(defineProps<PlaygroundProps>(), {
     title: "交互体验",
-    description: "通过上方面板实时调节组件属性，在下方查看视觉反馈",
+    description: "点「参数修改」调节组件属性，在下方查看视觉反馈",
     componentName: "Component",
     surface: true
 });
 
+const emit = defineEmits<{
+    /** 点了抽屉里的「重置」，参数已恢复到初始值 */
+    reset: [];
+}>();
+
 const model = defineModel<Record<string, any>>({ required: true });
+
+/** 挂载时的参数快照，抽屉里的「重置」恢复到它（即 demo 的 defaultState） */
+const initialModel = cloneState(model.value);
+
+function cloneState(value: Record<string, any>) {
+    try {
+        return structuredClone(toRaw(value));
+    }
+    catch {
+        // 含函数等不可克隆的值时退回浅拷贝
+        return { ...value };
+    }
+}
+
+/** 重置全部参数 */
+function resetModel() {
+    model.value = cloneState(initialModel);
+    emit("reset");
+}
 
 /** 更新状态对象中某个 key 的值 */
 function updateField(key: string, value: any) {
@@ -131,36 +160,62 @@ const controlGroups = computed(() => props.controls.map(group => ({
     })),
 })));
 
-/** 控制区每行放几个控件（lg 及以上），与 controlGrid 的列数一致 */
-const COLUMNS = 4;
-/** 默认展开的控件行数，其余收进「展开全部参数」 */
-const VISIBLE_ROWS = 2;
+/** 抽屉表单里要显示的分组：去掉被 hide 隐藏的控件，空分组整组不出现 */
+const visibleGroups = computed(() =>
+    controlGroups.value
+        .map(group => ({ ...group, children: group.children.filter(item => !visibilityMap[item.key]) }))
+        .filter(group => group.children.length > 0),
+);
 
-type ControlGroupView = (typeof controlGroups.value)[number] & { continued: boolean };
+/* ── 参数抽屉 ──────────────────────────────────────────────── */
 
+/** 抽屉是否打开 */
+const drawerOpen = shallowRef(false);
 /**
- * 控件按分组逐行排布：分组标题独占一行，组内每行 COLUMNS 个控件。
- * 只数控件行、不数标题行，数满 VISIBLE_ROWS 行后剩下的控件进入折叠区；
- * 一个分组被拆开时，折叠区里的后半段不再重复标题（continued），展开后视觉上接着上半段。
- * 被 hide 隐藏的控件不占位置，所以显隐变化后会重新分行。
+ * 抽屉的挂载点：文档页右栏目录（DocsToc）里留的宿主节点，抽屉落在它里面，宽度与位置就和目录栏一致。
+ * 找不到宿主（窄屏目录收成折叠条、或演练场不在文档页里）时为 undefined，抽屉退回贴视口右缘。
  */
-const controlLayout = computed(() => {
-    const head: ControlGroupView[] = [];
-    const tail: ControlGroupView[] = [];
-    let rowsLeft = VISIBLE_ROWS;
-    for (const group of controlGroups.value) {
-        const items = group.children.filter(item => !visibilityMap[item.key]);
-        if (!items.length) continue;
-        const headCount = Math.min(items.length, Math.max(0, rowsLeft) * COLUMNS);
-        if (headCount > 0) head.push({ ...group, children: items.slice(0, headCount), continued: false });
-        if (headCount < items.length) tail.push({ ...group, children: items.slice(headCount), continued: headCount > 0 });
-        rowsLeft -= Math.ceil(headCount / COLUMNS);
-    }
-    return { head, tail, hiddenCount: tail.reduce((sum, group) => sum + group.children.length, 0) };
+const drawerHost = shallowRef<HTMLElement>();
+/** 没有宿主时的抽屉宽度 */
+const FALLBACK_DRAWER_WIDTH = 320;
+/** 抽屉是否正占着右栏目录的位置；app.vue 据此把右下角的回顶按钮让到抽屉左边 */
+const drawerDocked = usePlaygroundDrawerDocked();
+watch(drawerOpen, (open) => {
+    drawerDocked.value = open && !!drawerHost.value;
 });
 
-/** 折叠区是否展开；默认收起 */
-const expanded = shallowRef(false);
+function resolveDrawerHost() {
+    const host = document.querySelector<HTMLElement>("[data-playground-drawer-host]");
+    // 宿主在窄屏是 display: none，量不到盒子就当它不存在
+    drawerHost.value = host?.getClientRects().length ? host : undefined;
+}
+
+function closeDrawer() {
+    drawerOpen.value = false;
+}
+
+function toggleDrawer() {
+    if (drawerOpen.value) {
+        closeDrawer();
+        return;
+    }
+    // 一页有多个演练场时，先关掉别处开着的抽屉
+    claimDrawer(closeDrawer);
+    resolveDrawerHost();
+    drawerOpen.value = true;
+}
+
+onBeforeUnmount(() => {
+    releaseDrawer(closeDrawer);
+    if (drawerOpen.value) drawerDocked.value = false;
+});
+
+/** 问号提示的内容：参数名 + 当前值（字符串带引号，对象转 JSON） */
+function paramTip(key: string) {
+    const value = model.value[key];
+    const text = value === undefined ? "undefined" : typeof value === "string" ? `"${value}"` : JSON.stringify(value);
+    return `${key}: ${text}`;
+}
 
 /** camelCase 的状态 key 转为模板里的 kebab-case 属性名（如 showPassword → show-password） */
 function toKebabCase(key: string) {
@@ -219,68 +274,33 @@ const ui = computed(() => tv(config)({ surface: props.surface }));
         </h2>
         <p :class="ui.headerDesc()">{{ description }}</p>
       </div>
-      <slot name="tag">
-        <span :class="ui.headerTag()">
-          演练场
-        </span>
-      </slot>
+      <div :class="ui.headerActions()">
+        <!-- 参数入口：控件都在抽屉里，这里只留一个开关 -->
+        <RebornButton
+          v-if="controls.length" size="md" :variant="drawerOpen ? 'filled' : 'soft'" color="primary"
+          :aria-expanded="drawerOpen" @click="toggleDrawer"
+        >
+          <template #leading>
+            <Icon name="lucide:sliders-horizontal" size="12" />
+          </template>
+          参数修改
+        </RebornButton>
+        <slot name="tag">
+          <span :class="ui.headerTag()">
+            演练场
+          </span>
+        </slot>
+      </div>
     </div>
 
-    <!-- 主体容器：上方控制区、下方预览区 -->
+    <!-- 主体容器：补充内容（如有）在上、预览区在下 -->
     <div :class="ui.container()">
-      <!-- ========== 上方控制区 ========== -->
-      <div :class="ui.controlPanel()">
-        <template v-for="(group, gi) in controlLayout.head" :key="`head-${gi}`">
-          <div :class="ui.group()">
-            <!-- 分组标题独占一行 -->
-            <div :class="ui.groupTitleWrapper()">
-              <span :class="ui.groupTitleText()">{{ group.title }}</span>
-              <span :class="ui.groupTitleLine()" aria-hidden="true" />
-            </div>
-            <div :class="ui.controlGrid()">
-              <div v-for="item in group.children" :key="item.key" :class="ui.fieldWrapper()">
-                <PlaygroundField :item="item" :value="getField(item.key)" @update:value="updateField(item.key, $event)" />
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <!-- 超出默认行数的控件收进折叠区，点击下方按钮展开 -->
-        <RebornCollapse
-          v-if="controlLayout.hiddenCount > 0"
-          v-model="expanded"
-          position="top"
-          :ui="{ content: ui.collapseContent() }"
-        >
-          <template #content>
-            <div :class="ui.collapseInner()">
-              <template v-for="(group, gi) in controlLayout.tail" :key="`tail-${gi}`">
-                <div :class="ui.group()">
-                  <div v-if="!group.continued" :class="ui.groupTitleWrapper()">
-                    <span :class="ui.groupTitleText()">{{ group.title }}</span>
-                    <span :class="ui.groupTitleLine()" aria-hidden="true" />
-                  </div>
-                  <div :class="ui.controlGrid()">
-                    <div v-for="item in group.children" :key="item.key" :class="ui.fieldWrapper()">
-                      <PlaygroundField :item="item" :value="getField(item.key)" @update:value="updateField(item.key, $event)" />
-                    </div>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </template>
-          <button type="button" :class="ui.collapseToggle()" :aria-expanded="expanded">
-            <span>{{ expanded ? '收起参数' : '展开全部参数' }}</span>
-            <span v-if="!expanded" :class="ui.collapseCount()">+{{ controlLayout.hiddenCount }}</span>
-            <Icon name="lucide:chevron-down" :class="ui.collapseIcon({ class: expanded ? 'rotate-180' : '' })" />
-          </button>
-        </RebornCollapse>
-
-        <!-- 演练场的补充内容（如事件回执），排在控件下方 -->
+      <!-- 演练场的补充内容（如事件回执） -->
+      <div v-if="$slots.extra" :class="ui.extraPanel()">
         <slot name="extra" />
       </div>
 
-      <!-- ========== 下方预览区 ========== -->
+      <!-- ========== 预览区 ========== -->
       <div :class="ui.previewPanel()">
         <!-- 右上角：传参明细 Popover -->
         <div v-if="activeCode" :class="ui.popoverWrapper()">
@@ -304,5 +324,61 @@ const ui = computed(() => tv(config)({ surface: props.surface }));
         </div>
       </div>
     </div>
+
+    <!--
+      参数抽屉：不要遮罩、不锁滚动、抽屉之外可以照常点（modal-penetrable），
+      改参数的同时预览区一直看得见、摸得着。
+    -->
+    <RebornDrawer
+      v-model="drawerOpen" :modal="false" modal-penetrable :lock-scroll="false"
+      :append-to="drawerHost" :size="drawerHost ? '100%' : FALLBACK_DRAWER_WIDTH"
+      with-header title="参数修改" :aria-label="`${title}参数`"
+      :ui="{ root: ui.drawerRoot(), header: ui.drawerHeader(), title: ui.drawerTitle(), body: ui.drawerBody(), footer: ui.drawerFooter() }"
+    >
+      <template #close="{ close }">
+        <RebornButton size="md" variant="text" color="neutral" class="size-8 p-0" aria-label="关闭抽屉" @click="close">
+          <Icon name="lucide:x" class="size-5" />
+        </RebornButton>
+      </template>
+
+      <RebornForm :model-value="model" label-position="top" size="md" :class="ui.form()">
+        <section v-for="(group, gi) in visibleGroups" :key="gi" :class="ui.group()">
+          <!-- 分组标题 -->
+          <div :class="ui.groupTitleWrapper()">
+            <span :class="ui.groupTitleText()">{{ group.title }}</span>
+            <span :class="ui.groupTitleLine()" aria-hidden="true" />
+          </div>
+
+          <RebornFormItem
+            v-for="item in group.children" :key="item.key"
+            :ui="{ label: ui.formItemLabel(), content: ui.formItemContent() }"
+          >
+            <template #label>
+              <span :class="ui.fieldLabelText()">{{ item.label }}</span>
+              <!-- 问号提示：参数名 + 当前值 -->
+              <RebornTooltip :content="paramTip(item.key)" placement="top" :z-index="2100">
+                <button type="button" :class="ui.fieldHelp()" :aria-label="`查看「${item.label}」的参数名与当前值`">
+                  <Icon name="lucide:circle-help" class="size-3.5" />
+                </button>
+              </RebornTooltip>
+              <span v-if="item.component === 'slider'" :class="ui.fieldValue()">{{ getField(item.key) }}</span>
+            </template>
+            <PlaygroundField :item="item" :value="getField(item.key)" @update:value="updateField(item.key, $event)" />
+          </RebornFormItem>
+        </section>
+      </RebornForm>
+
+      <template #footer="{ close }">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetModel">
+          <template #leading>
+            <Icon name="lucide:rotate-ccw" size="12" />
+          </template>
+          重置
+        </RebornButton>
+        <RebornButton size="md" color="primary" @click="close">
+          关闭
+        </RebornButton>
+      </template>
+    </RebornDrawer>
   </section>
 </template>

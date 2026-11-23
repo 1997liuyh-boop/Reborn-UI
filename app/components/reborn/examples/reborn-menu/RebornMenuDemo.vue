@@ -28,7 +28,20 @@ const state = shallowRef<Record<string, any>>({
   defaultExpandAll: false,
   color: "primary",
   showActiveBackground: true,
+  checkStrictly: false,
+  collapseTransition: true,
+  closeOnClickOutside: true,
+  popperOffset: 8,
+  showTimeout: 300,
+  hideTimeout: 300,
+  customColors: false,
+  backgroundColor: "#1f2937",
+  textColor: "#e5e7eb",
+  activeTextColor: "#818cf8",
 });
+
+/** 三个配色属性默认是空字符串，只在勾选「自定义配色」后才传给菜单 */
+const hideColorControl = (_: any, s: Record<string, any>) => !s.customColors;
 
 /** 演练场里被 v-model:open-keys 双向绑定的展开项 */
 const expandedMenus = shallowRef<string[]>([]);
@@ -134,6 +147,85 @@ const controls: any = [
         key: "showActiveBackground",
         component: "checkbox" as const,
         defaultValue: true,
+      },
+      {
+        label: "父级可选（浮层展开 + 悬停触发时生效）",
+        key: "checkStrictly",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: any, s: Record<string, any>) => s.menuTrigger !== "hover",
+      },
+      {
+        label: "折叠与展开过渡动画",
+        key: "collapseTransition",
+        component: "checkbox" as const,
+        defaultValue: true,
+      },
+      {
+        label: "点击外部收起（点击触发时生效）",
+        key: "closeOnClickOutside",
+        component: "checkbox" as const,
+        defaultValue: true,
+        hide: (_: any, s: Record<string, any>) => s.menuTrigger !== "click",
+      },
+    ],
+  },
+  {
+    title: "浮层子菜单",
+    children: [
+      {
+        label: "浮层偏移（px）",
+        key: "popperOffset",
+        component: "slider" as const,
+        defaultValue: 8,
+        props: { min: 0, max: 24, step: 1 },
+      },
+      {
+        label: "展开延时（ms）",
+        key: "showTimeout",
+        component: "input-number" as const,
+        defaultValue: 300,
+        props: { min: 0, max: 2000, step: 100 },
+      },
+      {
+        label: "关闭延时（ms）",
+        key: "hideTimeout",
+        component: "input-number" as const,
+        defaultValue: 300,
+        props: { min: 0, max: 2000, step: 100 },
+      },
+    ],
+  },
+  {
+    title: "配色",
+    children: [
+      {
+        label: "自定义配色（关闭用主题色）",
+        key: "customColors",
+        component: "checkbox" as const,
+        defaultValue: false,
+        codeIgnore: true,
+      },
+      {
+        label: "背景色",
+        key: "backgroundColor",
+        component: "color-picker" as const,
+        defaultValue: "",
+        hide: hideColorControl,
+      },
+      {
+        label: "文字颜色",
+        key: "textColor",
+        component: "color-picker" as const,
+        defaultValue: "",
+        hide: hideColorControl,
+      },
+      {
+        label: "选中项文字颜色",
+        key: "activeTextColor",
+        component: "color-picker" as const,
+        defaultValue: "",
+        hide: hideColorControl,
       },
     ],
   },
@@ -291,7 +383,14 @@ const codeString = computed(() => {
     `  menu-trigger="${s.menuTrigger}"`,
     `  expand-type="${s.expandType}"`,
     `  color="${s.color}"`,
-    ...['collapse', 'tooltip', 'uniqueOpened', 'expandMutex', 'noIndent', 'defaultExpandAll', 'showActiveBackground'].map(key => `  :${key.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)}="${s[key]}"`),
+    ...['collapse', 'tooltip', 'uniqueOpened', 'expandMutex', 'noIndent', 'defaultExpandAll', 'showActiveBackground', 'checkStrictly', 'collapseTransition', 'closeOnClickOutside', 'popperOffset', 'showTimeout', 'hideTimeout'].map(key => `  :${key.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)}="${s[key]}"`),
+    ...(s.customColors
+      ? [
+          `  background-color="${s.backgroundColor}"`,
+          `  text-color="${s.textColor}"`,
+          `  active-text-color="${s.activeTextColor}"`,
+        ]
+      : []),
     '>',
     '  <RebornMenuItem index="1">首页</RebornMenuItem>',
     '  <RebornSubMenu index="2">',
@@ -312,7 +411,7 @@ const codeString = computed(() => {
       :code="codeString"
       component-name="RebornMenu"
       title="交互演练场"
-      description="调节上方属性，实时预览菜单的布局、展开方式与配色。"
+      description="点「参数修改」调节属性，实时预览菜单的布局、展开方式与配色。"
     >
       <div>
         <RebornMenu
@@ -330,6 +429,15 @@ const codeString = computed(() => {
           :default-expand-all="state.defaultExpandAll"
           :color="state.color"
           :show-active-background="state.showActiveBackground"
+          :check-strictly="state.checkStrictly"
+          :collapse-transition="state.collapseTransition"
+          :close-on-click-outside="state.closeOnClickOutside"
+          :popper-offset="state.popperOffset"
+          :show-timeout="state.showTimeout"
+          :hide-timeout="state.hideTimeout"
+          :background-color="state.customColors ? state.backgroundColor : ''"
+          :text-color="state.customColors ? state.textColor : ''"
+          :active-text-color="state.customColors ? state.activeTextColor : ''"
           class="min-h-100 w-full"
           @select="handleSelect"
           @open="handleOpen"

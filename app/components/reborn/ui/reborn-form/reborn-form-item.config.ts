@@ -78,9 +78,9 @@ export default {
                 label: 'justify-end text-right pr-3',
             },
             top: {
-                root: 'flex-col items-stretch',
-                // 上置标签与控件之间间隔 4px
-                label: 'justify-start text-left w-full min-h-0 mb-1',
+                // 上置标签与控件之间间隔 4px：由根节点的 gap 给，标签自身不带 py / mb
+                root: 'flex-col items-stretch gap-1',
+                label: 'justify-start text-left w-full min-h-0',
             },
         },
         // 表单项之间的间距：有标签 24px、无标签 16px（末项由 root 的 last:mb-0 归零）

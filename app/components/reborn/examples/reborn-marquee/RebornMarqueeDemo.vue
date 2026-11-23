@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import { computed, shallowRef } from 'vue';
+import { rebornMarqueeOrientations } from '~/components/reborn/ui/reborn-marquee/reborn-marquee.config';
+
+/** 滚动方向选项 */
+const orientationOptions = rebornMarqueeOrientations.map((o) => ({
+    label: o === 'horizontal' ? '水平 Horizontal' : '垂直 Vertical',
+    value: o,
+}))
 
 /** 用户评价数据 */
 const reviews = [
@@ -57,6 +64,7 @@ const logos = [
 
 /** 演练场状态 */
 const state = shallowRef({
+    orientation: 'horizontal',
     reverse: false,
     pauseOnHover: true,
     overlay: true,
@@ -69,6 +77,13 @@ const controls = [
     {
         title: '配置',
         children: [
+            {
+                label: '滚动方向',
+                key: 'orientation',
+                component: 'select' as const,
+                defaultValue: 'horizontal',
+                props: { options: orientationOptions },
+            },
             { label: '反向滚动', key: 'reverse', component: 'checkbox' as const, defaultValue: false },
             { label: '悬停暂停', key: 'pauseOnHover', component: 'checkbox' as const, defaultValue: true },
             { label: '边缘遮罩', key: 'overlay', component: 'checkbox' as const, defaultValue: true },
@@ -105,13 +120,16 @@ const screenshotSets = [
     [5, 6, 7, 8],
     [9, 10, 11, 12],
 ]
+/** 垂直方向需要固定高度才有滚动空间 */
+const marqueeClass = computed(() => (state.value.orientation === 'vertical' ? 'h-72' : ''))
+
 /** 时长通过 CSS 变量配置；生成代码只包含实际存在的组件参数。 */
 const marqueeCode = computed(() => `<RebornMarquee
+  orientation="${state.value.orientation}"
   :reverse="${state.value.reverse}"
   :pause-on-hover="${state.value.pauseOnHover}"
   :overlay="${state.value.overlay}"
-  :repeat="${state.value.repeat}"
-  orientation="horizontal"
+  :repeat="${state.value.repeat}"${state.value.orientation === 'vertical' ? '\n  class="h-72"' : ''}
   :style="{ '--duration': '${state.value.duration}s' }"
 >
   <!-- 滚动内容 -->
@@ -122,7 +140,7 @@ const marqueeCode = computed(() => `<RebornMarquee
     <div class="flex w-full min-w-0 flex-col">
         <Playground v-model="state" :controls="controls" :code="marqueeCode" component-name="RebornMarquee" title="交互演练场"
             description="调节滚动方向、悬停暂停与遮罩，观察跑马灯的实时表现。">
-            <RebornMarquee :reverse="state.reverse" :pause-on-hover="state.pauseOnHover" :overlay="state.overlay" :repeat="state.repeat" orientation="horizontal" :style="{ '--duration': `${state.duration}s` }">
+            <RebornMarquee :reverse="state.reverse" :pause-on-hover="state.pauseOnHover" :overlay="state.overlay" :repeat="state.repeat" :orientation="state.orientation" :class="marqueeClass" :style="{ '--duration': `${state.duration}s` }">
                 <div v-for="logo in logos" :key="logo"
                     class="border-default rounded-lg text-muted mx-2 flex items-center justify-center gap-2 border px-6 py-4">
                     <UIcon :name="logo" class="size-8" />

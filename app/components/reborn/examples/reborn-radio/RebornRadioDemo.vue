@@ -167,7 +167,7 @@ const plans = [
       description="切换形态、语义色、尺寸与方向，实时预览单选框组的选中态表现。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading><Icon name="lucide:rotate-ccw" size="12" /></template>
           重置配置
         </RebornButton>

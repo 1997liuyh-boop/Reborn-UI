@@ -44,12 +44,14 @@ const defaultState: Record<string, any> = {
     collapseTags: false,
     collapseTagsTooltip: false,
     maxCollapseTags: 1,
+    multipleLimit: 0,
     clearable: true,
     allowSearch: false,
     loading: false,
     disabled: false,
     showArrow: true,
     arrowAnimation: true,
+    icon: "lucide:chevron-down",
     closeOn: "mousedown",
     portal: true,
     placeholder: "请选择站点",
@@ -114,6 +116,15 @@ const controls: any = [
                 defaultValue: 1,
                 props: { min: 1, max: 5 },
             },
+            {
+                // 仅多选时生效
+                label: "最多可选个数（0 为不限制）",
+                key: "multipleLimit",
+                component: "input-number" as const,
+                defaultValue: 0,
+                props: { min: 0, max: 10 },
+                hide: (_: unknown, s: Record<string, any>) => !s.multiple,
+            },
             { label: "可清空", key: "clearable", component: "checkbox" as const, defaultValue: true },
             { label: "允许搜索", key: "allowSearch", component: "checkbox" as const, defaultValue: false },
             {
@@ -136,6 +147,14 @@ const controls: any = [
         children: [
             { label: "显示箭头", key: "showArrow", component: "checkbox" as const, defaultValue: true },
             { label: "箭头旋转动画", key: "arrowAnimation", component: "checkbox" as const, defaultValue: true },
+            {
+                // 仅显示箭头时生效
+                label: "箭头图标（Nuxt Icon 名）",
+                key: "icon",
+                component: "input" as const,
+                defaultValue: "lucide:chevron-down",
+                hide: (_: unknown, s: Record<string, any>) => !s.showArrow,
+            },
             { label: "加载中", key: "loading", component: "checkbox" as const, defaultValue: false },
             { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
         ],
@@ -330,9 +349,9 @@ function onChange(value: any) {
     <div class="flex w-full flex-col">
         <!-- 1. 交互演练场：Playground 自带标题栏，不再额外套 DemoSection -->
         <Playground v-model="state" :controls="controls" component-name="RebornSelect" title="交互体验"
-            description="调节上方参数实时查看反馈；数据源为 60 个站点，展开时会自动定位到已选项">
+            description="点「参数修改」调节参数实时查看反馈；数据源为 60 个站点，展开时会自动定位到已选项">
             <template #tag>
-                <RebornButton variant="soft" size="sm" @click="resetState">
+                <RebornButton variant="soft" size="md" @click="resetState">
                     <template #leading>
                         <Icon name="lucide:rotate-ccw" size="12" />
                     </template>
@@ -343,9 +362,9 @@ function onChange(value: any) {
             <RebornSelect v-model="state.value" :options="cityOptions" :size="state.size" :color="state.color"
                 :variant="state.variant" :multiple="state.multiple" :collapse-tags="state.collapseTags"
                 :collapse-tags-tooltip="state.collapseTagsTooltip" :max-collapse-tags="state.maxCollapseTags"
-                :clearable="state.clearable" :allow-search="state.allowSearch" :loading="state.loading"
-                :disabled="state.disabled" :show-arrow="state.showArrow" :arrow-animation="state.arrowAnimation"
-                :close-on="state.closeOn" :portal="state.portal" :placeholder="state.placeholder" class="min-w-64"
+                :multiple-limit="state.multipleLimit" :clearable="state.clearable" :allow-search="state.allowSearch"
+                :loading="state.loading" :disabled="state.disabled" :show-arrow="state.showArrow"
+                :arrow-animation="state.arrowAnimation" :icon="state.icon" :close-on="state.closeOn" :portal="state.portal" :placeholder="state.placeholder" class="min-w-64"
                 @change="onChange" />
         </Playground>
 

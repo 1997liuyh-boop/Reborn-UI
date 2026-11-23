@@ -9,6 +9,9 @@ import RebornOverlay from "~/components/reborn/ui/reborn-overlay/RebornOverlay.v
 const state = ref<Record<string, any>>({
   duration: 300,
   closeOnClickOverlay: true,
+  // 组件默认是全屏遮罩，演练场默认开启局部模式，便于看清覆盖范围
+  absolute: true,
+  lockScroll: true,
 });
 
 /** 演练场内局部遮罩的显隐 */
@@ -32,6 +35,23 @@ const controls = [
         component: "checkbox" as const,
         defaultValue: true,
       },
+      {
+        label: "局部遮罩（absolute，关闭则铺满视口）",
+        key: "absolute",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
+    ],
+  },
+  {
+    title: "行为",
+    children: [
+      {
+        label: "显示时锁定页面滚动",
+        key: "lockScroll",
+        component: "checkbox" as const,
+        defaultValue: true,
+      },
     ],
   },
 ];
@@ -39,11 +59,15 @@ const controls = [
 /** 演练场右上角展示的等价代码 */
 const overlayCode = computed(() => {
   const s = state.value;
-  const props: string[] = ['v-model="visible"', "absolute"];
+  const props: string[] = ['v-model="visible"'];
 
+  if (s.absolute) props.push("absolute");
   if (s.duration !== 300) props.push(`:duration="${s.duration}"`);
   if (!s.closeOnClickOverlay) props.push(':close-on-click-overlay="false"');
+  if (!s.lockScroll) props.push(':lock-scroll="false"');
 
+  // 局部遮罩需要一个定位父级
+  if (!s.absolute) return `<RebornOverlay\n  ${props.join("\n  ")}\n/>`;
   return `<div class="relative">\n  <RebornOverlay\n    ${props.join("\n    ")}\n  />\n</div>`;
 });
 
@@ -71,17 +95,18 @@ const gradientVisible = shallowRef(false);
         <div
           class="border-default rounded-lg relative flex h-[260px] w-full max-w-md items-center justify-center overflow-hidden border border-dashed"
         >
-          <span class="text-dimmed text-sm">遮罩仅覆盖这个虚线区域</span>
+          <span class="text-dimmed text-sm">{{ state.absolute ? "遮罩仅覆盖这个虚线区域" : "遮罩将铺满整个视口" }}</span>
 
           <RebornOverlay
             v-model="playgroundVisible"
-            absolute
+            :absolute="state.absolute"
+            :lock-scroll="state.lockScroll"
             :duration="state.duration"
             :close-on-click-overlay="state.closeOnClickOverlay"
           >
             <div class="flex h-full items-center justify-center">
               <div class="bg-default border-default rounded-xl w-[240px] border p-5 text-center" @click.stop>
-                <p class="text-highlighted text-sm font-medium">局部遮罩内容</p>
+                <p class="text-highlighted text-sm font-medium">{{ state.absolute ? "局部遮罩内容" : "全屏遮罩内容" }}</p>
                 <p class="text-muted mt-1 text-xs">
                   {{ state.closeOnClickOverlay ? "点击遮罩可关闭" : "已禁止点击遮罩关闭" }}
                 </p>
@@ -98,7 +123,7 @@ const gradientVisible = shallowRef(false);
         </div>
 
         <RebornButton
-          label="展开局部遮罩"
+          :label="state.absolute ? '展开局部遮罩' : '展开全屏遮罩'"
           @click="playgroundVisible = true"
         />
       </div>

@@ -177,9 +177,9 @@ function onSkuChange(key: string, value: unknown) {
   <div class="flex w-full flex-col">
     <Playground v-model="state" :controls="controls" :code="searchBoxCode" component-name="RebornSearchBox"
       title="交互演练场"
-      description="调节上方参数，实时查看搜索框表现；所有区域全是插槽、无任何默认内容。外层边框把外置插槽一并囊括进来并恒为 gray-4，输入框聚焦时只在输入框区内另起一圈 color 对应色的描边——点左侧选择器或右侧按钮都不会点亮任何描边。">
+      description="点「参数修改」调节参数，实时查看搜索框表现；所有区域全是插槽、无任何默认内容。外层边框把外置插槽一并囊括进来并恒为 gray-4，输入框聚焦时只在输入框区内另起一圈 color 对应色的描边——点左侧选择器或右侧按钮都不会点亮任何描边。">
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

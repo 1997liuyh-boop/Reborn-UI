@@ -108,7 +108,7 @@ const largeContentUi: StatisticProps['ui'] = { content: 'text-3xl', suffix: 'tex
       title="交互演练场" description="调节数值、精度和分隔符，查看默认格式与自定义格式化的优先关系。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading><Icon name="lucide:rotate-ccw" size="12" /></template>
           重置配置
         </RebornButton>

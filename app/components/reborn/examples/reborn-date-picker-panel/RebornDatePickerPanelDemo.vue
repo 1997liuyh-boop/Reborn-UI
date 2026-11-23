@@ -56,6 +56,9 @@ const defaultState: PlaygroundState = {
   disabled: false,
   border: true,
   shortcuts: true,
+  shortcutPosition: "left",
+  start: "1970-01-01",
+  end: "2099-12-31",
   showWeekNumber: false,
   unlinkPanels: false,
   singlePanel: false,
@@ -89,6 +92,16 @@ function resetState() {
 /** 不同类型对应的取值精度不同，格式需要随之切换 */
 const valueFormat = computed(() => valueFormatOf(state.value.type));
 
+/** 可选范围的预设：自由输入途中会出现无效日期，这里只给默认边界与示例值所在的 2024 年 4 月 */
+const startOptions = [
+  { label: "1970-01-01（默认）", value: "1970-01-01" },
+  { label: "2024-04-01", value: "2024-04-01" },
+];
+const endOptions = [
+  { label: "2099-12-31（默认）", value: "2099-12-31" },
+  { label: "2024-04-30", value: "2024-04-30" },
+];
+
 /** 演练场控制面板配置 */
 const controls = [
   {
@@ -102,6 +115,19 @@ const controls = [
         props: { options: datePickerTypes.map((t) => ({ label: t, value: t })) },
       },
       { label: "显示快捷选项", key: "shortcuts", component: "checkbox" as const, defaultValue: true },
+      {
+        label: "快捷选项位置",
+        key: "shortcutPosition",
+        component: "select" as const,
+        defaultValue: "left",
+        props: {
+          options: [
+            { label: "左侧", value: "left" },
+            { label: "右侧", value: "right" },
+          ],
+        },
+        hide: (_value: string, s: Record<string, any>) => !s.shortcuts,
+      },
       { label: "底部显示「今天」栏", key: "showToday", component: "checkbox" as const, defaultValue: false },
       { label: "高亮今天（默认关闭）", key: "highlightToday", component: "checkbox" as const, defaultValue: false },
       { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
@@ -110,6 +136,20 @@ const controls = [
   {
     title: "范围与周数",
     children: [
+      {
+        label: "可选范围起点（start）",
+        key: "start",
+        component: "select" as const,
+        defaultValue: "1970-01-01",
+        props: { options: startOptions },
+      },
+      {
+        label: "可选范围终点（end）",
+        key: "end",
+        component: "select" as const,
+        defaultValue: "2099-12-31",
+        props: { options: endOptions },
+      },
       {
         label: "显示周数（week 类型无效）",
         key: "showWeekNumber",
@@ -192,6 +232,9 @@ const panelCode = computed(() => {
     `:border="${s.border}"`,
     `:disabled="${s.disabled}"`,
     s.shortcuts ? ':shortcuts="shortcuts"' : ':shortcuts="[]"',
+    `shortcut-position="${s.shortcutPosition}"`,
+    `start="${s.start}"`,
+    `end="${s.end}"`,
     `:show-week-number="${s.showWeekNumber}"`,
     `:unlink-panels="${s.unlinkPanels}"`,
     `:single-panel="${s.singlePanel}"`,
@@ -297,10 +340,10 @@ const defaultViewDate = ref();
       :code="panelCode"
       component-name="RebornDatePickerPanel"
       title="交互演练场"
-      description="调节上方参数，实时查看面板在各类型下的表现与绑定值。"
+      description="点「参数修改」调节参数，实时查看面板在各类型下的表现与绑定值。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

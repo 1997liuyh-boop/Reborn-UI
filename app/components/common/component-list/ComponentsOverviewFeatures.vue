@@ -116,7 +116,7 @@ const TONES: Record<Feature["tone"], { art: string; bg: string; glow: string; fr
   soft: { art: ART_LIGHT, bg: "bg-(image:--ov-art-soft) after:opacity-12", glow: "bg-(image:--ov-glow-light)", frag: FRAG_SHADOW_LIGHT },
   dawn: { art: ART_LIGHT, bg: "bg-(image:--ov-art-dawn) after:opacity-12", glow: "bg-(image:--ov-glow-light)", frag: FRAG_SHADOW_LIGHT },
   dark: {
-    art: "[--fx-line:rgb(255_255_255/0.14)] [--fx-mark:color-mix(in_oklab,var(--ov-hot)_80%,transparent)] [--fx-sheet:0.16]",
+    art: "[--fx-line:rgb(255_255_255/0.14)] [--fx-mark:color-mix(in_oklab,var(--ov-silver)_80%,transparent)] [--fx-sheet:0.16]",
     bg: "bg-(image:--ov-art-dark) after:opacity-20",
     glow: "bg-(image:--ov-glow-dark)",
     frag: "shadow-[0_0_0_1px_rgb(255_255_255/0.08),0_2px_6px_rgb(0_0_0/0.2),0_40px_70px_-28px_rgb(0_0_0/0.7)]",
@@ -143,14 +143,14 @@ const MARKS = [
   "top-[calc(100%_-_var(--fx-y)_-_1px)] left-[calc(100%_-_var(--fx-x)_-_1px)]",
 ];
 
-/** 窗口身后的纸片 */
-const SHEET_CLASS = "absolute inset-0 block rounded-2xl bg-gray-1 shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-gray-10)_4%,transparent)]";
+/** 窗口身后的玻璃片：半透明底 + 上沿高光，模糊背后的同心圆与边线 */
+const SHEET_CLASS = "absolute inset-0 block rounded-2xl bg-(--ov-sheet) shadow-[inset_0_1px_0_rgb(255_255_255/0.5),0_0_0_1px_rgb(255_255_255/0.14)] backdrop-blur-[6px]";
 
-/** 示例窗口 */
-const FRAG_CLASS = "relative z-1 overflow-hidden rounded-2xl bg-gray-1 text-[13.5px] tracking-[-0.005em] text-(--ov-text)";
+/** 示例窗口：磨砂玻璃，背后的插画线条透出来 */
+const FRAG_CLASS = "relative z-1 overflow-hidden rounded-2xl bg-(--ov-frag) text-[13.5px] tracking-[-0.005em] text-(--ov-text) backdrop-blur-[18px] backdrop-saturate-150";
 /** 窗口标题栏与底栏 */
 const FRAG_BAR = "flex h-[38px] items-center justify-between gap-2.5 border-b border-(--ov-hair) px-3.5 text-[12px] text-(--ov-text-3) [&_code]:rounded-[5px] [&_code]:bg-(--ov-sunk) [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-(family-name:--ov-mono) [&_code]:text-[11.5px] [&_code]:text-(--ov-text-2)";
-const FRAG_FOOT = "flex h-10 items-center justify-between gap-2.5 border-t border-(--ov-hair) bg-[color-mix(in_oklab,var(--color-gray-10)_2.5%,var(--color-gray-1))] px-3.5 text-[12px] text-(--ov-text-2)";
+const FRAG_FOOT = "flex h-10 items-center justify-between gap-2.5 border-t border-(--ov-hair) bg-[color-mix(in_oklab,var(--color-gray-10)_3%,transparent)] px-3.5 text-[12px] text-(--ov-text-2)";
 const FRAG_OK = "inline-flex items-center gap-1.5 font-semibold text-success-active";
 </script>
 
@@ -159,7 +159,7 @@ const FRAG_OK = "inline-flex items-center gap-1.5 font-semibold text-success-act
     <!-- 特性卡片：入场与悬停的过渡合在一条 transition 里 -->
     <article
       v-for="feature in FEATURES" :key="feature.id" v-fly-in
-      class="ov-feature fly-in grid min-h-[468px] rounded-[28px] bg-(--ov-surface) p-1.5 shadow-(--ov-shadow-card)
+      class="ov-feature fly-in grid min-h-[468px] rounded-[28px] bg-(--ov-surface) p-1.5 shadow-(--ov-shadow-card) backdrop-blur-[20px] backdrop-saturate-150
         pointer-fine:hover:-translate-y-0.5 pointer-fine:hover:shadow-(--ov-shadow-lift)
         motion-safe:[&.is-flown]:[transition:opacity_0.9s_var(--ov-ease-expo)_var(--fly-delay,0ms),transform_0.9s_var(--ov-ease-expo)_var(--fly-delay,0ms),translate_0.32s_var(--ov-ease-quart),box-shadow_0.32s_var(--ov-ease-quart)]
         motion-reduce:hover:translate-none max-[821px]:min-h-0 max-[821px]:grid-cols-1 max-[821px]:rounded-3xl"
@@ -286,7 +286,7 @@ const FRAG_OK = "inline-flex items-center gap-1.5 font-semibold text-success-act
                     <!-- 组件自带 dark:text-white，需加 ! -->
                     <NumberTicker
                       v-if="communityCount" :value="communityCount" :decimal-places="0"
-                      class="text-5xl font-semibold tabular-nums text-primary!"
+                      class="text-5xl font-semibold tabular-nums text-gray-10!"
                     />
                     <span class="text-gray-8">个社区移植组件</span>
                   </div>

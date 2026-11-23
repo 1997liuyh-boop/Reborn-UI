@@ -113,7 +113,7 @@ onMounted(() => {
       description="调节目标时长和显示格式，观察剩余毫秒变化与倒计时结束事件。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading><Icon name="lucide:rotate-ccw" size="12" /></template>
           重置配置
         </RebornButton>

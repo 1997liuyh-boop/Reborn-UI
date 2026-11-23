@@ -5,6 +5,7 @@ import { computed, shallowRef } from 'vue';
 /** 演练场绑定值 */
 const state = shallowRef<Record<string, any>>({
   direction: "auto",
+  hasSider: false,
   headerHeight: 60,
   asideWidth: 200,
   showHeader: true,
@@ -29,6 +30,14 @@ const controls = [
             { label: "vertical", value: "vertical" },
           ],
         },
+      },
+      {
+        label: "声明含侧边栏（hasSider，跳过推断强制横向）",
+        key: "hasSider",
+        component: "checkbox" as const,
+        defaultValue: false,
+        // 显式 direction 优先于 hasSider，此时开关无效
+        hide: (_: boolean, s: Record<string, any>) => s.direction !== "auto",
       },
     ],
   },
@@ -75,7 +84,8 @@ const nestAside = computed(() => state.value.showAside && (state.value.showHeade
 /** 演练场右上角展示的等价代码 */
 const layoutCode = computed(() => {
   const dir = state.value.direction === "auto" ? "" : ` direction="${state.value.direction}"`;
-  const lines = [`<RebornLayout${dir}>`];
+  const sider = state.value.direction === "auto" && state.value.hasSider ? " has-sider" : "";
+  const lines = [`<RebornLayout${dir}${sider}>`];
   if (state.value.showHeader) lines.push(`  <RebornLayoutHeader height="${state.value.headerHeight}px">顶栏</RebornLayoutHeader>`);
   if (nestAside.value) {
     lines.push("  <RebornLayout>");
@@ -168,7 +178,7 @@ const sideMenuUi = {
       description="勾选区块观察方向自动推断：只有侧边栏与主区域时横向排列，一旦出现顶栏或底栏就转为纵向堆叠，此时侧边栏与主区域嵌进内层 Layout 横向排列、纵向铺满；也可显式指定 direction 覆盖外层推断结果。"
     >
       <div :class="boxClass">
-        <RebornLayout :direction="playgroundDirection" class="h-full">
+        <RebornLayout :direction="playgroundDirection" :has-sider="state.hasSider" class="h-full">
           <RebornLayoutHeader v-if="state.showHeader" :height="`${state.headerHeight}px`" :class="tone.header">
             Header
           </RebornLayoutHeader>

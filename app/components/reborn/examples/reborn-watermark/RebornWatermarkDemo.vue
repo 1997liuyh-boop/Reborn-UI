@@ -8,6 +8,8 @@ const state = shallowRef<Record<string, any>>({
   content: "Reborn UI Premium",
   customClass: "",
   rotate: -22,
+  width: 120,
+  height: 64,
   gapX: 100,
   gapY: 100,
   fontSize: 16,
@@ -45,6 +47,20 @@ const controls = [
         component: "slider" as const,
         defaultValue: -22,
         props: { min: -180, max: 180, step: 1 },
+      },
+      {
+        label: "单个水印宽度 (px)",
+        key: "width",
+        component: "slider" as const,
+        defaultValue: 120,
+        props: { min: 40, max: 300, step: 5 },
+      },
+      {
+        label: "单个水印高度 (px)",
+        key: "height",
+        component: "slider" as const,
+        defaultValue: 64,
+        props: { min: 20, max: 200, step: 2 },
       },
       {
         label: "横向间距 (px)",
@@ -88,6 +104,8 @@ const watermarkCode = computed(() => {
   content="${s.content}"
   custom-class="${s.customClass}"
   :rotate="${s.rotate}"
+  :width="${s.width}"
+  :height="${s.height}"
   :gap="[${s.gapX}, ${s.gapY}]"
   :font="{ color: '${s.color}', fontSize: ${s.fontSize}, fontWeight: '600' }"
 >
@@ -120,6 +138,8 @@ const payrollRows = [
         :content="state.content"
         :custom-class="state.customClass"
         :rotate="state.rotate"
+        :width="state.width"
+        :height="state.height"
         :gap="gap"
         :font="font"
         :z-index="9"

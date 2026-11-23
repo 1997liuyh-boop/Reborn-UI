@@ -23,6 +23,10 @@ const defaultState: Record<string, any> = {
   max: 100,
   step: 1,
   stepStrictly: false,
+  precision: "",
+  valueOnClear: "",
+  disabledScientific: false,
+  placeholder: "",
   controlsPosition: "",
   modelEvent: "change",
   keyboard: true,
@@ -97,6 +101,13 @@ const controls: any = [
           options: inputNumberAligns.map((a) => ({ label: a, value: a })),
         },
       },
+      {
+        label: "占位文本（清空后可见）",
+        key: "placeholder",
+        component: "input" as const,
+        defaultValue: "",
+        codeSkipEmpty: true,
+      },
     ],
   },
   {
@@ -106,6 +117,40 @@ const controls: any = [
       { label: "最大值", key: "max", component: "input-number" as const, defaultValue: 100, props: { align: "left", hideButton: true } },
       { label: "步长", key: "step", component: "input-number" as const, defaultValue: 1, props: { align: "left", hideButton: true } },
       { label: "仅允许步进倍数（stepStrictly）", key: "stepStrictly", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "小数位数（precision）",
+        key: "precision",
+        component: "select" as const,
+        defaultValue: "",
+        // 空串表示未传该参数，不写入传参明细
+        codeSkipEmpty: true,
+        props: {
+          options: [
+            { label: "不传（默认）", value: "" },
+            ...[0, 1, 2, 3].map((n) => ({ label: `${n} 位`, value: n })),
+          ],
+        },
+      },
+      {
+        label: "清空后回填（valueOnClear）",
+        key: "valueOnClear",
+        component: "select" as const,
+        defaultValue: "",
+        codeSkipEmpty: true,
+        props: {
+          options: [
+            { label: "不传（默认）", value: "" },
+            { label: "min（回填最小值）", value: "min" },
+            { label: "max（回填最大值）", value: "max" },
+          ],
+        },
+      },
+      {
+        label: "禁用科学计数法（剔除键入的 e / E）",
+        key: "disabledScientific",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
       {
         label: "更新时机（modelEvent）",
         key: "modelEvent",
@@ -235,7 +280,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       description="调节尺寸、配色、数值边界与更新时机，实时预览步进器的增减行为。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -256,6 +301,10 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
           :max="state.max"
           :step="state.step"
           :step-strictly="state.stepStrictly"
+          :precision="state.precision === '' ? undefined : state.precision"
+          :value-on-clear="state.valueOnClear || undefined"
+          :disabled-scientific="state.disabledScientific"
+          :placeholder="state.placeholder || undefined"
           :model-event="state.modelEvent"
           :keyboard="state.keyboard"
           :change-on-wheel="state.changeOnWheel"

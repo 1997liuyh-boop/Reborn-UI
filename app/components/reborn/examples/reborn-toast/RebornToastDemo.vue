@@ -3,12 +3,14 @@ import { computed, onBeforeUnmount, shallowRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { message } from "~/components/reborn/ui/reborn-toast/index";
 import {
+  messagePlacements,
   messageTypes,
   messageVariants,
 } from "~/components/reborn/ui/reborn-toast/reborn-toast.config";
 
 const typeOptions = messageTypes.map((t) => ({ label: t, value: t }));
 const variantOptions = messageVariants.map((v) => ({ label: v, value: v }));
+const placementOptions = messagePlacements.map((p) => ({ label: p, value: p }));
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -16,8 +18,11 @@ const state = shallowRef<Record<string, any>>({
   content: "这是一条消息提示",
   type: "success",
   variant: "base",
+  placement: "top",
+  showClose: false,
   duration: 3,
   pauseOnHover: true,
+  grouping: false,
 });
 
 /** 演练场控制面板配置 */
@@ -40,6 +45,14 @@ const controls = [
         defaultValue: "base",
         props: { options: variantOptions },
       },
+      {
+        label: "出现位置",
+        key: "placement",
+        component: "select" as const,
+        defaultValue: "top",
+        props: { options: placementOptions },
+      },
+      { label: "显示关闭按钮", key: "showClose", component: "checkbox" as const, defaultValue: false },
     ],
   },
   {
@@ -53,6 +66,7 @@ const controls = [
         props: { min: 0, max: 10, step: 1 },
       },
       { label: "悬停暂停计时", key: "pauseOnHover", component: "checkbox" as const, defaultValue: true },
+      { label: "合并相同内容（grouping）", key: "grouping", component: "checkbox" as const, defaultValue: false },
     ],
   },
 ];
@@ -62,8 +76,11 @@ const messageCode = computed(() => {
   const s = state.value;
   const config: string[] = [`content: "${s.content}"`];
   if (s.variant !== "base") config.push(`variant: "${s.variant}"`);
+  if (s.placement !== "top") config.push(`placement: "${s.placement}"`);
+  if (s.showClose) config.push("showClose: true");
   if (s.duration !== 3) config.push(`duration: ${s.duration}`);
   if (!s.pauseOnHover) config.push("pauseOnHover: false");
+  if (s.grouping) config.push("grouping: true");
 
   return config.length === 1 && s.duration === 3
     ? `message.${s.type}("${s.content}")`
@@ -75,8 +92,11 @@ function fireFromPlayground() {
   message[s.type as (typeof messageTypes)[number]]({
     content: s.content,
     variant: s.variant,
+    placement: s.placement,
+    showClose: s.showClose,
     duration: s.duration,
     pauseOnHover: s.pauseOnHover,
+    grouping: s.grouping,
   });
 }
 

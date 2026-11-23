@@ -13,14 +13,33 @@ const state = shallowRef<Record<string, any>>({
   background: "#35B6F2",
   leftIcon: "lucide:volume-2",
   rightIcon: "lucide:chevron-right",
+  disabled: false,
+  multiple: false,
+  direction: "horizontal",
+  interval: 3000,
 });
+
+/** 「多条消息」开启时传给 text 的数组，direction / interval 只对多条消息生效 */
+const multiTexts = ["第一条：系统升级公告", "第二条：新功能已上线", "第三条：限时优惠开启"];
+
+const directionOptions = [
+  { label: "水平滚动 horizontal", value: "horizontal" },
+  { label: "垂直轮播 vertical", value: "vertical" },
+];
 
 /** 演练场控制面板配置 */
 const controls = [
   {
     title: "内容配置",
     children: [
-      { label: "通知文本", key: "text", component: "input" as const, defaultValue: "" },
+      {
+        label: "通知文本",
+        key: "text",
+        component: "input" as const,
+        defaultValue: "",
+        hide: (_: any, s: Record<string, any>) => s.multiple,
+      },
+      { label: "多条消息（text 传数组）", key: "multiple", component: "checkbox" as const, defaultValue: false, codeIgnore: true },
       { label: "左侧图标", key: "leftIcon", component: "input" as const },
       { label: "右侧图标", key: "rightIcon", component: "input" as const },
     ],
@@ -37,6 +56,28 @@ const controls = [
         defaultValue: 60,
         props: { min: 10, max: 200, step: 10 },
       },
+      {
+        label: "滚动方向（多条消息时生效）",
+        key: "direction",
+        component: "select" as const,
+        defaultValue: "horizontal",
+        props: { options: directionOptions },
+        hide: (_: any, s: Record<string, any>) => !s.multiple,
+      },
+      {
+        label: "轮播间隔（ms，垂直轮播时生效）",
+        key: "interval",
+        component: "input-number" as const,
+        defaultValue: 3000,
+        props: { min: 500, max: 10000, step: 500 },
+        hide: (_: any, s: Record<string, any>) => !s.multiple || s.direction !== "vertical",
+      },
+    ],
+  },
+  {
+    title: "状态",
+    children: [
+      { label: "禁用", key: "disabled", component: "checkbox" as const, defaultValue: false },
     ],
   },
   {
@@ -51,16 +92,27 @@ const controls = [
 /** 演练场右上角展示的等价代码 */
 const noticeBarCode = computed(() => {
   const s = state.value;
-  const props: string[] = [`text="${s.text}"`];
+  const props: string[] = [s.multiple ? `:text='${JSON.stringify(multiTexts)}'` : `text="${s.text}"`];
 
   if (!s.scrollable) props.push(':scrollable="false"');
   if (s.wrapable) props.push("wrapable");
   if (s.speed !== 60) props.push(`:speed="${s.speed}"`);
+  if (s.multiple && s.direction !== "horizontal") {
+    props.push(`direction="${s.direction}"`);
+    if (s.interval !== 3000) props.push(`:interval="${s.interval}"`);
+  }
+  if (s.disabled) props.push("disabled");
   if (s.leftIcon) props.push(`left-icon="${s.leftIcon}"`);
   if (s.rightIcon) props.push(`right-icon="${s.rightIcon}"`);
   props.push(`color="${s.color}"`, `background="${s.background}"`);
 
   return `<RebornNoticeBar\n  ${props.join("\n  ")}\n/>`;
+});
+
+/** 传给预览组件的参数：剔除辅助开关，多条消息时把 text 换成数组 */
+const previewProps = computed(() => {
+  const { multiple, ...rest } = state.value;
+  return multiple ? { ...rest, text: multiTexts } : rest;
 });
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
@@ -97,7 +149,7 @@ function handleClose() {
       description="调节滚动速率、图标与配色，实时预览通知栏的循环播放效果。"
     >
       <RebornNoticeBar
-        v-bind="state"
+        v-bind="previewProps"
         class="w-full max-w-xl"
       />
     </Playground>

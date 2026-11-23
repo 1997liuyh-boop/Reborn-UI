@@ -354,10 +354,10 @@ function scrollToBlock(key: string) {
   <div class="flex w-full flex-col">
     <Playground
       v-model="state" :controls="controls" :code="anchorCode" component-name="RebornAnchor" title="交互演练场"
-      description="调节上方参数，再滚动下方容器，观察选中项与标记怎么跟着变；链接由 items 递归渲染，最深四级"
+      description="点「参数修改」调节参数，再滚动下方容器，观察选中项与标记怎么跟着变；链接由 items 递归渲染，最深四级"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

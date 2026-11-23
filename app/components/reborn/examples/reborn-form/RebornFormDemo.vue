@@ -29,6 +29,7 @@ const state = shallowRef<Record<string, any>>({
   requireAsteriskPosition: "right",
   showMessage: true,
   inlineMessage: false,
+  scrollToError: true,
   disabled: false,
 });
 
@@ -41,14 +42,14 @@ const controls = [
         label: "标签位置",
         key: "labelPosition",
         component: "select" as const,
-        defaultValue: "right",
+        defaultValue: "left",
         props: { options: formLabelPositions.map((p) => ({ label: p, value: p })) },
       },
       {
         label: "标签宽度",
         key: "labelWidth",
         component: "input" as const,
-        defaultValue: "80px",
+        defaultValue: "140px",
       },
       {
         label: "尺寸规格",
@@ -88,6 +89,12 @@ const controls = [
       },
       { label: "显示错误信息", key: "showMessage", component: "checkbox" as const, defaultValue: true },
       { label: "行内错误提示", key: "inlineMessage", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "校验失败滚动到首个错误项",
+        key: "scrollToError",
+        component: "checkbox" as const,
+        defaultValue: true,
+      },
       { label: "整体禁用", key: "disabled", component: "checkbox" as const, defaultValue: false },
     ],
   },
@@ -104,6 +111,7 @@ const formCode = computed(() => {
   props.push(`:trigger="${s.immediateValidate ? "['change', 'blur']" : "'none'"}"`);
   if (!s.showMessage) props.push(':show-message="false"');
   if (s.inlineMessage) props.push("inline-message");
+  if (!s.scrollToError) props.push(':scroll-to-error="false"');
   if (s.disabled) props.push("disabled");
 
   return `<RebornForm\n  ${props.join("\n  ")}\n>\n  <RebornFormItem prop="username" label="用户名" required require-asterisk-position="${s.requireAsteriskPosition}">\n    <RebornInput v-model="form.username" />\n  </RebornFormItem>\n</RebornForm>`;
@@ -185,7 +193,8 @@ function scrollToBio() {
         <RebornForm
           ref="formRef" :model-value="form" :rules="rules" :label-width="state.labelWidth"
           :label-position="state.labelPosition" :size="state.size" :trigger="formTrigger"
-          :show-message="state.showMessage" :inline-message="state.inlineMessage" :disabled="state.disabled"
+          :show-message="state.showMessage" :inline-message="state.inlineMessage"
+          :scroll-to-error="state.scrollToError" :disabled="state.disabled"
         >
           <RebornFormItem :require-asterisk-position="state.requireAsteriskPosition" prop="username" label="用户名" required>
             <RebornInput v-model="form.username" placeholder="请输入用户名" />

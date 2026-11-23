@@ -3,7 +3,7 @@ import type { CalendarDateType, CalendarEvent, CalendarMode } from "~/components
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
 import { computed, ref, shallowRef, useTemplateRef } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
-import { calendarColors, calendarControllerTypes, calendarModes, calendarTitleAligns } from "~/components/reborn/ui/reborn-calendar/reborn-calendar.config";
+import { calendarColors, calendarControllerTypes, calendarModes, calendarSizes, calendarTitleAligns } from "~/components/reborn/ui/reborn-calendar/reborn-calendar.config";
 import RebornCalendar from "~/components/reborn/ui/reborn-calendar/RebornCalendar.vue";
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
 import RebornRadioGroup from "~/components/reborn/ui/reborn-radio/RebornRadioGroup.vue";
@@ -17,6 +17,9 @@ const controllerOptions = calendarControllerTypes.map((t) => ({
 const modeOptions = calendarModes.map((m) => ({ label: m === "month" ? "月视图 month" : "年视图 year", value: m }));
 const ALIGN_LABELS = { left: "靠左 left", center: "居中 center", right: "靠右 right" } as const;
 const alignOptions = calendarTitleAligns.map((a) => ({ label: ALIGN_LABELS[a], value: a }));
+/** 日期标题各档的高度（px） */
+const SIZE_PX = { sm: 24, md: 32, lg: 40 } as const;
+const sizeOptions = calendarSizes.map((s) => ({ label: `${s.toUpperCase()}（${SIZE_PX[s]}px）`, value: s }));
 
 /** 演示数据都落在本月，任何时候打开都能看到事项 */
 const now = new Date();
@@ -54,8 +57,9 @@ const defaultState: Record<string, any> = {
   color: "primary",
   mode: "month",
   titleAlign: "right",
+  size: "md",
   border: false,
-  highlightToday: false,
+  highlightToday: true,
   lunar: false,
 };
 
@@ -108,13 +112,20 @@ const controls: any = [
         defaultValue: "right",
         props: { options: alignOptions },
       },
+      {
+        label: "日期标题尺寸",
+        key: "size",
+        component: "select" as const,
+        defaultValue: "md",
+        props: { options: sizeOptions },
+      },
     ],
   },
   {
     title: "外观",
     children: [
       { label: "边框模式（border）", key: "border", component: "checkbox" as const, defaultValue: false },
-      { label: "高亮本日 / 本月（highlightToday）", key: "highlightToday", component: "checkbox" as const, defaultValue: false },
+      { label: "高亮本日 / 本月（highlightToday）", key: "highlightToday", component: "checkbox" as const, defaultValue: true },
       { label: "农历模式（lunar）", key: "lunar", component: "checkbox" as const, defaultValue: false },
     ],
   },
@@ -131,6 +142,7 @@ const calendarCode = computed(() => {
     `  controller-type="${s.controllerType}"`,
     `  color="${s.color}"`,
     `  title-align="${s.titleAlign}"`,
+    `  size="${s.size}"`,
     `  :border="${s.border}"`,
     `  :highlight-today="${s.highlightToday}"`,
     `  :lunar="${s.lunar}"`,
@@ -204,7 +216,7 @@ const jumpTargets: { label: string; type: CalendarDateType }[] = [
 
 <template>
   <div class="flex w-full flex-col">
-    <!-- 日历需要整行宽度：控制面板放到上方，预览区占满 -->
+    <!-- 日历需要整行宽度：预览区占满 -->
     <Playground
       v-model="state"
       :controls="controls"
@@ -214,7 +226,7 @@ const jumpTargets: { label: string; type: CalendarDateType }[] = [
       description="调节参数，查看日历在不同控制器、语义色、对齐、边框与农历模式下的表现。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -231,6 +243,7 @@ const jumpTargets: { label: string; type: CalendarDateType }[] = [
           :controller-type="state.controllerType"
           :color="state.color"
           :title-align="state.titleAlign"
+          :size="state.size"
           :border="state.border"
           :highlight-today="state.highlightToday"
           :lunar="state.lunar"

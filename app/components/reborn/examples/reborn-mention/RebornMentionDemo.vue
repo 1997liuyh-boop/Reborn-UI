@@ -35,6 +35,12 @@ const typeOptions = [
   { label: "单行 text", value: "text" },
   { label: "多行 textarea", value: "textarea" },
 ];
+/** 拆分符只能是 1 个字符，用下拉限定取值 */
+const splitOptions = [
+  { label: "空格", value: " " },
+  { label: "逗号 ,", value: "," },
+  { label: "分号 ;", value: ";" },
+];
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -45,8 +51,10 @@ const defaultState: Record<string, any> = {
   placement: "bottom",
   showArrow: false,
   offset: 0,
+  split: " ",
   whole: false,
   loading: false,
+  disabled: false,
 };
 
 const state = shallowRef<Record<string, any>>({ ...defaultState });
@@ -82,7 +90,14 @@ const controls: any = [
   {
     title: "行为",
     children: [
+      { label: "拆分符（选中后补在提及之后）", key: "split", component: "select" as const, defaultValue: " ", props: { options: splitOptions } },
       { label: "退格整体删除", key: "whole", component: "checkbox" as const, defaultValue: false },
+    ],
+  },
+  {
+    title: "状态",
+    children: [
+      { label: "禁用（透传给输入框）", key: "disabled", component: "checkbox" as const, defaultValue: false },
     ],
   },
 ];
@@ -105,8 +120,10 @@ const mentionCode = computed(() => {
     `  placement="${s.placement}"`,
     `  :show-arrow="${s.showArrow}"`,
     `  :offset="${s.offset}"`,
+    `  split="${s.split}"`,
     `  :whole="${s.whole}"`,
     `  :loading="${s.loading}"`,
+    `  :disabled="${s.disabled}"`,
     "  placeholder=\"输入 @ 提及成员\"",
     "  @search=\"onSearch\"",
     "  @select=\"onSelect\"",
@@ -160,10 +177,10 @@ onBeforeUnmount(() => clearTimeout(remoteTimer));
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="mentionCode" component-name="RebornMention"
-      title="交互演练场" description="调节上方参数后在输入框里输入 @（或 #），查看下拉面板的位置、箭头与整体删除行为。"
+      title="交互演练场" description="点「参数修改」调节参数后在输入框里输入 @（或 #），查看下拉面板的位置、箭头与整体删除行为。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -174,8 +191,8 @@ onBeforeUnmount(() => clearTimeout(remoteTimer));
       <div class="flex w-full max-w-md flex-col gap-3">
         <RebornMention
           v-model="playgroundValue" :options="playgroundOptions" :type="state.type" :prefix="playgroundPrefix"
-          :placement="state.placement" :show-arrow="state.showArrow" :offset="state.offset" :whole="state.whole"
-          :loading="state.loading" :rows="3" placeholder="输入 @ 提及成员"
+          :placement="state.placement" :show-arrow="state.showArrow" :offset="state.offset" :split="state.split"
+          :whole="state.whole" :loading="state.loading" :disabled="state.disabled" :rows="3" placeholder="输入 @ 提及成员"
           @search="(_, prefix) => (playgroundPrefixUsed = prefix)"
           @select="(option, prefix) => (lastSelect = `select：${prefix}${option.value}`)"
         />

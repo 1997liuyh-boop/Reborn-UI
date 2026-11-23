@@ -103,10 +103,10 @@ const rows = Array.from({ length: 12 }, (_, i) => `占位内容 ${i + 1}`);
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="backTopCode" component-name="RebornBackTop"
-      title="交互演练场" description="调节上方参数后向下滚动本页，查看按钮在视口右下角的显隐、形状与进度环走向。"
+      title="交互演练场" description="点「参数修改」调节参数后向下滚动本页，查看按钮在视口右下角的显隐、形状与进度环走向。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

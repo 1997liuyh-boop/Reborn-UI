@@ -38,8 +38,10 @@ const profileItems: DescriptionsItem[] = [
   { label: "联系地址", value: "浙江省杭州市西湖区工专路 77 号 3 单元 501", span: 2 },
 ];
 
-/** 演练场默认状态，与组件默认值保持一致 */
+/** 演练场默认状态：除示例标题外与组件默认值保持一致 */
 const defaultState: Record<string, any> = {
+  title: "用户信息",
+  extra: "",
   bordered: false,
   layout: "horizontal",
   size: "md",
@@ -62,6 +64,14 @@ const controls: any = [
   {
     title: "基础属性",
     children: [
+      { label: "标题（留空不显示）", key: "title", component: "input" as const, defaultValue: "" },
+      {
+        label: "操作区文字（extra，留空改用插槽里的按钮）",
+        key: "extra",
+        component: "input" as const,
+        defaultValue: "",
+        props: { placeholder: "如 查看全部" },
+      },
       { label: "展示边框", key: "bordered", component: "checkbox" as const, defaultValue: false },
       {
         label: "描述布局",
@@ -118,8 +128,10 @@ const controls: any = [
 /** 演练场右上角展示的传参明细：完整列出当前所有参数（含默认值） */
 const descriptionsCode = computed(() => {
   const s = state.value;
-  const attrs: string[] = [
-    `title="用户信息"`,
+  const attrs: string[] = [];
+  if (s.title) attrs.push(`title="${s.title}"`);
+  if (s.extra) attrs.push(`extra="${s.extra}"`);
+  attrs.push(
     `:bordered="${s.bordered}"`,
     `layout="${s.layout}"`,
     `size="${s.size}"`,
@@ -127,10 +139,12 @@ const descriptionsCode = computed(() => {
     `:colon="${s.colon}"`,
     `label-align="${s.labelAlign}"`,
     `content-align="${s.contentAlign}"`,
-  ];
+  );
   if (s.labelWidth) attrs.push(`label-width="${s.labelWidth}"`);
   attrs.push(`:items="items"`);
-  return `<RebornDescriptions\n  ${attrs.join("\n  ")}\n/>`;
+  // 未填 extra 时预览区用的是 #extra 插槽，代码里同步给出占位
+  if (s.extra) return `<RebornDescriptions\n  ${attrs.join("\n  ")}\n/>`;
+  return `<RebornDescriptions\n  ${attrs.join("\n  ")}\n>\n  <template #extra>...</template>\n</RebornDescriptions>`;
 });
 
 // ─── 场景演示数据 ───────────────────────────────────────────────
@@ -178,10 +192,10 @@ const spanItems: DescriptionsItem[] = [
       :code="descriptionsCode"
       component-name="RebornDescriptions"
       title="交互演练场"
-      description="调节上方参数，观察列数、边框与行高的变化。"
+      description="点「参数修改」调节参数，观察列数、边框与行高的变化。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -192,7 +206,8 @@ const spanItems: DescriptionsItem[] = [
       <div class="flex w-full flex-col items-center gap-8">
         <RebornDescriptions
           class="w-full"
-          title="用户信息"
+          :title="state.title || undefined"
+          :extra="state.extra || undefined"
           :bordered="state.bordered"
           :layout="state.layout"
           :size="state.size"
@@ -203,7 +218,8 @@ const spanItems: DescriptionsItem[] = [
           :label-width="state.labelWidth || undefined"
           :items="profileItems"
         >
-          <template #extra>
+          <!-- 填了 extra 文字就不渲染插槽，否则插槽会盖过属性 -->
+          <template v-if="!state.extra" #extra>
             <RebornButton size="sm" variant="outlined" color="neutral">编辑</RebornButton>
           </template>
         </RebornDescriptions>

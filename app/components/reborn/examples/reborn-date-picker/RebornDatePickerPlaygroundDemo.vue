@@ -17,7 +17,17 @@ export interface DatePickerPlaygroundConfig {
   color: (typeof datePickerColors)[number];
   variant: (typeof datePickerVariants)[number];
   activeType: "fill" | "fillRound" | "outline" | "text";
+  /** 展示格式；空字符串表示按类型取默认格式 */
+  format: string;
   placeholder: string;
+  /** 范围类型两栏的占位；空字符串表示按类型取默认文案 */
+  startPlaceholder: string;
+  endPlaceholder: string;
+  rangeSeparator: string;
+  /** 尾部图标名；空字符串回落到组件默认图标 */
+  icon: string;
+  /** 前缀图标名；空字符串表示不显示 */
+  prefixIcon: string;
   showArrow: boolean;
   arrowAnimation: boolean;
   clearable: boolean;
@@ -28,6 +38,7 @@ export interface DatePickerPlaygroundConfig {
   maxCollapseTags: number;
   closeOn: "mousedown" | "click";
   portal: boolean;
+  autoAdjustOverflow: boolean;
   /** 是否显示快捷项；实际传给组件的列表见 shortcuts 属性 */
   shortcuts: boolean;
   shortcutPosition: "left" | "right";
@@ -68,7 +79,13 @@ const playgroundHandlers = createHandlers(logPlayground);
       :color="config.color"
       :variant="config.variant"
       :active-type="config.activeType"
+      :format="config.format"
       :placeholder="config.placeholder || undefined"
+      :start-placeholder="config.startPlaceholder || undefined"
+      :end-placeholder="config.endPlaceholder || undefined"
+      :range-separator="config.rangeSeparator"
+      :icon="config.icon || undefined"
+      :prefix-icon="config.prefixIcon || undefined"
       :show-arrow="config.showArrow"
       :arrow-animation="config.arrowAnimation"
       :clearable="config.clearable"
@@ -79,6 +96,7 @@ const playgroundHandlers = createHandlers(logPlayground);
       :max-collapse-tags="config.maxCollapseTags"
       :close-on="config.closeOn"
       :portal="config.portal"
+      :auto-adjust-overflow="config.autoAdjustOverflow"
       :shortcuts="shortcuts"
       :shortcut-position="config.shortcutPosition"
       :show-week-number="config.showWeekNumber"

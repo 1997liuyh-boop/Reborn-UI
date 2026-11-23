@@ -36,7 +36,7 @@ const controls = [
         label: "尺寸（支持 px / rem / em）",
         key: "size",
         component: "input" as const,
-        defaultValue: "40px",
+        defaultValue: "1.2em",
       },
     ],
   },
@@ -48,7 +48,7 @@ const loadingCode = computed(() => {
   const props: string[] = [`type="${s.type}"`];
 
   if (s.color !== "primary") props.push(`color="${s.color}"`);
-  if (s.size !== "40px") props.push(`size="${s.size}"`);
+  if (s.size !== "1.2em") props.push(`size="${s.size}"`);
 
   return `<RebornLoading\n  ${props.join("\n  ")}\n/>`;
 });

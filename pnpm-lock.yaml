@@ -175,6 +175,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^6.7.3
         version: 6.7.3(@eslint-react/eslint-plugin@2.13.0(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3))(@next/eslint-plugin-next@16.1.6)(@typescript-eslint/rule-tester@8.56.1(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/typescript-estree@8.56.1(typescript@5.9.3))(@typescript-eslint/utils@8.56.1(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3))(@unocss/eslint-plugin@66.6.2(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.29)(eslint-plugin-format@2.0.1(eslint@9.39.3(jiti@2.6.1)))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.39.3(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@9.39.3(jiti@2.6.1)))(eslint-plugin-vuejs-accessibility@2.5.0(eslint@9.39.3(jiti@2.6.1))(globals@16.5.0))(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3)
+      '@iconify-json/akar-icons':
+        specifier: ^1.2.7
+        version: 1.2.7
       '@iconify-json/bi':
         specifier: ^1.2.7
         version: 1.2.7
@@ -2527,6 +2530,9 @@ packages:
   '@icebreakers/stylelint-config@1.2.6':
     resolution: {integrity: sha512-k5JWMnA0mfi83matf6HrJMu7fG2wQJVtPjITV0Dm1TfG6JIob3oo51HFlb2jhNMZg275aUB2sKjidaHfRGcQRg==}
     hasBin: true
+
+  '@iconify-json/akar-icons@1.2.7':
+    resolution: {integrity: sha512-cw44dCnZgGhm6Tywxm0WALAnDB9AyGkDk7kiLMo2B/Ayt7duZu/uyrsqb55weWUN8Ge2sQAOl8MRtT6bFcLzPg==}
 
   '@iconify-json/bi@1.2.7':
     resolution: {integrity: sha512-IPz8WNxmLkH1I9msl+0Q4OnmjjvP4uU0Z61a4i4sqonB6vKSbMGUWuGn8/YuuszlReVj8rf+3gNv5JU8Xoljyg==}
@@ -16095,6 +16101,10 @@ snapshots:
       - postcss
       - stylelint
       - stylelint-order
+
+  '@iconify-json/akar-icons@1.2.7':
+    dependencies:
+      '@iconify/types': 2.0.0
 
   '@iconify-json/bi@1.2.7':
     dependencies:

@@ -223,6 +223,16 @@ useHead({
 /** 首屏标题，逐词升起 */
 const HERO_WORDS = ['Atomic', 'Components'] as const
 
+/** 首屏三层玻璃穹顶：越靠下越小 */
+const HERO_DOMES = ['top-[74%] w-[150%]', 'top-[82%] w-[104%]', 'top-[90%] w-[68%]'] as const
+
+/** 次屏三块柔光斑的位置与大小 */
+const ABOUT_BLOBS = [
+  'top-[18%] -left-[6%] size-[520px]',
+  'top-[46%] -right-[8%] size-[600px]',
+  'top-[78%] left-[22%] size-[480px]',
+] as const
+
 /** 按钮按下反馈 */
 const PRESS = 'active:[transform:translateY(1px)_scale(0.985)]'
 
@@ -252,6 +262,15 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
             <div class="absolute inset-0 bg-(image:--ov-hero-sun) motion-safe:animate-[ov-breathe_16s_ease-in-out_1.4s_infinite_alternate]" />
           </div>
         </div>
+        <!-- 玻璃穹顶：三层半透明圆弧从分界线升起，只露出上沿 -->
+        <div class="pointer-events-none absolute inset-0 -z-1 overflow-hidden [mask-image:linear-gradient(#000_80%,transparent_98%)]" aria-hidden="true">
+          <i
+            v-for="dome in HERO_DOMES" :key="dome"
+            class="absolute left-1/2 aspect-square -translate-x-1/2 rounded-full bg-(image:--ov-dome-fill) shadow-(--ov-dome-edge)
+              motion-safe:animate-[ov-sunrise_1.6s_var(--ov-ease-expo)_backwards]"
+            :class="dome"
+          />
+        </div>
         <!-- 明暗分界线，供导航切换色调 -->
         <i ref="toneEdge" class="pointer-events-none absolute top-[82%] left-0 size-px" aria-hidden="true" />
 
@@ -259,11 +278,11 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
           <a
             href="#catalog"
             class="group/pill mb-7 inline-flex min-h-[34px] max-w-full items-center gap-[9px] rounded-[999px] bg-white/10 px-3 py-1 text-left text-[14px] tracking-[-0.01em] text-white/82
-              shadow-[inset_0_0_0_1px_rgb(255_255_255/0.12)] backdrop-blur-[10px] [transition:background-color_0.2s_var(--ov-ease)]
+              shadow-[inset_0_0_0_1px_rgb(255_255_255/0.14),inset_0_1px_0_rgb(255_255_255/0.22)] backdrop-blur-[14px] backdrop-saturate-150 [transition:background-color_0.2s_var(--ov-ease)]
               hover:bg-white/16 hover:duration-[140ms] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white/70
               motion-safe:animate-[ov-rise-small_0.7s_var(--ov-ease-expo)_40ms_backwards] max-[701px]:mb-[22px] max-[701px]:text-[13px]"
           >
-            <span class="size-[7px] flex-none rounded-[999px] bg-(--ov-hot) shadow-[0_0_0_3px_color-mix(in_srgb,var(--ov-hot)_28%,transparent)]" aria-hidden="true" />
+            <span class="size-[7px] flex-none rounded-[999px] bg-(--ov-silver) shadow-[0_0_0_3px_color-mix(in_srgb,var(--ov-silver)_28%,transparent)]" aria-hidden="true" />
             <span><b class="font-semibold text-white">Reborn UI</b> 组件总览<span class="max-[401px]:hidden">：{{ platformLabel }} 端共 {{ totalCount }} 个组件</span></span>
             <Icon name="lucide:arrow-down" class="size-3.5 flex-none transition-transform duration-200 ease-(--ov-ease) group-hover/pill:translate-y-0.5 motion-reduce:transition-none" />
           </a>
@@ -271,13 +290,12 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
           <!-- 外层裁切，内层升起 -->
           <h1
             id="components-hero-title"
-            class="font-(family-name:--ov-display) text-[clamp(40px,6vw,84px)] leading-[1.02] font-semibold tracking-[-0.042em] text-balance
-              text-[color-mix(in_oklab,var(--ov-p)_5%,white)]"
+            class="font-(family-name:--ov-display) text-[clamp(40px,6vw,84px)] leading-[1.02] font-semibold tracking-[-0.042em] text-balance text-white"
           >
             <span v-for="(word, index) in HERO_WORDS" :key="word" class="block">
               <span class="-mx-[0.08em] -mt-[0.12em] -mb-[0.18em] inline-block overflow-clip px-[0.08em] pt-[0.12em] pb-[0.18em] align-top">
                 <span
-                  class="inline-block origin-bottom-left motion-safe:animate-[ov-word_0.95s_var(--ov-ease-expo)_calc(0.13s_+_var(--w)_*_90ms)_backwards]"
+                  class="inline-block origin-bottom-left bg-[linear-gradient(180deg,#fff_32%,rgb(255_255_255/0.58))] bg-clip-text text-transparent motion-safe:animate-[ov-word_0.95s_var(--ov-ease-expo)_calc(0.13s_+_var(--w)_*_90ms)_backwards]"
                   :style="{ '--w': index }"
                 >{{ word }}</span>
               </span>
@@ -286,7 +304,7 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
 
           <p
             class="mt-6 max-w-[36rem] text-[clamp(16px,1.45vw,19px)] leading-[1.7] text-pretty
-              text-[color-mix(in_srgb,color-mix(in_oklab,var(--ov-p)_8%,white)_92%,transparent)]
+              text-white/88
               motion-safe:animate-[ov-rise_0.8s_var(--ov-ease-expo)_0.43s_backwards]"
           >
             Web / UniApp 双端基础与扩展组件，覆盖按钮、表单、导航、反馈与特效；设计与实现持续迭代，欢迎在文档页反馈问题。
@@ -296,8 +314,9 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
             <!-- 安装命令，点击复制 -->
             <button
               type="button" :data-copied="copied" :aria-label="`复制安装命令：${INSTALL_COMMAND}`"
-              class="group/install inline-flex h-12 max-w-full cursor-pointer items-center gap-[18px] rounded-[11px] border border-white/12
-                bg-[color-mix(in_srgb,var(--ov-ink-deep)_90%,transparent)] py-0 pr-1.5 pl-[18px] text-left text-white
+              class="group/install inline-flex h-12 max-w-full cursor-pointer items-center gap-[18px] rounded-[11px] border border-white/16
+                bg-[rgb(8_8_10/0.46)] py-0 pr-1.5 pl-[18px] text-left text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.16)]
+                backdrop-blur-[14px] backdrop-saturate-150
                 [transition:border-color_0.2s_var(--ov-ease),transform_90ms_var(--ov-ease)] hover:border-white/26 hover:duration-[140ms]
                 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white/70
                 motion-safe:animate-[ov-rise_0.8s_var(--ov-ease-expo)_0.53s_backwards]
@@ -330,7 +349,7 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
               to="/getting-started"
               class="group/btn inline-flex h-12 items-center justify-center gap-2 rounded-[11px] bg-white px-[18px] text-[15px] font-medium tracking-[-0.01em] whitespace-nowrap text-[#12141a]
                 shadow-[0_0_0_1px_rgb(8_10_16/0.05),0_4px_12px_-6px_color-mix(in_srgb,var(--ov-shade)_30%,transparent)]
-                [transition:background-color_0.2s_var(--ov-ease),transform_90ms_var(--ov-ease)] hover:bg-[color-mix(in_oklab,var(--ov-p)_6%,white)] hover:duration-[140ms]
+                [transition:background-color_0.2s_var(--ov-ease),transform_90ms_var(--ov-ease)] hover:bg-[#ececee] hover:duration-[140ms]
                 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12141a]
                 motion-safe:animate-[ov-rise_0.8s_var(--ov-ease-expo)_0.6s_backwards]"
               :class="PRESS"
@@ -346,6 +365,10 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
     <!-- ─── 次屏：标题、组件数与三张特性卡片 ─── -->
     <!-- 分节标题不带 id，避免文档页生成右侧目录 -->
     <section id="about" class="relative pt-6 max-[701px]:pt-2" aria-label="双端基础与扩展组件">
+      <!-- 柔光斑：垫在玻璃卡片下面，让半透明底有明暗可透 -->
+      <div class="pointer-events-none absolute inset-0 -z-1 overflow-hidden" aria-hidden="true">
+        <i v-for="blob in ABOUT_BLOBS" :key="blob" class="absolute rounded-full bg-(--ov-blob) blur-[90px]" :class="blob" />
+      </div>
       <div :class="WRAP">
         <div :class="SECTION_HEAD">
           <span v-fly-in class="fly-in" :class="EYEBROW">
@@ -366,7 +389,7 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
             <a
               v-for="series in seriesStats" :key="series.id" :href="`#series-${series.id}`"
               class="ov-stat group/stat flex min-w-[152px] flex-col items-center gap-1 px-8 py-0.5 [transition:color_0.2s_var(--ov-ease)] [&+&]:shadow-[-1px_0_var(--ov-hair)]
-                focus-visible:rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary max-[701px]:min-w-0 max-[701px]:px-[22px]"
+                focus-visible:rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--ov-text) max-[701px]:min-w-0 max-[701px]:px-[22px]"
             >
               <b
                 class="font-(family-name:--ov-display) text-[clamp(40px,4.6vw,56px)] leading-[1.05] font-semibold tracking-[-0.04em] tabular-nums text-(--ov-text)
@@ -467,80 +490,87 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
 <style scoped>
 /* 配色、尺寸与缓动变量，子组件共用；暗色差异见 .dark 段 */
 .components-overview {
-  --ov-p: var(--color-primary);
-  /* 首屏渐变色阶 */
-  --ov-ink-deep: color-mix(in oklab, var(--ov-p) 10%, #07080c);
-  --ov-ink-2: color-mix(in oklab, var(--ov-p) 28%, #090a10);
-  --ov-rust: color-mix(in oklab, var(--ov-p) 64%, #0a0b12);
-  --ov-hot: color-mix(in oklab, var(--ov-p) 76%, white);
-  --ov-pale: color-mix(in oklab, var(--ov-p) 32%, white);
+  /* 首屏色阶：纯中性的黑到银白，不取主题色 */
+  --ov-ink-deep: #050506;
+  --ov-ink-2: #0b0b0d;
+  --ov-ink-3: #1b1c1f;
+  --ov-silver: #e4e5e8;
   /* 纸色（页面底色） */
-  --ov-paper: color-mix(in oklab, var(--ov-p) 3.5%, var(--color-gray-1));
+  --ov-paper: var(--color-gray-1);
   --ov-hero-bg: linear-gradient(
     180deg,
     var(--ov-ink-deep) 0%,
-    var(--ov-ink-2) 20%,
-    var(--ov-rust) 50%,
-    var(--ov-p) 70%,
-    var(--ov-hot) 78%,
-    var(--ov-pale) 90%,
+    var(--ov-ink-2) 26%,
+    var(--ov-ink-3) 48%,
+    #3a3b40 62%,
+    #7c7d83 73%,
+    #c2c3c8 83%,
+    #e6e6e9 91%,
     var(--ov-paper) 100%
   );
   /* 首屏光晕 */
   --ov-hero-sun: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--ov-hot) 62%, transparent) 0%,
-    color-mix(in srgb, var(--ov-hot) 44%, transparent) 26%,
-    color-mix(in srgb, var(--ov-hot) 16%, transparent) 52%,
+    rgb(255 255 255 / 0.5) 0%,
+    rgb(255 255 255 / 0.32) 26%,
+    rgb(255 255 255 / 0.12) 52%,
     transparent 74%
   );
+  /* 首屏玻璃穹顶的填充与高光 */
+  --ov-dome-fill: linear-gradient(rgb(255 255 255 / 0.16), transparent 240px);
+  --ov-dome-edge: inset 0 1px 0 rgb(255 255 255 / 0.55), inset 0 0 0 1px rgb(255 255 255 / 0.08);
   --ov-text: var(--color-gray-10);
   --ov-text-2: var(--color-gray-8);
   --ov-text-3: var(--color-gray-6);
-  /* 小字标签色，浅色下取第 7 阶保证对比度 */
-  --ov-label: var(--color-primary-active);
+  /* 小字标签色 */
+  --ov-label: var(--color-gray-9);
   --ov-hair: color-mix(in oklab, var(--color-gray-10) 7%, transparent);
-  --ov-surface: var(--color-gray-1);
+  /* 玻璃面：半透明底，配合 backdrop-filter 使用 */
+  --ov-surface: color-mix(in oklab, white 58%, transparent);
   --ov-sunk: color-mix(in oklab, var(--color-gray-10) 4.5%, transparent);
+  /* 玻璃面的上沿高光 */
+  --ov-glass-edge: inset 0 1px 0 rgb(255 255 255 / 0.85);
+  /* 次屏底层的柔光斑，给玻璃面提供可透的明暗变化 */
+  --ov-blob: rgb(10 10 14 / 0.1);
   /* 大卡片内屏底色 */
-  --ov-screen: color-mix(in oklab, var(--ov-p) 5%, color-mix(in oklab, var(--color-gray-10) 3%, var(--color-gray-1)));
-  /* 特性卡片插画面底色与光晕 */
+  --ov-screen: color-mix(in oklab, var(--color-gray-10) 3.5%, var(--color-gray-1));
+  /* 特性卡片插画面底色、调和色与光晕 */
   --ov-art-base: white;
+  --ov-art-tint: #0a0a0c;
   --ov-art-glow: rgb(255 255 255 / 0.78);
   /* 插画面线条、准星与纸片浓度 */
-  --ov-fx-line: rgb(255 255 255 / 0.55);
+  --ov-fx-line: rgb(255 255 255 / 0.6);
   --ov-fx-mark: rgb(255 255 255 / 0.95);
-  --ov-fx-sheet: 0.55;
+  --ov-fx-sheet: 0.7;
+  /* 示例窗口与身后纸片的玻璃底色 */
+  --ov-frag: color-mix(in oklab, var(--color-gray-1) 66%, transparent);
+  --ov-sheet: rgb(255 255 255 / 0.5);
   /* 特性卡片插画面的三种底色与两种光晕 */
   --ov-art-soft: linear-gradient(
-    color-mix(in oklab, var(--ov-p) 40%, var(--ov-art-base)) 0%,
-    color-mix(in oklab, var(--ov-p) 22%, var(--ov-art-base)) 55%,
-    color-mix(in oklab, var(--ov-p) 8%, var(--ov-art-base)) 100%
+    color-mix(in oklab, var(--ov-art-tint) 24%, var(--ov-art-base)) 0%,
+    color-mix(in oklab, var(--ov-art-tint) 12%, var(--ov-art-base)) 55%,
+    color-mix(in oklab, var(--ov-art-tint) 4%, var(--ov-art-base)) 100%
   );
   --ov-art-dawn: linear-gradient(
-    color-mix(in oklab, var(--ov-p) 7%, var(--ov-art-base)) 0%,
-    color-mix(in oklab, var(--ov-p) 22%, var(--ov-art-base)) 52%,
-    color-mix(in oklab, var(--ov-p) 44%, var(--ov-art-base)) 100%
+    color-mix(in oklab, var(--ov-art-tint) 4%, var(--ov-art-base)) 0%,
+    color-mix(in oklab, var(--ov-art-tint) 12%, var(--ov-art-base)) 52%,
+    color-mix(in oklab, var(--ov-art-tint) 26%, var(--ov-art-base)) 100%
   );
   --ov-art-dark:
-    radial-gradient(95% 70% at 50% 112%, color-mix(in srgb, var(--ov-p) 92%, transparent), transparent 72%),
-    radial-gradient(60% 45% at 88% -6%, color-mix(in srgb, var(--ov-hot) 20%, transparent), transparent 70%),
+    radial-gradient(95% 70% at 50% 112%, rgb(255 255 255 / 0.42), transparent 72%),
+    radial-gradient(60% 45% at 88% -6%, rgb(255 255 255 / 0.1), transparent 70%),
     linear-gradient(180deg, var(--ov-ink-2) 0%, var(--ov-ink-deep) 70%);
   --ov-glow-light: radial-gradient(closest-side, var(--ov-art-glow), color-mix(in srgb, var(--ov-art-glow) 36%, transparent) 55%, transparent);
-  --ov-glow-dark: radial-gradient(
-    closest-side,
-    color-mix(in srgb, var(--ov-hot) 42%, transparent),
-    color-mix(in srgb, var(--ov-p) 14%, transparent) 55%,
-    transparent
-  );
+  --ov-glow-dark: radial-gradient(closest-side, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.05) 55%, transparent);
   /* 投影色 */
-  --ov-shade: color-mix(in oklab, var(--ov-p) 40%, #0a0c14);
-  --ov-ring: 0 0 0 1px color-mix(in oklab, var(--color-gray-10) 5%, transparent);
+  --ov-shade: #0a0a0c;
+  --ov-ring: 0 0 0 1px color-mix(in oklab, var(--color-gray-10) 6%, transparent);
   --ov-shadow-card:
-    var(--ov-ring), 0 1px 2px rgb(8 10 16 / 0.04), 0 18px 40px -28px color-mix(in srgb, var(--ov-shade) 26%, transparent);
+    var(--ov-ring), var(--ov-glass-edge), 0 1px 2px rgb(8 8 10 / 0.04),
+    0 18px 40px -28px color-mix(in srgb, var(--ov-shade) 30%, transparent);
   --ov-shadow-lift:
-    0 0 0 1px color-mix(in oklab, var(--color-gray-10) 8%, transparent), 0 1px 2px rgb(8 10 16 / 0.05),
-    0 24px 44px -26px color-mix(in srgb, var(--ov-shade) 36%, transparent);
+    0 0 0 1px color-mix(in oklab, var(--color-gray-10) 9%, transparent), var(--ov-glass-edge), 0 1px 2px rgb(8 8 10 / 0.05),
+    0 24px 44px -26px color-mix(in srgb, var(--ov-shade) 40%, transparent);
   --ov-w: 880px;
   --ov-w-wide: 1080px;
   --ov-w-catalog: 1320px;
@@ -554,8 +584,8 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
   --ov-display: Geist, var(--font-sans);
   --ov-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --ov-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  /* 小卡片用的变量 */
-  --ov-card: var(--ov-surface);
+  /* 小卡片用的变量：底色须不透明，悬停时铺满的预览要盖住标题行 */
+  --ov-card: var(--color-gray-1);
   --ov-well: color-mix(in oklab, var(--color-gray-10) 2.5%, transparent);
   --ov-well-line: color-mix(in oklab, var(--color-gray-10) 5%, transparent);
 }
@@ -568,29 +598,42 @@ const SECTION_TITLE = 'text-[clamp(30px,3.8vw,44px)] leading-[1.2] font-semibold
 
 /* 暗色模式的变量 */
 .dark .components-overview {
-  --ov-paper: color-mix(in oklab, var(--ov-p) 3%, var(--color-gray-1));
+  /* 黑 → 一道银白光带 → 暗色纸面 */
   --ov-hero-bg: linear-gradient(
     180deg,
     var(--ov-ink-deep) 0%,
-    var(--ov-ink-2) 22%,
-    var(--ov-rust) 52%,
-    color-mix(in oklab, var(--ov-p) 78%, #0a0b12) 70%,
-    color-mix(in oklab, var(--ov-p) 30%, var(--ov-paper)) 86%,
+    var(--ov-ink-2) 28%,
+    var(--ov-ink-3) 50%,
+    #45464b 68%,
+    color-mix(in oklab, #6a6b71 42%, var(--ov-paper)) 82%,
     var(--ov-paper) 100%
   );
-  --ov-label: var(--color-primary);
+  --ov-hero-sun: radial-gradient(
+    closest-side,
+    rgb(255 255 255 / 0.3) 0%,
+    rgb(255 255 255 / 0.18) 26%,
+    rgb(255 255 255 / 0.07) 52%,
+    transparent 74%
+  );
+  --ov-dome-fill: linear-gradient(rgb(255 255 255 / 0.09), transparent 240px);
+  --ov-dome-edge: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 0 0 1px rgb(255 255 255 / 0.05);
   --ov-hair: color-mix(in oklab, white 9%, transparent);
-  --ov-surface: color-mix(in oklab, white 4.5%, var(--color-gray-1));
+  --ov-surface: color-mix(in oklab, white 6%, transparent);
   --ov-sunk: color-mix(in oklab, white 6%, transparent);
-  --ov-screen: color-mix(in oklab, var(--ov-p) 4%, color-mix(in oklab, black 22%, var(--color-gray-1)));
-  --ov-art-base: #14151b;
+  --ov-glass-edge: inset 0 1px 0 rgb(255 255 255 / 0.1);
+  --ov-blob: rgb(255 255 255 / 0.07);
+  --ov-screen: color-mix(in oklab, black 22%, var(--color-gray-1));
+  --ov-art-base: #131315;
+  --ov-art-tint: white;
   --ov-art-glow: rgb(255 255 255 / 0.1);
   --ov-fx-line: rgb(255 255 255 / 0.13);
   --ov-fx-mark: rgb(255 255 255 / 0.5);
-  --ov-fx-sheet: 0.3;
+  --ov-fx-sheet: 0.5;
+  --ov-sheet: rgb(255 255 255 / 0.1);
   --ov-ring: 0 0 0 1px color-mix(in oklab, white 9%, transparent);
-  --ov-shadow-card: var(--ov-ring), inset 0 1px 0 rgb(255 255 255 / 0.04), 0 18px 40px -28px rgb(0 0 0 / 0.7);
-  --ov-shadow-lift: 0 0 0 1px color-mix(in oklab, white 14%, transparent), 0 24px 44px -26px rgb(0 0 0 / 0.8);
+  --ov-shadow-card: var(--ov-ring), var(--ov-glass-edge), 0 18px 40px -28px rgb(0 0 0 / 0.7);
+  --ov-shadow-lift: 0 0 0 1px color-mix(in oklab, white 14%, transparent), var(--ov-glass-edge), 0 24px 44px -26px rgb(0 0 0 / 0.8);
+  --ov-card: color-mix(in oklab, white 4.5%, var(--color-gray-1));
   --ov-well: color-mix(in oklab, white 3%, transparent);
   --ov-well-line: color-mix(in oklab, white 6%, transparent);
 }

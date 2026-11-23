@@ -83,7 +83,7 @@ const expanded = shallowRef(true);
       title="交互演练场" description="编辑外侧与屏幕文字，切换屏幕动效、紧凑取景和保持展开，查看不同组合的表现。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">重置配置</RebornButton>
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">重置配置</RebornButton>
       </template>
       <div class="flex w-full min-w-0 flex-col items-center gap-4">
         <ReuiLaunchDoodle

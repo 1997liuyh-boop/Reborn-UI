@@ -39,6 +39,7 @@ const defaultState = {
   radius: 'rounded-2xl',
   insetMode: 'auto',
   track: false,
+  minThumbSize: 20,
   thumbColor: '#71717a',
   hoverColor: '#a1a1aa',
   always: true,
@@ -69,6 +70,7 @@ const controls = [
       { label: '容器圆角', key: 'radius', component: 'select' as const, defaultValue: 'rounded-2xl', props: { options: radiusOptions } },
       { label: '圆角自适应 inset', key: 'insetMode', component: 'select' as const, defaultValue: 'auto', props: { options: insetOptions } },
       { label: '显示轨道 track', key: 'track', component: 'checkbox' as const, defaultValue: false },
+      { label: 'thumb 最小长度 minThumbSize（px）', key: 'minThumbSize', component: 'slider' as const, defaultValue: 20, props: { min: 20, max: 160, step: 10 } },
     ],
   },
   {
@@ -82,7 +84,15 @@ const controls = [
     title: '行为配置',
     children: [
       { label: '常驻显示 always', key: 'always', component: 'checkbox' as const, defaultValue: true },
-      { label: '隐藏延迟 hideDelay', key: 'hideDelay', component: 'slider' as const, defaultValue: 800, props: { min: 0, max: 3000, step: 100 } },
+      {
+        label: '隐藏延迟 hideDelay',
+        key: 'hideDelay',
+        component: 'slider' as const,
+        defaultValue: 800,
+        props: { min: 0, max: 3000, step: 100 },
+        // 常驻显示时隐藏延迟不生效
+        hide: (_: unknown, s: Record<string, any>) => s.always,
+      },
       { label: '边缘回弹 bounce', key: 'bounce', component: 'checkbox' as const, defaultValue: true },
     ],
   },
@@ -96,6 +106,7 @@ const code = computed(() => {
   else lines.push(`  :hide-delay="${s.hideDelay}"`)
   if (s.insetMode !== 'auto') lines.push(`  :inset="${s.insetMode}"`)
   if (s.track) lines.push('  track')
+  if (s.minThumbSize !== 20) lines.push(`  :min-thumb-size="${s.minThumbSize}"`)
   if (!s.bounce) lines.push('  :bounce="false"')
   lines.push(
     '  :horizontal="false"',
@@ -231,8 +242,9 @@ function measureInsets() {
  * 圆角是「只改样式不改尺寸」的变化，ResizeObserver 不会触发，
  * 因此切换圆角档位后需手动调用实例的 refresh() 重算内缩；
  * inset 属性变化由组件内部 watch 处理，这里只需在下一帧读回展示值。
+ * minThumbSize 组件内没有 watch，同样靠 refresh() 让滑块长度立即更新。
  */
-watch(() => [state.value.radius, state.value.insetMode], async () => {
+watch(() => [state.value.radius, state.value.insetMode, state.value.minThumbSize], async () => {
   await nextTick()
   playgroundRef.value?.refresh()
   measureInsets()
@@ -351,7 +363,7 @@ onBeforeUnmount(() => {
       description="尺寸、轨道、圆角内缩、常驻与隐藏延迟均可现场切换；把鼠标移到滚动条上查看悬停色，按住可拖拽，点击轨道空白处可跳转。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -362,7 +374,8 @@ onBeforeUnmount(() => {
       <DemoBlock layout="stack" align="center" class="gap-4">
         <RebornScrollbar
           ref="playgroundRef" :size="state.size" :always="state.always" :hide-delay="state.hideDelay"
-          :inset="insetProp" :track="state.track" :bounce="state.bounce" :horizontal="false" :style="thumbStyle"
+          :inset="insetProp" :track="state.track" :min-thumb-size="state.minThumbSize" :bounce="state.bounce"
+          :horizontal="false" :style="thumbStyle"
           class="bg-elevated h-64 w-72" :class="state.radius"
         >
           <ul class="divide-default divide-y">

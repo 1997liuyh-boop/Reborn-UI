@@ -57,6 +57,8 @@ const defaultState: Record<string, any> = {
   magnifier: false,
   magnifierZoom: 2,
   magnifierSize: 100,
+  magnifierWidth: "",
+  magnifierHeight: "",
 };
 
 const state = shallowRef<Record<string, any>>({ ...defaultState });
@@ -81,8 +83,8 @@ const controls: any = [
     title: "基础属性",
     children: [
       { label: "裁剪模式（mode）", key: "mode", component: "select" as const, defaultValue: "aspectFill", props: { options: modeOptions } },
-      { label: "宽度（px）", key: "width", component: "slider" as const, defaultValue: 320, props: { min: 80, max: 400, step: 20 } },
-      { label: "高度（px）", key: "height", component: "slider" as const, defaultValue: 200, props: { min: 80, max: 400, step: 20 } },
+      { label: "宽度（px）", key: "width", component: "slider" as const, defaultValue: 120, props: { min: 80, max: 400, step: 20 } },
+      { label: "高度（px）", key: "height", component: "slider" as const, defaultValue: 120, props: { min: 80, max: 400, step: 20 } },
       { label: "圆角（custom-class）", key: "rounded", component: "select" as const, defaultValue: "", props: { options: roundedOptions } },
       { label: "显示加载占位", key: "showLoading", component: "checkbox" as const, defaultValue: true },
     ],
@@ -90,7 +92,7 @@ const controls: any = [
   {
     title: "预览",
     children: [
-      { label: "单击预览", key: "preview", component: "checkbox" as const, defaultValue: true },
+      { label: "单击预览", key: "preview", component: "checkbox" as const, defaultValue: false },
       {
         label: "多图预览（传 preview-list）",
         key: "multiple",
@@ -134,6 +136,20 @@ const controls: any = [
         props: { min: 40, max: 160, step: 10 },
         hide: (_: number, s: Record<string, any>) => !s.magnifier,
       },
+      {
+        label: "预览窗口宽度（px，留空与图片一致）",
+        key: "magnifierWidth",
+        component: "input" as const,
+        defaultValue: "",
+        hide: (_: string, s: Record<string, any>) => !s.magnifier,
+      },
+      {
+        label: "预览窗口高度（px，留空与图片一致）",
+        key: "magnifierHeight",
+        component: "input" as const,
+        defaultValue: "",
+        hide: (_: string, s: Record<string, any>) => !s.magnifier,
+      },
     ],
   },
 ];
@@ -154,7 +170,12 @@ const imageCode = computed(() => {
     lines.push(`preview-toolbar="${s.previewToolbar}"`);
   }
   lines.push(`:magnifier="${s.magnifier}"`);
-  if (s.magnifier) lines.push(`:magnifier-zoom="${s.magnifierZoom}"`, `:magnifier-size="${s.magnifierSize}"`);
+  if (s.magnifier) {
+    lines.push(`:magnifier-zoom="${s.magnifierZoom}"`, `:magnifier-size="${s.magnifierSize}"`);
+    // 留空等于不传，预览窗口沿用图片尺寸
+    if (s.magnifierWidth) lines.push(`magnifier-width="${s.magnifierWidth}"`);
+    if (s.magnifierHeight) lines.push(`magnifier-height="${s.magnifierHeight}"`);
+  }
   return `<RebornImage\n  ${lines.join("\n  ")}\n/>`;
 });
 
@@ -173,10 +194,10 @@ const lazyLoadedCount = computed(() => lazyLoaded.value.filter(Boolean).length);
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="imageCode" component-name="RebornImage"
-      title="交互演练场" description="调节上方参数，查看裁剪模式、尺寸与圆角的效果；单击图片打开预览，开启放大镜后悬停查看局部。"
+      title="交互演练场" description="点「参数修改」调节参数，查看裁剪模式、尺寸与圆角的效果；单击图片打开预览，开启放大镜后悬停查看局部。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -190,7 +211,8 @@ const lazyLoadedCount = computed(() => lazyLoaded.value.filter(Boolean).length);
           :custom-class="state.rounded" :show-loading="state.showLoading" :preview="state.preview"
           :preview-list="state.multiple ? previewList : undefined" :preview-navbar="state.previewNavbar"
           :preview-toolbar="state.previewToolbar" :magnifier="state.magnifier" :magnifier-zoom="state.magnifierZoom"
-          :magnifier-size="state.magnifierSize" :ui="BOX_OUTLINE" @load="onPlaygroundLoad"
+          :magnifier-size="state.magnifierSize" :magnifier-width="state.magnifierWidth"
+          :magnifier-height="state.magnifierHeight" :ui="BOX_OUTLINE" @load="onPlaygroundLoad"
           @error="lastEvent = 'error：图片加载失败'"
         />
 

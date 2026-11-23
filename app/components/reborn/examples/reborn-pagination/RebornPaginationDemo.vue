@@ -23,6 +23,8 @@ const defaultState: Record<string, any> = {
   disabled: false,
   simple: false,
   hideOnSinglePage: false,
+  prevText: "",
+  nextText: "",
 };
 
 const state = ref<Record<string, any>>({ ...defaultState });
@@ -98,6 +100,20 @@ const controls: any = [
         defaultValue: "md",
         props: { options: paginationSizes.map((s) => ({ label: s, value: s })) },
       },
+      {
+        label: "上一页文字（留空显示箭头）",
+        key: "prevText",
+        component: "input" as const,
+        defaultValue: "",
+        props: { placeholder: "如 上一页" },
+      },
+      {
+        label: "下一页文字（留空显示箭头）",
+        key: "nextText",
+        component: "input" as const,
+        defaultValue: "",
+        props: { placeholder: "如 下一页" },
+      },
       { label: "页码背景", key: "background", component: "checkbox" as const, defaultValue: false },
       { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
       { label: "简洁模式", key: "simple", component: "checkbox" as const, defaultValue: false },
@@ -120,6 +136,8 @@ const paginationCode = computed(() => {
   props.push(`:simple="${s.simple}"`);
   props.push(`:hide-on-single-page="${s.hideOnSinglePage}"`);
   props.push(`:pager-count="${s.pagerCount}"`);
+  props.push(`prev-text="${s.prevText}"`);
+  props.push(`next-text="${s.nextText}"`);
 
   return `<RebornPagination\n  ${props.join("\n  ")}\n  @current-change="handleCurrentChange"\n  @size-change="handleSizeChange"\n/>`;
 });
@@ -179,10 +197,10 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="paginationCode" component-name="RebornPagination"
-      title="交互演练场" description="调节上方参数实时查看反馈；总页数由 total 与 page-size 推导，pagerCount 控制页码折叠。"
+      title="交互演练场" description="点「参数修改」调节参数实时查看反馈；总页数由 total 与 page-size 推导，pagerCount 控制页码折叠。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -195,8 +213,8 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
           v-model="state.page" v-model:page-size="state.pageSize" :total="state.total"
           :pager-count="state.pagerCount" :layout="state.layout" :page-sizes="parsedPageSizes" :size="state.size"
           :color="state.color" :background="state.background" :disabled="state.disabled" :simple="state.simple"
-          :hide-on-single-page="state.hideOnSinglePage" @current-change="handleCurrentChange"
-          @size-change="handleSizeChange"
+          :hide-on-single-page="state.hideOnSinglePage" :prev-text="state.prevText" :next-text="state.nextText"
+          @current-change="handleCurrentChange" @size-change="handleSizeChange"
         />
 
         <DemoNote tone="dimmed">

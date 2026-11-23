@@ -85,8 +85,10 @@ const defaultState: Record<string, any> = {
   expandTrigger: "click",
   expandChild: false,
   allowSearch: false,
+  searchOptionOnlyLabel: false,
   allowClear: true,
   maxTagCount: 0,
+  tagNowrap: false,
   placeholder: "请选择地区",
   color: "primary",
   size: "md",
@@ -146,6 +148,13 @@ const controls: any = [
     title: "输入与标签",
     children: [
       { label: "允许搜索（allow-search）", key: "allowSearch", component: "checkbox" as const, defaultValue: false },
+      {
+        label: "搜索结果仅展示标签（search-option-only-label）",
+        key: "searchOptionOnlyLabel",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: unknown, s: Record<string, any>) => !s.allowSearch,
+      },
       { label: "允许清除（allow-clear）", key: "allowClear", component: "checkbox" as const, defaultValue: true },
       {
         label: "最多显示标签数（max-tag-count，0 为不限制）",
@@ -153,6 +162,13 @@ const controls: any = [
         component: "input-number" as const,
         defaultValue: 0,
         props: { min: 0, max: 6 },
+      },
+      {
+        label: "标签不换行（tag-nowrap，多选生效）",
+        key: "tagNowrap",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (_: unknown, s: Record<string, any>) => !s.multiple,
       },
       { label: "占位文字（placeholder）", key: "placeholder", component: "input" as const, defaultValue: "请选择地区" },
     ],
@@ -289,10 +305,10 @@ function onChange(value: any) {
       :code-extras="codeExtras"
       component-name="RebornCascader"
       title="交互演练场"
-      description="调节上方参数，实时查看级联选择器的表现。"
+      description="点「参数修改」调节参数，实时查看级联选择器的表现。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>
@@ -310,8 +326,10 @@ function onChange(value: any) {
           :expand-trigger="state.expandTrigger"
           :expand-child="state.expandChild"
           :allow-search="state.allowSearch"
+          :search-option-only-label="state.searchOptionOnlyLabel"
           :allow-clear="state.allowClear"
           :max-tag-count="state.maxTagCount"
+          :tag-nowrap="state.tagNowrap"
           :color="state.color"
           :size="state.size"
           :variant="state.variant"

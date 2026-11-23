@@ -30,7 +30,7 @@ const controls = [
   {
     title: "基础属性",
     children: [
-      { label: "站点标题", key: "title", component: "input" as const, defaultValue: "Reborn UI" },
+      { label: "站点标题", key: "title", component: "input" as const, defaultValue: "Nuxt UI" },
       {
         label: "侧边栏方向",
         key: "toggleSide",
@@ -43,7 +43,7 @@ const controls = [
           ],
         },
       },
-      { label: "滚动吸顶", key: "sticky", component: "checkbox" as const, defaultValue: true },
+      { label: "滚动吸顶", key: "sticky", component: "checkbox" as const, defaultValue: false },
     ],
   },
   {
@@ -92,7 +92,7 @@ const links = [
       description="在下方可滚动的宿主区域内滚动内容观察吸顶；打开侧边栏对比挂载到父元素与挂载到 body 的覆盖范围。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

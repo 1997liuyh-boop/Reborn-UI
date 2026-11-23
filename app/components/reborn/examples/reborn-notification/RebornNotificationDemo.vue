@@ -32,7 +32,9 @@ const defaultState: Record<string, any> = {
   title: "部署完成",
   message: "订单服务已发布到生产环境，耗时 42 秒。",
   type: "success",
+  icon: "",
   placement: "top-end",
+  offset: 0,
   ribbon: "",
   duration: 4500,
   showClose: true,
@@ -72,11 +74,26 @@ const controls: any = [
         props: { options: typeOptions },
       },
       {
+        label: "自定义图标（无类型时生效）",
+        key: "icon",
+        component: "input" as const,
+        defaultValue: "",
+        props: { placeholder: "如 lucide:bell" },
+        hide: (_: any, s: Record<string, any>) => Boolean(s.type),
+      },
+      {
         label: "弹出位置",
         key: "placement",
         component: "select" as const,
         defaultValue: "top-end",
         props: { options: placementOptions },
+      },
+      {
+        label: "锚定边偏移（px，所有通知共用）",
+        key: "offset",
+        component: "slider" as const,
+        defaultValue: 0,
+        props: { min: 0, max: 120, step: 4 },
       },
       {
         label: "侧边飘带",
@@ -111,12 +128,15 @@ const notificationCode = computed(() => {
     `title: '${s.title}'`,
     `message: '${s.message}'`,
     `placement: '${s.placement}'`,
+    `offset: ${s.offset}`,
     `ribbon: ${s.ribbon ? `'${s.ribbon}'` : false}`,
     `duration: ${s.duration}`,
     `showClose: ${s.showClose}`,
     `progress: ${s.progress}`,
     `pauseOnHover: ${s.pauseOnHover}`,
   ];
+  // icon 会被 type 覆盖，只在无类型且填了图标名时写出
+  if (!s.type && s.icon) config.splice(2, 0, `icon: '${s.icon}'`);
   const method = s.type || "open";
   return `notification.${method}({\n  ${config.join(",\n  ")},\n})`;
 });
@@ -127,7 +147,9 @@ function fireFromPlayground() {
   const options = {
     title: s.title,
     message: s.message,
+    icon: s.icon || undefined,
     placement: s.placement,
+    offset: s.offset,
     ribbon: s.ribbon || false,
     duration: s.duration,
     showClose: s.showClose,
@@ -283,10 +305,10 @@ function fireClickableDemo() {
   <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state" :controls="controls" :code="notificationCode" component-name="notification"
-      title="交互演练场" description="notification 为命令式 API，调节上方参数后点击按钮触发；悬停在通知上可暂停自动关闭计时。"
+      title="交互演练场" description="notification 为命令式 API，点「参数修改」调节参数后点击按钮触发；悬停在通知上可暂停自动关闭计时。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           <template #leading>
             <Icon name="lucide:rotate-ccw" size="12" />
           </template>

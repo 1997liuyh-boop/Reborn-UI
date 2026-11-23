@@ -26,6 +26,10 @@ const defaultState: Record<string, any> = {
   clearable: true,
   closeOn: "mousedown",
   showFooter: true,
+  placeholder: "请选择时间",
+  bordered: true,
+  showArrow: true,
+  arrowAnimation: false,
 };
 // 时间选择会直接回写嵌套字段，保留深层响应以同步预览和代码明细。
 const state = ref({ ...defaultState });
@@ -50,6 +54,9 @@ const value = shallowRef(${JSON.stringify(state.value.value)});
     size="${state.value.size}"
     color="${state.value.color}"
     variant="${state.value.variant}"
+    :bordered="${state.value.bordered}"
+    :show-arrow="${state.value.showArrow}"${state.value.interaction === "scroll" ? `\n    :arrow-animation="${state.value.arrowAnimation}"` : ""}
+    placeholder="${state.value.placeholder}"
     :arrow-control="${state.value.arrowControl}"${state.value.interaction === "scroll" ? `\n    panel-variant="${state.value.panelVariant}"` : ""}
     :allow-input="${state.value.allowInput}"
     close-on="${state.value.closeOn}"
@@ -127,11 +134,21 @@ const controls: PlaygroundControlGroup[] = [
         defaultValue: "outlined",
         props: { options: variants.map((value) => ({ label: value, value })) },
       },
+      { label: "显示边框", key: "bordered", component: "checkbox" as const, defaultValue: true },
+      { label: "显示尾部图标（showArrow）", key: "showArrow", component: "checkbox" as const, defaultValue: true },
+      {
+        label: "展开时图标旋转（仅滚动模式）",
+        key: "arrowAnimation",
+        component: "checkbox" as const,
+        defaultValue: false,
+        hide: (value, values) => values.interaction !== "scroll" || !values.showArrow,
+      },
     ],
   },
   {
     title: "输入与状态",
     children: [
+      { label: "占位文本（清空后可见）", key: "placeholder", component: "input" as const, defaultValue: "请选择时间" },
       { label: "显示底部操作", key: "showFooter", component: "checkbox" as const, defaultValue: true },
       { label: "允许输入", key: "allowInput", component: "checkbox" as const, defaultValue: true },
       { label: "允许清空", key: "clearable", component: "checkbox" as const, defaultValue: true },
@@ -186,7 +203,7 @@ function onInvalid(value: string) {
       description="切换点击置顶与滚动居中，对比时间列的选取行为、颜色和上下切换按钮。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+        <RebornButton size="md" variant="soft" color="neutral" @click="resetState">
           重置配置
         </RebornButton>
       </template>
@@ -198,6 +215,10 @@ function onInvalid(value: string) {
           :size="state.size"
           :color="state.color"
           :variant="state.variant"
+          :bordered="state.bordered"
+          :show-arrow="state.showArrow"
+          :arrow-animation="state.arrowAnimation"
+          :placeholder="state.placeholder"
           :panel-variant="state.panelVariant"
           :allow-input="state.allowInput"
           :close-on="state.closeOn"

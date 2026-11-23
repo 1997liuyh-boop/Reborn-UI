@@ -2,8 +2,10 @@
 
 import type { RebornContextMenuItem } from "~/components/reborn/ui/reborn-context-menu/RebornContextMenu.vue";
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
-import { computed, shallowRef } from "vue";
+import { computed, shallowRef, watch } from "vue";
+import { contextMenuSizes, contextMenuTriggers } from "~/components/reborn/ui/reborn-context-menu/reborn-context-menu.config";
 import RebornContextMenu from "~/components/reborn/ui/reborn-context-menu/RebornContextMenu.vue";
+import { placements } from "~/lib/placement";
 
 const latestAction = shallowRef("等待操作");
 /** 自定义面板的固定主题选项。 */
@@ -14,11 +16,38 @@ function pickTone(tone: string, close: () => void) {
   close();
 }
 
-const state = shallowRef({
-  size: "md" as "sm" | "md" | "lg",
+const sizeOptions = contextMenuSizes.map((s) => ({ label: s.toUpperCase(), value: s }));
+const triggerOptions = contextMenuTriggers.map((t) => ({ label: t, value: t }));
+/** 空字符串表示不传 placement，方向与对齐按触发方式取默认值 */
+const placementOptions = [
+  { label: "默认（随触发方式）", value: "" },
+  ...placements.map((p) => ({ label: p, value: p })),
+];
+
+/** 未传 sideOffset 时的间距：右键贴住指针为 0，其余触发方式为 8 */
+function defaultSideOffset(trigger: string) {
+  return trigger === "contextmenu" ? 0 : 8;
+}
+
+const state = shallowRef<Record<string, any>>({
+  size: "md",
+  trigger: "contextmenu",
+  placement: "",
+  sideOffset: 0,
+  openDelay: 40,
+  closeDelay: 120,
+  dismissible: true,
   modal: false,
   disabled: false,
 });
+
+// 切换触发方式时，间距跟着回到该触发方式的默认值
+watch(
+  () => state.value.trigger,
+  (trigger) => {
+    state.value = { ...state.value, sideOffset: defaultSideOffset(trigger) };
+  },
+);
 
 const controls = [
   {
@@ -29,37 +58,95 @@ const controls = [
         key: "size",
         component: "select" as const,
         defaultValue: "md",
-        props: {
-          options: [
-            { label: "SM", value: "sm" },
-            { label: "MD", value: "md" },
-            { label: "LG", value: "lg" },
-          ],
-        },
+        props: { options: sizeOptions },
       },
+      {
+        label: "触发方式",
+        key: "trigger",
+        component: "select" as const,
+        defaultValue: "contextmenu",
+        props: { options: triggerOptions },
+      },
+      {
+        label: "弹出方位",
+        key: "placement",
+        component: "select" as const,
+        defaultValue: "",
+        props: { options: placementOptions },
+      },
+      {
+        label: "菜单间距（px，右键默认 0，其余默认 8）",
+        key: "sideOffset",
+        component: "input-number" as const,
+        defaultValue: 0,
+        props: { min: 0, max: 40, step: 2 },
+      },
+    ],
+  },
+  {
+    title: "状态",
+    children: [
       {
         label: "禁用触发区",
         key: "disabled",
         component: "checkbox" as const,
         defaultValue: false,
       },
+    ],
+  },
+  {
+    title: "行为",
+    children: [
       {
         label: "模态遮罩",
         key: "modal",
         component: "checkbox" as const,
         defaultValue: false,
       },
+      {
+        label: "点击外部关闭（dismissible）",
+        key: "dismissible",
+        component: "checkbox" as const,
+        defaultValue: true,
+      },
+      {
+        label: "悬浮展开延迟（ms）",
+        key: "openDelay",
+        component: "input-number" as const,
+        defaultValue: 40,
+        props: { min: 0, max: 1000, step: 20 },
+        hide: (_value: number, s: Record<string, any>) => s.trigger !== "hover",
+      },
+      {
+        label: "移出收起延迟（ms）",
+        key: "closeDelay",
+        component: "input-number" as const,
+        defaultValue: 120,
+        props: { min: 0, max: 1000, step: 20 },
+        hide: (_value: number, s: Record<string, any>) => s.trigger !== "hover",
+      },
     ],
   },
 ];
 
+/** 各触发方式下，触发区占位文案 */
+const triggerHints: Record<string, string> = {
+  contextmenu: "右键打开菜单",
+  click: "点击打开菜单",
+  hover: "悬浮打开菜单",
+  selection: "选中文字打开菜单",
+};
+
 const playgroundCode = computed(() => {
-  const attrs = [`:items="items"`, `size="${state.value.size}"`];
+  const s = state.value;
+  const attrs = [`:items="items"`, `size="${s.size}"`, `trigger="${s.trigger}"`];
 
-  if (state.value.modal) attrs.push("modal");
-  if (state.value.disabled) attrs.push("disabled");
+  if (s.placement) attrs.push(`placement="${s.placement}"`);
+  if (s.sideOffset !== defaultSideOffset(s.trigger)) attrs.push(`:side-offset="${s.sideOffset}"`);
+  if (s.trigger === "hover") attrs.push(`:open-delay="${s.openDelay}"`, `:close-delay="${s.closeDelay}"`);
+  attrs.push(`:dismissible="${s.dismissible}"`, `:modal="${s.modal}"`, `:disabled="${s.disabled}"`);
 
-  return `<RebornContextMenu ${attrs.join(" ")}>\n  <div class="context-target">右键打开菜单</div>\n</RebornContextMenu>`;
+  return `<RebornContextMenu\n  ${attrs.join("\n  ")}\n>\n  <div class="context-target">${triggerHints[s.trigger]}</div>\n</RebornContextMenu>`;
 });
 
 const items: RebornContextMenuItem[][] = [
@@ -269,7 +356,18 @@ const automationItems: RebornContextMenuItem[][] = [
         </div>
       </template>
 
-      <RebornContextMenu :items="items" :size="state.size" :modal="state.modal" :disabled="state.disabled">
+      <RebornContextMenu
+        :items="items"
+        :size="state.size"
+        :trigger="state.trigger"
+        :placement="state.placement || undefined"
+        :side-offset="state.sideOffset"
+        :open-delay="state.openDelay"
+        :close-delay="state.closeDelay"
+        :dismissible="state.dismissible"
+        :modal="state.modal"
+        :disabled="state.disabled"
+      >
         <!-- 右键触发区：只描边不填充，让它可辨认又不形成第二层表面 -->
         <div class="border-default rounded-2xl flex w-full flex-col gap-5 border border-dashed p-5">
           <div class="flex items-center justify-between">

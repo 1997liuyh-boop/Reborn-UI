@@ -14,6 +14,9 @@ const state = shallowRef<Record<string, any>>({
   maxlength: 200,
   customLimit: false,
   disabled: false,
+  readonly: false,
+  placeholder: "请输入内容...",
+  rows: 4,
   autoHeight: false,
 });
 
@@ -45,6 +48,8 @@ const controls = [
         props: { options: textareaColors.map((c) => ({ label: c, value: c })) },
       },
       { label: "边框", key: "border", component: "checkbox" as const, defaultValue: true },
+      { label: "占位文本", key: "placeholder", component: "input" as const, defaultValue: "" },
+      { label: "可见行数（rows）", key: "rows", component: "input-number" as const, defaultValue: 4, props: { min: 1, max: 12 } },
     ],
   },
   {
@@ -54,7 +59,13 @@ const controls = [
       { label: "字数统计", key: "showWordLimit", component: "checkbox" as const, defaultValue: true },
       { label: "自定义统计插槽", key: "customLimit", component: "checkbox" as const, defaultValue: false },
       { label: "高度自适应", key: "autoHeight", component: "checkbox" as const, defaultValue: false },
+    ],
+  },
+  {
+    title: "状态",
+    children: [
       { label: "禁用", key: "disabled", component: "checkbox" as const, defaultValue: false },
+      { label: "只读", key: "readonly", component: "checkbox" as const, defaultValue: false },
     ],
   },
 ];
@@ -62,7 +73,7 @@ const controls = [
 /** 演练场右上角展示的等价代码 */
 const textareaCode = computed(
   () =>
-    `<RebornTextarea\n  v-model="value"\n  size="${state.value.size}"\n  color="${state.value.color}"\n  :border="${state.value.border}"\n  :show-word-limit="${state.value.showWordLimit}"\n  :maxlength="${state.value.maxlength}"\n  :auto-height="${state.value.autoHeight}"\n  :disabled="${state.value.disabled}"\n  placeholder="请输入内容..."\n/>`,
+    `<RebornTextarea\n  v-model="value"\n  size="${state.value.size}"\n  color="${state.value.color}"\n  :border="${state.value.border}"\n  :show-word-limit="${state.value.showWordLimit}"\n  :maxlength="${state.value.maxlength}"\n  :rows="${state.value.rows}"\n  :auto-height="${state.value.autoHeight}"\n  :disabled="${state.value.disabled}"\n  :readonly="${state.value.readonly}"\n  placeholder="${state.value.placeholder}"\n/>`,
 );
 </script>
 
@@ -83,9 +94,11 @@ const textareaCode = computed(
         :border="state.border"
         :show-word-limit="state.showWordLimit"
         :maxlength="state.maxlength"
+        :rows="state.rows"
         :auto-height="state.autoHeight"
         :disabled="state.disabled"
-        placeholder="请输入内容..."
+        :readonly="state.readonly"
+        :placeholder="state.placeholder"
       >
         <template
           v-if="state.customLimit"
