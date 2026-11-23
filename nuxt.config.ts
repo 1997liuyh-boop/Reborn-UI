@@ -245,6 +245,11 @@ export default defineNuxtConfig({
     model: "deepseek-flash",
   },
 
+  // /mcp 远程端点（Docus 自带的 @nuxtjs/mcp-toolkit）：组件工具在 server/mcp/tools，名称显示在第三方客户端里
+  mcp: {
+    name: "reborn-ui",
+  },
+
   runtimeConfig: {
     // 服务端专用:AI 模型服务接入配置,值来自环境变量 NUXT_AI_PROVIDER_*(密钥不落库)
     aiProvider: {

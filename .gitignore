@@ -88,7 +88,7 @@ public/r
 # Playground 补全数据(构建时由 modules/playground-completions.ts 从知识库生成)
 public/playground-completions.json
 
-# WebMCP 数据(构建时由 modules/webmcp-kb.ts 从知识库生成)
+# WebMCP 数据(构建时由 modules/kb-assets.ts 从知识库生成)
 public/webmcp/
 
 # ================================

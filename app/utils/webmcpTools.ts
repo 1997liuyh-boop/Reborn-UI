@@ -1,6 +1,6 @@
 import type { KbComponent, KbIndexEntry, KbProp } from "~~/packages/mcp/src/kb";
 import { searchComponents } from "~~/packages/mcp/src/search";
-import { buildPlaygroundUrl } from "./playgroundCode";
+import { buildPlaygroundUrl } from "~~/shared/playgroundUrl";
 
 /** WebMCP 工具定义，字段与规范的 ModelContextTool 字典对应 */
 export interface WebMcpTool {
@@ -18,7 +18,7 @@ export interface WebMcpToolDeps {
   navigate: (path: string) => Promise<unknown>;
 }
 
-/** 索引条目：knowledge/index.json 的字段加文档路由，由 modules/webmcp-kb.ts 生成 */
+/** 索引条目：knowledge/index.json 的字段加文档路由，由 modules/kb-assets.ts 生成 */
 type IndexEntry = KbIndexEntry & { docPath: string | null };
 
 /** run_in_playground 的源码长度上限：代码要编码进 URL 哈希 */
