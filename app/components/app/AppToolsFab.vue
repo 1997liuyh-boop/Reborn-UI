@@ -2,9 +2,7 @@
 /**
  * AppToolsFab —— 桌面端左下角的工具悬浮菜单（AI 助手 / 主题色 / 明暗模式 / GitHub）
  *
- * 毛玻璃底 + 像素阶梯圆角：clip-path 切出阶梯角，内描边随之断在角上，读起来像像素画；
- * 投影不能用 filter: drop-shadow —— 祖先带 filter 会成为背景滤镜的根，毛玻璃就只能模糊到它自己。
- * 所以投影是叠在按钮下面、错开 3px 的同形色块。
+ * 按钮使用主题底色和像素阶梯角，投影是错开 3px 的同形色块。展开时只隐藏触发器的投影。
  */
 import RebornFab from "~/components/reborn/ui/reborn-fab/RebornFab.vue";
 
@@ -66,9 +64,9 @@ onBeforeUnmount(() => {
   >
     <template #trigger="{ isActive }">
       <span class="pixel-btn-wrap">
-        <span class="pixel-shadow" />
+        <span v-if="!isActive" class="pixel-shadow" />
         <span
-          class="pixel-glass size-12"
+          class="pixel-glass bg-gray-1 size-12"
           role="button"
           tabindex="0"
           :aria-expanded="isActive"
@@ -85,7 +83,7 @@ onBeforeUnmount(() => {
     <!-- 操作项：自下而上排列，第一项紧挨触发按钮 -->
     <span v-if="isAssistantEnabled" class="pixel-btn-wrap">
       <span class="pixel-shadow" />
-      <button type="button" class="pixel-glass size-10" aria-label="AI 助手" @click="onAssistant">
+      <button type="button" class="pixel-glass bg-gray-1 size-10" aria-label="AI 助手" @click="onAssistant">
         <Icon name="lucide:sparkles" class="size-4.5" />
       </button>
       <span class="pixel-label">AI 助手</span>
@@ -95,7 +93,7 @@ onBeforeUnmount(() => {
       <span class="pixel-shadow" />
       <AppThemePicker placement="right-end">
         <template #trigger="{ open: pickerOpen }">
-          <button type="button" class="pixel-glass size-10" :class="{ 'is-on': pickerOpen }" aria-label="切换主题颜色">
+          <button type="button" class="pixel-glass bg-gray-1 size-10" :class="{ 'is-on': pickerOpen }" aria-label="切换主题颜色">
             <Icon name="lucide:palette" class="size-4.5" />
           </button>
         </template>
@@ -106,7 +104,7 @@ onBeforeUnmount(() => {
     <span class="pixel-btn-wrap">
       <span class="pixel-shadow" />
       <button
-        type="button" class="pixel-glass size-10" :aria-label="isDark ? '切换到浅色模式' : '切换到深色模式'"
+        type="button" class="pixel-glass bg-gray-1 size-10" :aria-label="isDark ? '切换到浅色模式' : '切换到深色模式'"
         @click="onToggleColorMode"
       >
         <Icon :name="isDark ? 'lucide:moon' : 'lucide:sun'" class="size-4.5" />
@@ -117,7 +115,7 @@ onBeforeUnmount(() => {
     <span v-if="props.githubUrl" class="pixel-btn-wrap">
       <span class="pixel-shadow" />
       <a
-        :href="props.githubUrl" target="_blank" rel="noopener" class="pixel-glass size-10" aria-label="GitHub"
+        :href="props.githubUrl" target="_blank" rel="noopener" class="pixel-glass bg-gray-1 size-10" aria-label="GitHub"
         @click="open = false"
       >
         <Icon name="simple-icons:github" class="size-4.5" />
@@ -161,19 +159,16 @@ onBeforeUnmount(() => {
   place-items: center;
   cursor: pointer;
   color: var(--ui-text-highlighted);
-  background: color-mix(in oklab, var(--ui-bg) 55%, transparent);
-  backdrop-filter: blur(14px) saturate(1.6);
   /* 外圈像素描边 + 左上高光，台阶角处自然断开 */
   box-shadow:
     inset 0 0 0 2px color-mix(in oklab, var(--ui-text-highlighted) 30%, transparent),
     inset 3px 3px 0 0 color-mix(in oklab, white 22%, transparent);
-  transition: background-color 150ms, color 150ms, translate 120ms steps(2);
+  transition: color 150ms, translate 120ms steps(2);
 }
 
 .pixel-glass:hover,
 .pixel-glass.is-on {
   color: var(--color-primary);
-  background: color-mix(in oklab, var(--color-primary) 16%, color-mix(in oklab, var(--ui-bg) 55%, transparent));
 }
 
 /* 按下时向投影方向沉 2 个像素，像素风的按键反馈 */

@@ -184,7 +184,7 @@ const subPageUi: MenuUI = {
     <!-- 展开态：顶部显示拨轮中线所处的分类和当前平台 -->
     <DocsWheel
       v-show="!collapsed" :rows="wheelRows" :current-key="currentRowKey" label="文档导航"
-      class="h-[calc(100vh-var(--ui-header-height))]"
+      class="h-dvh"
       @confirm="onWheelConfirm"
     >
       <template v-if="isComponentsSection" #header="{ row }">

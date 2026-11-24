@@ -14,15 +14,12 @@ const { isEnabled: isAssistantEnabled } = useAssistant();
 
 const navigation = inject(navigationKey, undefined);
 
-/**
- * 顶部分类显示文案：保持英文混排
- * 入门指南 / Components / Changelogs / Composables
- */
+/** 顶部分类统一使用中文文案。 */
 const SECTION_LABELS: Record<string, string> = {
   "/getting-started": "入门指南",
-  "/components": "Components",
-  "/changelogs": "Changelogs",
-  "/composables": "Composables",
+  "/components": "组件",
+  "/changelogs": "更新日志",
+  "/composables": "组合式函数",
 };
 
 /** 顶级分类：桌面端收进胶囊右侧的快捷菜单，移动端抽屉里平铺 */
@@ -59,22 +56,22 @@ const githubUrl = computed(() => appConfig.github && appConfig.github.url ? Stri
 /** lg 起顶栏是悬浮胶囊，左右边界由侧栏与本页目录实测得到 */
 const { vars: boundsVars, settled: boundsSettled } = useFloatingHeaderBounds();
 
-/**
- * lg 起根节点只是一条透明的占位带（仍是 sticky 的 64px，正文的 -mt-16 / pt-16 不用改），
- * 不拦截点击；真正的顶栏是里面的容器：48px 高的毛玻璃胶囊，左右外边距取实测边界。
- */
+/** 胶囊和阅读进度共享水平边界，首次测量时一起过渡。 */
+const capsuleBounds = computed(() => [
+  "lg:ms-(--app-header-left,16px) lg:me-(--app-header-right,16px)",
+  boundsSettled.value ? "" : "lg:transition-[margin] lg:duration-300",
+].join(" "));
+
 const headerUi = computed(() => ({
-  // 上下留白用根节点的内边距：写成容器的外边距会穿透 sticky 根节点折叠出去，吸顶后胶囊顶到视口上沿
-  // app.config 给根节点的点阵纱网（背景图 + 模糊）在 lg 起挪到胶囊上，根节点本身全透明
-  root: "lg:bg-none lg:border-b-0 lg:backdrop-blur-none lg:backdrop-saturate-100 lg:pointer-events-none lg:py-2",
+  // 桌面端顶栏随胶囊高度撑开，外侧留白可穿透点击。
+  root: "lg:h-auto lg:border-b-0 lg:bg-none lg:backdrop-blur-none lg:backdrop-saturate-100 lg:pointer-events-none lg:py-2",
   container: [
-    "lg:pointer-events-auto lg:h-12 lg:w-auto lg:max-w-none lg:rounded-full lg:border lg:border-default lg:px-3 lg:shadow-lg lg:shadow-black/5",
-    "lg:bg-default/40 lg:bg-[radial-gradient(transparent_1px,var(--ui-bg)_1px)] lg:bg-size-[4px_4px] lg:backdrop-blur-[6px] lg:backdrop-saturate-50",
-    "lg:ms-(--app-header-left,16px) lg:me-(--app-header-right,16px)",
-    boundsSettled.value ? "" : "lg:transition-[margin] lg:duration-300",
+    "lg:pointer-events-auto lg:h-auto lg:w-auto lg:max-w-none lg:rounded-full lg:px-4 lg:py-3 lg:shadow-lg lg:shadow-black/5",
+    "lg:bg-default/65 lg:ring-1 lg:ring-inset lg:ring-default/60 lg:backdrop-blur-2xl lg:backdrop-saturate-125",
+    capsuleBounds.value,
   ].join(" "),
-  left: "flex-0!",
-  center: "flex-1 min-w-0",
+  left: "lg:flex-none",
+  center: "@container min-w-0 flex-1",
   right: "lg:flex-none",
 }));
 </script>
@@ -87,36 +84,43 @@ const headerUi = computed(() => ({
     -->
     <template #top>
       <div
-        class="pointer-events-none absolute inset-0 lg:inset-y-2 lg:right-(--app-header-right,16px) lg:left-(--app-header-left,16px) lg:overflow-hidden lg:rounded-full"
+        class="pointer-events-none absolute inset-0 lg:inset-y-2 lg:z-10 lg:overflow-hidden lg:rounded-full"
+        :class="capsuleBounds"
       >
         <AppReadingProgress />
       </div>
     </template>
 
-    <AppHeaderCenter />
+    <UContentSearchButton
+      :collapsed="false"
+      class="w-full min-w-0 rounded-full"
+      size="lg"
+      variant="soft"
+      :ui="{ leadingIcon: 'size-4 mr-1', trailing: '@max-[10rem]:hidden' }"
+    />
 
     <template #title>
       <!-- 纯色内联 SVG，跟随 text-default / 明暗主题 -->
-      <AppHeaderLogo />
+      <AppHeaderLogo class="lg:h-8 lg:[&_svg]:h-8" />
     </template>
 
     <template #right>
-      <!-- 桌面端：组件分区的 Web / UniApp 平台开关 -->
-      <DocsPlatformSwitch v-if="showPlatformSwitch" class="hidden lg:flex" />
-
-      <!-- 桌面端：顶级分类收进快捷菜单 -->
-      <RebornSelect
-        v-if="quickMenuOptions.length"
-        class="hidden w-36 lg:block"
-        size="sm"
-        variant="filled"
-        placeholder="快捷菜单"
-        :options="quickMenuOptions"
-        :model-value="currentSection"
-        :trigger-ui="{ trigger: 'rounded-full' }"
-        aria-label="快捷菜单"
-        @update:model-value="onQuickMenuChange"
-      />
+      <!-- 开关宽度由平台文案决定，中间剩余空间留给搜索。 -->
+      <div class="hidden items-center gap-1.5 lg:flex">
+        <DocsPlatformSwitch v-if="showPlatformSwitch" />
+        <RebornSelect
+          v-if="quickMenuOptions.length"
+          class="w-28"
+          size="md"
+          variant="filled"
+          placeholder="快捷菜单"
+          :options="quickMenuOptions"
+          :model-value="currentSection"
+          :trigger-ui="{ trigger: 'gap-1 rounded-full px-2.5' }"
+          aria-label="快捷菜单"
+          @update:model-value="onQuickMenuChange"
+        />
+      </div>
 
       <!-- 移动端：搜索与工具按钮留在顶栏；桌面端这组按钮收进左下角的悬浮菜单 -->
       <UContentSearchButton class="lg:hidden" />

@@ -79,14 +79,14 @@ const isComposablesDoc = computed(() => /^\/composables(?:\/|$)/.test(route.path
           <template v-if="!isRoot" #left>
             <!--
               #left 槽只能有一个根节点（UPage 用 Slot 把栅格类合并到它身上），所以按钮与 UPageAside 一起包在这层里。
-              这层是栅格单元、高度撑满整行；按钮的 sticky 以它为范围，随页面滚动钉在
-              「顶栏以下、侧栏可视区 30% 高度」处（0.7 × 顶栏高 + 30vh），h-0 不占位。
+              顶栏胶囊在正文上方，左栏向上抵消顶栏占位（搜索框 36px、胶囊内边距 24px、外侧留白 16px）。
+              折叠按钮随页面滚动钉在视口 30% 高度处，h-0 不占位。
               按钮骑在右缘分隔线上：右缘对齐这层的右边（也就是 UPageAside 的 border-r），再向右平移自身一半。
               ring 是补给暗色的：暗色下 shadow-lg 几乎看不见，按钮底色又与页面同为 gray-1，没有描边就找不到它。
             -->
             <!-- data-docs-aside：悬浮胶囊顶栏按它的右缘定左边界（useFloatingHeaderBounds） -->
-            <div class="relative" data-docs-aside>
-              <div class="sticky top-[calc(var(--ui-header-height)*0.7+30vh)] z-20 hidden h-0 lg:block">
+            <div class="relative lg:-mt-19" data-docs-aside>
+              <div class="sticky top-[30dvh] z-20 hidden h-0 lg:block">
                 <button
                   type="button"
                   class="absolute right-0 flex size-5 translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-1 text-primary shadow-lg ring-1 ring-gray-3 transition-colors hover:bg-primary/10"
@@ -105,7 +105,7 @@ const isComposablesDoc = computed(() => /^\/composables(?:\/|$)/.test(route.path
               </div>
 
               <!-- 去掉侧栏内边距与对应的负边距；折叠过渡期间裁掉超宽内容。 -->
-              <UPageAside class="py-0 lg:ms-0 lg:overflow-x-hidden lg:ps-0 lg:pe-0 2xl:pr-0">
+              <UPageAside class="py-0 lg:top-0 lg:ms-0 lg:min-h-dvh lg:max-h-dvh lg:overflow-x-hidden lg:ps-0 lg:pe-0 2xl:pr-0">
                 <DocsAsideLeftTop />
                 <DocsAsideLeftBody />
               </UPageAside>
