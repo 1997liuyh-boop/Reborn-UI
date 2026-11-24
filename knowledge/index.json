@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-19T07:44:23.284Z",
+  "generatedAt": "2026-11-24T10:42:34.648Z",
   "components": [
     {
       "id": "animate-grid",
@@ -3213,6 +3213,21 @@
         "tailwind",
         "input",
         "aceternity-ui"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "id": "variable-letter-text",
+      "title": "VariableLetterText 逐字变轴文字",
+      "description": "悬停时按顺序改变每个字符的可变字体轴，移出后恢复初始设置。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "motion-v",
+        "typography"
       ],
       "platforms": [
         "web"

@@ -1,0 +1,16 @@
+{
+  "description": "悬停时按顺序改变每个字符的可变字体轴，移出后恢复初始设置。",
+  "whenToUse": [
+    "标题悬停时需要逐字加粗，用 toFontVariationSettings 设置目标字重。",
+    "需要从标题中间或末尾开始播放，用 staggerFrom 设置起始位置。"
+  ],
+  "whenNotToUse": [
+    "正文需要分行入场，改用 text-reveal。",
+    "需要逐字输入和删除，改用 reborn-typewriter。"
+  ],
+  "pitfalls": [
+    "仅 Web 端可用，依赖 motion-v 和支持目标字轴的字体。",
+    "初始与目标设置使用相同的字轴和顺序。",
+    "staggerDuration 的单位为秒。"
+  ]
+}

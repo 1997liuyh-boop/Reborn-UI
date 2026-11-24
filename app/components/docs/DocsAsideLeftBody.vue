@@ -15,6 +15,7 @@
 import type { ContentNavigationItem } from "@nuxt/content";
 import type { DocsWheelRow } from "./DocsWheel.vue";
 import type { MenuUI } from "~/components/reborn/ui/reborn-menu/reborn-menu.config";
+import VariableLetterText from "~/components/reborn/ui/variable-letter-text/VariableLetterText.vue";
 import { navigationKey } from "~/utils/docsNavigation";
 
 const navigation = inject(navigationKey, undefined);
@@ -188,9 +189,11 @@ const subPageUi: MenuUI = {
       @confirm="onWheelConfirm"
     >
       <template v-if="isComponentsSection" #header="{ row }">
-        <div class="flex items-center justify-between gap-2 py-2 pr-3 pl-10 text-base text-gray-8">
-          <span class="truncate font-medium">{{ row?.category }}</span>
-          <span class="shrink-0 text-gray-6">{{ platformCaption }}</span>
+        <div class="px-3 py-2 text-lg text-gray-8 xl:pl-10">
+          <VariableLetterText
+            :label="row?.category ? `${row.category}  ${platformCaption}` : platformCaption"
+            class="block font-[family-name:DocsNavVariable,var(--font-sans)]"
+          />
         </div>
       </template>
     </DocsWheel>
@@ -262,3 +265,13 @@ const subPageUi: MenuUI = {
     </RebornMenu>
   </div>
 </template>
+
+<style scoped>
+/* 仅为菜单分类及平台说明加载中文可变字重子集。 */
+@font-face {
+  font-family: DocsNavVariable;
+  src: url('/fonts/noto-sans-sc-docs-nav.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+</style>
