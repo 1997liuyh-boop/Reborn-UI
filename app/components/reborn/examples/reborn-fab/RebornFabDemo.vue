@@ -1,9 +1,12 @@
 <script lang="ts" setup>
 import { computed, ref, shallowRef } from 'vue';
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { fabColors, fabVariants } from "~/components/reborn/ui/reborn-fab/reborn-fab.config";
 import RebornFab from "~/components/reborn/ui/reborn-fab/RebornFab.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
+// 悬浮按钮固定在视口上，整页只放演练场这一个实例；下面各节用「套用到演练场」切换它的配置，
+// 每节各挂一个的话，页面上会同时浮着好几个按钮。
 
 /** 配色选项，直接取自组件配置以保证与实现同步 */
 const colorOptions = fabColors.map((c) => ({ label: c, value: c }));
@@ -30,9 +33,10 @@ const triggerOptions = [
   { label: "Hover 悬浮", value: "hover" },
 ];
 
+/** 初值与下方控件的 defaultValue 一致，点「重置配置」回到的就是首屏看到的样子 */
 const state = ref<Record<string, any>>({
   isActive: false,
-  draggable: true,
+  draggable: false,
   color: "primary",
   variant: "float",
   direction: "top",
@@ -42,11 +46,11 @@ const state = ref<Record<string, any>>({
   useTriggerSlot: false,
   expandable: true,
   attract: true,
-  peekOnScroll: true,
+  peekOnScroll: false,
   disabled: false,
   inactiveIcon: "lucide:plus",
   activeIcon: "lucide:plus",
-  divider: true,
+  divider: false,
   radius: 80,
 });
 
@@ -110,12 +114,7 @@ const controls = [
       { label: "允许拖拽", key: "draggable", component: "checkbox" as const, defaultValue: false },
       { label: "开启展开", key: "expandable", component: "checkbox" as const, defaultValue: true },
       { label: "自动吸边", key: "attract", component: "checkbox" as const, defaultValue: true },
-      {
-        label: "滚动半隐藏",
-        key: "peekOnScroll",
-        component: "checkbox" as const,
-        defaultValue: false,
-      },
+      { label: "滚动半隐藏", key: "peekOnScroll", component: "checkbox" as const, defaultValue: false },
     ],
   },
   {
@@ -153,7 +152,7 @@ const controls = [
         component: "checkbox" as const,
         defaultValue: false,
       },
-      { label: "指定初始坐标", key: "customCoord", component: "checkbox" as const, defaultValue: true },
+      { label: "指定初始坐标（距顶 40vh）", key: "customCoord", component: "checkbox" as const, defaultValue: true },
     ],
   },
 ];
@@ -166,7 +165,7 @@ const fabCode = computed(() => {
   if (s.useTriggerSlot) {
     const props: string[] = [
       `color="${s.color}"`,
-      'position="right-bottom"',
+      `position="${s.position}"`,
       `trigger="${s.trigger}"`,
       `:disabled="${s.disabled}"`,
       `:draggable="${s.draggable}"`,
@@ -193,18 +192,48 @@ const fabCode = computed(() => {
     `:attract="${s.attract}"`,
     `:peek-on-scroll="${s.peekOnScroll}"`,
   ];
+  if (s.customCoord) props.push('top="40vh"');
   if (s.variant === "capsule") props.push(`:divider="${s.divider}"`);
   if (s.variant === "circle") props.push(`:radius="${s.radius}"`);
+  if (!s.expandable) props.push('@click="onClick"');
 
   return `<RebornFab\n  ${props.join("\n  ")}\n>\n  <!-- 展开后的操作项 -->\n</RebornFab>`;
 });
 
-/** 最近一次点击的操作项，替代 console 输出 */
+/** 悬浮 / 环形变体的操作项：图标 + 读屏名称 */
+const actions = [
+  { name: "分享", icon: "lucide:share-2" },
+  { name: "收藏", icon: "lucide:star" },
+  { name: "编辑", icon: "lucide:pencil" },
+  { name: "评论", icon: "lucide:message-circle" },
+  { name: "回到顶部", icon: "lucide:arrow-up" },
+];
+
+/** 胶囊变体放三项，横排不至于太长 */
+const capsuleActions = actions.slice(0, 3);
+
+/** 最近一次交互，作为事件回显 */
 const lastAction = shallowRef("");
+const clickCount = shallowRef(0);
 
 function handleAction(name: string) {
   lastAction.value = name;
 }
+
+/** 不可展开时主按钮直接触发 click */
+function handleTriggerClick() {
+  clickCount.value++;
+  lastAction.value = `主按钮 click（第 ${clickCount.value} 次）`;
+}
+
+/** 各节的「套用到演练场」：只改与该能力有关的参数，其余保持演练场当前值 */
+function applyPreset(preset: Record<string, any>, note: string) {
+  state.value = { ...state.value, isActive: false, ...preset };
+  lastAction.value = note;
+}
+
+/** 坐标描述，方便在回显里看出按钮被摆到了哪 */
+const coordNote = computed(() => (state.value.customCoord ? "距顶 40vh" : `预设 ${state.value.position}`));
 </script>
 
 <template>
@@ -215,11 +244,11 @@ function handleAction(name: string) {
       :code="fabCode"
       component-name="RebornFab"
       title="交互演练场"
-      description="拖动预览区的悬浮按钮可体验自动吸边；松手后组件会自动选择最优的展开方向。"
+      description="悬浮按钮固定在视口上（默认在页面右侧），点「参数修改」调节后按钮实时变化；开启拖拽可拖到任意位置体验吸边。"
     >
-      <div class="flex w-full flex-col items-center gap-4">
+      <div class="flex w-full flex-col items-center gap-3 text-center">
         <template v-if="!state.useTriggerSlot">
-          <!-- 悬浮模式：展开为一列/一行图标按钮 -->
+          <!-- 悬浮模式：展开为一列 / 一行图标按钮 -->
           <RebornFab
             v-if="state.variant === 'float'"
             v-model="state.isActive"
@@ -236,23 +265,23 @@ function handleAction(name: string) {
             :trigger="state.trigger"
             :top="state.customCoord ? '40vh' : undefined"
             :expandable="state.expandable"
-            :gap="{ top: 32, bottom: 32, left: 32, right: 32 }"
             :z-index="500"
+            @click="handleTriggerClick"
           >
-            <div
-              v-for="i in 5"
-              :key="i"
-              class="bg-success text-success-foreground flex size-12 cursor-pointer items-center justify-center rounded-full transition-all hover:scale-110 hover:rotate-12 active:scale-95"
-              @click="handleAction(`悬浮按钮 ${i}`)"
+            <button
+              v-for="item in actions"
+              :key="item.name"
+              type="button"
+              :aria-label="item.name"
+              :title="item.name"
+              class="flex size-11 cursor-pointer items-center justify-center rounded-full bg-gray-1 text-primary shadow-md ring-1 ring-gray-3 transition-transform hover:scale-110 active:scale-95"
+              @click="handleAction(item.name)"
             >
-              <Icon
-                name="lucide:star"
-                class="size-6"
-              />
-            </div>
+              <Icon :name="item.icon" class="size-5" />
+            </button>
           </RebornFab>
 
-          <!-- 胶囊模式：展开为带分隔线的胶囊条 -->
+          <!-- 胶囊模式：操作项嵌在胶囊里，可配分割线 -->
           <RebornFab
             v-else-if="state.variant === 'capsule'"
             v-model="state.isActive"
@@ -267,22 +296,26 @@ function handleAction(name: string) {
             :direction="state.direction"
             :position="state.position"
             :trigger="state.trigger"
-            :top="state.customCoord ? '65vh' : undefined"
+            :top="state.customCoord ? '40vh' : undefined"
             :expandable="state.expandable"
             :divider="state.divider"
-            :gap="{ top: 32, bottom: 32, left: 32, right: 32 }"
             :z-index="500"
+            @click="handleTriggerClick"
           >
-            <Icon
-              v-for="item in 3"
-              :key="item"
-              name="lucide:share-2"
-              class="size-6"
-              @click="handleAction(`胶囊按钮 ${item}`)"
-            />
+            <button
+              v-for="item in capsuleActions"
+              :key="item.name"
+              type="button"
+              :aria-label="item.name"
+              :title="item.name"
+              class="flex size-9 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/20"
+              @click="handleAction(item.name)"
+            >
+              <Icon :name="item.icon" class="size-5" />
+            </button>
           </RebornFab>
 
-          <!-- 环形模式：展开为扇形排列 -->
+          <!-- 环形模式：操作项绕主按钮排开 -->
           <RebornFab
             v-else-if="state.variant === 'circle'"
             v-model="state.isActive"
@@ -298,36 +331,39 @@ function handleAction(name: string) {
             :direction="state.direction"
             :position="state.position"
             :trigger="state.trigger"
-            :top="state.customCoord ? '20vh' : undefined"
+            :top="state.customCoord ? '40vh' : undefined"
             :expandable="state.expandable"
-            :gap="{ top: 32, bottom: 32, left: 32, right: 32 }"
             :z-index="500"
+            @click="handleTriggerClick"
           >
-            <div
-              v-for="i in 5"
-              :key="i"
-              class="bg-info text-info-foreground flex size-10 cursor-pointer items-center justify-center rounded-full text-sm font-bold transition-all hover:scale-110 active:scale-95"
-              @click="handleAction(`环形按钮 ${i}`)"
+            <button
+              v-for="item in actions"
+              :key="item.name"
+              type="button"
+              :aria-label="item.name"
+              :title="item.name"
+              class="flex size-10 cursor-pointer items-center justify-center rounded-full bg-gray-1 text-primary shadow-md ring-1 ring-gray-3 transition-transform hover:scale-110 active:scale-95"
+              @click="handleAction(item.name)"
             >
-              {{ i }}
-            </div>
+              <Icon :name="item.icon" class="size-4.5" />
+            </button>
           </RebornFab>
         </template>
 
         <!-- #trigger 插槽：完全接管触发器的外观 -->
         <RebornFab
           v-else
-          position="right-bottom"
+          :position="state.position"
           :disabled="state.disabled"
           :draggable="state.draggable"
           :expandable="false"
           :attract="state.attract"
           :peek-on-scroll="state.peekOnScroll"
           :trigger="state.trigger"
-          :bottom="state.customCoord ? 150 : undefined"
+          :top="state.customCoord ? '40vh' : undefined"
           :color="state.color"
           :z-index="500"
-          @click="handleAction('自定义触发器')"
+          @click="handleTriggerClick"
         >
           <template #trigger>
             <div
@@ -345,40 +381,98 @@ function handleAction(name: string) {
           </template>
         </RebornFab>
 
-        <DemoNote
-          v-if="lastAction"
-          tone="dimmed"
-        >
-          最后点击：<code>{{ lastAction }}</code>
+        <DemoNote tone="dimmed" class="font-mono text-xs">
+          variant: '{{ state.useTriggerSlot ? '#trigger' : state.variant }}'，位置：{{ coordNote }}，展开：{{ state.isActive }}
+        </DemoNote>
+        <DemoNote v-if="lastAction" tone="dimmed">
+          最近一次：<code>{{ lastAction }}</code>
         </DemoNote>
       </div>
     </Playground>
 
     <DemoSection
-      title="拖拽与吸附"
-      description="draggable 开启后按钮可自由拖动，attract 则在释放时自动贴合最近的窗口边缘。"
+      title="基础用法（点击直触发）"
+      description="expandable 为 false 时点击主按钮直接触发 click，不展开面板；position 设定四角位置，color 控制主题色。"
     >
+      <div class="flex flex-wrap items-center gap-3">
+        <RebornButton
+          size="sm" variant="soft"
+          @click="applyPreset({ useTriggerSlot: false, variant: 'float', expandable: false }, '已切到点击直触发：点页面右侧的按钮会在这里计数')"
+        >
+          套用到演练场
+        </RebornButton>
+        <RebornButton
+          size="sm" variant="outlined"
+          @click="applyPreset({ useTriggerSlot: true }, '已换成 #trigger 插槽：自定义触发器同样只触发 click')"
+        >
+          换成自定义触发器
+        </RebornButton>
+      </div>
       <DemoNote tone="dimmed">
-        <code>gap</code> 决定吸边后与四条边缘的安全距离；<code>peek-on-scroll</code>
-        会在页面滚动时把按钮半隐藏到边缘之外，停止滚动后自动复位。
+        <code>#trigger</code> 插槽可以完全替换主按钮的结构，适合带文字的胶囊入口；替换后组件仍负责定位、拖拽与 click 事件。
       </DemoNote>
     </DemoSection>
 
     <DemoSection
-      title="展开方向"
-      description="direction 指定期望的展开方向；当按钮已吸附到边缘时，组件会自动改为向内侧展开以避免溢出。"
+      title="展开动作面板"
+      description="开启 expandable 后点按切换展开，v-model 绑定展开状态，direction 控制展开方向。"
     >
+      <div class="flex flex-wrap items-center gap-3">
+        <RebornButton
+          v-for="dir in directionOptions"
+          :key="dir.value"
+          size="sm"
+          :variant="state.expandable && !state.useTriggerSlot && state.variant === 'float' && state.direction === dir.value ? 'filled' : 'soft'"
+          @click="applyPreset({ useTriggerSlot: false, variant: 'float', expandable: true, direction: dir.value }, `已切到向${dir.label}展开`)"
+        >
+          向{{ dir.label }}
+        </RebornButton>
+        <RebornButton
+          size="sm" variant="outlined" :disabled="!state.expandable || state.useTriggerSlot"
+          @click="state.isActive = !state.isActive"
+        >
+          {{ state.isActive ? '用 v-model 收起' : '用 v-model 展开' }}
+        </RebornButton>
+      </div>
       <DemoNote tone="dimmed">
-        例如吸附在左边缘时强制向右展开，吸附在顶部边缘时强制向下展开。
+        <code>v-model</code> 是展开状态的唯一来源：右边的按钮直接改绑定值，页面上的悬浮按钮跟着展开或收起。
       </DemoNote>
     </DemoSection>
 
     <DemoSection
-      title="自定义触发器"
-      description="通过 #trigger 插槽可完全替换触发器结构，用于渲染带文字的胶囊按钮等复杂形态。"
+      title="拖拽吸边与滚动半隐藏"
+      description="draggable 开启拖拽，松手后吸附最近的左右屏幕边并按剩余空间切换展开方向；peekOnScroll 让按钮在滚动时贴边半隐藏。"
     >
+      <div class="flex flex-wrap items-center gap-3">
+        <RebornButton
+          size="sm" variant="soft"
+          @click="applyPreset({ useTriggerSlot: false, draggable: true, attract: true, peekOnScroll: true }, '已开启拖拽与滚动半隐藏：拖动按钮或滚动页面试试')"
+        >
+          套用到演练场
+        </RebornButton>
+      </div>
       <DemoNote tone="dimmed">
-        在演练场的「参数修改」里打开「使用自定义触发器插槽」即可查看效果。
+        吸附在左边缘时向右展开、吸附在右边缘时向左展开，避免面板伸出视口；<code>gap</code> 决定吸边后与四条边缘的安全距离，滚动停止约 1s 后按钮复位。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection
+      title="变体与环形布局（Web）"
+      description="variant 支持 float、capsule、circle 三种形态；circle 用 radius / startAngle / totalAngle 调整半径与角度。"
+    >
+      <div class="flex flex-wrap items-center gap-3">
+        <RebornButton
+          v-for="v in fabVariants"
+          :key="v"
+          size="sm"
+          :variant="!state.useTriggerSlot && state.variant === v ? 'filled' : 'soft'"
+          @click="applyPreset({ useTriggerSlot: false, expandable: true, variant: v, divider: v === 'capsule', direction: v === 'capsule' ? 'left' : state.direction }, `已切到 ${v} 变体`)"
+        >
+          {{ v }}
+        </RebornButton>
+      </div>
+      <DemoNote tone="dimmed">
+        胶囊变体的操作项嵌在同一条胶囊里，横向展开（向左 / 向右）最常用；环形变体在演练场的「参数修改」里还能拖动半径。
       </DemoNote>
     </DemoSection>
   </div>

@@ -79,6 +79,9 @@ export interface FabSlotProps {
   isPeeking: boolean;
 }
 
+// 根节点是 Teleport，透传属性改由内层容器手动接收
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(defineProps<Props>(), {
   active: false,
   position: "right-bottom",
@@ -250,6 +253,27 @@ const uiClasses = computed(() => {
 
 const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
 const actionsRef = useTemplateRef<HTMLElement>("actionsRef");
+
+/**
+ * 宿主可见性：按钮传送到 body 后不再受原位祖先的 display:none（如 v-show 的 Tab 面板）约束，
+ * 用留在原位的 1px 锚点感知——祖先被隐藏时锚点没有布局盒，按钮跟着隐藏，与传送前一致。
+ */
+const anchorRef = useTemplateRef<HTMLElement>("anchorRef");
+const hostVisible = shallowRef(true);
+let hostObserver: ResizeObserver | null = null;
+
+function syncHostVisible() {
+  hostVisible.value = !!anchorRef.value && anchorRef.value.getClientRects().length > 0;
+}
+
+onMounted(() => {
+  if (!anchorRef.value || typeof ResizeObserver === "undefined") return;
+  syncHostVisible();
+  hostObserver = new ResizeObserver(syncHostVisible);
+  hostObserver.observe(anchorRef.value);
+});
+
+onUnmounted(() => hostObserver?.disconnect());
 
 /** updateCircleLayout 写在插槽子元素上的内联属性；离开 circle 变体时要逐个清掉 */
 const CIRCLE_INLINE_PROPS = ["position", "left", "top", "transition", "transform", "opacity"] as const;
@@ -956,22 +980,53 @@ defineExpose({
 </script>
 
 <template>
-  <div :class="uiClasses.root()" :style="rootStyle" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
-    <!-- 胶囊变体模式 -->
-    <template v-if="variant === 'capsule'">
-      <div :class="uiClasses.capsuleWrapper()">
-        <!-- 内部悬浮项 -->
-        <div v-show="expandable" :class="uiClasses.capsuleActions()" :style="capsuleActionsStyle">
-          <div ref="capsuleInnerRef" class="reborn-capsule-inner" :class="uiClasses.capsuleInner()">
-            <slot :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating" :is-dragging="isDragging"
-              :is-attracting="attractTransition" :is-peeking="isPeeking" />
+  <!--
+    挂到 body：fixed 只摆脱定位祖先，摆脱不了层叠上下文。放在 isolate / 带 z-index 的容器里时，
+    按钮会被后面的兄弟区域（如文档右栏）盖住，点击落不到触发器上。
+  -->
+  <span ref="anchorRef" aria-hidden="true" class="pointer-events-none absolute size-px opacity-0" />
+  <Teleport to="body">
+    <div
+      v-show="hostVisible" v-bind="$attrs" :class="uiClasses.root()" :style="rootStyle"
+      @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
+    >
+      <!-- 胶囊变体模式 -->
+      <template v-if="variant === 'capsule'">
+        <div :class="uiClasses.capsuleWrapper()">
+          <!-- 内部悬浮项 -->
+          <div v-show="expandable" :class="uiClasses.capsuleActions()" :style="capsuleActionsStyle">
+            <div ref="capsuleInnerRef" class="reborn-capsule-inner" :class="uiClasses.capsuleInner()">
+              <slot :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating" :is-dragging="isDragging"
+                :is-attracting="attractTransition" :is-peeking="isPeeking" />
+            </div>
+          </div>
+          <div v-show="isActive && divider" :class="uiClasses.divider()">
+            <slot name="divider" />
+          </div>
+          <!-- 触发器 -->
+          <div ref="triggerRef" class="pointer-events-auto w-max shrink-0" :class="[{ 'touch-none': draggable }]"
+            @click.stop="handleClick" @pointerdown="handlePointerDown">
+            <slot name="trigger" :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating"
+              :is-dragging="isDragging" :is-attracting="attractTransition" :is-peeking="isPeeking">
+              <div :class="uiClasses.trigger()">
+                <Icon :name="isActive ? activeIcon : inactiveIcon" :class="uiClasses.icon()" />
+              </div>
+            </slot>
           </div>
         </div>
-        <div v-show="isActive && divider" :class="uiClasses.divider()">
-          <slot name="divider" />
+      </template>
+
+      <!-- 默认悬浮变体模式 -->
+      <template v-else>
+        <!-- 悬浮操作项插槽 -->
+        <div v-show="expandable || variant === 'circle'" ref="actionsRef" class="reborn-fab-actions-container"
+          :class="[uiClasses.actions(), { 'is-active': isActive }]">
+          <slot :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating" :is-dragging="isDragging"
+            :is-attracting="attractTransition" :is-peeking="isPeeking" />
         </div>
-        <!-- 触发器 -->
-        <div ref="triggerRef" class="pointer-events-auto w-max shrink-0" :class="[{ 'touch-none': draggable }]"
+
+        <!-- 主按钮触发区域 -->
+        <div ref="triggerRef" class="pointer-events-auto w-max" :class="[{ 'touch-none': draggable }]"
           @click.stop="handleClick" @pointerdown="handlePointerDown">
           <slot name="trigger" :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating"
             :is-dragging="isDragging" :is-attracting="attractTransition" :is-peeking="isPeeking">
@@ -980,90 +1035,73 @@ defineExpose({
             </div>
           </slot>
         </div>
-      </div>
-    </template>
-
-    <!-- 默认悬浮变体模式 -->
-    <template v-else>
-      <!-- 悬浮操作项插槽 -->
-      <div v-show="expandable || variant === 'circle'" ref="actionsRef" class="reborn-fab-actions-container"
-        :class="[uiClasses.actions(), { 'is-active': isActive }]">
-        <slot :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating" :is-dragging="isDragging"
-          :is-attracting="attractTransition" :is-peeking="isPeeking" />
-      </div>
-
-      <!-- 主按钮触发区域 -->
-      <div ref="triggerRef" class="pointer-events-auto w-max" :class="[{ 'touch-none': draggable }]"
-        @click.stop="handleClick" @pointerdown="handlePointerDown">
-        <slot name="trigger" :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating"
-          :is-dragging="isDragging" :is-attracting="attractTransition" :is-peeking="isPeeking">
-          <div :class="uiClasses.trigger()">
-            <Icon :name="isActive ? activeIcon : inactiveIcon" :class="uiClasses.icon()" />
-          </div>
-        </slot>
-      </div>
-    </template>
-  </div>
+      </template>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
 /* 胶囊内部项强制原始尺寸，防止在 Grid flex 收缩时被挤压变形 */
-.reborn-capsule-inner :slotted(*) {
+.reborn-capsule-inner > :slotted(*) {
   flex-shrink: 0;
 }
 
-/* 悬浮变体：子项逐个收起/展示的动画效果 */
-.reborn-fab-actions-container :slotted(*) {
+/*
+ * 悬浮变体：子项逐个收起/展示的动画效果。
+ * 必须写子代组合符：插槽内容里的每个元素都带 slotted 标记，写成后代选择器会连操作项内部的
+ * 图标、标签一起改透明度与缩放，内部自己的显隐（如悬停才出现的标签）就失效了。
+ */
+.reborn-fab-actions-container > :slotted(*) {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
   transform: scale(0.3);
 }
 
 /* 激活状态：子项展示 */
-.is-active.reborn-fab-actions-container :slotted(*) {
+.is-active.reborn-fab-actions-container > :slotted(*) {
   opacity: 1;
   transform: scale(1);
 }
 
 /* 逐个展示延迟 */
-.is-active.reborn-fab-actions-container :slotted(*:nth-child(1)) {
+.is-active.reborn-fab-actions-container > :slotted(*:nth-child(1)) {
   transition-delay: 0.05s;
 }
 
-.is-active.reborn-fab-actions-container :slotted(*:nth-child(2)) {
+.is-active.reborn-fab-actions-container > :slotted(*:nth-child(2)) {
   transition-delay: 0.1s;
 }
 
-.is-active.reborn-fab-actions-container :slotted(*:nth-child(3)) {
+.is-active.reborn-fab-actions-container > :slotted(*:nth-child(3)) {
   transition-delay: 0.15s;
 }
 
-.is-active.reborn-fab-actions-container :slotted(*:nth-child(4)) {
+.is-active.reborn-fab-actions-container > :slotted(*:nth-child(4)) {
   transition-delay: 0.2s;
 }
 
-.is-active.reborn-fab-actions-container :slotted(*:nth-child(5)) {
+.is-active.reborn-fab-actions-container > :slotted(*:nth-child(5)) {
   transition-delay: 0.25s;
 }
 
 /* 逐个收起延迟 (反向) */
-.reborn-fab-actions-container:not(.is-active) :slotted(*:nth-child(1)) {
+.reborn-fab-actions-container:not(.is-active) > :slotted(*:nth-child(1)) {
   transition-delay: 0.2s;
 }
 
-.reborn-fab-actions-container:not(.is-active) :slotted(*:nth-child(2)) {
+.reborn-fab-actions-container:not(.is-active) > :slotted(*:nth-child(2)) {
   transition-delay: 0.15s;
 }
 
-.reborn-fab-actions-container:not(.is-active) :slotted(*:nth-child(3)) {
+.reborn-fab-actions-container:not(.is-active) > :slotted(*:nth-child(3)) {
   transition-delay: 0.1s;
 }
 
-.reborn-fab-actions-container:not(.is-active) :slotted(*:nth-child(4)) {
+.reborn-fab-actions-container:not(.is-active) > :slotted(*:nth-child(4)) {
   transition-delay: 0.05s;
 }
 
-.reborn-fab-actions-container:not(.is-active) :slotted(*:nth-child(5)) {
+.reborn-fab-actions-container:not(.is-active) > :slotted(*:nth-child(5)) {
   transition-delay: 0s;
 }
 </style>

@@ -84,7 +84,8 @@ const isComposablesDoc = computed(() => /^\/composables(?:\/|$)/.test(route.path
               按钮骑在右缘分隔线上：右缘对齐这层的右边（也就是 UPageAside 的 border-r），再向右平移自身一半。
               ring 是补给暗色的：暗色下 shadow-lg 几乎看不见，按钮底色又与页面同为 gray-1，没有描边就找不到它。
             -->
-            <div class="relative">
+            <!-- data-docs-aside：悬浮胶囊顶栏按它的右缘定左边界（useFloatingHeaderBounds） -->
+            <div class="relative" data-docs-aside>
               <div class="sticky top-[calc(var(--ui-header-height)*0.7+30vh)] z-20 hidden h-0 lg:block">
                 <button
                   type="button"
