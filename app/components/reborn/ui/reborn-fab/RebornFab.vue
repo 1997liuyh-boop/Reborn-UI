@@ -487,12 +487,12 @@ function parseUnit(val: string | number | undefined, isVertical = false): number
 
   const str = String(val).trim();
   // 纯数字字符串
-  if (/^-?\d+(\.\d+)?$/.test(str)) {
+  if (/^-?\d+(?:\.\d+)?$/.test(str)) {
     return Number.parseFloat(str);
   }
 
   const num = Number.parseFloat(str);
-  if (isNaN(num)) return undefined;
+  if (Number.isNaN(num)) return undefined;
 
   if (str.endsWith("%")) {
     const base = isVertical ? screen.height : screen.width;
@@ -996,18 +996,24 @@ defineExpose({
           <!-- 内部悬浮项 -->
           <div v-show="expandable" :class="uiClasses.capsuleActions()" :style="capsuleActionsStyle">
             <div ref="capsuleInnerRef" class="reborn-capsule-inner" :class="uiClasses.capsuleInner()">
-              <slot :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating" :is-dragging="isDragging"
-                :is-attracting="attractTransition" :is-peeking="isPeeking" />
+              <slot
+                :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating" :is-dragging="isDragging"
+                :is-attracting="attractTransition" :is-peeking="isPeeking"
+              />
             </div>
           </div>
           <div v-show="isActive && divider" :class="uiClasses.divider()">
             <slot name="divider" />
           </div>
           <!-- 触发器 -->
-          <div ref="triggerRef" class="pointer-events-auto w-max shrink-0" :class="[{ 'touch-none': draggable }]"
-            @click.stop="handleClick" @pointerdown="handlePointerDown">
-            <slot name="trigger" :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating"
-              :is-dragging="isDragging" :is-attracting="attractTransition" :is-peeking="isPeeking">
+          <div
+            ref="triggerRef" class="pointer-events-auto w-max shrink-0" :class="[{ 'touch-none': draggable }]"
+            @click.stop="handleClick" @pointerdown="handlePointerDown"
+          >
+            <slot
+              name="trigger" :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating"
+              :is-dragging="isDragging" :is-attracting="attractTransition" :is-peeking="isPeeking"
+            >
               <div :class="uiClasses.trigger()">
                 <Icon :name="isActive ? activeIcon : inactiveIcon" :class="uiClasses.icon()" />
               </div>
@@ -1019,17 +1025,25 @@ defineExpose({
       <!-- 默认悬浮变体模式 -->
       <template v-else>
         <!-- 悬浮操作项插槽 -->
-        <div v-show="expandable || variant === 'circle'" ref="actionsRef" class="reborn-fab-actions-container"
-          :class="[uiClasses.actions(), { 'is-active': isActive }]">
-          <slot :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating" :is-dragging="isDragging"
-            :is-attracting="attractTransition" :is-peeking="isPeeking" />
+        <div
+          v-show="expandable || variant === 'circle'" ref="actionsRef" class="reborn-fab-actions-container"
+          :class="[uiClasses.actions(), { 'is-active': isActive }]"
+        >
+          <slot
+            :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating" :is-dragging="isDragging"
+            :is-attracting="attractTransition" :is-peeking="isPeeking"
+          />
         </div>
 
         <!-- 主按钮触发区域 -->
-        <div ref="triggerRef" class="pointer-events-auto w-max" :class="[{ 'touch-none': draggable }]"
-          @click.stop="handleClick" @pointerdown="handlePointerDown">
-          <slot name="trigger" :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating"
-            :is-dragging="isDragging" :is-attracting="attractTransition" :is-peeking="isPeeking">
+        <div
+          ref="triggerRef" class="pointer-events-auto w-max" :class="[{ 'touch-none': draggable }]"
+          @click.stop="handleClick" @pointerdown="handlePointerDown"
+        >
+          <slot
+            name="trigger" :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating"
+            :is-dragging="isDragging" :is-attracting="attractTransition" :is-peeking="isPeeking"
+          >
             <div :class="uiClasses.trigger()">
               <Icon :name="isActive ? activeIcon : inactiveIcon" :class="uiClasses.icon()" />
             </div>
