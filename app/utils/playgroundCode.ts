@@ -21,6 +21,7 @@ import {
  */
 import {  defineComponent, markRaw } from "vue";
 import * as vue from "vue";
+import { decodePlaygroundCode } from "~~/shared/playgroundUrl";
 
 /** 注入给用户脚本的 VueUse 常用 API(文档示例常用,import 被剥离后仍可直接调用) */
 const vueuseApis = {
@@ -122,32 +123,8 @@ export interface PlaygroundCompileResult {
   error: string | null;
 }
 
-/** 把代码编码为 URL 安全的 base64(供 hash 传递,兼容中文) */
-export function encodePlaygroundCode(code: string): string {
-  const bytes = new TextEncoder().encode(code);
-  let binary = "";
-  bytes.forEach((b) => {
-    binary += String.fromCharCode(b);
-  });
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-/** 从 URL 安全 base64 还原代码,格式非法时返回 null */
-export function decodePlaygroundCode(encoded: string): string | null {
-  try {
-    const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
-    const binary = atob(base64);
-    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
-    return new TextDecoder().decode(bytes);
-  } catch {
-    return null;
-  }
-}
-
-/** 生成带代码的 Playground 完整路径(相对站点根) */
-export function buildPlaygroundUrl(code: string): string {
-  return `/playground#code=${encodePlaygroundCode(code)}`;
-}
+// 编解码不依赖 Vue，实现在 shared/ 下供服务端共用；这里转出以保持原有的自动导入
+export { buildPlaygroundUrl, decodePlaygroundCode, encodePlaygroundCode } from "~~/shared/playgroundUrl";
 
 /** 从当前 location.hash 中提取代码,不存在或非法时返回 null */
 export function readPlaygroundCodeFromHash(hash: string): string | null {
