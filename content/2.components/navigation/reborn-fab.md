@@ -190,5 +190,6 @@ const items = [
 - **`v-model` 是展开状态的唯一来源，点击即写回。** `update:modelValue` 与 `open` / `close` 在动画启动时立即触发，只有 `opened` / `closed` 等约 400ms 动画结束后才触发；父组件在 `@open` 里把值改回 `false` 会立刻收起。需要在动画结束后再联动的逻辑挂在 `opened` / `closed` 上。
 - **两端 `active` 只提供非受控初值。** 未绑定模型时按 `active` 初始化，不发送 `update:modelValue`；显式 `false`、`undefined`、`null` 优先并按收起处理，之后改展开状态请使用 `v-model`。
 - **Web 端显式坐标与变体可以在运行时修改。** 用户拖拽定位之前，修改 `top` / `bottom` / `left` / `right` 会立即按新坐标落位；拖拽过后以拖拽位置为准。`variant` 从 `circle` 切到其他形态时会清掉环形布局写在子元素上的内联样式。
+- **Web 端按钮挂到 body 渲染。** `fixed` 只摆脱定位祖先，摆脱不了层叠上下文：放在 `isolate` 或带 `z-index` 的容器里时，按钮会被后面的区域盖住、点击落不到触发器上，所以组件把根节点传送到 body；透传的 `class`、`data-*` 等属性与 `ui.root` 仍作用在这个根节点上。所在容器被 `display: none` 隐藏（如 `v-show` 切走的 Tab 面板）时，按钮一并隐藏。
 - **部分形态和交互仅支持 Web**。`variant`（capsule/circle）、`trigger="hover"`、`peekOnScroll`、`divider`、环形布局参数均为 Web 端能力；UniApp 端展开菜单推荐用 `items` 渲染以保证多端一致。
 - **UniApp 已合并重复点击事件**。UniApp 端拖拽至左右边缘会自动切换展开方向；小程序端 `tap`/`click` 双发已在组件内合并处理。

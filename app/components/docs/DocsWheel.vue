@@ -121,8 +121,8 @@ watch(currentIndex, (index) => {
 
 const ROW_HEIGHT = 51;
 const PERSPECTIVE = 1400;
-/** 露出到 52°，边缘行仍有足够的高度可以阅读。 */
-const MAX_ANGLE = (52 * Math.PI) / 180;
+/** 露出到 36°：圆柱更平，边缘行仍保留约八成行高，读起来不费力。 */
+const MAX_ANGLE = (36 * Math.PI) / 180;
 /** 首帧按常见桌面高度预留可见行，单项菜单仍贴住顶部。 */
 const FALLBACK_HEIGHT = 960;
 

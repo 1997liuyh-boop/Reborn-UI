@@ -9,6 +9,7 @@
  * 而暗色板的主色刻意取第 5 阶（第 6 阶在暗底上对比度不够），
  * 一旦写成内联样式，暗色下就会被浅色档的取阶顶掉。
  */
+import type { Placement } from '~/lib/placement'
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'
 import RebornPopover from '~/components/reborn/ui/reborn-popover/RebornPopover.vue'
 import { themeColors as colors } from '~/utils/themeColor'
@@ -18,6 +19,18 @@ import { themeColors as colors } from '~/utils/themeColor'
  * 品牌蓝的预设会把整条 brand 色阶写回原始蓝，所以页面切到其他色系时，品牌蓝色块依然是蓝色
  */
 
+interface Props {
+  /** 色块浮层相对触发器的位置 */
+  placement?: Placement
+}
+
+const props = withDefaults(defineProps<Props>(), { placement: 'bottom-end' })
+
+defineSlots<{
+  /** 自定义触发器，缺省为 32px 图标按钮 */
+  trigger?: (props: { open: boolean }) => any
+}>()
+
 /** 选中的色系由全站插件持久化。 */
 const themeColor = useThemeColor()
 /** cookie 可能是旧值或被篡改，认不出时回落到首个色系 */
@@ -26,20 +39,23 @@ const current = computed(() => colors.find(color => color.name === themeColor.va
 </script>
 
 <template>
-  <RebornPopover placement="bottom-end" :ui="{ content: 'p-2' }">
+  <!-- app-theme-picker-content：悬浮工具菜单据此判断点击是否落在色块浮层里 -->
+  <RebornPopover :placement="props.placement" :ui="{ content: 'app-theme-picker-content p-2' }">
     <template #default="{ open }">
-      <!-- 与右侧 UColorModeButton（ghost 中性色）同尺寸同配色：32px 方形图标按钮。
-           text 变体自带 h-auto!（文字按钮不占高度），宽高也要用 ! 才能盖过，合并时会替换掉它 -->
-      <RebornButton
-        variant="text"
-        color="neutral"
-        class="h-8! w-8! rounded-md px-0 text-default hover:bg-elevated"
-        :class="{ 'bg-elevated': open }"
-        aria-label="切换主题颜色"
-        title="切换主题颜色"
-      >
-        <Icon name="lucide:palette" class="size-5" />
-      </RebornButton>
+      <slot name="trigger" :open="open">
+        <!-- 与右侧 UColorModeButton（ghost 中性色）同尺寸同配色：32px 方形图标按钮。
+             text 变体自带 h-auto!（文字按钮不占高度），宽高也要用 ! 才能盖过，合并时会替换掉它 -->
+        <RebornButton
+          variant="text"
+          color="neutral"
+          class="h-8! w-8! rounded-md px-0 text-default hover:bg-elevated"
+          :class="{ 'bg-elevated': open }"
+          aria-label="切换主题颜色"
+          title="切换主题颜色"
+        >
+          <Icon name="lucide:palette" class="size-5" />
+        </RebornButton>
+      </slot>
     </template>
 
     <template #content>

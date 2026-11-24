@@ -81,7 +81,9 @@ const mobileOpen = shallowRef(false);
     <lg 的负外边距与半透明底、毛玻璃照抄 UContentToc 的移动端折叠条，lg+ 全部收回。
     lg+ 滚动交给内层：根节点自己不滚，铺满它的抽屉宿主才不会跟着目录内容一起滚走。
   -->
+  <!-- data-docs-toc：悬浮胶囊顶栏按它的左缘定右边界（useFloatingHeaderBounds） -->
   <nav
+    data-docs-toc
     class="bg-default/75 sticky top-(--ui-header-height) z-10 -mx-4 max-h-[calc(100vh-var(--ui-header-height))] overflow-y-auto px-4 backdrop-blur sm:-mx-6 sm:px-6 lg:mx-0 lg:h-[calc(100vh-var(--ui-header-height))] lg:overflow-visible lg:bg-transparent lg:px-0 lg:backdrop-blur-none scrollbar-hide"
   >
     <div class="border-default flex flex-col border-b border-dashed pt-4 pb-2.5 sm:pt-6 sm:pb-4.5 lg:h-full lg:overflow-y-auto lg:border-0 lg:py-8 scrollbar-hide">
